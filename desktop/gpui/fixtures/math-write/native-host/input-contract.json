@@ -1,0 +1,25 @@
+{
+  "status": "authored input; not a helper result or execution receipt",
+  "sourceContract": "Current original portable twyne-node/twyne-math wrappers; valid Source preamble copied through bounded literal extraction, not converted by a fixture callback.",
+  "preambleSource": "src/utils/typst/document.ts",
+  "preambleSourceSha256": "bb2e205a15dea4aad7e7a88410376168fe8afc64a4f822af455bcb7b5e797685",
+  "preambleSha256": "ce64558e6cd4bd7ef286f3e5608a3e12300c86e4c58da538a49058d1b81a4f34",
+  "fixtureSha256": "b1893ad992aa6fd7e9f59a61aab357a2d33343356dec7c77b0f490b95ee8d874",
+  "initialBlockSource": "x+1",
+  "untouchedInlineSource": "a+b",
+  "retainedSourceDefinition": "#let native_math_receipt = \"retained source outside the edited equation\"",
+  "unknownAttributeSentinels": {
+    "data-native-host-atom": "retain-block-unknown",
+    "data-native-host-inline": "retain-inline-unknown",
+    "data-native-host-heading": "retain-heading-unknown",
+    "data-native-host-prose": "retain-prose-unknown",
+    "data-native-host-mark": "retain-mark-unknown",
+    "data-native-host-tail": "retain-tail-unknown"
+  },
+  "typedInputs": {
+    "ctrlEnter": "  \\frac{a+1}{b-2}\n+ \\text{native final!}  ",
+    "button": "  \\text{saved & \"final!\"}\n+ x^2  ",
+    "cancel": "\\notACommand{ cancelled raw!  ",
+    "escape": "not filed by escape!"
+  }
+}

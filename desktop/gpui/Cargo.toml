@@ -1,0 +1,88 @@
+[package]
+name = "twyne-desktop"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.92"
+description = "Twyne's native, offline writing room, built with GPUI"
+publish = false
+
+[features]
+default = ["desktop"]
+desktop = ["dep:gpui-kit", "dep:image", "dep:roxmltree", "dep:base64", "dep:hypher", "dep:unicode-linebreak", "dep:x11rb", "dep:gpui-linux", "native-typst"]
+native-typst = ["dep:typst", "dep:typst-pdf", "dep:typst-svg", "dep:sha2", "dep:image"]
+native-audio = ["dep:sha2"]
+ui-tests = ["desktop", "gpui-kit/test-support", "gpui-linux?/test-support"]
+
+[dependencies]
+anyhow = "1.0"
+directories = "6.0"
+fs2 = "0.4"
+gpui-kit = { version = "=0.7.0", optional = true }
+chrono = "=0.4.45"
+html5ever = "=0.27.0"
+unicode-segmentation = "=1.13.3"
+markup5ever_rcdom = "=0.3.0"
+image = { version = "=0.25.10", default-features = false, features = ["png", "webp", "jpeg", "gif"], optional = true }
+roxmltree = { version = "=0.20.0", optional = true }
+base64 = { version = "=0.22.1", optional = true }
+hypher = { version = "=0.1.8", default-features = false, features = ["alloc", "english"], optional = true }
+unicode-linebreak = { version = "=0.1.5", optional = true }
+serde = { version = "1.0", features = ["derive", "rc"] }
+serde_json = "1.0"
+regex = "=1.13.1"
+unicode-normalization = "=0.1.25"
+url = "=2.5.8"
+tempfile = "3.23"
+uuid = { version = "1.18", features = ["v4", "serde"] }
+sha2 = { version = "=0.10.9", optional = true }
+typst = { git = "https://github.com/Myriad-Dreamin/typst.git", rev = "951788cc614cd805d5d786e17bbf93796df73d10", optional = true }
+typst-pdf = { git = "https://github.com/Myriad-Dreamin/typst.git", rev = "951788cc614cd805d5d786e17bbf93796df73d10", optional = true }
+typst-svg = { git = "https://github.com/Myriad-Dreamin/typst.git", rev = "951788cc614cd805d5d786e17bbf93796df73d10", optional = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+x11rb = { version = "=0.13.2", optional = true }
+gpui-linux = { package = "gpui-pre-linux", version = "=0.3.7", default-features = false, features = ["wayland"], optional = true }
+
+[[bin]]
+name = "twyne-desktop"
+path = "src/main.rs"
+required-features = ["desktop"]
+
+[[example]]
+name = "twyne-clipboard-probe"
+path = "fixtures/editor/clipboard-probe.rs"
+required-features = ["desktop"]
+
+[[example]]
+name = "twyne-wayland-clipboard-probe"
+path = "fixtures/wayland-clipboard/native-probe.rs"
+required-features = ["desktop"]
+
+[[example]]
+name = "twyne-dossier-multiply-probe"
+path = "fixtures/dossier-multiply/native-probe/main.rs"
+required-features = ["ui-tests"]
+
+[[test]]
+name = "native-audio-contract"
+path = "fixtures/native-audio/synthetic_loopback.rs"
+required-features = ["native-audio"]
+
+[[example]]
+name = "twyne-connected-probe"
+path = "fixtures/connected-work/native-probe.rs"
+required-features = ["desktop"]
+
+[profile.dev]
+debug = 0
+
+[patch.crates-io]
+gpui-base = { path = "vendor/gpui-base" }
+gpui-pre = { path = "vendor/gpui-pre" }
+gpui-pre-wgpu = { path = "vendor/gpui-pre-wgpu" }
+gpui-pre-linux = { path = "vendor/gpui-pre-linux" }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true

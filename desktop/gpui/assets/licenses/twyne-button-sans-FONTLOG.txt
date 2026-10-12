@@ -1,0 +1,4 @@
+Twyne Button Sans: native paper-button instance of original DM Sans 4.004.
+2026-10-04: Instantiated original axes opsz12/wght600 for actual 12px/600 CSS buttons.
+Renamed internal UI family; no glyph redesign or change to source or Typst fonts.
+Original copyright and SIL OFL 1.1 remain in the accompanying license.

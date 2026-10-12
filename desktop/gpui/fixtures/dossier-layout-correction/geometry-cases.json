@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "evidence": "Declared Source CSS arithmetic; authored expectations, not observed runtime geometry",
+  "units": "CSS pixels with existing root rem16 and Tailwind sm640/lg1024",
+  "box": "wrapper max1472 includes gutters; frame includes its own1px border",
+  "cases": [
+    {"viewport": [320, 860], "expected_frame": [12, 12, 296, 836], "preview_columns": 1, "surface_caption": false, "source_leaf_row_heights": null},
+    {"viewport": [620, 860], "expected_frame": [12, 12, 596, 836], "preview_columns": 1, "surface_caption": false, "source_leaf_row_heights": null},
+    {"viewport": [639, 860], "expected_frame": [12, 12, 615, 836], "preview_columns": 1, "surface_caption": false, "source_leaf_row_heights": null},
+    {"viewport": [640, 860], "expected_frame": [20, 16, 600, 828], "preview_columns": 2, "surface_caption": true, "source_leaf_row_heights": null},
+    {"viewport": [1023, 860], "expected_frame": [20, 16, 983, 828], "preview_columns": 2, "surface_caption": true, "source_leaf_row_heights": null},
+    {"viewport": [1024, 860], "expected_frame": [20, 16, 984, 828], "preview_columns": 2, "surface_caption": true, "source_leaf_row_heights": "lg two minmax tracks, ratio1:1.02; full available body height"},
+    {"viewport": [1280, 860], "expected_frame": [20, 16, 1240, 828], "preview_columns": 2, "surface_caption": true, "source_leaf_row_heights": "lg two minmax tracks, ratio1:1.02; full available body height"},
+    {"viewport": [1472, 860], "expected_frame": [20, 16, 1432, 828], "preview_columns": 2, "surface_caption": true, "source_leaf_row_heights": "lg two minmax tracks, ratio1:1.02; full available body height"},
+    {"viewport": [1600, 860], "expected_frame": [84, 16, 1432, 828], "preview_columns": 2, "surface_caption": true, "source_leaf_row_heights": "lg two minmax tracks, ratio1:1.02; full available body height"},
+    {"viewport": [1280, 240], "expected_frame": [20, 16, 1240, 208], "preview_columns": 2, "surface_caption": true, "source_leaf_row_heights": "Used short-viewport content/overflow needs actual observation"}
+  ],
+  "not_inferred": [
+    "Implicit grid auto-row heights below1024px",
+    "Exact narrow header/rail used widths or safe negative-space centering",
+    "Native text/font/caret or pixel parity from CSS box arithmetic",
+    "Actual theme/DPR pixel or atlas-retirement acceptance"
+  ]
+}

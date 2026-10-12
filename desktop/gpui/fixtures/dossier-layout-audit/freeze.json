@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "status": "frozen read-only audit; no runtime patch applied",
+  "createdAt": "2026-10-05T07:00:01.134092+00:00",
+  "ownership": "Only NEW desktop/gpui/fixtures/dossier-layout-audit/**",
+  "files": {
+    "README.md": "639c8174970173fb5dd4a2cf33c081020c09e77c22f87b284207bc75d7e620e0",
+    "audit.json": "5881e18c6453259dc41d8c13daa0357a6647952890989ad9c94e4f402e743430",
+    "inspect.py": "0e7cc8e4dde6b16f47a8c94a4adf84d066aa58c5c626b26bf048646cadb35a22",
+    "parent-probes.json": "c3cc85bfcf2b000c24acfaad52d709e10767c7be490a28a37d215c2f95981707",
+    "source-probe.js": "13564926ed058405dcacc859c0dde8e155e1b3f8ef3b87b938ddbf7a4b06ede9"
+  },
+  "sourceCheckpoint": "audit.json sourceHashesAtAudit, before Parent image-lifecycle integration",
+  "retainedArtifactCheckpoint": "audit.json retainedArtifactHashes; original artifacts unchanged",
+  "validation": [
+    {
+      "command": "rtk proxy python3 desktop/gpui/fixtures/dossier-layout-audit/inspect.py --check",
+      "status": "pass",
+      "scope": "Retained hashes, selected actual observations and declared arithmetic at the pinned checkpoint; later Parent input hash drift is not rewritten"
+    },
+    {
+      "command": "rtk proxy node --check desktop/gpui/fixtures/dossier-layout-audit/source-probe.js",
+      "status": "pass",
+      "scope": "Parse only; collector not executed"
+    },
+    {
+      "command": "rtk proxy python3 standard-library syntax/JSON/whitespace checks",
+      "status": "pass",
+      "scope": "Python source compiled syntactically without importing/running a native driver; JSON12 source pins/13 artifacts/14 unique unexecuted Parent cases"
+    }
+  ],
+  "actualExecutions": {
+    "native": false,
+    "browser": false,
+    "server": false,
+    "network": false,
+    "CargoDevenv": false
+  },
+  "patch": null,
+  "remainingProof": [
+    "Actual Source narrow implicit auto rows",
+    "Current full-form Nightpress/Broadsheet",
+    "Viewport/DPR and first-frame transitions",
+    "Any corrected renderer/input/pixel parity",
+    "Parent lifecycle/multiply adoption remains independently reviewed"
+  ]
+}

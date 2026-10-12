@@ -1,0 +1,41 @@
+{
+  "recordedAt": "2026-10-05T01:27:33.060879+00:00",
+  "scope": "Integrated library foundation and captured synthetic responses; live send/stream remain unavailable and the native product UI is unmounted",
+  "rust": {
+    "status": "pass",
+    "tests": 16,
+    "failed": 0,
+    "filteredOut": 204,
+    "features": "no-default-features",
+    "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --no-default-features --lib native_ai::",
+    "log": "/tmp/twyne-gpui-ai-integration-gate-corrected.log",
+    "logSha256": "f103231c19d30d8c8d871e26e54caf5746494829e335fcc3903214560736f294"
+  },
+  "reviewCorrection": "Initial15/16 run compared serde JSON Number0.0 with Number0 in the expected fixture. Typed exact f64 comparison repaired the fixture; production routing was unchanged.",
+  "files": {
+    "src/native_ai/contract_extractors.rs": "31fac782ce1294f8b16fd507cfadbb6e5b1144a2f72d970e7aba7f9cb94681dc",
+    "src/native_ai/coordinator.rs": "a08649c5977396ed2c3f155ad921e8f9a691489494f5e9aa780bd13826059507",
+    "src/native_ai/litert_lifecycle.rs": "c031c230b2f40fd04400ccbffdbc42ae759f369123202331a670881c64043571",
+    "src/native_ai/loopback_transport.rs": "6eb5a937142fb25f5d5013b179eda4d2fb55a3f429f567fcf45613c48b42ffe4",
+    "src/native_ai/mod.rs": "5da8df3bc0264c865393dc67c96b0741b0407a72f67029c015920fc8e91ad24b",
+    "src/native_ai/provider_types.rs": "b9a5b88e9121c8d3fc4c83ca342df9b8798a3c5d344833a12be915795b361a4a",
+    "src/native_ai/request.rs": "2f1539d4c6daf94e973bac9d89a96162907ac515d50b94bbe8f86305105e757c",
+    "src/native_ai/stream_accumulator.rs": "39cb95543ebf50d927c4161e9ae35a3117d5c7ce66845a19d24e463f663d5495",
+    "src/native_ai/stream_tests.rs": "af321282597d826c28d2f93c1313987d5e863b4625e82ae37aa24dfab31407b4"
+  },
+  "sharedExport": "890a6fdfedb99d8509f58a508afba869ece9e2e8f43b72fb6a7bf4ffb44c9db6",
+  "remaining": [
+    "Strict all-target aggregate Clippy and tests after Dossier registration",
+    "Actual configured provider/model readiness",
+    "Native host and UI adoption",
+    "Authenticated transport and real cancellation"
+  ],
+  "libraryClippy": {
+    "status": "pass",
+    "scope": "Locked offline default desktop library with optional native-audio; warnings denied; no app/UI test/aggregate claim",
+    "seconds": 14.25,
+    "log": "/tmp/twyne-gpui-ai-audio-lib-clippy-corrected.log",
+    "logSha256": "9c565205b52797b42d8ce6db6e349c09dbfff5239658d584e17bbcc85f75ae13",
+    "recordedAt": "2026-10-05T01:41:33.628304+00:00"
+  }
+}

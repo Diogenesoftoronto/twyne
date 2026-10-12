@@ -1,0 +1,20 @@
+{
+  "applied": false,
+  "files": [
+    {
+      "path": "desktop/gpui/src/lib.rs",
+      "baseSha256": "90d6ad47ab6381046bc4d07c7985db94899b1d6667d2af9ec0f5066e891c5eb8",
+      "proposedSha256": "bc2164426d0eeef4833745894022381b741d4d8f26125178214d261c3b12b892"
+    },
+    {
+      "path": "desktop/gpui/src/dossier_view.rs",
+      "baseSha256": "45537aaf8ab2ebd3c258a21ad6b0c482b0131c0fc525fdbec2408e0e256bf8aa",
+      "proposedSha256": "d536b1c2fef08b3fbc05bd9be9f114ab5b5f47be37358d0dd5ebd3654acef559"
+    },
+    {
+      "path": "desktop/gpui/src/app.rs",
+      "baseSha256": "f5e49f1d4ee936b333c9bf52b4b7119d2468b1e9f2f84c3b88360dfe9e550ea9",
+      "proposedSha256": "0b3a41a92ad90dd9f224f9fe8ac2086775ff0954cbc113284a399a3c14c3e26a"
+    }
+  ]
+}

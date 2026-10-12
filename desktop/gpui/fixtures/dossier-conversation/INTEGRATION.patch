@@ -1,0 +1,9 @@
+# Unapplied registration only; parent owns app/host integration.
+# No new dependencies. See ../dossier-host-review/README.md for guards.
+diff --git a/desktop/gpui/src/lib.rs b/desktop/gpui/src/lib.rs
+--- a/desktop/gpui/src/lib.rs
++++ b/desktop/gpui/src/lib.rs
+@@ -17,2 +17,3 @@
+ pub mod dossier;
++pub mod dossier_conversation;
+ pub mod dossier_filing;

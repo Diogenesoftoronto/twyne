@@ -1,0 +1,129 @@
+--- a/desktop/gpui/fixtures/dossier-multiply/native-probe/run_native.py
++++ b/desktop/gpui/fixtures/dossier-multiply/native-probe/run_native.py
+@@ -13,8 +13,9 @@
+ import signal
+ import subprocess
+ import time
+ from check_pixels import compare
++from x11_driver import OwnedX11
+ 
+ 
+ ALLOWED_ENV = {
+     "PATH", "LD_LIBRARY_PATH", "VK_ICD_FILENAMES", "VK_DRIVER_FILES", "XDG_DATA_DIRS",
+@@ -57,17 +58,8 @@
+ def capture(window_id, destination, env):
+     xwd = destination.with_suffix(".xwd")
+     run(["xwd", "-silent", "-id", window_id, "-out", xwd], env)
+     run(["magick", xwd, "-depth", "8", destination], env)
+-
+-
+-def click_control(receipt, name, window_id, env):
+-    bounds = receipt["observed_control_content_bounds"][name]
+-    scale = receipt["scale"]
+-    x, y = round((bounds[0] + bounds[2] / 2) * scale), round((bounds[1] + bounds[3] / 2) * scale)
+-    run(["xdotool", "windowfocus", "--sync", window_id], env)
+-    run(["xdotool", "mousemove", "--window", window_id, x, y], env)
+-    run(["xdotool", "click", "1"], env)
+ 
+ 
+ def main():
+     parser = argparse.ArgumentParser()
+@@ -105,8 +97,9 @@
+                               pass_fds=(write_fd,), stdout=subprocess.DEVNULL, stderr=server_log,
+                               start_new_session=True, env=env)
+     os.close(write_fd)
+     app = None
++    x11 = None
+     receipt = {"schema": 1, "scope": "actual private-X11 shader/framebuffer acceptance only",
+                "executed": True, "binary_sha256": hashlib.sha256(args.binary.read_bytes()).hexdigest(),
+                "cases": [], "failures": [], "source_radial_raster_parity": False,
+                "framebuffer_alpha_measured": False, "atlas_adjacency_observed": False}
+@@ -120,8 +113,9 @@
+             raise ValueError("Private displayfd protocol failed")
+         display = f":{number}"
+         env["DISPLAY"] = display
+         env["TWYNE_MULTIPLY_OWNED_DISPLAY"] = display
++        x11 = OwnedX11(env, args.output / "actual-x11-events.json")
+         for mode in ["baseline", "multiply", "normal-alpha", "per-layer", "beneath"]:
+             folder = args.output / mode
+             folder.mkdir()
+             manifest = folder / "native.json"
+@@ -130,16 +124,10 @@
+                                    env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+             case = {"mode": mode, "errors": []}
+             try:
+                 ready = wait(lambda: observed(manifest), app)
+-                discovery = {}
+-                for label, command in [("tree", ["xwininfo", "-root", "-tree"]),
+-                                       ("title_search", ["xdotool", "search", "--name", "^Twyne Multiply Probe$"])]:
+-                    result = subprocess.run(argv(command), env=env, capture_output=True, text=True)
+-                    discovery[label] = {"exit_code": result.returncode,
+-                                        "stdout": result.stdout, "stderr": result.stderr}
+-                (folder / "x11-discovery.json").write_text(json.dumps(discovery, indent=2) + "\n")
+-                window_id = wait(lambda: run(["xdotool", "search", "--name", "^Twyne Multiply Probe$"], env).decode().strip().splitlines()[0], app)
++                window_id = wait(lambda: x11.find_named_client(
++                    "Twyne Multiply Probe", folder / "x11-discovery.json"), app)
+                 # Require two pixel-identical actual client captures. No font,
+                 # pixel-origin, device-size, or animation correction is applied.
+                 previous = None
+                 stable = 0
+@@ -170,37 +158,37 @@
+                 if mode == "multiply":
+                     # These are real retained GPUI controls, not synthetic view
+                     # mutation. Interaction screenshots are separate from the
+                     # unchanged-scene pixel comparisons above.
+-                    click_control(ready, "live-button", window_id, env)
++                    x11.click_control(ready, "live-button", window_id)
+                     ready = wait(lambda: (value if value and value["counter"] == 1 else None)
+                                  if (value := observed(manifest)) is not None else None, app)
+-                    click_control(ready, "live-field", window_id, env)
+-                    run(["xdotool", "key", "--clearmodifiers", "ctrl+a"], env)
+-                    run(["xdotool", "type", "--clearmodifiers", "--delay", "20", "LIVE FIELD CHECK"], env)
++                    x11.click_control(ready, "live-field", window_id)
++                    x11.press(window_id, "a", control=True)
++                    x11.type_ascii(window_id, "LIVE FIELD CHECK")
+                     ready = wait(lambda: (value if value and value["input_text"] == "LIVE FIELD CHECK" else None)
+                                  if (value := observed(manifest)) is not None else None, app)
+                     old_epoch = ready["epoch"]
+-                    click_control(ready, "next-palette", window_id, env)
++                    x11.click_control(ready, "next-palette", window_id)
+                     ready = wait(lambda: (value if value and value["epoch"] > old_epoch and value["theme"] == "nightpress" else None)
+                                  if (value := observed(manifest)) is not None else None, app)
+                     capture(window_id, folder / "nightpress-interaction.png", env)
+-                    click_control(ready, "retire", window_id, env)
++                    x11.click_control(ready, "retire", window_id)
+                     ready = wait(lambda: (value if value and value["pending_retired_preparations"] == 0 and value["atlas_retirement"] else None)
+                                  if (value := observed(manifest)) is not None else None, app)
+                     retired = [row for row in ready["atlas_retirement"] if "had_atlas_entry" in row]
+                     if not any(row["had_atlas_entry"] for row in retired) or any(row["has_atlas_entry_after"] or row["error"] for row in retired):
+                         case["errors"].append("Actual atlas entry retirement failed")
+                     case["native_live_controls"] = {"counter": ready["counter"], "input_text": ready["input_text"],
+                                                      "palette_epoch": ready["epoch"], "retired_entries": retired}
+-                    run(["xdotool", "windowsize", window_id, "820", "660"], env)
++                    x11.resize(window_id, 820, 660)
+                     ready = wait(lambda: (value if value and value["root_bounds"][2:] == [820, 660] else None)
+                                  if (value := observed(manifest)) is not None else None, app)
+                     capture(window_id, folder / "resized.png", env)
+                     case["actual_resize"] = ready["root_bounds"]
+                     case["dpr_transition_executed"] = False
+-                run(["xdotool", "windowfocus", "--sync", window_id], env)
+-                run(["xdotool", "key", "--clearmodifiers", "ctrl+q"], env)
++                x11.focus(window_id)
++                x11.press(window_id, "q", control=True)
+                 app.wait(timeout=8)
+                 case["exit_code"] = app.returncode
+                 if app.returncode != 0:
+                     case["errors"].append("Native probe did not exit cleanly")
+@@ -221,8 +209,12 @@
+             receipt["failures"].extend({"mode": mode, "message": error} for error in case["errors"])
+     except Exception as error:
+         receipt["failures"].append({"mode": "runner", "message": str(error)})
+     finally:
++        if x11 is not None:
++            receipt["x11_protocol_errors"] = x11.close()
++            if receipt["x11_protocol_errors"]:
++                receipt["failures"].append({"mode": "runner", "message": "Actual X11 protocol errors; see actual-x11-events.json"})
+         os.close(read_fd)
+         os.killpg(server.pid, signal.SIGTERM)
+         try:
+             server.wait(timeout=3)

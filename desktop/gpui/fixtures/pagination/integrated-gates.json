@@ -1,0 +1,77 @@
+{
+  "capturedAt": "2026-10-05T00:07:54.048544+00:00",
+  "scope": "declared Source pagination engine and assembled test-platform host; no current full-route or native GPU parity claim",
+  "gates": [
+    {
+      "name": "original arithmetic corpus",
+      "sourceTests": 40,
+      "sourceExpectations": 159,
+      "nativeTests": 4,
+      "workspaceTests": 1,
+      "nativeBlockCases": 98,
+      "nativeGeometryCases": 8,
+      "log": "/tmp/twyne-gpui-pagination-first-gate.log",
+      "passed": true
+    },
+    {
+      "name": "mounted editor input/layout/cache/fallback",
+      "tests": 8,
+      "passed": true,
+      "log": "/tmp/twyne-gpui-pagination-mounted-gate.log"
+    },
+    {
+      "name": "assembled host notes/narrow sheets/columns/retry",
+      "tests": 3,
+      "passed": true,
+      "log": "/tmp/twyne-gpui-pagination-host-gate.log"
+    }
+  ],
+  "firstFailures": {
+    "mounted": "5/8 before real cache fix and two fixture-boundary fixes",
+    "host": "2/3 before unchanged sheet configuration cache fix"
+  },
+  "files": {
+    "src/editor/pagination.rs": "05e8a2173d19240b11ff172ad162e46d05d56f1bdb899c79cfca631973da9b03",
+    "src/editor/view_pagination.rs": "57c3ab1c5d09c7165f9342715baf46919e9b28621cef69471d84eeb8c3cf639c",
+    "src/editor/view.rs": "b680c5c84603b7cc79b8b200ad365fd459f7b77c44fa87ac4c723e2a096a52ab",
+    "src/editor/view_flow.rs": "8361591ce4fc64119542d3f7b8055d4c1c0a0ad85671a79ed183172d29250742",
+    "src/editor/view_drag.rs": "fe03589cd082e984de990181014f09d845240d36a875c6fd855cd91721bd8c86",
+    "src/app.rs": "0da361ba6f4e05515990c918d4c9fe1304fb691de83b15381f7ea84318dd12f6",
+    "src/app/page_coordinator.rs": "f76b891857178afc14f28b916fac93367eef9ae6e6849f056713db985b6f7e7b",
+    "src/app/note_coordinator.rs": "376594d42715342db2f913b4afb77ee2b6ed6060e886a1f2a3a948e89e6d0259",
+    "src/page_furniture.rs": "a5524cd14d0b2336fcb21eb71ac7ca325e3e5d8ddef70f20d839168fe61a8973"
+  },
+  "remaining": [
+    "current paginated Wayland GPU/input comparison",
+    "typing quiet scheduler",
+    "column layout",
+    "Source full-route pagination registration distinction",
+    "full visual parity"
+  ],
+  "nativeX11": {
+    "status": "pass",
+    "checks": 8,
+    "receipt": "native-acceptance.json",
+    "scope": "actual synthetic authored pages, bundled fonts, XTEST input, save/history/clipboard and 620px physical page width; original current route registration and whole raster parity remain unproven"
+  },
+  "mathConsumerFoundation": {
+    "status": "pass",
+    "tests": 14,
+    "assertions": 766,
+    "log": "/tmp/twyne-gpui-math-consumer-gate.log",
+    "sourceCssUnchanged": true
+  },
+  "updatedAt": "2026-10-05T01:04:03.716719+00:00",
+  "clippy": {
+    "status": "pass",
+    "scope": "locked offline all targets with ui-tests, warnings denied",
+    "log": "/tmp/twyne-gpui-accounts-collaboration-clippy.log",
+    "seconds": 16.14
+  },
+  "visualInspection": {
+    "receipt": "native-acceptance.json",
+    "sourceAuthority": "src/global.css forced-spacer ::after top50%",
+    "marker": "Native centres the manual label in the whole forced spacer, as the current Source CSS does. Nearby Source comments describing a page-gap overlay do not match the stylesheet implementation. No behavioral correction applied.",
+    "boundary": "native screenshot inspection is not full current-route raster parity"
+  }
+}

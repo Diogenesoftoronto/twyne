@@ -1,0 +1,87 @@
+{
+  "renderer": "GPUI platform WGPU HeadlessRenderer",
+  "deviceScaleFactor": 2,
+  "maskRasterizations": 4,
+  "tintPreparations": 8,
+  "cachedTints": 2,
+  "cases": [
+    {
+      "id": "editorial",
+      "byteMae": 0.03949203574203574,
+      "maxDifference": 3,
+      "errorToFlat": 0.22492539088537994
+    },
+    {
+      "id": "foolscap",
+      "byteMae": 0.04479166666666667,
+      "maxDifference": 3,
+      "errorToFlat": 0.2565760923991054
+    },
+    {
+      "id": "broadsheet",
+      "byteMae": 0.0,
+      "maxDifference": 0,
+      "errorToFlat": 0.0
+    },
+    {
+      "id": "nightpress",
+      "byteMae": 0.004928613053613053,
+      "maxDifference": 1,
+      "errorToFlat": 0.03872762448437578
+    },
+    {
+      "id": "system-light",
+      "byteMae": 0.03949203574203574,
+      "maxDifference": 3,
+      "errorToFlat": 0.22492539088537994
+    },
+    {
+      "id": "system-dark",
+      "byteMae": 0.004928613053613053,
+      "maxDifference": 1,
+      "errorToFlat": 0.03872762448437578
+    },
+    {
+      "id": "editorial-custom",
+      "byteMae": 0.04315025252525252,
+      "maxDifference": 3,
+      "errorToFlat": 0.3360945626477541
+    },
+    {
+      "id": "nightpress-custom",
+      "byteMae": 0.035981934731934735,
+      "maxDifference": 2,
+      "errorToFlat": 0.08831659234837459
+    },
+    {
+      "id": "broadsheet-custom",
+      "byteMae": 0.0,
+      "maxDifference": 0,
+      "errorToFlat": 0.0
+    },
+    {
+      "id": "foolscap-custom",
+      "byteMae": 0.030537587412587414,
+      "maxDifference": 2,
+      "errorToFlat": 0.16111452728670253
+    },
+    {
+      "id": "normalized",
+      "byteMae": 0.033592657342657345,
+      "maxDifference": 3,
+      "errorToFlat": 0.6264285584916596
+    },
+    {
+      "id": "editorial-clipped",
+      "byteMae": 0.028095376845376847,
+      "maxDifference": 3,
+      "errorToFlat": 0.22468619896849562
+    },
+    {
+      "id": "editorial-scrolled",
+      "byteMae": 0.03981109168609168,
+      "maxDifference": 3,
+      "errorToFlat": 0.22534642143428507
+    }
+  ]
+}

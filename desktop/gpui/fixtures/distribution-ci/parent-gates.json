@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "appliedAt": "2026-10-05T02:24:52.933822+00:00",
+  "scope": "Reviewed local workflow adoption with synthetic bootstrap/structural policy gates only",
+  "workflow": ".github/workflows/gpui-desktop.yml",
+  "workflowSha256": "c60d7b0f3e4769265542e3883b3fbf1b65a64089f4ab7874a2e3daf5f3a752b3",
+  "gate": {
+    "command": "rtk proxy bun test desktop/gpui/fixtures/distribution-ci",
+    "passed": 40,
+    "failed": 0,
+    "expectations": 162,
+    "seconds": 0.547
+  },
+  "reviewReceipt": "review-gates.json",
+  "boundaries": [
+    "No hosted CI run.",
+    "No real RTK archive/binary download/execution.",
+    "No macOS/Windows runtime or installer proof.",
+    "Staged tree remains flat bundleStatus not-assembled."
+  ],
+  "bootstrap": "setup-bun must precede the one pre-RTK provisioning command; all subsequent run commands use rtk proxy."
+}

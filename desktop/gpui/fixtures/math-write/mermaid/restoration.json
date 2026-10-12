@@ -1,0 +1,16 @@
+{
+  "fixtureScope": "Separate task-owned Mermaid CSS reference page in Playwriter session 4",
+  "fixturePageClosed": true,
+  "originalAppUrl": "http://localhost:5180/dossier/create/",
+  "originalAppViewport": {"width":1280,"height":860},
+  "remainingTabs": ["about:blank","http://localhost:5180/dossier/create/"],
+  "sourceFilesModified": false,
+  "sourceCssCandidateApplied": false,
+  "existingRuntimeOrHelperModified": false,
+  "applicationStorageTouched": false,
+  "applicationNavigationPerformed": false,
+  "externalRequestsAllowed": false,
+  "blockedExternalOriginsObserved": [],
+  "cargoOrDevenvRun": false,
+  "verification": "Original tab URL and live Dossier snapshot read back after closing only the fixture page; exact Source/build hashes remain verified by 7 fixture checks. No Source metadata restoration was needed."
+}

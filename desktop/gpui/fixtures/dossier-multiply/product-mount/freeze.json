@@ -1,0 +1,51 @@
+{
+  "status": "frozen unapplied product-mount proposal; Parent owns application/compiled/native/Source proof",
+  "frozenAtUtc": "2026-10-05T07:39:29.146140+00:00",
+  "filesSha256": {
+    "README.md": "7de5cf78ba70cdcca77ad7c60b2303385aa867c72779cd674faa812202d8322b",
+    "check_contract.py": "11b441d7e4fe3acaafb5b9bd950efbe1c42cee52bb68cb22b0fdc6ca27d8968e",
+    "integration.patch": "777b985b9010c057775e11bf5fbf86fc2bf40c3bc90fd0ed98100f133de78912",
+    "mount_helpers.rs": "900355ab4ccc68d0a67937352b8d86d9667700e6ec82ea562cbed6a21cd5083c",
+    "mount_types.rs": "dd4af8afc535aa8e6ef9762dfa49e87887f18e7c47aecf4ef364a61f360355d9",
+    "probe-contract.json": "ee30914424c6db6a7d7c426a2e2217a13fdcfd62c6ee95e3876c34cf2de14722",
+    "product_mount_tests.rs": "fa7e24126580c802757f3b0b63584f6d31800e3dafc519d3145584bdf7c75a8e",
+    "source-check-receipt.json": "ff1be00bf35ad6dba094d04218cf5012b848140f47808557ac612d1fc3aa2102",
+    "source-contract.json": "e7187d9afaaf6d6a9fe8cc08548aa43973aa0fb65c35ae5de86e5087bb16b5c1",
+    "source-layers.css": "394f1a480af886934528209fa63062be604eeafd61c791c930b98f7b809574b6",
+    "source-pins.json": "7f96c23320d25d5079bcc46419f0d88d5f22da55dec6d4838727f3049d4ae526",
+    "tests.patch": "eb18730c8edc2560c1839f9b8de4bb95291a81529a3ba2611b0a6c8bf01822c6"
+  },
+  "productionTarget": "desktop/gpui/src/dossier_view.rs",
+  "productionInputSha256": "b9a27db900b6624055a3cd1b293bab93bfd1c2c26f37847ffebf366d281ba274",
+  "proposedTargetSha256": "1b66604d51e520ad46c6737ac631e8e7b502f230199933152cb37c29f3787c26",
+  "proposedTargetWithTestRegistrationSha256": "7c7e3731a6b1697b4c65f3455ed664f17e4e43a39893f797e866dee9f5a1fa9d",
+  "parentResumeCheckpointPreserved": true,
+  "preparedImageCounts": {
+    "tinted": 10,
+    "Broadsheet": 9
+  },
+  "groupOpacity": 0.7,
+  "groupOpacityApplicationCount": 1,
+  "authoredMountedTestCount": 5,
+  "authoredProbeCaseCount": 14,
+  "executed": {
+    "filesystemContract": true,
+    "pythonAstParse": true,
+    "gitApplyCheck": false,
+    "rustfmt": false,
+    "cargo": false,
+    "rustc": false,
+    "mountedTests": false,
+    "nativeGpu": false,
+    "browser": false,
+    "network": false
+  },
+  "sharedOrSourceFilesChangedByThisLane": false,
+  "limits": [
+    "Source radial raster equivalence unproved",
+    "Recorded is scene recording only",
+    "Source positive-z transient overlays/animations not certified",
+    "Exact device grid and opaque rectangular backdrop restrictions retained",
+    "No actual product atlas lifecycle/presentation/device recovery proof in this lane"
+  ]
+}

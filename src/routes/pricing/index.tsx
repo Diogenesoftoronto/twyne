@@ -1,7 +1,16 @@
-import { component$, useSignal, useVisibleTask$, $ } from "@qwik.dev/core";
-import { Link, type DocumentHead } from "@qwik.dev/router";
+import {
+  component$,
+  useComputed$,
+  useSignal,
+  useVisibleTask$,
+  $,
+} from "@qwik.dev/core";
+import { Link, useLocation, type DocumentHead } from "@qwik.dev/router";
 import { useConvexClient } from "../../utils/convex-context";
-import { useAuth } from "../../utils/auth-context";
+import {
+  hasAuthenticatedConvexIdentity,
+  useAuth,
+} from "../../utils/auth-context";
 import type { AppError } from "../../types/application-errors";
 import {
   createAppError,
@@ -19,6 +28,11 @@ import {
   availableCreditPacks,
   TWYNE_PRO_PLAN,
 } from "../../utils/subscription-plan";
+import {
+  isCheckoutReturn,
+  refreshCheckoutReturnWallet,
+  type CheckoutReturnStatus,
+} from "../../utils/checkout-return";
 
 // Must accompany a mapped provider price and verified hosted billing deployment.
 const CHECKOUT_ENABLED =
@@ -44,29 +58,61 @@ const PRO_FEATURES = [
 export default component$(() => {
   const clientSig = useConvexClient();
   const auth = useAuth();
+  const location = useLocation();
+  const walletAccount = useComputed$(() =>
+    hasAuthenticatedConvexIdentity(auth.value)
+      ? (auth.value.user?.id ?? null)
+      : null,
+  );
   const busy = useSignal(false);
   const error = useSignal<AppError | null>(null);
   const availablePacks = useSignal<string[]>([]);
   const creditError = useSignal<string | null>(null);
   const providerPlanActive = useSignal(false);
+  const checkoutReturnStatus = useSignal<CheckoutReturnStatus | null>(null);
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track }) => {
+  useVisibleTask$(({ track, cleanup }) => {
     const client = track(clientSig);
-    const user = track(auth).user;
-    if (!client || !user) {
-      providerPlanActive.value = false;
-      availablePacks.value = [];
+    const userId = track(walletAccount);
+    const search = track(() => location.url.search);
+    providerPlanActive.value = false;
+    availablePacks.value = [];
+    checkoutReturnStatus.value = null;
+    if (!client || !userId) return;
+
+    let disposed = false;
+    const isCurrent = () =>
+      !disposed && clientSig.value === client && walletAccount.value === userId;
+    cleanup(() => {
+      disposed = true;
+    });
+    const updateWallet = (wallet: unknown) => {
+      providerPlanActive.value = hasCurrentTwynePlan(wallet);
+      availablePacks.value = availableCreditPacks(wallet);
+    };
+
+    if (isCheckoutReturn(search)) {
+      const stop = refreshCheckoutReturnWallet({
+        readWallet: () => getNotOrganicWallet(client),
+        isCurrent,
+        onWallet: updateWallet,
+        onStatus: (status) => {
+          checkoutReturnStatus.value = status;
+        },
+      });
+      cleanup(stop);
       return;
     }
     void getNotOrganicWallet(client)
       .then((wallet) => {
-        providerPlanActive.value = hasCurrentTwynePlan(wallet);
-        availablePacks.value = availableCreditPacks(wallet);
+        if (isCurrent()) updateWallet(wallet);
       })
       .catch(() => {
-        providerPlanActive.value = false;
-        availablePacks.value = [];
+        if (isCurrent()) {
+          providerPlanActive.value = false;
+          availablePacks.value = [];
+        }
       });
   });
 
@@ -159,6 +205,54 @@ export default component$(() => {
           editorial AI.
         </p>
       </header>
+
+      {isCheckoutReturn(location.url.search) && (
+        <section
+          class="mb-8 rounded border border-[var(--color-rule)] bg-[var(--color-paper)] p-5"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <p class="font-semibold text-[var(--color-ink)]">
+            {!hasAuthenticatedConvexIdentity(auth.value)
+              ? auth.value.loading || auth.value.user
+                ? "Waiting for your wallet connection…"
+                : "Sign in to check your wallet"
+              : checkoutReturnStatus.value === "pro-active"
+                ? "Pro is active"
+                : checkoutReturnStatus.value === "pending"
+                  ? "Check payment status in Not Organic"
+                  : checkoutReturnStatus.value === "unavailable"
+                    ? "We couldn’t refresh your wallet"
+                    : "Checking your Not Organic wallet…"}
+          </p>
+          <p class="mt-2 text-sm text-[var(--color-ink-light)]">
+            {!hasAuthenticatedConvexIdentity(auth.value)
+              ? auth.value.loading || auth.value.user
+                ? "Your authenticated wallet connection is not ready yet."
+                : "Sign in to refresh your wallet and check your current Pro plan."
+              : checkoutReturnStatus.value === "pro-active"
+                ? "Your Not Organic wallet confirms your current Pro billing period."
+                : checkoutReturnStatus.value === "pending"
+                  ? "Your wallet has not confirmed an active Pro plan here yet. Payment processing can take a little longer."
+                  : checkoutReturnStatus.value === "unavailable"
+                    ? "Open your wallet to check payment status, or reload this page to check Pro again."
+                    : "We’re refreshing your wallet to check your current Pro plan."}{" "}
+            Payment receipts and credit pack status are available in your Not
+            Organic wallet.
+          </p>
+          <a
+            href="https://id.notorganic.info/?product=twyne"
+            class="mt-3 inline-block underline text-sm"
+          >
+            View wallet and payment status
+          </a>
+          {!auth.value.user && (
+            <Link href="/signin/" class="ml-4 inline-block underline text-sm">
+              Sign in
+            </Link>
+          )}
+        </section>
+      )}
 
       <section
         aria-labelledby="credits-title"
@@ -273,7 +367,10 @@ export default component$(() => {
           <button
             onClick$={subscribe}
             disabled={
-              busy.value || providerPlanActive.value || !CHECKOUT_ENABLED
+              busy.value ||
+              checkoutReturnStatus.value === "checking" ||
+              providerPlanActive.value ||
+              !CHECKOUT_ENABLED
             }
             class="btn-press mt-8 inline-block rounded bg-[var(--color-vermilion)] px-5 py-2 text-sm text-[var(--color-paper)] disabled:opacity-60"
           >

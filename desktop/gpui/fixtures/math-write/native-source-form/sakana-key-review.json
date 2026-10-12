@@ -1,0 +1,9 @@
+{
+  "model": "sakana/fugu-max",
+  "status": "reviewed",
+  "cases": 32,
+  "scope": "Source keydown decision only; no DOM, default browser editing, or native input proof",
+  "source": "src/components/editor/math/math-source-editor.ts",
+  "sourceSha256": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb",
+  "artifactSha256": "695d3c745b78e2ce799e42b02d69830f2d2c042d7e007d53b8053ad2b4c90267"
+}

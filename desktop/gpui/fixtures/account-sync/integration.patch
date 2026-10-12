@@ -1,0 +1,11 @@
+diff --git a/desktop/gpui/src/lib.rs b/desktop/gpui/src/lib.rs
+--- a/desktop/gpui/src/lib.rs
++++ b/desktop/gpui/src/lib.rs
+@@ -1,5 +1,7 @@
+ //! Local manuscript storage and file exchange for Twyne's native writing room.
+ 
++#[cfg(feature = "desktop")]
++pub mod native_accounts;
+ pub mod apparatus;
+ #[cfg(feature = "desktop")]
+ pub mod apparatus_view;

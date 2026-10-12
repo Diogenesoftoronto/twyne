@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "originalUnmodified": true,
+  "originalSha256": "522cf0ec2cebb8bda75c855f35a5b0eb6ab3b447d6f54f1370c8cd2dc6b30b32",
+  "reviewedReconstructedSha256": "0ee80a96811ee62f6d2e8e646460ccf4cca81661ba19c12ee623878f54792cba",
+  "adaptedDriverSha256": "84dd9abb6818821f037ba0d8c33c18a521d0590e3ed19caa6ff4cb5e50dbc40b",
+  "adaptation": "Only copied driver HERE resolves pinned original helper/fixture inputs in its parent directory",
+  "nativeExecuted": false,
+  "nativeOrdinaryImageGate": 9,
+  "allActualStampsRequired": 8
+}

@@ -1,0 +1,44 @@
+{
+  "rows": [
+    {
+      "store": "folios",
+      "key": "original/path/folio:café",
+      "value": null
+    },
+    {
+      "store": "folio-content",
+      "key": "original/path/folio:café",
+      "value": null
+    },
+    {
+      "store": "meta",
+      "key": "active-folio-id",
+      "value": null
+    },
+    {
+      "store": "meta",
+      "key": "signin-toast-dismissed",
+      "value": null
+    },
+    {
+      "store": "meta",
+      "key": "apparatus-settings",
+      "value": null
+    },
+    {
+      "store": "lix-blob",
+      "key": "current",
+      "value": null
+    }
+  ],
+  "local": [
+    [
+      "twyne:editor:view:v1",
+      null
+    ],
+    [
+      "twyne.apparatus-settings.current",
+      null
+    ]
+  ]
+}

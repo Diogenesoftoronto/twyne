@@ -1,0 +1,1193 @@
+{
+  "version": 2,
+  "method": "Direct original imports and unchanged TypeScript function declaration extraction; no registered Convex functions or network invoked.",
+  "sources": [
+    {
+      "path": "convex/collaboration.ts",
+      "sha256": "7a66afb26a2b12f64d40a4d00c43d6d39d4f6963c75229f40b2a892c7dbc9f04"
+    },
+    {
+      "path": "convex/published.ts",
+      "sha256": "e51bea2e25e1d2a22cc5d323e686f45bc94723a3001b7350c92c300a9bf99ae3"
+    },
+    {
+      "path": "src/utils/account-display.ts",
+      "sha256": "c9330fbb3073671648d5730a41cc192f7cc1f92e642377bf689343bfed1ca242"
+    },
+    {
+      "path": "src/utils/standard-site-paths.ts",
+      "sha256": "81e8008ded0107b54860a322ed7e82871c59a68c08326f844bea9c034f727148"
+    },
+    {
+      "path": "src/utils/micropub.ts",
+      "sha256": "6a3a0db617f0751f51231a3062db68999db7396ee7394351703d6c480b32bb1c"
+    },
+    {
+      "path": "src/utils/auth-context.tsx",
+      "sha256": "9766dfa361dbbf1925cfbb8f1e166af69c72ad674145588714a24926f3edfb69"
+    },
+    {
+      "path": "src/components/editor/extensions/remote-cursors.ts",
+      "sha256": "40d57eb88b85d2042d5872a8c0e842d455370f5017830ec23f632db6dde97ebd"
+    }
+  ],
+  "colors": [
+    {
+      "userId": "writer_alpha",
+      "color": "#3b7dd8"
+    },
+    {
+      "userId": "writer_beta",
+      "color": "#8b4cc7"
+    },
+    {
+      "userId": "a",
+      "color": "#e8a92c"
+    },
+    {
+      "userId": "unicode_writer_✨_東京",
+      "color": "#8b4cc7"
+    },
+    {
+      "userId": "😀",
+      "color": "#2d8659"
+    },
+    {
+      "userId": "user@example.com",
+      "color": "#c1272d"
+    },
+    {
+      "userId": "longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglong",
+      "color": "#c1272d"
+    }
+  ],
+  "palette": [
+    "#c1272d",
+    "#e8a92c",
+    "#3b7dd8",
+    "#2d8659",
+    "#8b4cc7",
+    "#d8652c",
+    "#5c8cb8",
+    "#a02c6d"
+  ],
+  "names": [
+    {
+      "input": "Alice Wonderland",
+      "name": "Alice Wonderland",
+      "initials": "AW"
+    },
+    {
+      "input": " Name a@b.co ",
+      "name": null,
+      "initials": "W"
+    },
+    {
+      "input": "alice@example.com",
+      "name": null,
+      "initials": "W"
+    },
+    {
+      "input": "Name\ta@b.co",
+      "name": null,
+      "initials": "W"
+    },
+    {
+      "input": "Name a@b.co",
+      "name": null,
+      "initials": "W"
+    },
+    {
+      "input": "did:plc:private",
+      "name": null,
+      "initials": "W"
+    },
+    {
+      "input": "DID:plc:label",
+      "name": "DID:plc:label",
+      "initials": "D"
+    },
+    {
+      "input": "",
+      "name": null,
+      "initials": "W"
+    },
+    {
+      "input": "﻿  Ada Lovelace ﻿",
+      "name": "Ada Lovelace",
+      "initials": "AL"
+    },
+    {
+      "input": "Ada",
+      "name": "Ada",
+      "initials": ""
+    },
+    {
+      "input": "écrivain 東京",
+      "name": "écrivain 東京",
+      "initials": "É東"
+    },
+    {
+      "input": "😀 Writer",
+      "name": "😀 Writer",
+      "initials": "😀W"
+    },
+    {
+      "input": "Anne Brontë",
+      "name": "Anne Brontë",
+      "initials": "AB"
+    },
+    {
+      "input": "Straße ß",
+      "name": "Straße ß",
+      "initials": "SSS"
+    },
+    {
+      "input": "@x",
+      "name": "@x",
+      "initials": "@"
+    },
+    {
+      "input": "a@ b",
+      "name": "a@ b",
+      "initials": "AB"
+    },
+    {
+      "input": "a@@b",
+      "name": null,
+      "initials": "W"
+    }
+  ],
+  "displays": [
+    {
+      "user": {
+        "name": "Email a@b.co",
+        "handle": "ada"
+      },
+      "profile": null,
+      "displayName": "ada"
+    },
+    {
+      "user": {
+        "name": "Ada"
+      },
+      "profile": {
+        "displayName": "Profile Poet",
+        "handle": "profile"
+      },
+      "displayName": "Profile Poet"
+    },
+    {
+      "user": {
+        "name": "did:plc:private",
+        "handle": "private@example.com",
+        "email": "private@example.com"
+      },
+      "profile": {
+        "displayName": "",
+        "handle": "poet"
+      },
+      "displayName": "poet"
+    },
+    {
+      "user": {
+        "name": "private@example.com",
+        "email": "contact@example.com"
+      },
+      "profile": null,
+      "displayName": "Writer"
+    }
+  ],
+  "slugs": [
+    {
+      "input": "Hello World",
+      "output": "hello-world"
+    },
+    {
+      "input": "Café & Crème: A Memoir",
+      "output": "cafe-creme-a-memoir"
+    },
+    {
+      "input": "ﬃ fullwidth ＡＢＣ ①",
+      "output": "ffi-fullwidth-abc-1"
+    },
+    {
+      "input": "ø ß æ œ",
+      "output": ""
+    },
+    {
+      "input": "İstanbul",
+      "output": "istanbul"
+    },
+    {
+      "input": "é e᪰",
+      "output": "e-e"
+    },
+    {
+      "input": "東京 and English",
+      "output": "and-english"
+    },
+    {
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa z",
+      "output": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-"
+    },
+    {
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa z",
+      "output": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "input": "",
+      "output": ""
+    },
+    {
+      "input": "---",
+      "output": ""
+    },
+    {
+      "input": "The Sovereign Writer’s Desk",
+      "output": "the-sovereign-writer-s-desk"
+    },
+    {
+      "input": "﻿ Ｋ Ｋ ﻿",
+      "output": "k-k"
+    },
+    {
+      "input": "ẞ Straße",
+      "output": "stra-e"
+    },
+    {
+      "input": "Á͏B",
+      "output": "ab"
+    }
+  ],
+  "sanitizer": [
+    {
+      "input": "<p>東京 😀 café é</p>",
+      "output": "<p>東京 😀 café é</p>"
+    },
+    {
+      "input": "İ before <SCRIPT>alert(1)</SCRIPT><p>東京</p>",
+      "output": "İ before <p>東京</p>"
+    },
+    {
+      "input": "<script>unterminated 東京",
+      "output": "<script>unterminated 東京"
+    },
+    {
+      "input": "<scripture>x</scripture><p>kept</p>",
+      "output": "<scripture>x</scripture><p>kept</p>"
+    },
+    {
+      "input": "<embedding>x</embedding><embed src='x'/>",
+      "output": "<embedding>x</embedding>"
+    },
+    {
+      "input": "<p onclick=\"steal()\" onload='x' ONFOO = y>é東京</p>",
+      "output": "<p>é東京</p>"
+    },
+    {
+      "input": "<p onload=x>NBSP</p>",
+      "output": "<p>NBSP</p>"
+    },
+    {
+      "input": "<p﻿onload=x>BOM</p>",
+      "output": "<p>BOM</p>"
+    },
+    {
+      "input": "<ponload=x>NEL</p>",
+      "output": "<ponload=x>NEL</p>"
+    },
+    {
+      "input": "<p onÉ=x onſ=x on=x>marks</p>",
+      "output": "<p onÉ=x onſ=x on=x>marks</p>"
+    },
+    {
+      "input": "<ſcript>x</ſcript><a href='JavaScript:東京'>link</a>",
+      "output": "<ſcript>x</ſcript><a href='東京'>link</a>"
+    },
+    {
+      "input": "<script>a\n東京</script><style>x</style><iframe>x</iframe><object>x</object>",
+      "output": ""
+    },
+    {
+      "input": "<p onclick=\"unterminated>text",
+      "output": "<p>text"
+    },
+    {
+      "input": "<script><script>x</script>tail</script>",
+      "output": "tail</script>"
+    },
+    {
+      "input": "<EMBEDTHING>keep</EMBEDTHING>",
+      "output": "<EMBEDTHING>keep</EMBEDTHING>"
+    }
+  ],
+  "dids": [
+    {
+      "input": "did:plc:abc123",
+      "valid": true
+    },
+    {
+      "input": "did:web:example.com",
+      "valid": true
+    },
+    {
+      "input": "did:web:example.com:path",
+      "valid": true
+    },
+    {
+      "input": "did:PLC:upper",
+      "valid": false
+    },
+    {
+      "input": "did:plc:東京",
+      "valid": false
+    },
+    {
+      "input": "did:",
+      "valid": false
+    },
+    {
+      "input": "did:plc:abc\n",
+      "valid": false
+    },
+    {
+      "input": "did:plc:a%3Ab",
+      "valid": true
+    }
+  ],
+  "tids": [
+    {
+      "input": "3k2vknq6z3p46",
+      "valid": true
+    },
+    {
+      "input": "2222222222222",
+      "valid": true
+    },
+    {
+      "input": "jk2vknq6z3p46x",
+      "valid": false
+    },
+    {
+      "input": "1k2vknq6z3p46",
+      "valid": false
+    },
+    {
+      "input": "3k2vknq6z3p4!",
+      "valid": false
+    },
+    {
+      "input": "3k2vknq6z3p46\n",
+      "valid": false
+    },
+    {
+      "input": "short",
+      "valid": false
+    }
+  ],
+  "uris": [
+    {
+      "input": "at://did:plc:abc123/site.standard.publication/3k2vknq6z3p46",
+      "parsed": {
+        "did": "did:plc:abc123",
+        "collection": "site.standard.publication",
+        "rkey": "3k2vknq6z3p46"
+      }
+    },
+    {
+      "input": "at://did:plc:abc123/site.standard.document/3k2vknq6z3p46?x=1",
+      "parsed": null
+    },
+    {
+      "input": "at://did:web:example.com/foo/3k2vknq6z3p46",
+      "parsed": {
+        "did": "did:web:example.com",
+        "collection": "foo",
+        "rkey": "3k2vknq6z3p46"
+      }
+    },
+    {
+      "input": "at://did:plc:abc123/foo/3k2vknq6z3p46/extra",
+      "parsed": null
+    },
+    {
+      "input": "https://example.com/x",
+      "parsed": null
+    }
+  ],
+  "urls": [
+    {
+      "origin": "https://twyne.love",
+      "publication": "https://twyne.love/at/did%3Aweb%3Aexample.com/3k2vknq6z3p46",
+      "document": "https://twyne.love/at/did%3Aweb%3Aexample.com/3k2vknq6z3p46/3k2vknq6z3p47"
+    },
+    {
+      "origin": "https://reader.example/",
+      "publication": "https://reader.example/at/did%3Aweb%3Aexample.com/3k2vknq6z3p46",
+      "document": "https://reader.example/at/did%3Aweb%3Aexample.com/3k2vknq6z3p46/3k2vknq6z3p47"
+    },
+    {
+      "origin": "https://reader.example///",
+      "publication": "https://reader.example///at/did%3Aweb%3Aexample.com/3k2vknq6z3p46",
+      "document": "https://reader.example///at/did%3Aweb%3Aexample.com/3k2vknq6z3p46/3k2vknq6z3p47"
+    }
+  ],
+  "micropubEndpoints": [
+    {
+      "input": "https://writer.example/micropub",
+      "ok": true,
+      "value": "https://writer.example/micropub"
+    },
+    {
+      "input": " HTTPS://WRITER.EXAMPLE:443/a/../micropub ",
+      "ok": true,
+      "value": "https://writer.example/micropub"
+    },
+    {
+      "input": "http://localhost:8080/micropub",
+      "ok": true,
+      "value": "http://localhost:8080/micropub"
+    },
+    {
+      "input": "http://127.0.0.1:4000/micropub",
+      "ok": true,
+      "value": "http://127.0.0.1:4000/micropub"
+    },
+    {
+      "input": "http://localhost.evil/micropub",
+      "ok": false
+    },
+    {
+      "input": "http://127.0.0.1.evil/micropub",
+      "ok": false
+    },
+    {
+      "input": "http://localhost@evil.example/micropub",
+      "ok": false
+    },
+    {
+      "input": "http://evil@localhost/micropub",
+      "ok": true,
+      "value": "http://evil@localhost/micropub"
+    },
+    {
+      "input": "http://LOCALHOST/micropub",
+      "ok": true,
+      "value": "http://localhost/micropub"
+    },
+    {
+      "input": "http://[::1]/micropub",
+      "ok": false
+    },
+    {
+      "input": "http://127.1/micropub",
+      "ok": true,
+      "value": "http://127.0.0.1/micropub"
+    },
+    {
+      "input": "https://écrivain.example/micropub",
+      "ok": true,
+      "value": "https://xn--crivain-9xa.example/micropub"
+    },
+    {
+      "input": "https://user:pass@example.com/micropub",
+      "ok": true,
+      "value": "https://user:pass@example.com/micropub"
+    },
+    {
+      "input": "http://insecure.example/micropub",
+      "ok": false
+    },
+    {
+      "input": "not a URL",
+      "ok": false
+    },
+    {
+      "input": "ftp://localhost/x",
+      "ok": false
+    },
+    {
+      "input": "﻿https://writer.example﻿",
+      "ok": true,
+      "value": "https://writer.example/"
+    },
+    {
+      "input": "https://example.com/a?x=é#piece",
+      "ok": true,
+      "value": "https://example.com/a?x=%C3%A9#piece"
+    }
+  ],
+  "micropubForms": [
+    {
+      "title": "  Café & 東京 ~*'  ",
+      "html": "<p>😀 é + &</p>",
+      "endpoint": "https://writer.example/micropub",
+      "method": "POST",
+      "body": "h=entry&name=Caf%C3%A9+%26+%E6%9D%B1%E4%BA%AC+%7E*%27&content%5Bhtml%5D=%3Cp%3E%F0%9F%98%80+e%CC%81+%2B+%26%3C%2Fp%3E&post-status=published",
+      "headers": {
+        "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "accept": "application/json"
+      },
+      "authorizationPresent": true,
+      "result": {
+        "url": "https://writer.example/posts/observed",
+        "status": 201
+      }
+    },
+    {
+      "title": "﻿ ﻿",
+      "html": "<p>empty title</p>",
+      "endpoint": "https://writer.example/micropub",
+      "method": "POST",
+      "body": "h=entry&name=Untitled&content%5Bhtml%5D=%3Cp%3Eempty+title%3C%2Fp%3E&post-status=published",
+      "headers": {
+        "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "accept": "application/json"
+      },
+      "authorizationPresent": true,
+      "result": {
+        "url": "https://writer.example/posts/observed",
+        "status": 201
+      }
+    },
+    {
+      "title": "Poet",
+      "html": "<p>literal NEL</p>",
+      "endpoint": "https://writer.example/micropub",
+      "method": "POST",
+      "body": "h=entry&name=%C2%85Poet%C2%85&content%5Bhtml%5D=%3Cp%3Eliteral+NEL%3C%2Fp%3E&post-status=published",
+      "headers": {
+        "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "accept": "application/json"
+      },
+      "authorizationPresent": true,
+      "result": {
+        "url": "https://writer.example/posts/observed",
+        "status": 201
+      }
+    }
+  ],
+  "clientAuth": [
+    {
+      "state": {
+        "user": null,
+        "provider": "convex",
+        "convexAuthenticated": true
+      },
+      "permits": false
+    },
+    {
+      "state": {
+        "user": {
+          "id": "caller-label"
+        },
+        "provider": "convex",
+        "convexAuthenticated": false
+      },
+      "permits": false
+    },
+    {
+      "state": {
+        "user": {
+          "id": "caller-label"
+        },
+        "convexAuthenticated": true
+      },
+      "permits": false
+    },
+    {
+      "state": {
+        "user": {
+          "id": "server-session-label"
+        },
+        "provider": "convex",
+        "convexAuthenticated": true
+      },
+      "permits": true
+    }
+  ],
+  "serverIdentity": {
+    "observed": {
+      "tokenIdentifier": "server-token-identifier"
+    },
+    "anonymousRejected": true,
+    "callerIdIgnored": true
+  },
+  "roles": [
+    {
+      "role": "owner",
+      "status": "accepted",
+      "allowed": [
+        "owner"
+      ],
+      "observed": {
+        "ok": true,
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "owner",
+      "status": "accepted",
+      "allowed": [
+        "owner",
+        "editor"
+      ],
+      "observed": {
+        "ok": true,
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "owner",
+      "status": "accepted",
+      "allowed": [
+        "owner",
+        "editor",
+        "commenter"
+      ],
+      "observed": {
+        "ok": true,
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "owner",
+      "status": "pending",
+      "allowed": [
+        "owner"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "owner",
+      "status": "pending",
+      "allowed": [
+        "owner",
+        "editor"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "owner",
+      "status": "pending",
+      "allowed": [
+        "owner",
+        "editor",
+        "commenter"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "owner",
+      "status": "rejected",
+      "allowed": [
+        "owner"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "owner",
+      "status": "rejected",
+      "allowed": [
+        "owner",
+        "editor"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "owner",
+      "status": "rejected",
+      "allowed": [
+        "owner",
+        "editor",
+        "commenter"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "editor",
+      "status": "accepted",
+      "allowed": [
+        "owner"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Requires owner role",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "editor",
+      "status": "accepted",
+      "allowed": [
+        "owner",
+        "editor"
+      ],
+      "observed": {
+        "ok": true,
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "editor",
+      "status": "accepted",
+      "allowed": [
+        "owner",
+        "editor",
+        "commenter"
+      ],
+      "observed": {
+        "ok": true,
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "editor",
+      "status": "pending",
+      "allowed": [
+        "owner"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "editor",
+      "status": "pending",
+      "allowed": [
+        "owner",
+        "editor"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "editor",
+      "status": "pending",
+      "allowed": [
+        "owner",
+        "editor",
+        "commenter"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "editor",
+      "status": "rejected",
+      "allowed": [
+        "owner"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "editor",
+      "status": "rejected",
+      "allowed": [
+        "owner",
+        "editor"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "editor",
+      "status": "rejected",
+      "allowed": [
+        "owner",
+        "editor",
+        "commenter"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "commenter",
+      "status": "accepted",
+      "allowed": [
+        "owner"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Requires owner role",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "commenter",
+      "status": "accepted",
+      "allowed": [
+        "owner",
+        "editor"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Requires owner or editor role",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "commenter",
+      "status": "accepted",
+      "allowed": [
+        "owner",
+        "editor",
+        "commenter"
+      ],
+      "observed": {
+        "ok": true,
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "commenter",
+      "status": "pending",
+      "allowed": [
+        "owner"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "commenter",
+      "status": "pending",
+      "allowed": [
+        "owner",
+        "editor"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "commenter",
+      "status": "pending",
+      "allowed": [
+        "owner",
+        "editor",
+        "commenter"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "commenter",
+      "status": "rejected",
+      "allowed": [
+        "owner"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "commenter",
+      "status": "rejected",
+      "allowed": [
+        "owner",
+        "editor"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    },
+    {
+      "role": "commenter",
+      "status": "rejected",
+      "allowed": [
+        "owner",
+        "editor",
+        "commenter"
+      ],
+      "observed": {
+        "ok": false,
+        "error": "Not a collaborator on this document",
+        "queries": [
+          {
+            "lixId": "lix-owned",
+            "userId": "server-token-identifier"
+          }
+        ]
+      }
+    }
+  ],
+  "wrongScope": {
+    "ok": false,
+    "error": "Not a collaborator on this document",
+    "queries": [
+      {
+        "lixId": "lix-owned",
+        "userId": "server-token-identifier"
+      }
+    ]
+  },
+  "pm": {
+    "document": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "😀é"
+            },
+            {
+              "type": "note"
+            },
+            {
+              "type": "hard_break"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "東京"
+            }
+          ]
+        }
+      ]
+    },
+    "contentSize": 12,
+    "textContent": "😀é東京",
+    "textScalarCount": 5,
+    "textUtf16Count": 6,
+    "requested": [
+      {
+        "userId": "end",
+        "displayName": "Name private@example.com",
+        "color": "#c1272d",
+        "cursorPos": 12,
+        "selectionAnchor": -2,
+        "selectionHead": 99
+      },
+      {
+        "userId": "beyond",
+        "displayName": "Writer",
+        "color": "#e8a92c",
+        "cursorPos": 999
+      },
+      {
+        "userId": "negative",
+        "displayName": "Writer",
+        "color": "#3b7dd8",
+        "cursorPos": -1
+      }
+    ],
+    "decorations": [
+      {
+        "from": 0,
+        "to": 12,
+        "kind": "inline"
+      },
+      {
+        "from": 12,
+        "to": 12,
+        "kind": "widget"
+      },
+      {
+        "from": 13,
+        "to": 13,
+        "kind": "widget"
+      }
+    ],
+    "nativeScalarConversionImplemented": false
+  },
+  "proofLimits": {
+    "serverContextIsFixture": true,
+    "realAuthenticatedTransport": false,
+    "nativeCursorOverlay": false,
+    "browserDomSanitizer": false,
+    "providerCalls": false,
+    "sentInvites": false,
+    "published": false
+  }
+}

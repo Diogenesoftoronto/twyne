@@ -1,0 +1,66 @@
+{
+  "binary": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/math-field-redo-build-5524dc0a4d/twyne-desktop",
+  "binarySha256": "6e793aec3c53f5fb08892dfc7d8f4e9c431e1378309bb8b887d47e0766cea1b5",
+  "helper": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/math-field-redo-build-5524dc0a4d/twyne-document",
+  "helperSha256": "cc8144ceeb96cb519f026414aa332f35d54b33e5fb640d0c1076d85b3a39c9de",
+  "buildLog": "desktop/gpui/target/verification/math-field-redo-native-build.log",
+  "buildLogSha256": "66d6184d2688293c2aee061ebbe6c24e313f1affa07418ba7e0ff009a07c96e0",
+  "sourceHashes": {
+    "desktop/gpui/Cargo.toml": "636da6736969cd1a16878750c328ce28ab7b9bf7ee34b1093aaa4ed04f9bd986",
+    "desktop/gpui/Cargo.lock": "44f147eca43dddc0f20802a4f0cf05eb36596cf3e6cf86c00ddc15d12c617c83",
+    "desktop/gpui/src/editor/math_source_editor.rs": "056d908569c78f7a6846c1cc2b50c57edad34262bd44385c1124949338a95ec5",
+    "desktop/gpui/src/editor/view.rs": "48eef9ca2991bc8466c2710c681b71d1f07b34d2489db8c4f1cbe6aa5df79b5e",
+    "desktop/gpui/src/editor/view_drag.rs": "4466b0d31acaf763e63ef8aa6a8aaba87ca7c6a1fcc9331b5638fefd998eead9",
+    "desktop/gpui/src/editor/atom_renderer_lifecycle.rs": "b4a9cc1de8444001ca53de5f4d472f336ca9b08e5444fd8b2260529885663920",
+    "desktop/gpui/src/editor/math_source_flow.rs": "dd9c351c85922a703aee9d2648a8b18d6e3d66beb37631d705a2fb60902ab373",
+    "desktop/gpui/src/app/math_source_coordinator.rs": "9a2b11a7b64828bb8fa4c6eed8ba3e41fea01eaf57fddba3ce50079dd8cceb2f",
+    "desktop/gpui/fixtures/math-write/native-host/check-native.py": "5de4d227777a777484ee8ac5f154ab7a73cbcd9793c559071c7a89ad72d1e35e",
+    "desktop/gpui/fixtures/math-write/source-host/host_tests.rs": "a24880d5f2396cb7e88e93914e2c8ca04b131db39fc8777d6e143ab5d67848ee"
+  },
+  "output": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/math-field-redo-native-workflow-450ea98a5d",
+  "claims": {
+    "buildPassed": true,
+    "nativeExecutionPassed": true,
+    "sourceGeometryParity": false
+  },
+  "executed": true,
+  "acceptance": "desktop/gpui/target/verification/math-field-redo-native-workflow-450ea98a5d/acceptance.json",
+  "acceptanceSha256": "8028f1a80f8418aa68269ad47305d0a741c712982f9e7da114a73878f1f6951b",
+  "result": {
+    "status": "pass",
+    "scope": "actual isolated X11 equation field/host/canonical save/history/cancel/relaunch",
+    "proofLimits": [
+      "no browser/KaTeX/Source pixel parity",
+      "no provider/account/network/other-OS proof",
+      "no manufactured converter/renderer success",
+      "no Source baseline certification"
+    ],
+    "binarySha256": "6e793aec3c53f5fb08892dfc7d8f4e9c431e1378309bb8b887d47e0766cea1b5",
+    "driverSha256": "5de4d227777a777484ee8ac5f154ab7a73cbcd9793c559071c7a89ad72d1e35e",
+    "isolationHelperSha256": "a5bdb6b9b905667af78c7faa9f23532946570f48cc6e576b21dc7a6f3a737f27",
+    "fixtureSha256": "b1893ad992aa6fd7e9f59a61aab357a2d33343356dec7c77b0f490b95ee8d874",
+    "optionalInline": true,
+    "display": "fresh owned Xvfb allocated with displayfd",
+    "input": "actual XTEST keys/clicks at two fresh identical observed native bounds",
+    "checks": [
+      "Actual CLI copy retains exact authored canonical/source bytes, unknown metadata and original import provenance",
+      "Actual native Write/Save uses the real local helper and keeps portable math metadata, marked Unicode prose and unknown attributes",
+      "Actual anchor opens end-focused textarea; real append/field Undo/Redo stays isolated from manuscript source",
+      "Final unblurred spaces/backslash/braces/LF/punctuation commit through actual Ctrl+Enter, canonical preflight and native Ctrl+S",
+      "One actual rich Undo restores only the original equation; Redo restores the exact accepted source and leaves other prose/atoms untouched",
+      "Actual Render equation button reads final unblurred quotes/ampersand/LF/spaces and durably files only its exact raw atom",
+      "Real Cancel/Escape preserve exact saved source/HTML and create no manuscript history entry; one Undo/Redo still reaches the preceding accepted equation",
+      "Optional actual measured inline form/plain Enter is canonical and independently undoable without altering the accepted block equation",
+      "Actual focused Ctrl+Q exits zero without panic/leaked handles and leaves the unsubmitted equation draft unfiled",
+      "Fresh actual process reopens the same copied folio and exact saved raw textarea; final Cancel/clean exit remains neutral"
+    ],
+    "ownedChildrenCleaned": true
+  },
+  "firstBangCauseProven": false,
+  "sourceInlineBaselineProven": false,
+  "fieldLocalRedoChange": "non-macOS Ctrl-Shift-Z alias scoped to TwyneMathSourceForm > Input; actual Linux XTEST gate passed",
+  "limits": [
+    "No cross-platform OS equivalence or Source pixel/baseline admission",
+    "Earlier first-key failure retained; driver now requires two fresh actual focused-frame observations"
+  ]
+}

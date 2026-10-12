@@ -1,0 +1,1661 @@
+{
+  "schemaVersion": 1,
+  "status": "ACTUAL_NATIVE_CPU_BOUNDARIES_MEASURED",
+  "binary": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/current-layout-multiply-math-build-b33c0c5da035/twyne-desktop",
+    "sha256": "721d799dc6404af5666d38093fad57081b7603a1fb3cce9a0155f8af02450c59"
+  },
+  "buildReceipt": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/current-layout-multiply-math-build-b33c0c5da035/build-receipt.json",
+    "sha256": "35a79dd7df5c6346b049f7fb0e0cc0b95f5a31517c4b6c348a55508c7ee9e256",
+    "profile": "dev-unoptimized"
+  },
+  "actualNativeWorkflow": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/dossier-atlas-drawer-capture-native-pointer.json",
+    "sha256": "7033f813a321981f2c91a3dea755cc055ea62b34dae24b6683b69a32ceb5e64d",
+    "checks": 14
+  },
+  "geometry": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/dossier-atlas-drawer-capture-native-3293555224f7/actual-resized-paper-geometry.json",
+    "sha256": "caa18a6e58d55f3d23bbef2031d5b3bfc6071f97ac847b89c85fcc90104d4c90",
+    "viewport": {
+      "width": 1100.0,
+      "height": 780.0
+    }
+  },
+  "actualMetricsRows": [
+    {
+      "sequence": "2",
+      "kind": "multiply",
+      "outcome": "cacheMissPrepared",
+      "width": 1280.0,
+      "height": 860.0,
+      "totalUs": 1876452,
+      "completedPhasesUs": [
+        {
+          "phase": "validation",
+          "us": "0"
+        },
+        {
+          "phase": "cacheLockWait",
+          "us": "2"
+        },
+        {
+          "phase": "cacheLookup",
+          "us": "1"
+        },
+        {
+          "phase": "svgBuild",
+          "us": "16"
+        },
+        {
+          "phase": "rendererAndParse",
+          "us": "247"
+        },
+        {
+          "phase": "rasterAndBgraConversion",
+          "us": "1840770"
+        },
+        {
+          "phase": "premultipliedValidation",
+          "us": "35378"
+        },
+        {
+          "phase": "installAndEviction",
+          "us": "30"
+        },
+        {
+          "phase": "leaseReplacement",
+          "us": "0"
+        }
+      ]
+    },
+    {
+      "sequence": "3",
+      "kind": "paper",
+      "outcome": "cacheMissPrepared",
+      "width": 1280.0,
+      "height": 860.0,
+      "totalUs": 5527316,
+      "completedPhasesUs": [
+        {
+          "phase": "validation",
+          "us": "3"
+        },
+        {
+          "phase": "cacheLockWait",
+          "us": "2"
+        },
+        {
+          "phase": "cacheLookup",
+          "us": "1"
+        },
+        {
+          "phase": "svgBuild",
+          "us": "54"
+        },
+        {
+          "phase": "rendererAndParse",
+          "us": "543"
+        },
+        {
+          "phase": "rasterAndBgraConversion",
+          "us": "5526669"
+        },
+        {
+          "phase": "premultipliedValidation",
+          "us": "0"
+        },
+        {
+          "phase": "installAndEviction",
+          "us": "11"
+        },
+        {
+          "phase": "leaseReplacement",
+          "us": "0"
+        }
+      ]
+    },
+    {
+      "sequence": "13",
+      "kind": "boundsObserver",
+      "outcome": "returned",
+      "width": 1280.0,
+      "height": 860.0,
+      "totalUs": 95,
+      "completedPhasesUs": [
+        {
+          "phase": "validation",
+          "us": "0"
+        },
+        {
+          "phase": "cacheLockWait",
+          "us": "0"
+        },
+        {
+          "phase": "cacheLookup",
+          "us": "0"
+        },
+        {
+          "phase": "svgBuild",
+          "us": "0"
+        },
+        {
+          "phase": "rendererAndParse",
+          "us": "0"
+        },
+        {
+          "phase": "rasterAndBgraConversion",
+          "us": "0"
+        },
+        {
+          "phase": "premultipliedValidation",
+          "us": "0"
+        },
+        {
+          "phase": "installAndEviction",
+          "us": "0"
+        },
+        {
+          "phase": "leaseReplacement",
+          "us": "0"
+        }
+      ]
+    },
+    {
+      "sequence": "17",
+      "kind": "boundsObserver",
+      "outcome": "returned",
+      "width": 1280.0,
+      "height": 860.0,
+      "totalUs": 22,
+      "completedPhasesUs": [
+        {
+          "phase": "validation",
+          "us": "0"
+        },
+        {
+          "phase": "cacheLockWait",
+          "us": "0"
+        },
+        {
+          "phase": "cacheLookup",
+          "us": "0"
+        },
+        {
+          "phase": "svgBuild",
+          "us": "0"
+        },
+        {
+          "phase": "rendererAndParse",
+          "us": "0"
+        },
+        {
+          "phase": "rasterAndBgraConversion",
+          "us": "0"
+        },
+        {
+          "phase": "premultipliedValidation",
+          "us": "0"
+        },
+        {
+          "phase": "installAndEviction",
+          "us": "0"
+        },
+        {
+          "phase": "leaseReplacement",
+          "us": "0"
+        }
+      ]
+    },
+    {
+      "sequence": "19",
+      "kind": "multiply",
+      "outcome": "cacheMissPrepared",
+      "width": 1100.0,
+      "height": 780.0,
+      "totalUs": 1447210,
+      "completedPhasesUs": [
+        {
+          "phase": "validation",
+          "us": "0"
+        },
+        {
+          "phase": "cacheLockWait",
+          "us": "1"
+        },
+        {
+          "phase": "cacheLookup",
+          "us": "2"
+        },
+        {
+          "phase": "svgBuild",
+          "us": "23"
+        },
+        {
+          "phase": "rendererAndParse",
+          "us": "328"
+        },
+        {
+          "phase": "rasterAndBgraConversion",
+          "us": "1420054"
+        },
+        {
+          "phase": "premultipliedValidation",
+          "us": "26762"
+        },
+        {
+          "phase": "installAndEviction",
+          "us": "34"
+        },
+        {
+          "phase": "leaseReplacement",
+          "us": "0"
+        }
+      ]
+    },
+    {
+      "sequence": "20",
+      "kind": "paper",
+      "outcome": "cacheMissPrepared",
+      "width": 1100.0,
+      "height": 780.0,
+      "totalUs": 4340174,
+      "completedPhasesUs": [
+        {
+          "phase": "validation",
+          "us": "0"
+        },
+        {
+          "phase": "cacheLockWait",
+          "us": "0"
+        },
+        {
+          "phase": "cacheLookup",
+          "us": "2"
+        },
+        {
+          "phase": "svgBuild",
+          "us": "44"
+        },
+        {
+          "phase": "rendererAndParse",
+          "us": "516"
+        },
+        {
+          "phase": "rasterAndBgraConversion",
+          "us": "4339564"
+        },
+        {
+          "phase": "premultipliedValidation",
+          "us": "0"
+        },
+        {
+          "phase": "installAndEviction",
+          "us": "9"
+        },
+        {
+          "phase": "leaseReplacement",
+          "us": "0"
+        }
+      ]
+    },
+    {
+      "sequence": "23",
+      "kind": "boundsObserver",
+      "outcome": "returned",
+      "width": 1100.0,
+      "height": 780.0,
+      "totalUs": 5787947,
+      "completedPhasesUs": [
+        {
+          "phase": "validation",
+          "us": "0"
+        },
+        {
+          "phase": "cacheLockWait",
+          "us": "0"
+        },
+        {
+          "phase": "cacheLookup",
+          "us": "0"
+        },
+        {
+          "phase": "svgBuild",
+          "us": "0"
+        },
+        {
+          "phase": "rendererAndParse",
+          "us": "0"
+        },
+        {
+          "phase": "rasterAndBgraConversion",
+          "us": "0"
+        },
+        {
+          "phase": "premultipliedValidation",
+          "us": "0"
+        },
+        {
+          "phase": "installAndEviction",
+          "us": "0"
+        },
+        {
+          "phase": "leaseReplacement",
+          "us": "0"
+        }
+      ]
+    }
+  ],
+  "rawCpuSnapshot": {
+    "schemaVersion": 1,
+    "available": true,
+    "scope": "processCpuPreparationBoundaries",
+    "maxRows": 64,
+    "latestSequence": "23",
+    "rowsDropped": "0",
+    "sequenceExhausted": false,
+    "calls": [
+      {
+        "kind": "boundsObserver",
+        "count": "3"
+      },
+      {
+        "kind": "paletteObserver",
+        "count": "1"
+      },
+      {
+        "kind": "hostPreparation",
+        "count": "5"
+      },
+      {
+        "kind": "candidatePreparation",
+        "count": "5"
+      },
+      {
+        "kind": "stampBoundary",
+        "count": "5"
+      },
+      {
+        "kind": "paper",
+        "count": "2"
+      },
+      {
+        "kind": "multiply",
+        "count": "2"
+      }
+    ],
+    "rows": [
+      {
+        "sequence": "1",
+        "kind": "stampBoundary",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "prepareReturnedSet",
+        "rasterReturned": false,
+        "totalUs": "54350",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "2",
+        "kind": "multiply",
+        "windowId": null,
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": {
+            "width": 1280,
+            "height": 860,
+            "pixels": "1100800"
+          }
+        },
+        "outcome": "cacheMissPrepared",
+        "rasterReturned": true,
+        "totalUs": "1876452",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "2"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "1"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "16"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "247"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "1840770"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "35378"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "30"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": 0,
+        "cacheEvictions": 0
+      },
+      {
+        "sequence": "3",
+        "kind": "paper",
+        "windowId": null,
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": {
+            "width": 1280,
+            "height": 860,
+            "pixels": "1100800"
+          }
+        },
+        "outcome": "cacheMissPrepared",
+        "rasterReturned": true,
+        "totalUs": "5527316",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "3"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "2"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "1"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "54"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "543"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "5526669"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "11"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": 0,
+        "cacheEvictions": 0
+      },
+      {
+        "sequence": "4",
+        "kind": "candidatePreparation",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "returned",
+        "rasterReturned": false,
+        "totalUs": "7458170",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "5",
+        "kind": "hostPreparation",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "returned",
+        "rasterReturned": false,
+        "totalUs": "7458174",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "6",
+        "kind": "stampBoundary",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "retainedKeyMatched",
+        "rasterReturned": false,
+        "totalUs": "3",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "7",
+        "kind": "candidatePreparation",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "paperKeyMatched",
+        "rasterReturned": false,
+        "totalUs": "14",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "8",
+        "kind": "hostPreparation",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "returned",
+        "rasterReturned": false,
+        "totalUs": "62",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "41"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "9",
+        "kind": "paletteObserver",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "returned",
+        "rasterReturned": false,
+        "totalUs": "62",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "10",
+        "kind": "stampBoundary",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "retainedKeyMatched",
+        "rasterReturned": false,
+        "totalUs": "8",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "11",
+        "kind": "candidatePreparation",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "paperKeyMatched",
+        "rasterReturned": false,
+        "totalUs": "28",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "12",
+        "kind": "hostPreparation",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "returned",
+        "rasterReturned": false,
+        "totalUs": "94",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "58"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "13",
+        "kind": "boundsObserver",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "returned",
+        "rasterReturned": false,
+        "totalUs": "95",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "14",
+        "kind": "stampBoundary",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "retainedKeyMatched",
+        "rasterReturned": false,
+        "totalUs": "1",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "15",
+        "kind": "candidatePreparation",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "paperKeyMatched",
+        "rasterReturned": false,
+        "totalUs": "4",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "16",
+        "kind": "hostPreparation",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "returned",
+        "rasterReturned": false,
+        "totalUs": "22",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "15"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "17",
+        "kind": "boundsObserver",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1151336448,
+          "heightBits": 1146552320,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "returned",
+        "rasterReturned": false,
+        "totalUs": "22",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "18",
+        "kind": "stampBoundary",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1149861888,
+          "heightBits": 1145241600,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "retainedKeyMatched",
+        "rasterReturned": false,
+        "totalUs": "7",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "19",
+        "kind": "multiply",
+        "windowId": null,
+        "metrics": {
+          "widthBits": 1149861888,
+          "heightBits": 1145241600,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": {
+            "width": 1100,
+            "height": 780,
+            "pixels": "858000"
+          }
+        },
+        "outcome": "cacheMissPrepared",
+        "rasterReturned": true,
+        "totalUs": "1447210",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "1"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "2"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "23"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "328"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "1420054"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "26762"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "34"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": 1,
+        "cacheEvictions": 0
+      },
+      {
+        "sequence": "20",
+        "kind": "paper",
+        "windowId": null,
+        "metrics": {
+          "widthBits": 1149861888,
+          "heightBits": 1145241600,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": {
+            "width": 1100,
+            "height": 780,
+            "pixels": "858000"
+          }
+        },
+        "outcome": "cacheMissPrepared",
+        "rasterReturned": true,
+        "totalUs": "4340174",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "2"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "44"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "516"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "4339564"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "9"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": 1,
+        "cacheEvictions": 0
+      },
+      {
+        "sequence": "21",
+        "kind": "candidatePreparation",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1149861888,
+          "heightBits": 1145241600,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "returned",
+        "rasterReturned": false,
+        "totalUs": "5787447",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "22",
+        "kind": "hostPreparation",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1149861888,
+          "heightBits": 1145241600,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "returned",
+        "rasterReturned": false,
+        "totalUs": "5787946",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "490"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      },
+      {
+        "sequence": "23",
+        "kind": "boundsObserver",
+        "windowId": "4294967297",
+        "metrics": {
+          "widthBits": 1149861888,
+          "heightBits": 1145241600,
+          "scaleBits": 1065353216,
+          "validatedRasterSize": null
+        },
+        "outcome": "returned",
+        "rasterReturned": false,
+        "totalUs": "5787947",
+        "completedPhasesUs": [
+          {
+            "phase": "validation",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLockWait",
+            "us": "0"
+          },
+          {
+            "phase": "cacheLookup",
+            "us": "0"
+          },
+          {
+            "phase": "svgBuild",
+            "us": "0"
+          },
+          {
+            "phase": "rendererAndParse",
+            "us": "0"
+          },
+          {
+            "phase": "rasterAndBgraConversion",
+            "us": "0"
+          },
+          {
+            "phase": "premultipliedValidation",
+            "us": "0"
+          },
+          {
+            "phase": "installAndEviction",
+            "us": "0"
+          },
+          {
+            "phase": "leaseReplacement",
+            "us": "0"
+          }
+        ],
+        "cacheEntriesBefore": null,
+        "cacheEvictions": null
+      }
+    ]
+  },
+  "sourceHashes": {
+    "desktop/gpui/src/dossier_view.rs": "14c5344ee763518382ac811f91cbb41008ffe024a4fef36b0604c866e58689b3",
+    "desktop/gpui/src/dossier_paper.rs": "0932a0728d9b9e527c3332d85640c9b2ca83c3dc94fda323d558b7034fcc00ab",
+    "desktop/gpui/src/dossier_multiply.rs": "081783e97d06c44212b7d8a557754f064167a3f8b58ac64327a3206f9a2c3dc0",
+    "desktop/gpui/src/capture_geometry.rs": "3e3a0764c1c0fd54e7025e97cbf56304ce76ea88bb540287f24c94f8a8db7285"
+  },
+  "limits": [
+    "Instrumented development binary; no release-performance claim",
+    "CPU preparation and actual bounds-observer duration only; no keystroke-to-presentation, GPU completion or Source pixel-parity claim",
+    "Cold constructor and one real changed-size resize are distinct rows; retained-key callbacks are separate",
+    "No optimization has been applied by this measurement receipt"
+  ]
+}

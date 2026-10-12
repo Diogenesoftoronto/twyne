@@ -1,0 +1,7 @@
+{
+  "reviewer": "root",
+  "adoptedFile": "src/insert_menu/filter.rs",
+  "verification": "All 21 actual Source query results and scores passed the differential test on 2026-10-05.",
+  "workerSyntheticCasesAdopted": false,
+  "sourceSubsetIncludesNativeLink": false
+}

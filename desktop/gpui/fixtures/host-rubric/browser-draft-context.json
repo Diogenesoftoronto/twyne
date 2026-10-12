@@ -1,0 +1,292 @@
+{
+  "reference": "original pure Twyne functions bundled without browser persistence imports, executed in Chrome; no document or metadata mutation",
+  "origin": "http://localhost:5180",
+  "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36",
+  "rows": [
+    {
+      "name": "empty",
+      "html": "<p></p>",
+      "plain": "",
+      "expected": {
+        "fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wordCount": 0,
+        "minWords": 500,
+        "ready": false,
+        "staticScore": {
+          "features": {
+            "wordCount": 0,
+            "paragraphCount": 0,
+            "sentenceCount": 0,
+            "avgSentenceLength": 0,
+            "sentenceLengthStdDev": 0,
+            "citationCount": 0,
+            "citationDensity": 0,
+            "avgWordLength": 0,
+            "uniqueWordsRatio": 0,
+            "shortParagraphRatio": 0,
+            "longParagraphRatio": 0,
+            "duplicateParagraphRatio": 0,
+            "fillerWordRatio": 0,
+            "vagueWordRatio": 0,
+            "unsupportedUniversalClaimCount": 0
+          },
+          "perFeature": {
+            "length": 1,
+            "structure": 0,
+            "pacing": 0,
+            "evidence": 0,
+            "vocabulary": 2,
+            "paragraphShape": 10,
+            "integrity": 4
+          },
+          "total": 2.1,
+          "feedback": [
+            "At 0 words the draft is short. Scores settle down past about 400.",
+            "Few claims are backed up: 0 references found.",
+            "Sentence lengths don't vary much (about 0 words each). Mix short sentences with long ones.",
+            "Only 0 paragraphs. Give it a beginning, a turn and an ending.",
+            "The same words come back often. Find the ones you lean on and vary or cut them.",
+            "Some padding: 0 sweeping claims with nothing behind them, and 0% filler or vague words."
+          ]
+        }
+      }
+    },
+    {
+      "name": "source entity and block projection",
+      "html": "<style>ignored prose</style><h2>Café &amp; tea</h2><p>A<strong>bold</strong>word&nbsp;&#39;&quot;&#x1F9F5;&lt;&gt;</p><script>ignored prose</script><div>Last<br>line</div>",
+      "plain": "Café & tea\n A bold word '\"&#x1F9F5;<>\n Last line",
+      "expected": {
+        "fingerprint": "33eb9e5421b78a03215d246261d472272588c09d0606e14c7c51773e782f9a29",
+        "wordCount": 9,
+        "minWords": 500,
+        "ready": false,
+        "staticScore": {
+          "features": {
+            "wordCount": 9,
+            "paragraphCount": 1,
+            "sentenceCount": 1,
+            "avgSentenceLength": 9,
+            "sentenceLengthStdDev": 0,
+            "citationCount": 0,
+            "citationDensity": 0,
+            "avgWordLength": 4.222222222222222,
+            "uniqueWordsRatio": 1,
+            "shortParagraphRatio": 1,
+            "longParagraphRatio": 0,
+            "duplicateParagraphRatio": 0,
+            "fillerWordRatio": 0,
+            "vagueWordRatio": 0,
+            "unsupportedUniversalClaimCount": 0
+          },
+          "perFeature": {
+            "length": 1,
+            "structure": 3,
+            "pacing": 2.4715123364154072,
+            "evidence": 1,
+            "vocabulary": 5,
+            "paragraphShape": 6,
+            "integrity": 4
+          },
+          "total": 3.020726850462311,
+          "feedback": [
+            "At 9 words the draft is short. Scores settle down past about 400.",
+            "Few claims are backed up: 0 references found.",
+            "Sentence lengths don't vary much (about 9 words each). Mix short sentences with long ones.",
+            "Only 1 paragraph. Give it a beginning, a turn and an ending.",
+            "Some padding: 0 sweeping claims with nothing behind them, and 0% filler or vague words."
+          ]
+        }
+      }
+    },
+    {
+      "name": "499 words",
+      "html": "<p>word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word</p>",
+      "plain": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+      "expected": {
+        "fingerprint": "55f952615a1b401ac0312b1b7389cd355648c34a25cdaa2a63ed57652eaecf81",
+        "wordCount": 499,
+        "minWords": 500,
+        "ready": false,
+        "staticScore": {
+          "features": {
+            "wordCount": 499,
+            "paragraphCount": 1,
+            "sentenceCount": 1,
+            "avgSentenceLength": 499,
+            "sentenceLengthStdDev": 0,
+            "citationCount": 0,
+            "citationDensity": 0,
+            "avgWordLength": 4,
+            "uniqueWordsRatio": 0.009090909090909143,
+            "shortParagraphRatio": 0,
+            "longParagraphRatio": 1,
+            "duplicateParagraphRatio": 0,
+            "fillerWordRatio": 0,
+            "vagueWordRatio": 0,
+            "unsupportedUniversalClaimCount": 0
+          },
+          "perFeature": {
+            "length": 6.5,
+            "structure": 3,
+            "pacing": 1.0813258341494365,
+            "evidence": 1,
+            "vocabulary": 2,
+            "paragraphShape": 5,
+            "integrity": 10
+          },
+          "total": 4.1621988751224155,
+          "feedback": [
+            "Few claims are backed up: 0 references found.",
+            "Sentence lengths don't vary much (about 499 words each). Mix short sentences with long ones.",
+            "Only 1 paragraph. Give it a beginning, a turn and an ending.",
+            "Some paragraphs run long. Split them where the subject changes or the reader needs a breath.",
+            "The same words come back often. Find the ones you lean on and vary or cut them."
+          ]
+        }
+      }
+    },
+    {
+      "name": "500 words",
+      "html": "<p>word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word</p>",
+      "plain": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+      "expected": {
+        "fingerprint": "6c1694fa9560902224e68746526cc1297f29a108a173ea289d8e96ccb8f0017f",
+        "wordCount": 500,
+        "minWords": 500,
+        "ready": true,
+        "staticScore": {
+          "features": {
+            "wordCount": 500,
+            "paragraphCount": 1,
+            "sentenceCount": 1,
+            "avgSentenceLength": 500,
+            "sentenceLengthStdDev": 0,
+            "citationCount": 0,
+            "citationDensity": 0,
+            "avgWordLength": 4,
+            "uniqueWordsRatio": 0.009090909090909144,
+            "shortParagraphRatio": 0,
+            "longParagraphRatio": 1,
+            "duplicateParagraphRatio": 0,
+            "fillerWordRatio": 0,
+            "vagueWordRatio": 0,
+            "unsupportedUniversalClaimCount": 0
+          },
+          "perFeature": {
+            "length": 6.5,
+            "structure": 3,
+            "pacing": 1.0813258341494365,
+            "evidence": 1,
+            "vocabulary": 2,
+            "paragraphShape": 5,
+            "integrity": 10
+          },
+          "total": 4.1621988751224155,
+          "feedback": [
+            "Few claims are backed up: 0 references found.",
+            "Sentence lengths don't vary much (about 500 words each). Mix short sentences with long ones.",
+            "Only 1 paragraph. Give it a beginning, a turn and an ending.",
+            "Some paragraphs run long. Split them where the subject changes or the reader needs a breath.",
+            "The same words come back often. Find the ones you lean on and vary or cut them."
+          ]
+        }
+      }
+    },
+    {
+      "name": "plain formatting",
+      "html": "<div>word word word</div>",
+      "plain": "word word word",
+      "expected": {
+        "fingerprint": "945f0cc63cc4aa4e5400b6bf9b15ff01be3f6d65f7020d8306f7ee00e13ab59e",
+        "wordCount": 3,
+        "minWords": 500,
+        "ready": false,
+        "staticScore": {
+          "features": {
+            "wordCount": 3,
+            "paragraphCount": 1,
+            "sentenceCount": 1,
+            "avgSentenceLength": 3,
+            "sentenceLengthStdDev": 0,
+            "citationCount": 0,
+            "citationDensity": 0,
+            "avgWordLength": 4,
+            "uniqueWordsRatio": 0.3333333333333333,
+            "shortParagraphRatio": 1,
+            "longParagraphRatio": 0,
+            "duplicateParagraphRatio": 0,
+            "fillerWordRatio": 0,
+            "vagueWordRatio": 0,
+            "unsupportedUniversalClaimCount": 0
+          },
+          "perFeature": {
+            "length": 1,
+            "structure": 3,
+            "pacing": 1.180531307871288,
+            "evidence": 1,
+            "vocabulary": 2,
+            "paragraphShape": 6,
+            "integrity": 4
+          },
+          "total": 2.527079696180693,
+          "feedback": [
+            "At 3 words the draft is short. Scores settle down past about 400.",
+            "Few claims are backed up: 0 references found.",
+            "Sentence lengths don't vary much (about 3 words each). Mix short sentences with long ones.",
+            "Only 1 paragraph. Give it a beginning, a turn and an ending.",
+            "The same words come back often. Find the ones you lean on and vary or cut them.",
+            "Some padding: 0 sweeping claims with nothing behind them, and 0% filler or vague words."
+          ]
+        }
+      }
+    },
+    {
+      "name": "marked formatting",
+      "html": "<div>word <em>word</em> word</div>",
+      "plain": "word word word",
+      "expected": {
+        "fingerprint": "945f0cc63cc4aa4e5400b6bf9b15ff01be3f6d65f7020d8306f7ee00e13ab59e",
+        "wordCount": 3,
+        "minWords": 500,
+        "ready": false,
+        "staticScore": {
+          "features": {
+            "wordCount": 3,
+            "paragraphCount": 1,
+            "sentenceCount": 1,
+            "avgSentenceLength": 3,
+            "sentenceLengthStdDev": 0,
+            "citationCount": 0,
+            "citationDensity": 0,
+            "avgWordLength": 4,
+            "uniqueWordsRatio": 0.3333333333333333,
+            "shortParagraphRatio": 1,
+            "longParagraphRatio": 0,
+            "duplicateParagraphRatio": 0,
+            "fillerWordRatio": 0,
+            "vagueWordRatio": 0,
+            "unsupportedUniversalClaimCount": 0
+          },
+          "perFeature": {
+            "length": 1,
+            "structure": 3,
+            "pacing": 1.180531307871288,
+            "evidence": 1,
+            "vocabulary": 2,
+            "paragraphShape": 6,
+            "integrity": 4
+          },
+          "total": 2.527079696180693,
+          "feedback": [
+            "At 3 words the draft is short. Scores settle down past about 400.",
+            "Few claims are backed up: 0 references found.",
+            "Sentence lengths don't vary much (about 3 words each). Mix short sentences with long ones.",
+            "Only 1 paragraph. Give it a beginning, a turn and an ending.",
+            "The same words come back often. Find the ones you lean on and vary or cut them.",
+            "Some padding: 0 sweeping claims with nothing behind them, and 0% filler or vague words."
+          ]
+        }
+      }
+    }
+  ]
+}

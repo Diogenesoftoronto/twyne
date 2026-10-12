@@ -1,0 +1,52 @@
+{
+  "checkedAt": "2026-10-05T03:04:47.502216+00:00",
+  "status": "pass",
+  "scope": "Parent actual Cargo model validation and both actual production packaged helpers; diagnostic only",
+  "rustGate": {
+    "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests,native-audio --lib math_write::tests",
+    "log": "/tmp/twyne-gpui-current-css-parent-tests.log",
+    "passed": 13,
+    "failed": 0,
+    "ignored": 0,
+    "durationSeconds": 0.03
+  },
+  "productionBuild": {
+    "command": "rtk proxy bun desktop/gpui/tools/build-helper.ts",
+    "log": "/tmp/twyne-gpui-current-math-production-build.log",
+    "change": "Only math-helper --minify removed; semantic helper remains minified"
+  },
+  "packagedReplay": {
+    "command": "rtk proxy bun /tmp/twyne-math-compare-installed.ts desktop/gpui/target/math-write/twyne-math-write desktop/gpui/target/release/twyne-math-write",
+    "receipt": "/tmp/twyne-math-installed-helper-comparison.json",
+    "helpers": 2,
+    "casesPerHelper": 71,
+    "exactJsonAndSvgPerHelper": 71,
+    "binarySha256": "8e30edd4e5b6cecae966bfda21b8296f66b4cbc249012026b05e58f2d9f8ded6",
+    "binaryBytes": 82732512,
+    "cwd": "fresh empty directory",
+    "PATH": "empty"
+  },
+  "historicalMinificationDefect": {
+    "receipt": "/tmp/twyne-math-packaged-all-profiles.json",
+    "exactCases": 61,
+    "totalCases": 71,
+    "plainCompileAdditionalBytes": 380928
+  },
+  "files": {
+    "src/math_write.rs": "9a33ecb6418cf02b5c06866840be64be4f926d00da0b5344aa124bb5676ac051",
+    "tools/math-write.ts": "c0ac8abc602f237c27c0f58bb3c344bfef5df4e40201021afd556311a3be8900",
+    "tools/build-helper.ts": "0af8bb93f8621cdb055398dc447ec386b7f23d65be6f393cf4583039c5e0b72e"
+  },
+  "limitations": [
+    "CurrentSource default refusals preserved",
+    "CSS-derived output remains explicitly inline diagnostic scope",
+    "no production Write adoption or complete block/wrapper/paragraph/native raster proof"
+  ],
+  "parentBunGate": {
+    "log": "/tmp/twyne-gpui-current-css-parent-bun.log",
+    "passed": 18,
+    "failed": 0,
+    "assertions": 1913,
+    "durationSeconds": 4.93
+  }
+}

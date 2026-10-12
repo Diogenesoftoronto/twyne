@@ -1,0 +1,22 @@
+{
+  "baselineFiles": {
+    "desktop/gpui/fixtures/dossier-multiply/native-probe/run_native.py": "c7b4ca7dfc7bae66bffaf6ecb393b93d1d1f2c75da7b35af8257069744578fac",
+    "desktop/gpui/fixtures/dossier-multiply/native-probe/check_pixels.py": "20648ec9cc2cfdc4710a25d6bf8473b1f238efe489ac849bf47d2eb99e29602d",
+    "desktop/gpui/fixtures/dossier-multiply/native-probe/main.rs": "7f2ed8dd5837edc5f254570b96282fd1b8dc9c7cb5631665379df33afcd89ea9",
+    "desktop/gpui/fixtures/dossier-multiply/native-probe/README.md": "1d44628587c217f593922a482ae6f8c96152ac5a477581203793c4fd86831f3d",
+    "desktop/gpui/fixtures/dossier-native/check-native.py": "a5bdb6b9b905667af78c7faa9f23532946570f48cc6e576b21dc7a6f3a737f27"
+  },
+  "cachedHeaderFiles": {
+    "/nix/store/2mcjx364ls9id3ngdjxd707j2az2aid2-libx11-1.8.13-dev/include/X11/Xlib.h": "7430c535c4e2b0a31d002d5f9d8f21c6b9f7232e9aad2e297662b90c2591f64d",
+    "/nix/store/0hzdj9d1amf1ydaqpq8yax3fl02gig8r-xorgproto-2025.1/include/X11/X.h": "3f3ce079a71d26784ea298a75a29fb8add6f0f409cf36850bea7d428fdb1a9fb",
+    "/nix/store/c2wd07p71cfyx1wkxsqv32b1z0f2hknl-libxtst-1.2.5/include/X11/extensions/XTest.h": "a414a0c6932131e6a128c8b74d293c7be396b51ca89419d040f4ac17cb31b925"
+  },
+  "proposedRunnerSha256": "ceff67fe4d617da3a19f84cc08ebe94a92e56ca1f9ea8061bf3a4dac9cb65634",
+  "staticChecks": {
+    "adapterASTParsed": true,
+    "proposedRunnerASTParsed": true,
+    "captureFunctionBytesUnchanged": true,
+    "proposedRunnerMissingUtilityReferences": false
+  },
+  "execution": "Filesystem/header reads, in-memory diff and AST only; no imported adapter, Xlib/native/test invocation or patch application"
+}

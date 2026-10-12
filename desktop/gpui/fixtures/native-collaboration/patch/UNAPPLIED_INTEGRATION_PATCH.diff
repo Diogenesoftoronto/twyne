@@ -1,0 +1,17 @@
+# Unapplied module registration only. Parent owns shared files and integration.
+# Direct cached deps already added separately by Root:
+# regex = "=1.13.1"
+# unicode-normalization = "=0.1.25"
+# url = "=2.5.8"
+# No feature named serde is needed (serde is an unconditional existing dependency).
+diff --git a/desktop/gpui/src/lib.rs b/desktop/gpui/src/lib.rs
+--- a/desktop/gpui/src/lib.rs
++++ b/desktop/gpui/src/lib.rs
+@@ -36,6 +36,7 @@
+ #[cfg(feature = "desktop")]
+ pub mod marginalia_view;
+ pub mod math_write;
++pub mod native_collaboration;
+ #[cfg(feature = "native-typst")]
+ pub mod native_typst;
+ #[cfg(feature = "desktop")]

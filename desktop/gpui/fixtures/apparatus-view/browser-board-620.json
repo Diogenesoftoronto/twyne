@@ -1,0 +1,558 @@
+{
+  "url": "http://localhost:5180/editor/",
+  "scope": "original/path/folio:café",
+  "dimensions": {
+    "width": 620,
+    "height": 860
+  },
+  "documentBytes": 1077,
+  "sourceFixture": "visual-native.json",
+  "fonts": [
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "loaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "loaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "Libre Baskerville",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Libre Baskerville",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Libre Baskerville",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Libre Baskerville",
+      "status": "loaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Libre Baskerville",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "Libre Baskerville",
+      "status": "loaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "loaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "loaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "loaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "loaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "loaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "loaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "loaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Special Elite",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Special Elite",
+      "status": "loaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_AMS",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Caligraphic",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Caligraphic",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Fraktur",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Fraktur",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Main",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Main",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "italic"
+    },
+    {
+      "family": "KaTeX_Main",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "KaTeX_Main",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Math",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "italic"
+    },
+    {
+      "family": "KaTeX_Math",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "KaTeX_SansSerif",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_SansSerif",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "KaTeX_SansSerif",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Script",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Size1",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Size2",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Size3",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Size4",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Typewriter",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    }
+  ],
+  "selected": {
+    ".desk-card__name": {
+      "fonts": [
+        {
+          "familyName": "Libre Baskerville",
+          "postScriptName": "LibreBaskerville-Regular",
+          "isCustomFont": true,
+          "glyphCount": 21
+        }
+      ]
+    },
+    ".desk-card__aside": {
+      "fonts": [
+        {
+          "familyName": "Noto Sans Mono",
+          "postScriptName": "NotoSansMono-Regular",
+          "isCustomFont": false,
+          "glyphCount": 42
+        }
+      ]
+    },
+    ".desk-card__body": {
+      "fonts": [
+        {
+          "familyName": "Lora",
+          "postScriptName": "Lora-Regular",
+          "isCustomFont": true,
+          "glyphCount": 32
+        }
+      ]
+    },
+    ".card-key": {
+      "fonts": [
+        {
+          "familyName": "Special Elite",
+          "postScriptName": "SpecialElite-Regular",
+          "isCustomFont": true,
+          "glyphCount": 10
+        },
+        {
+          "familyName": "Adwaita Sans",
+          "postScriptName": "AdwaitaSans",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    }
+  },
+  "layout": {
+    ".editorial-overlay--apparatus": "Element: aside.editorial-overlay\nBox: x=172 y=0 w=448 h=860\nChildren: 2  Text length: 2375\nScroll Y: size=860 client=860 overflowing=false top=0\nScroll X: size=447 client=447 overflowing=false left=0\nStyles: font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=hidden text-overflow=clip padding=0px margin=0px gap=0px border-radius=0px border-top-width=0px border-left-width=1px border-bottom-width=0px background-color=color(srgb 0.956863 0.92549 0.847059 / 0.94) color=rgb(31, 27, 22) opacity=1 width=448px grid-template-columns=none\nAria: aria-hidden=false",
+    ".board-panel": "Element: div.board-panel\nBox: x=173 y=302 w=447 h=557\nChildren: 6  Text length: 2282\nScroll Y: size=557 client=557 overflowing=false top=0\nScroll X: size=447 client=447 overflowing=false left=0\nStyles: font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=hidden text-overflow=clip padding=0px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=color(srgb 0.921569 0.882353 0.788235 / 0.78) color=rgb(31, 27, 22) opacity=1 width=447px grid-template-columns=none",
+    ".apparatus-signal-desk": "Element: section.apparatus-monitor-card\nBox: x=173 y=336 w=447 h=51\nChildren: 1  Text length: 23\nScroll Y: size=50 client=50 overflowing=false top=0\nScroll X: size=447 client=447 overflowing=false left=0\nStyles: font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=0px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=1px background-color=color(srgb 0.921569 0.882353 0.788235 / 0.72) color=rgb(31, 27, 22) opacity=1 width=447px grid-template-columns=none",
+    ".apparatus-monitor-card__head": "Element: header.apparatus-monitor-card__head\nBox: x=173 y=336 w=447 h=50\nChildren: 2  Text length: 23\nScroll Y: size=50 client=50 overflowing=false top=0\nScroll X: size=447 client=447 overflowing=false left=0\nStyles: font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=7.2px 12px margin=0px gap=10.4px border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(31, 27, 22) opacity=1 width=447px grid-template-columns=none",
+    ".apparatus-signal-desk .dept-label": "Element: p.dept-label\nBox: x=203 y=345 w=82 h=17\nChildren: 0  Text length: 6\nScroll Y: size=17 client=17 overflowing=false top=0\nScroll X: size=82 client=82 overflowing=false left=0\nStyles: font-family=\"Special Elite\", \"Courier New\", monospace font-size=11px font-weight=400 font-style=normal line-height=16.5px letter-spacing=2.42px white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=0px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(138, 126, 108) opacity=1 width=81.875px grid-template-columns=none",
+    ".apparatus-monitor-card__summary": "Element: p.apparatus-monitor-card__summary\nBox: x=203 y=362 w=82 h=15\nChildren: 0  Text length: 16\nScroll Y: size=15 client=15 overflowing=false top=0\nScroll X: size=82 client=82 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=11.84px font-weight=400 font-style=normal line-height=15.392px letter-spacing=normal white-space=nowrap overflow-wrap=normal word-break=normal overflow=hidden text-overflow=ellipsis padding=0px margin=0.8px 0px 0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(74, 63, 51) opacity=1 width=81.875px grid-template-columns=none",
+    ".board-panel .panel-meta:visible": "Element: p.panel-meta\nBox: x=261 y=310 w=113 h=17\nChildren: 0  Text length: 17\nScroll Y: size=17 client=17 overflowing=false top=0\nScroll X: size=113 client=113 overflowing=false left=0\nStyles: font-family=\"Special Elite\", \"Courier New\", monospace font-size=11px font-weight=400 font-style=normal line-height=16.5px letter-spacing=1.32px white-space=nowrap overflow-wrap=normal word-break=normal overflow=hidden text-overflow=ellipsis padding=0px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(138, 126, 108) opacity=1 width=112.844px grid-template-columns=none",
+    ".desk-card": "Element: div.desk-card\nBox: x=185 y=462 w=423 h=133\nChildren: 3  Text length: 119\nScroll Y: size=131 client=131 overflowing=false top=0\nScroll X: size=421 client=421 overflowing=false left=0\nStyles: font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=12.8px 14.4px margin=0px 12px 8px gap=8px border-radius=2px border-top-width=1px border-left-width=1px border-bottom-width=1px background-color=rgb(244, 236, 216) color=rgb(31, 27, 22) opacity=1 width=423px grid-template-columns=none",
+    ".desk-card__head": "Element: div.desk-card__head\nBox: x=200 y=476 w=392 h=37\nChildren: 3  Text length: 68\nScroll Y: size=37 client=37 overflowing=false top=0\nScroll X: size=392 client=392 overflowing=false left=0\nStyles: font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=0px margin=0px gap=1.6px 8.8px border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(31, 27, 22) opacity=1 width=392.219px grid-template-columns=0px 325.141px 49.4844px",
+    ".desk-card__name": "Element: p.desk-card__name\nBox: x=209 y=476 w=325 h=20\nChildren: 0  Text length: 21\nScroll Y: size=20 client=20 overflowing=false top=0\nScroll X: size=325 client=325 overflowing=false left=0\nStyles: font-family=\"Libre Baskerville\", \"Playfair Display\", Georgia, serif font-size=15px font-weight=600 font-style=normal line-height=19.5px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=ellipsis padding=0px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(31, 27, 22) opacity=1 width=325.141px grid-template-columns=none",
+    ".desk-card__aside": "Element: p.desk-card__aside\nBox: x=209 y=497 w=383 h=16\nChildren: 0  Text length: 42\nScroll Y: size=16 client=16 overflowing=false top=0\nScroll X: size=383 client=383 overflowing=false left=0\nStyles: font-family=\"JetBrains Mono\", \"Fira Code\", monospace font-size=11px font-weight=400 font-style=normal line-height=15.95px letter-spacing=1.1px white-space=normal overflow-wrap=anywhere word-break=normal overflow=visible text-overflow=clip padding=0px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(138, 126, 108) opacity=1 width=383.422px grid-template-columns=none",
+    ".desk-card__body": "Element: p.desk-card__body\nBox: x=200 y=521 w=392 h=22\nChildren: 0  Text length: 33\nScroll Y: size=22 client=22 overflowing=false top=0\nScroll X: size=392 client=392 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=14px font-weight=400 font-style=normal line-height=22.4px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=0px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(74, 63, 51) opacity=1 width=392.219px grid-template-columns=none",
+    ".desk-card__stamp": "Element: span.desk-card__stamp\nBox: x=543 y=477 w=49 h=19\nChildren: 0  Text length: 5\nScroll Y: size=17 client=17 overflowing=false top=0\nScroll X: size=47 client=47 overflowing=false left=0\nStyles: font-family=\"Special Elite\", \"Courier New\", monospace font-size=10px font-weight=400 font-style=normal line-height=15px letter-spacing=1.4px white-space=nowrap overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=0.8px 5.6px margin=0.8px 0px 0px gap=normal border-radius=2px border-top-width=1px border-left-width=1px border-bottom-width=1px background-color=rgba(0, 0, 0, 0) color=rgb(91, 122, 58) opacity=1 width=49.4844px grid-template-columns=none",
+    ".desk-card__quote": "Element: div.desk-card__quote\nBox: x=200 y=715 w=392 h=43\nChildren: 2  Text length: 62\nScroll Y: size=43 client=43 overflowing=false top=0\nScroll X: size=390 client=390 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=13px font-weight=400 font-style=italic line-height=19.5px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=1.6px 0px 1.6px 9.6px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=2px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(138, 126, 108) opacity=1 width=392.219px grid-template-columns=none",
+    ".desk-card__foot": "Element: div.desk-card__foot\nBox: x=200 y=551 w=392 h=30\nChildren: 2  Text length: 18\nScroll Y: size=29 client=29 overflowing=false top=0\nScroll X: size=399 client=392 overflowing=true left=0\nStyles: font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=8px 0px 0px margin=0px gap=4px border-radius=0px border-top-width=1px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(31, 27, 22) opacity=1 width=392.219px grid-template-columns=none",
+    ".card-key": "Element: button.card-key\nBox: x=193 y=560 w=105 h=21\nChildren: 0  Text length: 11\nScroll Y: size=21 client=21 overflowing=false top=0\nScroll X: size=105 client=105 overflowing=false left=0\nStyles: font-family=\"Special Elite\", \"Courier New\", monospace font-size=11px font-weight=400 font-style=normal line-height=14.3px letter-spacing=1.54px white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=3.2px 7.2px margin=0px gap=4.8px border-radius=2px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(193, 39, 45) opacity=0.45 width=105.141px grid-template-columns=none\nVisibility: opacity=0.45\nInput: disabled"
+  }
+}

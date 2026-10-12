@@ -21,6 +21,13 @@ export async function liveVoiceAudio(
   let nextTime = 0;
   let stopped = false;
   const playing = new Set<AudioBufferSourceNode>();
+  // The editor's voice passes through an analyser on its way out, so the
+  // desk can open their portrait's jaw in time with what is actually heard.
+  const output = context.createAnalyser();
+  output.fftSize = 512;
+  output.smoothingTimeConstant = 0.5;
+  output.connect(context.destination);
+  const frame = new Float32Array(output.fftSize);
   const stop = () => {
     if (stopped) return;
     stopped = true;
@@ -83,6 +90,14 @@ export async function liveVoiceAudio(
           track.enabled = !value;
         });
       },
+      /** Loudness of the voice being played right now, 0–1. */
+      outputLevel() {
+        if (stopped || !playing.size) return 0;
+        output.getFloatTimeDomainData(frame);
+        let sum = 0;
+        for (const value of frame) sum += value * value;
+        return Math.min(1, Math.sqrt(sum / frame.length) * 6);
+      },
       play(base64: string, onEnd: () => void) {
         if (stopped) return;
         if (context.state !== "running")
@@ -103,7 +118,7 @@ export async function liveVoiceAudio(
           );
         const audio = context.createBufferSource();
         audio.buffer = buffer;
-        audio.connect(context.destination);
+        audio.connect(output);
         playing.add(audio);
         audio.onended = () => {
           audio.disconnect();

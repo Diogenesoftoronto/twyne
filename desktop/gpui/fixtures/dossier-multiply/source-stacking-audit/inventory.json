@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "status": "SOURCE_AUDIT_ONLY",
+  "newExecution": [],
+  "treeEvidence": "Declared current TSX/Rust trees; no newly observed runtime DOM or native scene.",
+  "source": [
+    {
+      "id": "paper-root-and-foxing",
+      "declarations": "main is relative via paper-sheet, flex and overflow-hidden; overlays precede wrapper; paper-foxed::after is absolute/inset:0, pointer-events:none, z-index:auto, opacity:.7, mix-blend-mode:multiply.",
+      "inference": "The pseudo-element creates its own stacking context and is generated after the main's ordinary children. The main has no explicit z-index, isolation or transform in these selectors. Additional uninspected ancestor/top-layer contexts are not excluded.",
+      "evidence": ["source-tree", "source-paper", "source-foxing"]
+    },
+    {
+      "id": "idle-right-leaf",
+      "declarations": "folio-feed 260ms both ends at opacity:1/translateY(0); reduced motion sets animation:none.",
+      "inference": "The right leaf retains a transform stacking context after normal animation; reduced motion removes this animation-derived context. This does not itself create a frame-wide context.",
+      "evidence": ["source-leaf-animation", "source-reduced-motion"]
+    },
+    {
+      "id": "filing-frame",
+      "declarations": "filing state sets scale(.998); frame transition includes transform. Reduced-motion disables transitions, not the static filing transform.",
+      "inference": "The filing frame remains transformed in both motion preferences. Its descendants are confined to its stacking context.",
+      "evidence": ["source-frame-animation", "source-reduced-motion"]
+    },
+    {
+      "id": "filed-frame-normal-motion",
+      "declarations": "filed frame animates 420ms both from translateY(-.35rem) scale(1.004) to translateY(0) scale(1). Confirmation is its child with absolute/inset:0 and z-index:10.",
+      "inference": "The held identity transform is still non-none, containing the confirmation at frame-local z10. In the audited tree, the main's later auto-level foxing can paint above the atomic frame including its confirmation; positive z10 alone does not escape this context.",
+      "evidence": ["source-tree", "source-frame-animation", "source-confirmation", "source-settle-keyframes", "source-foxing"]
+    },
+    {
+      "id": "filed-frame-reduced-motion",
+      "declarations": "filed animation and frame transitions are none; no static transform is declared for filed frame. Confirmation remains z10. Confirmation paper retains static rotate(-1deg).",
+      "inference": "With no other context-producing override, the confirmation can participate in the surrounding positive stack-level order above auto foxing. Its paper's own context remains inside it. Requires actual Source verification; not an assertion about all ancestors or browser top-layer UI.",
+      "evidence": ["source-frame-animation", "source-confirmation", "source-reduced-motion", "source-foxing"]
+    },
+    {
+      "id": "form-overlays",
+      "declarations": "AntiTabulaRasa passes fixed Sending and submission-error overlays at z60 outside frame; recovery error is a normal error-slip paragraph without z-index. Conversational DossierFolio call has no overlays prop.",
+      "inference": "The two fixed overlays are not trapped by frame transform and can remain above main auto foxing. Recovery error and conversational inline status must not be assigned this same order.",
+      "evidence": ["source-form-overlays", "source-error-slip", "source-conversation-call", "source-tree"]
+    },
+    {
+      "id": "route-snapshot-boundary",
+      "declarations": "Root old/new view-transition pseudo-elements declare 120/220 ms opacity/translation animations under normal motion; reduced motion sets animation:none.",
+      "inference": "A live-main stacking inference does not prove a separately activated view-transition snapshot or browser top-layer/UA popup. Activation and actual rendering are unobserved by this audit.",
+      "evidence": ["source-view-transition"]
+    }
+  ],
+  "native": [
+    {
+      "id": "ordinary-dossier-subtree",
+      "order": ["opaque positioned root", "prepared paper background", "live capped frame", "ordinary Filed status if held", "final paint-only foxing canvas"],
+      "qualification": "Filed status is an in-flow frame child, not the Source absolute confirmation. Canvas is final within Dossier only. Layout, pointer/focus/accessibility handling and deferred overlay ownership are not added by this canvas.",
+      "evidence": ["native-foxing", "native-filed-status", "native-dossier-root"]
+    },
+    {
+      "id": "multiply-local-layer",
+      "order": ["current overlapping ordinary backdrop/content", "dedicated destination-multiply sprite layer"],
+      "qualification": "Requires supported current backend formats, opaque window and unfaded ancestor, exact device-pixel image/bounds/mask and matching palette/DPR. Refusal leaves ordinary content paintable. A dedicated layer does not move this sprite to the final Window pass.",
+      "evidence": ["native-foxing", "native-multiply-admission", "core-multiply"]
+    },
+    {
+      "id": "actual-root-plugin-infrastructure",
+      "order": ["Base TextSelectionLayer", "WritingRoom application content including Dossier", "registered Root plugin children", "plugin decoration wrappers"],
+      "qualification": "Default Kit component is enabled; init registers WindowState, and open_window builds Base Root. WindowState children include sheet/dialog/notification layers, touch-selection, Base tooltip and fallback native-menu overlays. Empty mounted layers do not establish any currently visible popup.",
+      "evidence": ["native-entrypoint", "native-cargo-kit", "kit-default-features", "kit-open-and-init", "component-init", "component-plugin-register", "component-plugin-render", "base-root-order"]
+    },
+    {
+      "id": "later-window-stages",
+      "order": ["root tree paint", "optional debug inspector paint", "priority-sorted deferred paints", "prompt OR active drag OR core tooltip", "optional inspector hitbox paint"],
+      "qualification": "The last three user-visible alternatives are mutually exclusive in prompt/drag/tooltip precedence. Deferred content preserves its own captured mask; higher numeric priority is painted later. This is code order, not a newly executed overlap/pixel receipt.",
+      "evidence": ["core-window-order", "core-deferred-order", "core-defer-contract"]
+    },
+    {
+      "id": "deferred-component-priorities",
+      "values": {"baseDialog": "10 + layer", "basePopup": 100, "baseTooltipOverlay": 200},
+      "qualification": "Values compare deferred draws only and are not Source CSS z-index equivalents. GPUI core tooltip is a different later stage. Equal-priority/two-popup behavioral parity is not evaluated here.",
+      "evidence": ["base-dialog-deferred", "base-popup-deferred", "base-tooltip-deferred", "core-deferred-order"]
+    }
+  ],
+  "filingLifetime": {
+    "source": "After actual save, create and both refine paths hold filed feedback for DOSSIER_FILED_FEEDBACK_MS=780 before departure/next screen.",
+    "native": "Successful current/adopted receipt calls acknowledge_filed then immediately removes Dossier and its subscription and installs the active document in the same completion path.",
+    "gap": "The application does not implement Source's held filed animation/wash interval in this inspected path. A standalone held Filed render is not application dwell proof.",
+    "evidence": ["source-filing-dwell", "source-create-dwell", "source-refine-dwell", "native-filing-completion"]
+  },
+  "remainingClaims": [
+    "All ordering deductions about Source CSS are qualified static inferences, not new computed-style, DOMSnapshot, screenshot or pixel observations.",
+    "The inspected declared main/frame selectors do not exhaust contexts supplied by an embedding application or browser top layer.",
+    "No Source state/motion/overlay combination is admitted to full native parity by the existing authored multiply pixel probe.",
+    "No change is proposed, and current multiply capability is not claimed for transparent/general CSS blend groups or all platforms."
+  ]
+}

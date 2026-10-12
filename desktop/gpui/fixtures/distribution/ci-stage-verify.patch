@@ -1,0 +1,23 @@
+--- a/.github/workflows/gpui-desktop.yml
++++ b/.github/workflows/gpui-desktop.yml
+@@ -53,8 +53,20 @@
+         run: cargo test --locked --no-default-features --manifest-path desktop/gpui/Cargo.toml
+       - name: Test native UI
+         run: cargo test --locked --features ui-tests --manifest-path desktop/gpui/Cargo.toml
+       - name: Build release executable
+         run: cargo build --locked --release --manifest-path desktop/gpui/Cargo.toml
++      - name: Stage and verify the distribution tree
++        # RTK must be provisioned on every runner before applying this patch.
++        # No package install or runtime/bundle proof is performed here.
++        shell: bash
++        env:
++          TWYNE_DISTRIBUTION_REQUIRE_REAL: "1"
++        run: |
++          rtk proxy bun test desktop/gpui/fixtures/distribution/stage.test.ts
++          rtk proxy bun desktop/gpui/packaging/stage.ts stage \
++            --out "${{ runner.temp }}/twyne-distribution"
++          rtk proxy bun desktop/gpui/packaging/stage.ts verify \
++            --out "${{ runner.temp }}/twyne-distribution"
+       - uses: actions/upload-artifact@v4
+         with:
+           name: twyne-gpui-${{ runner.os }}

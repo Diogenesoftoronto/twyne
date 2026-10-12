@@ -1,0 +1,8 @@
+{
+  "src/utils/system-one-budget.ts": {
+    "sha256": "249027a6fdeb586e2bd3eef7295dd4dc4fd49369e63872d210dae78086937371"
+  },
+  "src/utils/system-one-budget.test.ts": {
+    "sha256": "bb5ed20b0e6b823481be4f4bf148d0c68e18da64ccfc4e1abd76e8bb3f848b78"
+  }
+}

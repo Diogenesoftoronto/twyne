@@ -1,0 +1,11 @@
+{
+  "desktop/gpui/vendor/gpui-pre-linux/src/linux/wayland.rs": "d8b52fcd37912d441ad1c9be3687422ccda2765e41ddc942b25400c89fd3cfe7",
+  "desktop/gpui/vendor/gpui-pre-linux/src/linux.rs": "f2f7e3261ceafd5cceb3478166aa8c07fa97f27cc2093a0d3b45c4e55ac08664",
+  "desktop/gpui/vendor/gpui-pre-linux/src/gpui_linux.rs": "7a566f97cebfaa76feb3697969c4181b088034e0a5e941aeedab60c4bc1f906b",
+  "desktop/gpui/vendor/gpui-pre-linux/src/linux/wayland/client.rs": "03a6ce8ceea63a69304e6fdf167e199ceac68c90d35c1d566cf0e924c97d8bd3",
+  "desktop/gpui/Cargo.toml": "6004cedb5cafaac02e1cb99b942580130eba4b251ef0b54be77cd29b87f6215b",
+  "desktop/gpui/src/editor/mod.rs": "a3fa73566b8107d1f9308951bc7faad9086b8670ae49d2dc8abb4979f109636e",
+  "desktop/gpui/src/editor/view.rs": "de5d5e75bc789ae7178c2e7572332f8ecd2d1a326c2dc89c8c82f59822e0d823",
+  "desktop/gpui/src/editor/view_clipboard.rs": "d5c408111cacde4e1780a7b1344ee3a8cc6149eea0ec234d2822672ab6797ae1",
+  "desktop/gpui/src/app/clipboard_coordinator.rs": "21cc145b0f267044d5ccd2322746381f1fba6800c25fb358dba53bd8775b76e3"
+}

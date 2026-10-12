@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "status": "APPLIED_FORMATTED_NATIVE_CPU_BOUNDARIES_MEASURED",
+  "originalProposalSha256": "e32e447ad3255ac870250cbf5cef3734076410b8df15eb4c63a8b7023769ba0a",
+  "parentPatchSha256": "033f7f8df316c14f9019d6ee3d2aac00e139478e632c5790f9ba94356242fbc4",
+  "diagnosticsSha256": "099d5fe617062f46250d7ca4e35a519e7fe930e2824dc3728791fe03b116ffb1",
+  "changes": [
+    "Explicit rebase over applied first-pass centering and native observation",
+    "Separate parent-owned diagnostic module; authored originals preserved",
+    "Measure actual prepared-vector/lease.replace boundary with unused proposed LeaseReplacement seam"
+  ],
+  "sourceInputs": {
+    "desktop/gpui/src/dossier_paper.rs": {
+      "currentSha256": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+      "proposedSha256": "05df88c19985d9ae073a48163ba63db7b14eb74fdd3ef55d8c60b499fd86574a"
+    },
+    "desktop/gpui/src/dossier_multiply.rs": {
+      "currentSha256": "fee08f1898d6068f91de577d6284fdd2760e827bcab8d1f7f9cc027a7780a439",
+      "proposedSha256": "a21ca257a24b5d14d13b184ce7e1b0172d3aa4366a3577a9adb2b5a7aee33de8"
+    },
+    "desktop/gpui/src/dossier_view.rs": {
+      "currentSha256": "9b3c51e7938c05f112d644016c042c334945dc97ce041efc6fd2ac170e6265b3",
+      "proposedSha256": "99a007f3ce0a8c65bdb0dbc914b2dd41fe0af4246ad8f7f04ca622b72b530c04"
+    },
+    "desktop/gpui/src/capture_geometry.rs": {
+      "currentSha256": "68782108b019bb6d68d4f9320305f979073ab7ba04dc9d7e2f334d119721237c",
+      "proposedSha256": "3e3a0764c1c0fd54e7025e97cbf56304ce76ea88bb540287f24c94f8a8db7285"
+    }
+  },
+  "nativeTimingProof": "Actual bounded CPU preparation/resize observer durations only",
+  "cargoExecuted": true,
+  "appliedSourceHashes": {
+    "desktop/gpui/src/dossier_paper.rs": "0932a0728d9b9e527c3332d85640c9b2ca83c3dc94fda323d558b7034fcc00ab",
+    "desktop/gpui/src/dossier_multiply.rs": "081783e97d06c44212b7d8a557754f064167a3f8b58ac64327a3206f9a2c3dc0",
+    "desktop/gpui/src/dossier_view.rs": "f26e8d85717fea85f00ca712576054cb891a64fa723d2c983855ebfa3c7ed2c2",
+    "desktop/gpui/src/capture_geometry.rs": "3e3a0764c1c0fd54e7025e97cbf56304ce76ea88bb540287f24c94f8a8db7285"
+  },
+  "appliedDiagnosticSha256": "5b1b20f877ed0b23bbbd897053ffd983cb2bd7da7b91e48dcb4bc4cb106f9c11",
+  "nativeMeasurementReceiptSha256": "98a262fccbf6e8f3b77605be3da8ba0b5f93e98da396098d0dba8a76f03e5c07"
+}

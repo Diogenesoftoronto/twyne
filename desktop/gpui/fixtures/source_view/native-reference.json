@@ -1,0 +1,1787 @@
+{
+  "renderer": "GPUI WGPU HeadlessRenderer with real Linux text system",
+  "reference": "executed original CodeMirror and source CSS",
+  "wrappedHelperRows": "pending native display-map integration at 320px/160px",
+  "cases": [
+    {
+      "id": "editorial",
+      "width": 1280.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": {
+        "origin": {
+          "x": 58.306640625,
+          "y": 16.0
+        },
+        "size": {
+          "width": 0.0,
+          "height": 21.4375
+        }
+      },
+      "helper": {
+        "origin": {
+          "x": 208.0,
+          "y": 17.0
+        },
+        "size": {
+          "width": 108.0,
+          "height": 20.0
+        }
+      },
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": [
+            "// twyne-document:1"
+          ]
+        },
+        {
+          "sourceLine": 116,
+          "rowTexts": [
+            "#twyne-node(\"h1\", \"{}\")[#text(\"The notebook\")]"
+          ]
+        },
+        {
+          "sourceLine": 117,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 118,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"The notebook was small enough to carry in a coat pocket. By November, its corners had softened and the cover had begun to ",
+            "remember the shape of a hand.\")]"
+          ]
+        },
+        {
+          "sourceLine": 119,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 120,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept ",
+            "arriving at after it had closed.\")]"
+          ]
+        },
+        {
+          "sourceLine": 121,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 122,
+          "rowTexts": [
+            "#twyne-node(\"h2\", \"{}\")[#text(\"A note for the next draft\")]"
+          ]
+        },
+        {
+          "sourceLine": 123,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 124,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Keep the opening concrete. Let the change in the room carry the ending.\")]"
+          ]
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "sourceBytes": 8303,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": false
+    },
+    {
+      "id": "split",
+      "width": 640.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": {
+        "origin": {
+          "x": 58.306640625,
+          "y": 16.0
+        },
+        "size": {
+          "width": 0.0,
+          "height": 21.4375
+        }
+      },
+      "helper": {
+        "origin": {
+          "x": 208.0,
+          "y": 17.0
+        },
+        "size": {
+          "width": 108.0,
+          "height": 20.0
+        }
+      },
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": [
+            "// twyne-document:1"
+          ]
+        },
+        {
+          "sourceLine": 116,
+          "rowTexts": [
+            "#twyne-node(\"h1\", \"{}\")[#text(\"The notebook\")]"
+          ]
+        },
+        {
+          "sourceLine": 117,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 118,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"The notebook was small enough to carry in ",
+            "a coat pocket. By November, its corners had softened and the cover had ",
+            "begun to remember the shape of a hand.\")]"
+          ]
+        },
+        {
+          "sourceLine": 119,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 120,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Most pages held ordinary things: the name ",
+            "of a book, a sentence overheard on the train, the hours of a shop she ",
+            "kept arriving at after it had closed.\")]"
+          ]
+        },
+        {
+          "sourceLine": 121,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 122,
+          "rowTexts": [
+            "#twyne-node(\"h2\", \"{}\")[#text(\"A note for the next draft\")]"
+          ]
+        },
+        {
+          "sourceLine": 123,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 124,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Keep the opening concrete. Let the change ",
+            "in the room carry the ending.\")]"
+          ]
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "sourceBytes": 8303,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": false
+    },
+    {
+      "id": "narrow",
+      "width": 320.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": {
+        "origin": {
+          "x": 58.306640625,
+          "y": 16.0
+        },
+        "size": {
+          "width": 0.0,
+          "height": 21.4375
+        }
+      },
+      "helper": {
+        "origin": {
+          "x": 208.0,
+          "y": 17.0
+        },
+        "size": {
+          "width": 108.0,
+          "height": 20.0
+        }
+      },
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": [
+            "// twyne-document:1"
+          ]
+        },
+        {
+          "sourceLine": 116,
+          "rowTexts": [
+            "#twyne-node(\"h1\", \"{}\")[#text",
+            "(\"The notebook\")]"
+          ]
+        },
+        {
+          "sourceLine": 117,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 118,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text",
+            "(\"The notebook was small ",
+            "enough to carry in a coat ",
+            "pocket. By November, its ",
+            "corners had softened and the ",
+            "cover had begun to remember ",
+            "the shape of a hand.\")]"
+          ]
+        },
+        {
+          "sourceLine": 119,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 120,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text",
+            "(\"Most pages held ordinary ",
+            "things: the name of a book, a ",
+            "sentence overheard on the ",
+            "train, the hours of a shop she ",
+            "kept arriving at after it had ",
+            "closed.\")]"
+          ]
+        },
+        {
+          "sourceLine": 121,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 122,
+          "rowTexts": [
+            "#twyne-node(\"h2\", \"{}\")[#text",
+            "(\"A note for the next draft\")]"
+          ]
+        },
+        {
+          "sourceLine": 123,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 124,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text",
+            "(\"Keep the opening concrete. ",
+            "Let the change in the room ",
+            "carry the ending.\")]"
+          ]
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "sourceBytes": 8303,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": true
+    },
+    {
+      "id": "very-narrow",
+      "width": 160.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": {
+        "origin": {
+          "x": 58.306640625,
+          "y": 16.0
+        },
+        "size": {
+          "width": 0.0,
+          "height": 21.4375
+        }
+      },
+      "helper": {
+        "origin": {
+          "x": 106.5,
+          "y": 60.0
+        },
+        "size": {
+          "width": 108.0,
+          "height": 20.0
+        }
+      },
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": [
+            "// ",
+            "twyne-docu",
+            "ment:1"
+          ]
+        },
+        {
+          "sourceLine": 116,
+          "rowTexts": [
+            "#twyne-nod",
+            "e(\"h1\", \"",
+            "{}\")[#text",
+            "(\"The ",
+            "notebook\")",
+            "]"
+          ]
+        },
+        {
+          "sourceLine": 117,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 118,
+          "rowTexts": [
+            "#twyne-nod",
+            "e(\"p\", \"",
+            "{}\")[#text",
+            "(\"The ",
+            "notebook ",
+            "was small ",
+            "enough to ",
+            "carry in ",
+            "a coat ",
+            "pocket. ",
+            "By Novembe",
+            "r, its ",
+            "corners ",
+            "had ",
+            "softened ",
+            "and the ",
+            "cover had ",
+            "begun to ",
+            "remember ",
+            "the shape ",
+            "of a ",
+            "hand.\")]"
+          ]
+        },
+        {
+          "sourceLine": 119,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 120,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 121,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 122,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 123,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 124,
+          "rowTexts": []
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "sourceBytes": 8303,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": true
+    },
+    {
+      "id": "nowrap",
+      "width": 640.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": {
+        "origin": {
+          "x": 58.306640625,
+          "y": 16.0
+        },
+        "size": {
+          "width": 0.0,
+          "height": 21.4375
+        }
+      },
+      "helper": {
+        "origin": {
+          "x": 208.0,
+          "y": 17.0
+        },
+        "size": {
+          "width": 108.0,
+          "height": 20.0
+        }
+      },
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": [
+            "// twyne-document:1"
+          ]
+        },
+        {
+          "sourceLine": 116,
+          "rowTexts": [
+            "#twyne-node(\"h1\", \"{}\")[#text(\"The notebook\")]"
+          ]
+        },
+        {
+          "sourceLine": 117,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 118,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"The notebook was small enough to carry in a coat pocket. By November, its corners had softened and the cover had begun to remember the shape of a hand.\")]"
+          ]
+        },
+        {
+          "sourceLine": 119,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 120,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.\")]"
+          ]
+        },
+        {
+          "sourceLine": 121,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 122,
+          "rowTexts": [
+            "#twyne-node(\"h2\", \"{}\")[#text(\"A note for the next draft\")]"
+          ]
+        },
+        {
+          "sourceLine": 123,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 124,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Keep the opening concrete. Let the change in the room carry the ending.\")]"
+          ]
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "sourceBytes": 8303,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": false
+    },
+    {
+      "id": "readonly",
+      "width": 640.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": {
+        "origin": {
+          "x": 58.306640625,
+          "y": 16.0
+        },
+        "size": {
+          "width": 0.0,
+          "height": 21.4375
+        }
+      },
+      "helper": {
+        "origin": {
+          "x": 208.0,
+          "y": 17.0
+        },
+        "size": {
+          "width": 108.0,
+          "height": 20.0
+        }
+      },
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": [
+            "// twyne-document:1"
+          ]
+        },
+        {
+          "sourceLine": 116,
+          "rowTexts": [
+            "#twyne-node(\"h1\", \"{}\")[#text(\"The notebook\")]"
+          ]
+        },
+        {
+          "sourceLine": 117,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 118,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"The notebook was small enough to carry in ",
+            "a coat pocket. By November, its corners had softened and the cover had ",
+            "begun to remember the shape of a hand.\")]"
+          ]
+        },
+        {
+          "sourceLine": 119,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 120,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Most pages held ordinary things: the name ",
+            "of a book, a sentence overheard on the train, the hours of a shop she ",
+            "kept arriving at after it had closed.\")]"
+          ]
+        },
+        {
+          "sourceLine": 121,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 122,
+          "rowTexts": [
+            "#twyne-node(\"h2\", \"{}\")[#text(\"A note for the next draft\")]"
+          ]
+        },
+        {
+          "sourceLine": 123,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 124,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Keep the opening concrete. Let the change ",
+            "in the room carry the ending.\")]"
+          ]
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "sourceBytes": 8303,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": false
+    },
+    {
+      "id": "scrolled",
+      "width": 640.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": null,
+      "helper": null,
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 116,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 117,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 118,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"The notebook was small enough to carry in ",
+            "a coat pocket. By November, its corners had softened and the cover had ",
+            "begun to remember the shape of a hand.\")]"
+          ]
+        },
+        {
+          "sourceLine": 119,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 120,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Most pages held ordinary things: the name ",
+            "of a book, a sentence overheard on the train, the hours of a shop she ",
+            "kept arriving at after it had closed.\")]"
+          ]
+        },
+        {
+          "sourceLine": 121,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 122,
+          "rowTexts": [
+            "#twyne-node(\"h2\", \"{}\")[#text(\"A note for the next draft\")]"
+          ]
+        },
+        {
+          "sourceLine": 123,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 124,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Keep the opening concrete. Let the change ",
+            "in the room carry the ending.\")]"
+          ]
+        },
+        {
+          "sourceLine": 125,
+          "rowTexts": [
+            "#text(\"A visible source line 1.\")"
+          ]
+        },
+        {
+          "sourceLine": 126,
+          "rowTexts": [
+            "#text(\"A visible source line 2.\")"
+          ]
+        },
+        {
+          "sourceLine": 127,
+          "rowTexts": [
+            "#text(\"A visible source line 3.\")"
+          ]
+        },
+        {
+          "sourceLine": 128,
+          "rowTexts": [
+            "#text(\"A visible source line 4.\")"
+          ]
+        },
+        {
+          "sourceLine": 129,
+          "rowTexts": [
+            "#text(\"A visible source line 5.\")"
+          ]
+        },
+        {
+          "sourceLine": 130,
+          "rowTexts": [
+            "#text(\"A visible source line 6.\")"
+          ]
+        },
+        {
+          "sourceLine": 131,
+          "rowTexts": [
+            "#text(\"A visible source line 7.\")"
+          ]
+        },
+        {
+          "sourceLine": 132,
+          "rowTexts": [
+            "#text(\"A visible source line 8.\")"
+          ]
+        },
+        {
+          "sourceLine": 133,
+          "rowTexts": [
+            "#text(\"A visible source line 9.\")"
+          ]
+        },
+        {
+          "sourceLine": 134,
+          "rowTexts": [
+            "#text(\"A visible source line 10.\")"
+          ]
+        },
+        {
+          "sourceLine": 135,
+          "rowTexts": [
+            "#text(\"A visible source line 11.\")"
+          ]
+        },
+        {
+          "sourceLine": 136,
+          "rowTexts": [
+            "#text(\"A visible source line 12.\")"
+          ]
+        },
+        {
+          "sourceLine": 137,
+          "rowTexts": [
+            "#text(\"A visible source line 13.\")"
+          ]
+        },
+        {
+          "sourceLine": 138,
+          "rowTexts": [
+            "#text(\"A visible source line 14.\")"
+          ]
+        },
+        {
+          "sourceLine": 139,
+          "rowTexts": [
+            "#text(\"A visible source line 15.\")"
+          ]
+        },
+        {
+          "sourceLine": 140,
+          "rowTexts": [
+            "#text(\"A visible source line 16.\")"
+          ]
+        },
+        {
+          "sourceLine": 141,
+          "rowTexts": [
+            "#text(\"A visible source line 17.\")"
+          ]
+        },
+        {
+          "sourceLine": 142,
+          "rowTexts": [
+            "#text(\"A visible source line 18.\")"
+          ]
+        },
+        {
+          "sourceLine": 143,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 144,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 145,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 146,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 147,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 148,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 149,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 150,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 151,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 152,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 153,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 154,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 155,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 156,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 157,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 158,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 159,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 160,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 161,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 162,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 163,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 164,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 165,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 166,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 167,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 168,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 169,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 170,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 171,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 172,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 173,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 174,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 175,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 176,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 177,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 178,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 179,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 180,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 181,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 182,
+          "rowTexts": []
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": -90.0
+      },
+      "sourceBytes": 11094,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": false
+    },
+    {
+      "id": "one-digit",
+      "width": 640.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": {
+        "origin": {
+          "x": 46.82666015625,
+          "y": 16.0
+        },
+        "size": {
+          "width": 0.0,
+          "height": 21.4375
+        }
+      },
+      "helper": null,
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": [
+            "line 1"
+          ]
+        },
+        {
+          "sourceLine": 2,
+          "rowTexts": [
+            "line 2"
+          ]
+        },
+        {
+          "sourceLine": 3,
+          "rowTexts": [
+            "line 3"
+          ]
+        },
+        {
+          "sourceLine": 4,
+          "rowTexts": [
+            "line 4"
+          ]
+        },
+        {
+          "sourceLine": 5,
+          "rowTexts": [
+            "line 5"
+          ]
+        },
+        {
+          "sourceLine": 6,
+          "rowTexts": [
+            "line 6"
+          ]
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "sourceBytes": 41,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": false
+    },
+    {
+      "id": "two-digit",
+      "width": 640.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": {
+        "origin": {
+          "x": 50.47998046875,
+          "y": 16.0
+        },
+        "size": {
+          "width": 0.0,
+          "height": 21.4375
+        }
+      },
+      "helper": null,
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": [
+            "line 1"
+          ]
+        },
+        {
+          "sourceLine": 2,
+          "rowTexts": [
+            "line 2"
+          ]
+        },
+        {
+          "sourceLine": 3,
+          "rowTexts": [
+            "line 3"
+          ]
+        },
+        {
+          "sourceLine": 4,
+          "rowTexts": [
+            "line 4"
+          ]
+        },
+        {
+          "sourceLine": 5,
+          "rowTexts": [
+            "line 5"
+          ]
+        },
+        {
+          "sourceLine": 6,
+          "rowTexts": [
+            "line 6"
+          ]
+        },
+        {
+          "sourceLine": 7,
+          "rowTexts": [
+            "line 7"
+          ]
+        },
+        {
+          "sourceLine": 8,
+          "rowTexts": [
+            "line 8"
+          ]
+        },
+        {
+          "sourceLine": 9,
+          "rowTexts": [
+            "line 9"
+          ]
+        },
+        {
+          "sourceLine": 10,
+          "rowTexts": [
+            "line 10"
+          ]
+        },
+        {
+          "sourceLine": 11,
+          "rowTexts": [
+            "line 11"
+          ]
+        },
+        {
+          "sourceLine": 12,
+          "rowTexts": [
+            "line 12"
+          ]
+        },
+        {
+          "sourceLine": 13,
+          "rowTexts": [
+            "line 13"
+          ]
+        },
+        {
+          "sourceLine": 14,
+          "rowTexts": [
+            "line 14"
+          ]
+        },
+        {
+          "sourceLine": 15,
+          "rowTexts": [
+            "line 15"
+          ]
+        },
+        {
+          "sourceLine": 16,
+          "rowTexts": [
+            "line 16"
+          ]
+        },
+        {
+          "sourceLine": 17,
+          "rowTexts": [
+            "line 17"
+          ]
+        },
+        {
+          "sourceLine": 18,
+          "rowTexts": [
+            "line 18"
+          ]
+        },
+        {
+          "sourceLine": 19,
+          "rowTexts": [
+            "line 19"
+          ]
+        },
+        {
+          "sourceLine": 20,
+          "rowTexts": [
+            "line 20"
+          ]
+        },
+        {
+          "sourceLine": 21,
+          "rowTexts": [
+            "line 21"
+          ]
+        },
+        {
+          "sourceLine": 22,
+          "rowTexts": [
+            "line 22"
+          ]
+        },
+        {
+          "sourceLine": 23,
+          "rowTexts": [
+            "line 23"
+          ]
+        },
+        {
+          "sourceLine": 24,
+          "rowTexts": [
+            "line 24"
+          ]
+        },
+        {
+          "sourceLine": 25,
+          "rowTexts": [
+            "line 25"
+          ]
+        },
+        {
+          "sourceLine": 26,
+          "rowTexts": [
+            "line 26"
+          ]
+        },
+        {
+          "sourceLine": 27,
+          "rowTexts": [
+            "line 27"
+          ]
+        },
+        {
+          "sourceLine": 28,
+          "rowTexts": [
+            "line 28"
+          ]
+        },
+        {
+          "sourceLine": 29,
+          "rowTexts": [
+            "line 29"
+          ]
+        },
+        {
+          "sourceLine": 30,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 31,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 32,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 33,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 34,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 35,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 36,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 37,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 38,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 39,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 40,
+          "rowTexts": []
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "sourceBytes": 310,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": false
+    },
+    {
+      "id": "four-digit",
+      "width": 640.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": {
+        "origin": {
+          "x": 66.13330078125,
+          "y": 16.0
+        },
+        "size": {
+          "width": 0.0,
+          "height": 21.4375
+        }
+      },
+      "helper": null,
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": [
+            "line 1"
+          ]
+        },
+        {
+          "sourceLine": 2,
+          "rowTexts": [
+            "line 2"
+          ]
+        },
+        {
+          "sourceLine": 3,
+          "rowTexts": [
+            "line 3"
+          ]
+        },
+        {
+          "sourceLine": 4,
+          "rowTexts": [
+            "line 4"
+          ]
+        },
+        {
+          "sourceLine": 5,
+          "rowTexts": [
+            "line 5"
+          ]
+        },
+        {
+          "sourceLine": 6,
+          "rowTexts": [
+            "line 6"
+          ]
+        },
+        {
+          "sourceLine": 7,
+          "rowTexts": [
+            "line 7"
+          ]
+        },
+        {
+          "sourceLine": 8,
+          "rowTexts": [
+            "line 8"
+          ]
+        },
+        {
+          "sourceLine": 9,
+          "rowTexts": [
+            "line 9"
+          ]
+        },
+        {
+          "sourceLine": 10,
+          "rowTexts": [
+            "line 10"
+          ]
+        },
+        {
+          "sourceLine": 11,
+          "rowTexts": [
+            "line 11"
+          ]
+        },
+        {
+          "sourceLine": 12,
+          "rowTexts": [
+            "line 12"
+          ]
+        },
+        {
+          "sourceLine": 13,
+          "rowTexts": [
+            "line 13"
+          ]
+        },
+        {
+          "sourceLine": 14,
+          "rowTexts": [
+            "line 14"
+          ]
+        },
+        {
+          "sourceLine": 15,
+          "rowTexts": [
+            "line 15"
+          ]
+        },
+        {
+          "sourceLine": 16,
+          "rowTexts": [
+            "line 16"
+          ]
+        },
+        {
+          "sourceLine": 17,
+          "rowTexts": [
+            "line 17"
+          ]
+        },
+        {
+          "sourceLine": 18,
+          "rowTexts": [
+            "line 18"
+          ]
+        },
+        {
+          "sourceLine": 19,
+          "rowTexts": [
+            "line 19"
+          ]
+        },
+        {
+          "sourceLine": 20,
+          "rowTexts": [
+            "line 20"
+          ]
+        },
+        {
+          "sourceLine": 21,
+          "rowTexts": [
+            "line 21"
+          ]
+        },
+        {
+          "sourceLine": 22,
+          "rowTexts": [
+            "line 22"
+          ]
+        },
+        {
+          "sourceLine": 23,
+          "rowTexts": [
+            "line 23"
+          ]
+        },
+        {
+          "sourceLine": 24,
+          "rowTexts": [
+            "line 24"
+          ]
+        },
+        {
+          "sourceLine": 25,
+          "rowTexts": [
+            "line 25"
+          ]
+        },
+        {
+          "sourceLine": 26,
+          "rowTexts": [
+            "line 26"
+          ]
+        },
+        {
+          "sourceLine": 27,
+          "rowTexts": [
+            "line 27"
+          ]
+        },
+        {
+          "sourceLine": 28,
+          "rowTexts": [
+            "line 28"
+          ]
+        },
+        {
+          "sourceLine": 29,
+          "rowTexts": [
+            "line 29"
+          ]
+        },
+        {
+          "sourceLine": 30,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 31,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 32,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 33,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 34,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 35,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 36,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 37,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 38,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 39,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 40,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 41,
+          "rowTexts": []
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "sourceBytes": 8892,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": false
+    },
+    {
+      "id": "foolscap",
+      "width": 640.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": {
+        "origin": {
+          "x": 58.306640625,
+          "y": 16.0
+        },
+        "size": {
+          "width": 0.0,
+          "height": 21.4375
+        }
+      },
+      "helper": {
+        "origin": {
+          "x": 208.0,
+          "y": 17.0
+        },
+        "size": {
+          "width": 108.0,
+          "height": 20.0
+        }
+      },
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": [
+            "// twyne-document:1"
+          ]
+        },
+        {
+          "sourceLine": 116,
+          "rowTexts": [
+            "#twyne-node(\"h1\", \"{}\")[#text(\"The notebook\")]"
+          ]
+        },
+        {
+          "sourceLine": 117,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 118,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"The notebook was small enough to carry in ",
+            "a coat pocket. By November, its corners had softened and the cover had ",
+            "begun to remember the shape of a hand.\")]"
+          ]
+        },
+        {
+          "sourceLine": 119,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 120,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Most pages held ordinary things: the name ",
+            "of a book, a sentence overheard on the train, the hours of a shop she ",
+            "kept arriving at after it had closed.\")]"
+          ]
+        },
+        {
+          "sourceLine": 121,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 122,
+          "rowTexts": [
+            "#twyne-node(\"h2\", \"{}\")[#text(\"A note for the next draft\")]"
+          ]
+        },
+        {
+          "sourceLine": 123,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 124,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Keep the opening concrete. Let the change ",
+            "in the room carry the ending.\")]"
+          ]
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "sourceBytes": 8303,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": false
+    },
+    {
+      "id": "broadsheet",
+      "width": 640.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": {
+        "origin": {
+          "x": 58.306640625,
+          "y": 16.0
+        },
+        "size": {
+          "width": 0.0,
+          "height": 21.4375
+        }
+      },
+      "helper": {
+        "origin": {
+          "x": 208.0,
+          "y": 17.0
+        },
+        "size": {
+          "width": 108.0,
+          "height": 20.0
+        }
+      },
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": [
+            "// twyne-document:1"
+          ]
+        },
+        {
+          "sourceLine": 116,
+          "rowTexts": [
+            "#twyne-node(\"h1\", \"{}\")[#text(\"The notebook\")]"
+          ]
+        },
+        {
+          "sourceLine": 117,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 118,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"The notebook was small enough to carry in ",
+            "a coat pocket. By November, its corners had softened and the cover had ",
+            "begun to remember the shape of a hand.\")]"
+          ]
+        },
+        {
+          "sourceLine": 119,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 120,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Most pages held ordinary things: the name ",
+            "of a book, a sentence overheard on the train, the hours of a shop she ",
+            "kept arriving at after it had closed.\")]"
+          ]
+        },
+        {
+          "sourceLine": 121,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 122,
+          "rowTexts": [
+            "#twyne-node(\"h2\", \"{}\")[#text(\"A note for the next draft\")]"
+          ]
+        },
+        {
+          "sourceLine": 123,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 124,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Keep the opening concrete. Let the change ",
+            "in the room carry the ending.\")]"
+          ]
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "sourceBytes": 8303,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": false
+    },
+    {
+      "id": "nightpress",
+      "width": 640.0,
+      "height": 606,
+      "deviceScaleFactor": 2.0,
+      "lineHeight": 21.4375,
+      "firstSource": {
+        "origin": {
+          "x": 58.306640625,
+          "y": 16.0
+        },
+        "size": {
+          "width": 0.0,
+          "height": 21.4375
+        }
+      },
+      "helper": {
+        "origin": {
+          "x": 208.0,
+          "y": 17.0
+        },
+        "size": {
+          "width": 108.0,
+          "height": 20.0
+        }
+      },
+      "visibleRows": [
+        {
+          "sourceLine": 1,
+          "rowTexts": [
+            "// twyne-document:1"
+          ]
+        },
+        {
+          "sourceLine": 116,
+          "rowTexts": [
+            "#twyne-node(\"h1\", \"{}\")[#text(\"The notebook\")]"
+          ]
+        },
+        {
+          "sourceLine": 117,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 118,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"The notebook was small enough to carry in ",
+            "a coat pocket. By November, its corners had softened and the cover had ",
+            "begun to remember the shape of a hand.\")]"
+          ]
+        },
+        {
+          "sourceLine": 119,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 120,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Most pages held ordinary things: the name ",
+            "of a book, a sentence overheard on the train, the hours of a shop she ",
+            "kept arriving at after it had closed.\")]"
+          ]
+        },
+        {
+          "sourceLine": 121,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 122,
+          "rowTexts": [
+            "#twyne-node(\"h2\", \"{}\")[#text(\"A note for the next draft\")]"
+          ]
+        },
+        {
+          "sourceLine": 123,
+          "rowTexts": []
+        },
+        {
+          "sourceLine": 124,
+          "rowTexts": [
+            "#twyne-node(\"p\", \"{}\")[#text(\"Keep the opening concrete. Let the change ",
+            "in the room carry the ending.\")]"
+          ]
+        }
+      ],
+      "scrollOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "sourceBytes": 8303,
+      "sourceUnchanged": true,
+      "canUndo": false,
+      "canRedo": false,
+      "wrappedHelperRowPending": false
+    }
+  ]
+}

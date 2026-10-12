@@ -1,0 +1,347 @@
+{
+  "provenance": "Actual current Tiptap Editor.getText() with the original active note/image/math/source/mermaid/table extensions, in isolated JSDOM; exact schema text serializers, including HardBreak and image/math renderText.",
+  "cases": [
+    {
+      "name": "prose hardbreak and notes",
+      "html": "<h2>東京 🦊 é</h2><p>A<br>B<sup data-endnote-text=\"hidden\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"hidden\"></sup>C</p><p></p><p>tail</p>",
+      "text": "東京 🦊 é\n\nA\nBC\n\n\n\ntail",
+      "json": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "東京 🦊 é"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "A"
+              },
+              {
+                "type": "hardBreak"
+              },
+              {
+                "type": "text",
+                "text": "B"
+              },
+              {
+                "type": "endnote",
+                "attrs": {
+                  "text": "hidden",
+                  "kind": "footnote"
+                }
+              },
+              {
+                "type": "text",
+                "text": "C"
+              }
+            ]
+          },
+          {
+            "type": "paragraph"
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "tail"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "image and source/math atoms",
+      "html": "<p>inline <span data-type=\"inline-math\" data-latex=\"x + y\" data-math-display=\"inline\" aria-label=\"Inline equation: x + y\" class=\"twyne-math twyne-math-inline\">x + y</span> <span data-typst-source=\"#unknown[hidden]\" data-type=\"raw-typst-inline\" class=\"twyne-raw-typst-inline\" title=\"Edit this Typst expression in source view\" contenteditable=\"false\">#unknown[hidden]</span> end.</p><figure src=\"file:///offline.png\" alt=\"東京 🦊\" caption=\"hidden caption\" alignment=\"center\" width=\"100\" offline=\"false\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-upload-status=\"ready\" data-alt-text=\"東京 🦊\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid; page-break-inside: avoid;\"><img src=\"file:///offline.png\" alt=\"東京 🦊\" style=\"display: block; width: 100%; height: auto;\"><figcaption>hidden caption</figcaption></figure><div data-type=\"block-math\" data-latex=\"z^2\" data-math-display=\"block\" aria-label=\"Block equation: z^2\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">z^2</div><div data-typst-source=\"#unknown[hidden]\" data-type=\"raw-typst\" class=\"twyne-raw-typst\" title=\"Edit this Typst block in source view\" contenteditable=\"false\"><pre>#unknown[hidden]</pre></div><div data-mermaid-source=\"graph TD;A-->B\" data-type=\"mermaid-diagram\" class=\"mermaid twyne-mermaid-diagram\">graph TD;A--&gt;B</div><p>after</p>",
+      "text": "inline $x + y$  end.\n\n[Image: 東京 🦊]\n\n$$z^2$$\n\n\n\n\n\nafter",
+      "json": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "inline "
+              },
+              {
+                "type": "inlineMath",
+                "attrs": {
+                  "source": "x + y"
+                }
+              },
+              {
+                "type": "text",
+                "text": " "
+              },
+              {
+                "type": "rawTypstInline",
+                "attrs": {
+                  "source": "#unknown[hidden]"
+                }
+              },
+              {
+                "type": "text",
+                "text": " end."
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "attrs": {
+              "src": "file:///offline.png",
+              "alt": "東京 🦊",
+              "caption": "hidden caption",
+              "alignment": "center",
+              "width": 100,
+              "aspectRatio": null,
+              "imageId": null,
+              "offline": false,
+              "uploadId": null,
+              "uploadStatus": "ready",
+              "uploadProgress": 0,
+              "uploadError": null
+            }
+          },
+          {
+            "type": "blockMath",
+            "attrs": {
+              "source": "z^2"
+            }
+          },
+          {
+            "type": "rawTypst",
+            "attrs": {
+              "source": "#unknown[hidden]"
+            }
+          },
+          {
+            "type": "mermaidDiagram",
+            "attrs": {
+              "source": "graph TD;A-->B"
+            }
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "after"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "nested blocks and code",
+      "html": "<blockquote><p>quote</p><p>next</p></blockquote><ul><li><p>list1</p></li><li><p>list2</p><ul><li><p>nested</p></li></ul></li></ul><table data-table-alignment=\"left\" style=\"min-width: 80px; margin-left: 0px; margin-right: auto;\"><colgroup><col style=\"min-width: 40px;\"><col style=\"min-width: 40px;\"></colgroup><tbody><tr><td colspan=\"1\" rowspan=\"1\"><p>cell1</p></td><td colspan=\"1\" rowspan=\"1\"><p>cell2</p></td></tr></tbody></table><pre><code>A\nB\t🦊</code></pre>",
+      "text": "\n\nquote\n\nnext\n\n\n\n\n\nlist1\n\n\n\nlist2\n\n\n\n\n\nnested\n\n\n\n\n\n\n\ncell1\n\n\n\ncell2\n\nA\nB\t🦊",
+      "json": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "blockquote",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "quote"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "next"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "bulletList",
+            "content": [
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "list1"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "list2"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "bulletList",
+                    "content": [
+                      {
+                        "type": "listItem",
+                        "content": [
+                          {
+                            "type": "paragraph",
+                            "content": [
+                              {
+                                "type": "text",
+                                "text": "nested"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "attrs": {
+              "tableWidth": null,
+              "tableAlignment": "left",
+              "tableCaption": null,
+              "tableStyle": null
+            },
+            "content": [
+              {
+                "type": "tableRow",
+                "content": [
+                  {
+                    "type": "tableCell",
+                    "attrs": {
+                      "colspan": 1,
+                      "rowspan": 1,
+                      "colwidth": null,
+                      "align": null
+                    },
+                    "content": [
+                      {
+                        "type": "paragraph",
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "cell1"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "tableCell",
+                    "attrs": {
+                      "colspan": 1,
+                      "rowspan": 1,
+                      "colwidth": null,
+                      "align": null
+                    },
+                    "content": [
+                      {
+                        "type": "paragraph",
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "cell2"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "codeBlock",
+            "attrs": {
+              "language": null
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "A\nB\t🦊"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "empty atoms separators",
+      "html": "<figure src=\"file:///offline.png\" alt=\"\" caption=\"\" alignment=\"center\" width=\"100\" offline=\"false\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-upload-status=\"ready\" data-alt-text=\"\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid; page-break-inside: avoid;\"><img src=\"file:///offline.png\" alt=\"\" style=\"display: block; width: 100%; height: auto;\"></figure><div data-type=\"page-break\" class=\"twyne-page-break\" data-page-break=\"true\"></div><hr><p></p><p>A</p>",
+      "text": "[Image]\n\n\n\n\n\n\n\nA",
+      "json": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "image",
+            "attrs": {
+              "src": "file:///offline.png",
+              "alt": "",
+              "caption": "",
+              "alignment": "center",
+              "width": 100,
+              "aspectRatio": null,
+              "imageId": null,
+              "offline": false,
+              "uploadId": null,
+              "uploadStatus": "ready",
+              "uploadProgress": 0,
+              "uploadError": null
+            }
+          },
+          {
+            "type": "pageBreak"
+          },
+          {
+            "type": "horizontalRule"
+          },
+          {
+            "type": "paragraph"
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "A"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

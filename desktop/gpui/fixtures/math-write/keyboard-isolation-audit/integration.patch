@@ -1,0 +1,90 @@
+--- a/desktop/gpui/src/editor/math_source_editor.rs
++++ b/desktop/gpui/src/editor/math_source_editor.rs
+@@ -836,6 +836,58 @@
+     ]
+ }
+ 
++/// ProseMirror's equation stopEvent protects the raw textarea from manuscript
++/// input. Keep the same field boundary for explicit native rich actions, which
++/// can otherwise bypass RichEditorView::dispatch's command-only focus guard.
++/// Source's document/window listeners deliberately treat form buttons
++/// differently, so this is not a blanket whole-form action barrier.
++fn isolate_source_field(
++    mut root: gpui_kit::Stateful<gpui_kit::Div>,
++    field: &FocusHandle,
++) -> gpui_kit::Stateful<gpui_kit::Div> {
++    macro_rules! block_rich_field_actions {
++        ($($action:ident),* $(,)?) => {
++            $(
++                {
++                    let field = field.clone();
++                    root = root.capture_action(
++                        move |_: &super::view::$action, window, cx| {
++                            if field.is_focused(window) {
++                                cx.stop_propagation();
++                            }
++                        },
++                    );
++                }
++            )*
++        };
++    }
++    block_rich_field_actions![
++        Backspace, Delete, Left, Right, Up, Down, SelectLeft, SelectRight,
++        SelectUp, SelectDown, WordLeft, WordRight, SelectWordLeft, SelectWordRight,
++        DeleteWordBackward, DeleteWordForward, Home, End, SelectHome, SelectEnd,
++        DocumentStart, DocumentEnd, SelectAll, Enter, HardBreak, Copy, Cut, Paste,
++        Undo, Redo, Bold, Italic, Underline, Indent, Outdent,
++    ];
++    let forward_field = field.clone();
++    root = root.capture_action(
++        move |_: &gpui_kit::base::input::IndentInline, window, cx| {
++            if forward_field.is_focused(window) {
++                cx.stop_propagation();
++                window.focus_next(cx);
++            }
++        },
++    );
++    let backward_field = field.clone();
++    root.capture_action(
++        move |_: &gpui_kit::base::input::OutdentInline, window, cx| {
++            if backward_field.is_focused(window) {
++                cx.stop_propagation();
++                window.focus_prev(cx);
++            }
++        },
++    )
++}
++
+ impl Render for MathSourceEditorView {
+     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+         let inline = self.target.display == MathDisplay::Inline;
+@@ -849,7 +901,7 @@
+         let focus = self.input.focus_handle(cx);
+         let disabled = self.retired || self.read_only;
+         let submit_disabled = disabled || self.pending_submission.is_some();
+-        div()
++        let root = div()
+             .id("twyne-math-source-editor")
+             .test_support()
+             .role(Role::Form)
+@@ -997,7 +1049,8 @@
+                                 view.cancel(MathSourceCancelReason::CancelButton, cx);
+                             })),
+                     ),
+-            )
++            );
++        isolate_source_field(root, &focus)
+     }
+ }
+ 
+--- a/desktop/gpui/fixtures/math-write/source-host/host_tests.rs
++++ b/desktop/gpui/fixtures/math-write/source-host/host_tests.rs
+@@ -654,3 +654,7 @@
+     })
+     .unwrap();
+ }
++
++// Authored focused-field audit; Source global button exceptions are separate.
++#[path = "../keyboard-isolation-audit/native_tests.rs"]
++mod keyboard_isolation_audit;

@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "status": "READ_ONLY_SOURCE_EVIDENCE_NOT_BROWSER_RESULTS",
+  "cssBlocks": [
+    {
+      "selector": ".twyne-math-inline",
+      "sourceLine": 8,
+      "declarations": "display: inline-flex;\n  max-width: 100%;\n  align-items: baseline;\n  border-radius: 0.2rem;\n  vertical-align: baseline;"
+    },
+    {
+      "selector": ".twyne-math-source-editor",
+      "sourceLine": 61,
+      "declarations": "display: flex;\n  min-width: min(28rem, 80vw);\n  flex-direction: column;\n  gap: 0.5rem;\n  padding: 0.65rem;\n  border: 1px solid currentColor;\n  border-radius: 0.4rem;\n  background: Canvas;\n  color: CanvasText;\n  text-align: left;"
+    },
+    {
+      "selector": ".twyne-math-inline .twyne-math-source-editor",
+      "sourceLine": 74,
+      "declarations": "display: inline-flex;\n  min-width: min(22rem, 70vw);\n  vertical-align: middle;"
+    },
+    {
+      "selector": ".twyne-math-source-label",
+      "sourceLine": 80,
+      "declarations": "display: flex;\n  flex-direction: column;\n  gap: 0.3rem;\n  font-size: 0.8rem;\n  font-weight: 600;"
+    },
+    {
+      "selector": ".twyne-math-source-input",
+      "sourceLine": 88,
+      "declarations": "width: 100%;\n  resize: vertical;\n  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);\n  border-radius: 0.25rem;\n  padding: 0.5rem;\n  background: Canvas;\n  color: CanvasText;\n  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;\n  font-size: 0.875rem;\n  font-weight: 400;\n  line-height: 1.4;"
+    },
+    {
+      "selector": ".twyne-math-source-actions",
+      "sourceLine": 109,
+      "declarations": "display: flex;\n  flex-wrap: wrap;\n  justify-content: flex-end;\n  gap: 0.4rem;"
+    },
+    {
+      "selector": ".twyne-math-source-preview",
+      "sourceLine": 136,
+      "declarations": "overflow: auto;\n  max-height: 12rem;\n  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);\n  border-radius: 0.25rem;\n  padding: 0.5rem 0.65rem;\n  background: Canvas;\n  color: CanvasText;\n  font-size: 0.95rem;\n  text-align: center;"
+    }
+  ],
+  "nodeFormStatements": [
+    {
+      "file": "src/components/editor/extensions/math.ts",
+      "line": 104,
+      "exactObservedSourceStatement": "render.hidden = true;"
+    },
+    {
+      "file": "src/components/editor/extensions/math.ts",
+      "line": 113,
+      "exactObservedSourceStatement": "dom.append(sourceEditor.dom);"
+    },
+    {
+      "file": "src/components/editor/math/math-source-editor.ts",
+      "line": 65,
+      "exactObservedSourceStatement": "input.rows = options.nodeName === \"blockMath\" ? 3 : 2;"
+    },
+    {
+      "file": "src/components/editor/math/math-source-editor.ts",
+      "line": 97,
+      "exactObservedSourceStatement": "label.append(input);"
+    },
+    {
+      "file": "src/components/editor/math/math-source-editor.ts",
+      "line": 98,
+      "exactObservedSourceStatement": "form.append(label, preview, actions);"
+    },
+    {
+      "file": "src/components/editor/math/math-source-editor.ts",
+      "line": 210,
+      "exactObservedSourceStatement": "input.setSelectionRange(input.value.length, input.value.length);"
+    }
+  ],
+  "hashes": {
+    "src/components/editor/extensions/math.ts": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2",
+    "src/components/editor/math/math-source-editor.ts": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb",
+    "src/components/editor/math/math-renderer.ts": "0babc59d53aaf2ae9d3e23cf7dc7b2a98243e9d6682fecf622eda1eaddb02472",
+    "src/components/editor/math/math.css": "f29bbdea2806650b758422416d2a8e08a5a985f908feeddc8442362c412308b0",
+    "src/components/editor/math/katex.min.css": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "src/global.css": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+    "src/root.tsx": "782141e806ce60765944cfbe70a9d8c497e8b37b1b09c5e8a46e971c4a99839b",
+    "desktop/gpui/target/verification/source-nodeview-server.ts": "badf2923774eed24303a6d234fe6883e045398c21ba4f1ede696568d5ddc793e",
+    "desktop/gpui/fixtures/math-write/current-adoption/CONTRACT.md": "725f9ffab70aa42980a5784f5a96bd622fa7f1764f25348a5e518122542a9850",
+    "desktop/gpui/fixtures/math-write/nodeview/original.css": "71ddc6c68996dc01fed4c53b636dac92d573440504478b8cda76a4778ae701b7",
+    "desktop/gpui/fixtures/math-write/nodeview/original-fonts.css": "5c246196d8cbfd3f37845f4539c07d5dc0d9a763c6097e441ec398df18b0de56",
+    "desktop/gpui/fixtures/math-write/nodeview/font-replay.json": "b55044a7548613480247c1bb7e36fa740b7a94efe02548035ce1ea4601c8b4fb"
+  },
+  "patchBaseSha256": "badf2923774eed24303a6d234fe6883e045398c21ba4f1ede696568d5ddc793e",
+  "limits": [
+    "No Source code was executed, changed or copied into a replacement form/controller.",
+    "Statements/styles above are current repository text, not observed browser geometry.",
+    "Caret sampling uses actual installed Editor.view.coordsAtPos from the authored fixture."
+  ]
+}

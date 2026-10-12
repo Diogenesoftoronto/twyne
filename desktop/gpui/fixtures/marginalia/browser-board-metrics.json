@@ -1,0 +1,164 @@
+{
+  "card": {
+    "rect": {
+      "x": 829,
+      "y": 377.09375,
+      "width": 439,
+      "height": 194.96875
+    },
+    "styles": "Element: div.px-4\nBox: x=829 y=377 w=439 h=195\nChildren: 3  Text length: 201\nScroll Y: size=193 client=193 overflowing=false top=0\nScroll X: size=437 client=437 overflowing=false left=0\nStyles: display=block font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=12px 16px margin=0px 12px 8px border-width=1px gap=normal"
+  },
+  "firstRow": {
+    "rect": {
+      "x": 846,
+      "y": 390.09375,
+      "width": 405,
+      "height": 93.578125
+    },
+    "styles": "Element: div.flex\nBox: x=846 y=390 w=405 h=94\nChildren: 2  Text length: 131\nScroll Y: size=94 client=94 overflowing=false top=0\nScroll X: size=405 client=405 overflowing=false left=0\nStyles: display=flex font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=0px margin=0px border-width=0px gap=normal"
+  },
+  "content": {
+    "rect": {
+      "x": 846,
+      "y": 390.09375,
+      "width": 337,
+      "height": 93.578125
+    },
+    "styles": "Element: div.flex-1\nBox: x=846 y=390 w=337 h=94\nChildren: 3  Text length: 128\nScroll Y: size=94 client=94 overflowing=false top=0\nScroll X: size=337 client=337 overflowing=false left=0\nStyles: display=block font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=0px margin=0px border-width=0px gap=normal"
+  },
+  "authorRow": {
+    "rect": {
+      "x": 846,
+      "y": 390.09375,
+      "width": 337,
+      "height": 18.5
+    },
+    "styles": "Element: div.flex\nBox: x=846 y=390 w=337 h=19\nChildren: 2  Text length: 10\nScroll Y: size=19 client=19 overflowing=false top=0\nScroll X: size=337 client=337 overflowing=false left=0\nStyles: display=flex font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=0px margin=0px 0px 4px border-width=0px gap=8px"
+  },
+  "author": {
+    "rect": {
+      "x": 846,
+      "y": 390.09375,
+      "width": 24.40625,
+      "height": 16
+    },
+    "styles": "Element: span.text-xs\nBox: x=846 y=390 w=24 h=16\nChildren: 0  Text length: 3\nScroll Y: size=16 client=16 overflowing=false top=0\nScroll X: size=24 client=24 overflowing=false left=0\nStyles: display=block font-family=\"Libre Baskerville\", \"Playfair Display\", Georgia, serif font-size=12px font-weight=600 line-height=16px letter-spacing=normal padding=0px margin=0px border-width=0px gap=normal"
+  },
+  "date": {
+    "rect": {
+      "x": 878.40625,
+      "y": 392.09375,
+      "width": 54.4375,
+      "height": 16.5
+    },
+    "styles": "Element: span.text-[10px]\nBox: x=878 y=392 w=54 h=17\nChildren: 0  Text length: 7\nScroll Y: size=17 client=17 overflowing=false top=0\nScroll X: size=54 client=54 overflowing=false left=0\nStyles: display=block font-family=\"Special Elite\", \"Courier New\", monospace font-size=11px font-weight=400 line-height=16.5px letter-spacing=1.65px padding=0px margin=0px border-width=0px gap=normal"
+  },
+  "quote": {
+    "rect": {
+      "x": 846,
+      "y": 412.59375,
+      "width": 337,
+      "height": 16
+    },
+    "styles": "Element: p.text-xs\nBox: x=846 y=413 w=337 h=16\nChildren: 0  Text length: 43\nScroll Y: size=16 client=16 overflowing=false top=0\nScroll X: size=336 client=336 overflowing=false left=0\nStyles: display=block font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=12px font-weight=400 line-height=16px letter-spacing=normal padding=0px 0px 0px 8px margin=0px 0px 4px border-width=0px 0px 0px 1px gap=normal"
+  },
+  "note": {
+    "rect": {
+      "x": 846,
+      "y": 432.59375,
+      "width": 337,
+      "height": 51.078125
+    },
+    "styles": "Element: div.comment-markdown\nBox: x=846 y=433 w=337 h=51\nChildren: 2  Text length: 75\nScroll Y: size=51 client=51 overflowing=false top=0\nScroll X: size=337 client=337 overflowing=false left=0\nStyles: display=block font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=14px font-weight=400 line-height=22.4px letter-spacing=normal padding=0px margin=0px border-width=0px gap=normal"
+  },
+  "noteFirstParagraph": {
+    "rect": {
+      "x": 846,
+      "y": 432.59375,
+      "width": 337,
+      "height": 22.390625
+    },
+    "styles": "Element: p\nBox: x=846 y=433 w=337 h=22\nChildren: 0  Text length: 26\nScroll Y: size=22 client=22 overflowing=false top=0\nScroll X: size=337 client=337 overflowing=false left=0\nStyles: display=block font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=14px font-weight=400 line-height=22.4px letter-spacing=normal padding=0px margin=0px border-width=0px gap=normal"
+  },
+  "noteSecondParagraph": {
+    "rect": {
+      "x": 846,
+      "y": 461.28125,
+      "width": 337,
+      "height": 22.390625
+    },
+    "styles": "Element: p\nBox: x=846 y=461 w=337 h=22\nChildren: 1  Text length: 48\nScroll Y: size=22 client=22 overflowing=false top=0\nScroll X: size=337 client=337 overflowing=false left=0\nStyles: display=block font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=14px font-weight=400 line-height=22.4px letter-spacing=normal padding=0px margin=6.3px 0px 0px border-width=0px gap=normal"
+  },
+  "replies": {
+    "rect": {
+      "x": 862,
+      "y": 491.671875,
+      "width": 389,
+      "height": 42.890625
+    },
+    "styles": "Element: div.mt-2\nBox: x=862 y=492 w=389 h=43\nChildren: 1  Text length: 44\nScroll Y: size=43 client=43 overflowing=false top=0\nScroll X: size=388 client=388 overflowing=false left=0\nStyles: display=block font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=0px 0px 0px 12px margin=8px 0px 0px 16px border-width=0px 0px 0px 1px gap=normal"
+  },
+  "reply": {
+    "rect": {
+      "x": 875,
+      "y": 491.671875,
+      "width": 376,
+      "height": 42.890625
+    },
+    "styles": "Element: div\nBox: x=875 y=492 w=376 h=43\nChildren: 2  Text length: 44\nScroll Y: size=43 client=43 overflowing=false top=0\nScroll X: size=376 client=376 overflowing=false left=0\nStyles: display=block font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=0px margin=0px border-width=0px gap=normal"
+  },
+  "replyAuthorRow": {
+    "rect": {
+      "x": 875,
+      "y": 491.671875,
+      "width": 376,
+      "height": 18.5
+    },
+    "styles": "Element: div.flex\nBox: x=875 y=492 w=376 h=19\nChildren: 2  Text length: 10\nScroll Y: size=19 client=19 overflowing=false top=0\nScroll X: size=376 client=376 overflowing=false left=0\nStyles: display=flex font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=0px margin=0px 0px 2px border-width=0px gap=8px"
+  },
+  "replyAuthor": {
+    "rect": {
+      "x": 875,
+      "y": 491.671875,
+      "width": 24.40625,
+      "height": 16
+    },
+    "styles": "Element: span.text-xs\nBox: x=875 y=492 w=24 h=16\nChildren: 0  Text length: 3\nScroll Y: size=16 client=16 overflowing=false top=0\nScroll X: size=24 client=24 overflowing=false left=0\nStyles: display=block font-family=\"Libre Baskerville\", \"Playfair Display\", Georgia, serif font-size=12px font-weight=600 line-height=16px letter-spacing=normal padding=0px margin=0px border-width=0px gap=normal"
+  },
+  "replyDate": {
+    "rect": {
+      "x": 907.40625,
+      "y": 493.671875,
+      "width": 54.4375,
+      "height": 16.5
+    },
+    "styles": "Element: span.text-[10px]\nBox: x=907 y=494 w=54 h=17\nChildren: 0  Text length: 7\nScroll Y: size=17 client=17 overflowing=false top=0\nScroll X: size=54 client=54 overflowing=false left=0\nStyles: display=block font-family=\"Special Elite\", \"Courier New\", monospace font-size=11px font-weight=400 line-height=16.5px letter-spacing=1.65px padding=0px margin=0px border-width=0px gap=normal"
+  },
+  "replyText": {
+    "rect": {
+      "x": 875,
+      "y": 512.171875,
+      "width": 376,
+      "height": 22.390625
+    },
+    "styles": "Element: p\nBox: x=875 y=512 w=376 h=22\nChildren: 0  Text length: 34\nScroll Y: size=22 client=22 overflowing=false top=0\nScroll X: size=376 client=376 overflowing=false left=0\nStyles: display=block font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=14px font-weight=400 line-height=22.4px letter-spacing=normal padding=0px margin=0px border-width=0px gap=normal"
+  },
+  "actions": {
+    "rect": {
+      "x": 846,
+      "y": 542.5625,
+      "width": 405,
+      "height": 16.5
+    },
+    "styles": "Element: div.mt-2\nBox: x=846 y=543 w=405 h=17\nChildren: 2  Text length: 25\nScroll Y: size=17 client=17 overflowing=false top=0\nScroll X: size=405 client=405 overflowing=false left=0\nStyles: display=flex font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=0px margin=8px 0px 0px border-width=0px gap=12px"
+  },
+  "annotate": {
+    "rect": {
+      "x": 846,
+      "y": 542.5625,
+      "width": 80.65625,
+      "height": 16.5
+    },
+    "styles": "Element: button.text-[11px]\nBox: x=846 y=543 w=81 h=17\nChildren: 0  Text length: 10\nScroll Y: size=17 client=17 overflowing=false top=0\nScroll X: size=81 client=81 overflowing=false left=0\nStyles: display=block font-family=\"Special Elite\", \"Courier New\", monospace font-size=11px font-weight=400 line-height=16.5px letter-spacing=1.98px padding=0px margin=0px border-width=0px gap=normal"
+  }
+}

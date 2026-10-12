@@ -1,0 +1,17 @@
+{
+  "reviewer": "root",
+  "productOwner": "root",
+  "provider": "sakana/fugu-max",
+  "accepted": [
+    "Only strip a Markdown prefix that existed before the slash caret.",
+    "Choose code and Mermaid fences longer than contained backtick runs.",
+    "Retain dollar-containing math source with the existing Source HTML math node."
+  ],
+  "rejected": [
+    "The supposed stale prefix query: Source intentionally detects only text before the caret and permits a caret within a token. The host separately binds document, editor, selection, and revision."
+  ],
+  "checks": [
+    "Added suffix-marker, fence, math payload and caret-inside-token regression cases."
+  ],
+  "scope": "Advisory findings reviewed against actual Source behavior; model output is not proof."
+}

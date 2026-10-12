@@ -48,7 +48,8 @@ async function seed(page: Page) {
     );
   }, HTML);
   await page.goto("/editor/");
-  await expect(manuscript(page)).toContainText(FIRST);
+  // Cold development hydration imports the editor before this functional mission starts.
+  await expect(manuscript(page)).toContainText(FIRST, { timeout: 60_000 });
   await page.evaluate(() => document.fonts.ready);
 }
 

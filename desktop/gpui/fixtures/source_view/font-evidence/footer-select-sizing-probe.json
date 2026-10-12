@@ -1,0 +1,300 @@
+{
+  "initial": {
+    "html": "<select class=\"editor-page-navigation\" aria-label=\"Go to page\"><option value=\"0\">1 page</option><option value=\"1\">Page 1 of 1</option></select>",
+    "bounds": {
+      "x": 72.78125,
+      "y": 830,
+      "width": 71,
+      "height": 28,
+      "top": 830,
+      "right": 143.78125,
+      "bottom": 858,
+      "left": 72.78125
+    },
+    "style": {
+      "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+      "fontSize": "11px",
+      "fontWeight": "400",
+      "fontStyle": "normal",
+      "fontOpticalSizing": "auto",
+      "fontVariationSettings": "normal",
+      "lineHeight": "normal",
+      "letterSpacing": "normal"
+    }
+  },
+  "rows": [
+    {
+      "id": "pages-auto",
+      "html": "<select id=\"pages-auto\" class=\"editor-page-navigation\" disabled=\"\" style=\"font-family: &quot;DM Sans&quot;, Inter, system-ui, sans-serif; font-size: 11px; font-weight: 400; font-style: normal; font-optical-sizing: auto; font-variation-settings: normal; line-height: normal; letter-spacing: normal; appearance: auto;\"><option>Pages</option></select>",
+      "text": "Pages",
+      "bounds": {
+        "x": 8,
+        "y": 680,
+        "width": 51,
+        "height": 28,
+        "top": 680,
+        "right": 59,
+        "bottom": 708,
+        "left": 8
+      },
+      "style": {
+        "appearance": "auto",
+        "padding": "0px",
+        "border": "0px none rgb(74, 63, 51)",
+        "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "fontWeight": "400"
+      }
+    },
+    {
+      "id": "pages-none",
+      "html": "<select id=\"pages-none\" class=\"editor-page-navigation\" disabled=\"\" style=\"font-family: &quot;DM Sans&quot;, Inter, system-ui, sans-serif; font-size: 11px; font-weight: 400; font-style: normal; font-optical-sizing: auto; font-variation-settings: normal; line-height: normal; letter-spacing: normal; appearance: none;\"><option>Pages</option></select>",
+      "text": "Pages",
+      "bounds": {
+        "x": 59,
+        "y": 680,
+        "width": 31,
+        "height": 28,
+        "top": 680,
+        "right": 90,
+        "bottom": 708,
+        "left": 59
+      },
+      "style": {
+        "appearance": "none",
+        "padding": "0px",
+        "border": "0px none rgb(74, 63, 51)",
+        "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "fontWeight": "400"
+      }
+    },
+    {
+      "id": "one-page-auto",
+      "html": "<select id=\"one-page-auto\" class=\"editor-page-navigation\" style=\"font-family: &quot;DM Sans&quot;, Inter, system-ui, sans-serif; font-size: 11px; font-weight: 400; font-style: normal; font-optical-sizing: auto; font-variation-settings: normal; line-height: normal; letter-spacing: normal; appearance: auto;\"><option>1 page</option><option>Page 1 of 1</option></select>",
+      "text": "1 pagePage 1 of 1",
+      "bounds": {
+        "x": 90,
+        "y": 680,
+        "width": 71,
+        "height": 28,
+        "top": 680,
+        "right": 161,
+        "bottom": 708,
+        "left": 90
+      },
+      "style": {
+        "appearance": "auto",
+        "padding": "0px",
+        "border": "0px none rgb(74, 63, 51)",
+        "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "fontWeight": "400"
+      }
+    },
+    {
+      "id": "one-page-none",
+      "html": "<select id=\"one-page-none\" class=\"editor-page-navigation\" style=\"font-family: &quot;DM Sans&quot;, Inter, system-ui, sans-serif; font-size: 11px; font-weight: 400; font-style: normal; font-optical-sizing: auto; font-variation-settings: normal; line-height: normal; letter-spacing: normal; appearance: none;\"><option>1 page</option><option>Page 1 of 1</option></select>",
+      "text": "1 pagePage 1 of 1",
+      "bounds": {
+        "x": 161,
+        "y": 680,
+        "width": 51,
+        "height": 28,
+        "top": 680,
+        "right": 212,
+        "bottom": 708,
+        "left": 161
+      },
+      "style": {
+        "appearance": "none",
+        "padding": "0px",
+        "border": "0px none rgb(74, 63, 51)",
+        "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "fontWeight": "400"
+      }
+    },
+    {
+      "id": "footer-label-0",
+      "html": "<span id=\"footer-label-0\" style=\"display: inline-block; line-height: 16.5px;\">Pages</span>",
+      "text": "Pages",
+      "bounds": {
+        "x": 212,
+        "y": 686,
+        "width": 30.03125,
+        "height": 16.5,
+        "top": 686,
+        "right": 242.03125,
+        "bottom": 702.5,
+        "left": 212
+      },
+      "style": {
+        "appearance": "none",
+        "padding": "0px",
+        "border": "0px solid rgb(0, 0, 0)",
+        "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "fontWeight": "400"
+      }
+    },
+    {
+      "id": "footer-label-1",
+      "html": "<span id=\"footer-label-1\" style=\"display: inline-block; line-height: 16.5px;\">1 page</span>",
+      "text": "1 page",
+      "bounds": {
+        "x": 242.03125,
+        "y": 686,
+        "width": 31.75,
+        "height": 16.5,
+        "top": 686,
+        "right": 273.78125,
+        "bottom": 702.5,
+        "left": 242.03125
+      },
+      "style": {
+        "appearance": "none",
+        "padding": "0px",
+        "border": "0px solid rgb(0, 0, 0)",
+        "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "fontWeight": "400"
+      }
+    },
+    {
+      "id": "footer-label-2",
+      "html": "<span id=\"footer-label-2\" style=\"display: inline-block; line-height: 16.5px;\">Page 1 of 1</span>",
+      "text": "Page 1 of 1",
+      "bounds": {
+        "x": 273.78125,
+        "y": 686,
+        "width": 51,
+        "height": 16.5,
+        "top": 686,
+        "right": 324.78125,
+        "bottom": 702.5,
+        "left": 273.78125
+      },
+      "style": {
+        "appearance": "none",
+        "padding": "0px",
+        "border": "0px solid rgb(0, 0, 0)",
+        "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "fontWeight": "400"
+      }
+    },
+    {
+      "id": "footer-label-3",
+      "html": "<span id=\"footer-label-3\" style=\"display: inline-block; line-height: 16.5px;\">Pages ⌄</span>",
+      "text": "Pages ⌄",
+      "bounds": {
+        "x": 324.78125,
+        "y": 686,
+        "width": 41.5625,
+        "height": 16.5,
+        "top": 686,
+        "right": 366.34375,
+        "bottom": 702.5,
+        "left": 324.78125
+      },
+      "style": {
+        "appearance": "none",
+        "padding": "0px",
+        "border": "0px solid rgb(0, 0, 0)",
+        "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "fontWeight": "400"
+      }
+    },
+    {
+      "id": "footer-label-4",
+      "html": "<span id=\"footer-label-4\" style=\"display: inline-block; line-height: 16.5px;\">79 words</span>",
+      "text": "79 words",
+      "bounds": {
+        "x": 366.34375,
+        "y": 686,
+        "width": 46.78125,
+        "height": 16.5,
+        "top": 686,
+        "right": 413.125,
+        "bottom": 702.5,
+        "left": 366.34375
+      },
+      "style": {
+        "appearance": "none",
+        "padding": "0px",
+        "border": "0px solid rgb(0, 0, 0)",
+        "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "fontWeight": "400"
+      }
+    }
+  ],
+  "fonts": [
+    {
+      "id": "footer-label-0",
+      "fonts": [
+        {
+          "familyName": "DM Sans 9pt",
+          "postScriptName": "DMSans-9ptRegular",
+          "isCustomFont": true,
+          "glyphCount": 5
+        }
+      ]
+    },
+    {
+      "id": "footer-label-1",
+      "fonts": [
+        {
+          "familyName": "DM Sans 9pt",
+          "postScriptName": "DMSans-9ptRegular",
+          "isCustomFont": true,
+          "glyphCount": 6
+        }
+      ]
+    },
+    {
+      "id": "footer-label-2",
+      "fonts": [
+        {
+          "familyName": "DM Sans 9pt",
+          "postScriptName": "DMSans-9ptRegular",
+          "isCustomFont": true,
+          "glyphCount": 11
+        }
+      ]
+    },
+    {
+      "id": "footer-label-3",
+      "fonts": [
+        {
+          "familyName": "DM Sans 9pt",
+          "postScriptName": "DMSans-9ptRegular",
+          "isCustomFont": true,
+          "glyphCount": 6
+        },
+        {
+          "familyName": "Inter",
+          "postScriptName": "Inter-Regular",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "id": "footer-label-4",
+      "fonts": [
+        {
+          "familyName": "DM Sans 9pt",
+          "postScriptName": "DMSans-9ptRegular",
+          "isCustomFont": true,
+          "glyphCount": 8
+        }
+      ]
+    }
+  ],
+  "probeOnly": true,
+  "originalAppStylesUntouched": true,
+  "sourceUnchanged": true
+}

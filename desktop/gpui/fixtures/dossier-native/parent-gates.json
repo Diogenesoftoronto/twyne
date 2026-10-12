@@ -1,0 +1,29 @@
+{
+  "status": "pass",
+  "scope": "Actual X11 manual Dossier input/filing/recovery; full styling/current subsequent candidates separate",
+  "actualReceipt": "/tmp/twyne-dossier-native-reviewed-20261005-c/acceptance.json",
+  "receiptSha256": "bd99b750edcce7b48ecfb02d5ae84183a099068c8e5795e8875545ef86344e11",
+  "acceptedChecks": 11,
+  "uiBuildReceipt": "/tmp/twyne-gpui-dossier-centered-ui-20261005-nei5cpku/build-receipt.json",
+  "binarySha256": "7d2717c11df53416a69a2daba3b1e23bbea0fbb84354bc057dbcbd89d3d79bb2",
+  "fixtureSha256": "8a9cc13b4f2c084a54759e9a4a4699e246224363aec8a8af0c99957c2a6a6479",
+  "driverSha256": "100abc2ec5c29593e6c95889c20fc6559654ec77a014d7867a7e5378cb79be44",
+  "priorFailures": [
+    {
+      "receipt": "/tmp/twyne-dossier-native-reviewed-20261005-a/acceptance.json",
+      "checks": 2,
+      "reason": "Real Write projection persistence defect; Root now schedules dirty projection autosave"
+    },
+    {
+      "receipt": "/tmp/twyne-dossier-native-reviewed-20261005-b/acceptance.json",
+      "checks": 6,
+      "reason": "Authored Refine predicate depended on separately unavailable Start over; corrected to real mode label + exact scoped recovery"
+    }
+  ],
+  "limits": [
+    "X11 on fresh owned Xvfb only",
+    "Actual Source/body/nonempty HTML/provenance preservation checked",
+    "No delayed async races/provider/Start over/Proof/otherOS/pixel-parity claim",
+    "Subsequent Dossier geometry candidates require their own verification"
+  ]
+}

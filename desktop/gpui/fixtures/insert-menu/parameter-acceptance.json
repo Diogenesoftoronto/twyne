@@ -1,0 +1,539 @@
+{
+  "schemaVersion": 1,
+  "recordedUnix": 1791230563.5718744,
+  "status": "passed_scoped_checks",
+  "scope": "Source table-size grid, parameter activation/cancel, retained cursor guards, shortcut hints and rich structural keys",
+  "build": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/build.json",
+    "sha256": "b6d99da0980b03d4f51f9e6f75046f753710060297f6006da5b0dde8eb355621"
+  },
+  "artifacts": {
+    "twyne-desktop": {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/twyne-desktop",
+      "sha256": "8b20fb41c9b30484388fbe6f60adce7f37c9aaac6516849f0ab532898f2426f1"
+    },
+    "twyne-document": {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/twyne-document",
+      "sha256": "cc8144ceeb96cb519f026414aa332f35d54b33e5fb640d0c1076d85b3a39c9de"
+    }
+  },
+  "sourceHashes": {
+    "desktop/gpui/Cargo.lock": "44f147eca43dddc0f20802a4f0cf05eb36596cf3e6cf86c00ddc15d12c617c83",
+    "desktop/gpui/Cargo.toml": "c547047d748d3d1c5c1a45bfbe2b55e7ec7e5ea78e31d55517488bb60f9e80c0",
+    "desktop/gpui/fixtures/insert-menu/capture-parameters.ts": "c4243232da9efb0ff67a6ad4ea0df026e2444c670674b540eb484d42daac557b",
+    "desktop/gpui/fixtures/insert-menu/source-catalog.json": "102ea7b387239c6bc236a64fb4b1caa59dcc751faa8cc0b62eac5682963a2f91",
+    "desktop/gpui/fixtures/insert-menu/source-filter-cases.json": "e93f8cacbf44d2cdf41eff280357db9249f8ea2d5bcd350570641febe3a6a2ce",
+    "desktop/gpui/fixtures/insert-menu/source-receipt.json": "640390114896cc4ff8403d3570719975484eaac01a55fd8daf22c4a882faf9e9",
+    "desktop/gpui/fixtures/insert-menu/source-table-grid-cases.json": "1d84f5bfe59bc8a88c2c7f0e04b6ab3930d58b3ed375c5dd8109f68d5bfa2f70",
+    "desktop/gpui/src/app/account_coordinator.rs": "7f2a2ee9926f334cb4af8f5c48b759cae07724babe1c608e5896f5e5e7f529f8",
+    "desktop/gpui/src/app/apparatus_coordinator.rs": "6a6204d01befa2cbaad946e37620b68ac78eae86b7cd74f7243f8e3edf992b9a",
+    "desktop/gpui/src/app/cast_coordinator.rs": "2640a056cbee5e07e296e6c953d69f0120f9a458421eda30f410b3fd3913f7dd",
+    "desktop/gpui/src/app/clipboard_coordinator.rs": "b73ad75ae322e6e44f7fa907be5f8793a37e880d093f233e113eb85d2ed37735",
+    "desktop/gpui/src/app/dossier_filing_tests.rs": "0959086ed1bcdeb19e90ace46a1a8af99837977a59a32eb11fe5958e4e50031a",
+    "desktop/gpui/src/app/editor_drag_coordinator.rs": "6d630ccda9c574849540ed37271eca961c5c303509d07aaa1dd28d1c61f87b79",
+    "desktop/gpui/src/app/flow_coordinator.rs": "f51c243b931ed101fb69e3c13a7d4c86337569ddcd438e25da6fdc26023c5557",
+    "desktop/gpui/src/app/gen_ui_coordinator.rs": "883e26da7c71b704241dfbcf51598f54c543c242a65aaaf3db4a10f51a7079c8",
+    "desktop/gpui/src/app/house_coordinator.rs": "40be6aebc418f62b28ce7f98ed69531d22ee39ab7b533971b6503b10d55049e3",
+    "desktop/gpui/src/app/image_coordinator.rs": "47d04e14410c64637a3c3ac58f1da46d4f59a841d9fa18b9c2957b76ef989e81",
+    "desktop/gpui/src/app/manuscript_coordinator.rs": "c51b64edc652626cc2943ece19f34fb80bbd38d6ec32c8bfa92b99ff142f53ac",
+    "desktop/gpui/src/app/manuscript_tests.rs": "d57c6a58ee3b270f60a9927171099d1d4a52f4c06376fa36a6bd906f2e63a7a8",
+    "desktop/gpui/src/app/margin_composer.rs": "80bcf29650bedc05d73c8164b404c8ce5c2f744145ee74ff3386ea974c314e47",
+    "desktop/gpui/src/app/margin_position.rs": "e017a36dbbc5d587549e9d233d90455ba568ec7c964ec5657508b630beab5962",
+    "desktop/gpui/src/app/margin_rail_coordinator.rs": "94794cc25f836c08ae903a9cbdf5a868345f0cd52d7be86c22326c3bcfb0591d",
+    "desktop/gpui/src/app/marginalia_coordinator.rs": "83e3e448252e1f7c134471b502bca004740d731c90784d4d7c80e469b2a07ba6",
+    "desktop/gpui/src/app/math_source_coordinator.rs": "9a2b11a7b64828bb8fa4c6eed8ba3e41fea01eaf57fddba3ce50079dd8cceb2f",
+    "desktop/gpui/src/app/note_coordinator.rs": "376594d42715342db2f913b4afb77ee2b6ed6060e886a1f2a3a948e89e6d0259",
+    "desktop/gpui/src/app/page_coordinator.rs": "f76b891857178afc14f28b916fac93367eef9ae6e6849f056713db985b6f7e7b",
+    "desktop/gpui/src/app/research_steering.rs": "6792889549cb1d07e29d6d2473d37db6fbfb51bb9b4e52871991d2f1f857fb4c",
+    "desktop/gpui/src/app/revision_coordinator.rs": "2b833d35cc03e42de03b91ec6062a6098a46fb7bb56318c35a6bfd3dc3dd72ca",
+    "desktop/gpui/src/app/room_layout.rs": "f14448d6882a7b39848572117c72d6f8e94406b52be352d2a52cf7cbb0753e19",
+    "desktop/gpui/src/app/rubric_coordinator.rs": "2d11d809b99087ab4911afa5c7e5692ff8f8acb2cdd1a6949999c0986bb9ec23",
+    "desktop/gpui/src/app/settings_coordinator.rs": "596e33fce625b83a678c7e647d0798e765b0000c0c5d9d246c6fa55194769326",
+    "desktop/gpui/src/app/slash_coordinator.rs": "c6e04a23bc34ddba2f7b1137a48219b04013d935be8e3cffe053aa96b8f92896",
+    "desktop/gpui/src/app/slash_tests.rs": "87bd1ff4d08666d603f26cd690283326f8cf5a3f932ca67a9270876268fbe3b6",
+    "desktop/gpui/src/app/source_tools.rs": "9cb54f1c4eda49113cf6d36a5f3f0ad080c5fb240439278a499d711e3e209a2e",
+    "desktop/gpui/src/app/status_coordinator.rs": "592c754266fbee5cb7174182c42caacdc808bc772145bd3f2ae0e65bb4b36118",
+    "desktop/gpui/src/app/tests.rs": "4758107ed4d57d3c7b7ea8ab81ec8ef0af82169edb07f1e13783e8865eb5400a",
+    "desktop/gpui/src/app.rs": "ad1c2e4f6846f1bfdaf3f61dd345c264e8e9c364c5ec256593e8cb1b3c209ce5",
+    "desktop/gpui/src/apparatus.rs": "69786c4d38f7c9bbbe3addcf54cbe72652104597167c36888caa6a244262c8fb",
+    "desktop/gpui/src/apparatus_view.rs": "be36e77237d4f7879858bf22316c3a041313eeceb1c32f64e4924a6fe0363514",
+    "desktop/gpui/src/assets.rs": "4c50e8fa9968b4e27292bb749f267bffc67482886c8053546acb85d92c2fdc92",
+    "desktop/gpui/src/capture_geometry.rs": "3e3a0764c1c0fd54e7025e97cbf56304ce76ea88bb540287f24c94f8a8db7285",
+    "desktop/gpui/src/cast.rs": "66fb8b845764e21cdde4242084034ddf5cff3a0faf512876acab2c1b0d47dce6",
+    "desktop/gpui/src/cast_view.rs": "3e983483fd56a17c81c3b8420d3d3a8c4dad2e5b4a42d16fd5b8b30cd323dc0d",
+    "desktop/gpui/src/chrome/focus_outline.rs": "a5a27c76cbe107b278d5820add98362a902c86a8c6e57057e6b59260cc546020",
+    "desktop/gpui/src/chrome/page_selector.rs": "15a94ededab2549f91ed16bd4b106bd5a1fe8b90a1c980559909403e394789e2",
+    "desktop/gpui/src/chrome.rs": "62efaaf6af1d4ebaa62cab20932b2aa5a1dcf26fcd7ed2ddfb5f4b80a17d1a00",
+    "desktop/gpui/src/citation_anchor.rs": "518f1c02c884f1dc36f5fcf5d97f5ec54ddab9e26a1d592a405302fffc1cd3e0",
+    "desktop/gpui/src/compositor.rs": "01203ec0d41851bb9cd24ac7c1a6b59bff8a627ee20e243ccea1b6141f479375",
+    "desktop/gpui/src/document_edit.rs": "c00646844e2e31ac2ddc1cc1701269ecdd12322a2129c506e6c72f4a95503faf",
+    "desktop/gpui/src/dossier.rs": "3e01062a4c160e377593cdc48e82b5564dcdee14ff43d680b9d2318cb035e893",
+    "desktop/gpui/src/dossier_conversation/amendment.rs": "333d0630deca8d7af99db6bf3ca91bfe5d63b87c1c6c8a8d1fc194ff089df683",
+    "desktop/gpui/src/dossier_conversation/gathering.rs": "486a54cee38f7212b23fd3fdb9e1e670d8457e842cc50e5114a9a11d942f2897",
+    "desktop/gpui/src/dossier_conversation/mod.rs": "a77a839a6e5b35bf00ab82ad3dc4106344796f1e089af5fe4861e4cdba90286f",
+    "desktop/gpui/src/dossier_conversation/protocol.rs": "2b47c0a2fbd3f29d4439c2196ee983aa786116f1ba97db233076d36e2bda8dba",
+    "desktop/gpui/src/dossier_conversation/seam.rs": "52db551378aed5163c4ea55574799108b1c13e2cb8cccbcd9ee8f99866ab299c",
+    "desktop/gpui/src/dossier_conversation/session.rs": "bf56c3c0d29de4eb8fddc28dc860b148b17c65af1e5a3f9653b6874b45d3f8c5",
+    "desktop/gpui/src/dossier_conversation/view.rs": "1a0e3465c789e29c621a806d275d0547dbffc8af7a52522cb80ad31ff60a3987",
+    "desktop/gpui/src/dossier_filing.rs": "1941a769dad4190c1a5258361305d1767eadec6232ffd9b607c5cbb5c6eae28f",
+    "desktop/gpui/src/dossier_image_lifecycle.rs": "ec0855df3359b3ac8d0b4da2183f7b0d1a18e5bd164e9e4dc99c6a6b472ba037",
+    "desktop/gpui/src/dossier_multiply.rs": "5f105698616eada168fd4e168c98a193b86a56729ba205b103bb6be6a8c99373",
+    "desktop/gpui/src/dossier_paper.rs": "0932a0728d9b9e527c3332d85640c9b2ca83c3dc94fda323d558b7034fcc00ab",
+    "desktop/gpui/src/dossier_stamp.rs": "02e148677556cf5db9a4f0b13aef4373171a93c6e34888e901a510b1a6376ed3",
+    "desktop/gpui/src/dossier_view.rs": "14c5344ee763518382ac811f91cbb41008ffe024a4fef36b0604c866e58689b3",
+    "desktop/gpui/src/editor/atom_renderer_lifecycle.rs": "b4a9cc1de8444001ca53de5f4d472f336ca9b08e5444fd8b2260529885663920",
+    "desktop/gpui/src/editor/block_moves.rs": "2af3d5f4432a0d8e50f3d6ca0ea861f37471c96017bad49c32e7f6d1590247a0",
+    "desktop/gpui/src/editor/clipboard.rs": "db73c03b68ee482cf8d9b32fbce00442014149330d2dec7e363edba83bae0c41",
+    "desktop/gpui/src/editor/clipboard_wayland.rs": "f75e371c2f235e463507d3a7ad2f2772954ec2d3916fa2f16ef0284a1b72594a",
+    "desktop/gpui/src/editor/clipboard_x11.rs": "89e8450b5e61cbc77c6091e82ea332e79dfd214242763bf68a0ed0922cae9f6a",
+    "desktop/gpui/src/editor/command.rs": "e0b2ed6fe37d1be0bd3a1a7ed30a7a0fb0bc937b1f49ceaa4564195ad63e9d10",
+    "desktop/gpui/src/editor/comments.rs": "562406050006a985d0645e94dc44091fdea8b3a8586ca37cc82601f6a346506e",
+    "desktop/gpui/src/editor/html.rs": "6c92e9a84dc5557c0622f216314d752b78a2c6b7a681e52188a5da857e640d4f",
+    "desktop/gpui/src/editor/hyphenation.rs": "47356315bac1ce6fad5ff861d1cb71e2e351aa3f2e02bd296f625b372f14ac8d",
+    "desktop/gpui/src/editor/images.rs": "35f43fa0e521d44dad6e09bd31c3960233160104acb05b232df3b24d5b6994d5",
+    "desktop/gpui/src/editor/math_source_editor.rs": "d524bf0b99007980975e666d58f6c42c79f11066916fa9d537f47eec5dc20fba",
+    "desktop/gpui/src/editor/math_source_flow.rs": "dd9c351c85922a703aee9d2648a8b18d6e3d66beb37631d705a2fb60902ab373",
+    "desktop/gpui/src/editor/mod.rs": "efa568bc71073c85cfe03ccddaed56b26fe17f42905bc92e03b77e11ec5dd6d8",
+    "desktop/gpui/src/editor/model.rs": "767255f5c4781fb23472172fe26efe79ff7b282efc069338188f9c8b461afbbb",
+    "desktop/gpui/src/editor/pagination.rs": "05e8a2173d19240b11ff172ad162e46d05d56f1bdb899c79cfca631973da9b03",
+    "desktop/gpui/src/editor/paragraph_flow.rs": "7c9ad7eae6e70970c7110949c59e8757dcbddf1d8e96ab51f53c4435526ec7e9",
+    "desktop/gpui/src/editor/recase.rs": "c17817ac24c2dd87a236241b93c2227b2d4a80f028552a43889cc0299d7fba03",
+    "desktop/gpui/src/editor/tables.rs": "0858a09ee1bb5dd16263905dc35a5a8f5e8c302819e2b72d9afaefb1cb0ca61a",
+    "desktop/gpui/src/editor/tests.rs": "9ae345af49c09185ac1ca05839332a5194f7ad01f490ea611bdfc5fb1506f8df",
+    "desktop/gpui/src/editor/transaction.rs": "abf5e50e9b27a0ead15f4581ba18a8e0f5d5cdb09ea71dedeec2663634262ec9",
+    "desktop/gpui/src/editor/view.rs": "7473bb7279e798b305d79ca4246d03eb64c4d02c8efbb133e9a8b3ed7bd92d1c",
+    "desktop/gpui/src/editor/view_citations.rs": "be5a664c83391d07883675ac1b6eb888709283db3b4deedcc59b19e66e5a99fe",
+    "desktop/gpui/src/editor/view_clipboard.rs": "43cecd003da3f2fe4abfc25566a72d9b60d3f12d652671e55f57f0f0362af2f1",
+    "desktop/gpui/src/editor/view_comments.rs": "5f761d277fb68776b0d15afbc1a2e554a925fbb5b56edc1bf46212e4e0ccc911",
+    "desktop/gpui/src/editor/view_drag.rs": "4466b0d31acaf763e63ef8aa6a8aaba87ca7c6a1fcc9331b5638fefd998eead9",
+    "desktop/gpui/src/editor/view_flow.rs": "8361591ce4fc64119542d3f7b8055d4c1c0a0ad85671a79ed183172d29250742",
+    "desktop/gpui/src/editor/view_flow_tests.rs": "b11a476b165c601e4d6d2862a53827c7efce9fe5d36aac1d2235f2c0a62e1b9c",
+    "desktop/gpui/src/editor/view_insert.rs": "0d457dadbc98e469c7d859c90eb0f7ac0850eebd9e67f1822c1a9a5d7f57ec69",
+    "desktop/gpui/src/editor/view_math_source.rs": "5edb0412eee1c5cf023182ab2dd2e5570994624220e9a10acee4d011b001bb0d",
+    "desktop/gpui/src/editor/view_notes.rs": "3e6c442165bed50baa1de860aba115d206bbfc9ace07b3258fc7be60fb50f4a1",
+    "desktop/gpui/src/editor/view_notes_tests.rs": "4b9b5a169e55a98cd2728fc22b225b3743bf11125da3a0ed0d0f3ecaf9ad8d92",
+    "desktop/gpui/src/editor/view_pagination.rs": "0ad825e9b686f6ae1cdd99d41d950e2cad60cd0cb977814251800dc92487ab0f",
+    "desktop/gpui/src/editor/view_shortcuts.rs": "7172648ef937eca9768e8b728de88f02fdb619e75fb84c1721920146397e7704",
+    "desktop/gpui/src/editor/view_tests.rs": "27f6962097d7e6656700d919abb4ab61dde0bb8f01df840b27bffb0becb4f74c",
+    "desktop/gpui/src/exchange.rs": "db7eb2846fe4f97cce653585a2105de232d7bc89af37e0324b9ba49ba8d880ab",
+    "desktop/gpui/src/flow.rs": "1eb3a80609367a5e8ebde64520f616aca3d809e98e8345f5f05a3e159bdf4846",
+    "desktop/gpui/src/flow_view.rs": "a624584b87dd5f792d99f4fcb01b93f4279c1d9805a4d1b09f3f05da5fc9ba7a",
+    "desktop/gpui/src/gen_ui/border.rs": "5d7915f6e1570263400d1173b94bc747937deebc2e2e25d68bdc0c7f86567c82",
+    "desktop/gpui/src/gen_ui/budget.rs": "371ea8498f2be0d11c2c4159f8e9fbb73a2d0ae54917ecf630ac4aaefaf966e7",
+    "desktop/gpui/src/gen_ui/budget_oracle_tests.rs": "b0e84ae1cd3edb5e2cfecc6bb504255e8b5de46a5d17084663cba967818b2d32",
+    "desktop/gpui/src/gen_ui/card.rs": "d0febb3e40f9a5d6eeb60dfa2dd4fe81c2b0cb245af9ccf393364c7eacefe7c0",
+    "desktop/gpui/src/gen_ui/classification.rs": "528668ee31a41a0898f83874db12ce8126fc33e6f816ca6574bf8cf439ad0d6a",
+    "desktop/gpui/src/gen_ui/classification_oracle_tests.rs": "1e9ce4a74104bab100959efb1a1b335e049f77518140fd822b69bbe82cd4c3eb",
+    "desktop/gpui/src/gen_ui/input.rs": "6e9c8d88ebf8882ba243ad4acf4ad09f9b44876719ab058150782a448718499d",
+    "desktop/gpui/src/gen_ui/integration_oracle_tests.rs": "9ee0697736722e566ed91307ff6708dda2b8b8456bb0aa4cee1884e04a827d59",
+    "desktop/gpui/src/gen_ui/mod.rs": "a8004333a3f9104e7fee81b9a8abcc0dea1cad8bd7130b30df99a733bffa6338",
+    "desktop/gpui/src/gen_ui/model.rs": "6e64cdf54a67687e5c51112282b6e3e36b2a888ee40a8776f5bbba742f83a5c8",
+    "desktop/gpui/src/gen_ui/notebook.rs": "2ad8e7a17f8c933f2ce3549c4fabeea42a69adc2562b562dfc9f4adda0dd361f",
+    "desktop/gpui/src/gen_ui/passage.rs": "65a63e7741e84b55b281abdd6e812cb7b1f2579b63d13278808173edd90b32dd",
+    "desktop/gpui/src/gen_ui/position.rs": "9f03e40c20338b5c4ac1d1fe572599e25eee8d1f080f6adab64498fc7a13a23e",
+    "desktop/gpui/src/gen_ui/props.rs": "585c417167b5afb127ff14934bb27999106037e4f13452073cc2b2f9c5fa32c6",
+    "desktop/gpui/src/gen_ui/saved.rs": "e08ee041ab5e7dae4798414537fb8069114f4f366e22eb17b51b1be04c21c397",
+    "desktop/gpui/src/gen_ui/seed.rs": "67880114adc4d93011aa21e214fdcaca90299be037183dd7322021ada3861ef2",
+    "desktop/gpui/src/gen_ui/seed_oracle_tests.rs": "bf1011877217bea14a7c803d5ffba45d7b60630111daa96dfc291c5f47affc87",
+    "desktop/gpui/src/gen_ui/source_oracle_tests.rs": "5d8e28ef614b5b8635c7774b5a90b6d37512eed5e4d94c2a77d1710badaef517",
+    "desktop/gpui/src/gen_ui/spec.rs": "992329c1a05ceb90fe1aa23d932e326aaec81023e3cbf1ff3df94be13ddf5c6c",
+    "desktop/gpui/src/gen_ui/step_map.rs": "4a98d191593ccb93415f32f28ab8084bc4df503d5c4f3710034afde0672f8e23",
+    "desktop/gpui/src/gen_ui/step_map_oracle_tests.rs": "4e99e8585e2d7400a6826d13bfeaff289a1fd648e5ea09af201930b49cf94da9",
+    "desktop/gpui/src/gen_ui/store.rs": "53736ce4e8c334454a48ed9c99b407de47add32a44b1ca89d689879137e13742",
+    "desktop/gpui/src/gen_ui/stream.rs": "075c3079c6c98bb3f9263e08649a91987a9cabdd1c1ae834ceb833c28aaeb3f9",
+    "desktop/gpui/src/gen_ui/struggle.rs": "3999a54e1519abe7294a0e8e37805ea6f0029aec91d3f005ee997d9c83b80406",
+    "desktop/gpui/src/gen_ui/struggle_oracle_tests.rs": "07d52bcc3951a1a65d0eb35030db61238d60b07f0341bd5934155d2e0438389e",
+    "desktop/gpui/src/gen_ui/support_text.rs": "21fe8c243464fa4cc960b80239c66a0228c056b684e0070371caca714b435135",
+    "desktop/gpui/src/gen_ui/view.rs": "b6323cd77d2ee4ef4e6a7672e215aaa3c2d4c1ba377dae80415f328ad80ecd56",
+    "desktop/gpui/src/house.rs": "20a2deb9781235edca9b3152d92cdb2ef120ce39089a39f9fca2c533558202d1",
+    "desktop/gpui/src/house_view.rs": "c764bd352bacd542ca299c0f5569a3af89ba49c1302f477c95d5d5a00db89a61",
+    "desktop/gpui/src/image_import.rs": "830a85e3914d3cb6c5f89a540c2018915da77103fd519a9ab83b1576cfbdcca9",
+    "desktop/gpui/src/inline_proof.rs": "5d3650ae4f3bc4c3a084792e0be697f243afbb5f7d7f527129240bd9252821f7",
+    "desktop/gpui/src/insert_menu/catalog.rs": "d29f36d0e7b9cd128ddbd3c07acc9d771fc580c3fd09eb89e87db338bbff6362",
+    "desktop/gpui/src/insert_menu/context.rs": "629988ce6051bc6e415a26bb4f8640b60681696ac75a329f35205e824355f849",
+    "desktop/gpui/src/insert_menu/filter.rs": "b9612c802cfc2e238fa532ba0dd951a94b0956a3dd6a0da6c441dc2c1e2026b3",
+    "desktop/gpui/src/insert_menu/form.rs": "aeb2a0846215423a111085eed869c9858e9b89c686d8b1520e48385ffb499ce9",
+    "desktop/gpui/src/insert_menu/markdown.rs": "41f27abce4b9a7825c0e945c721ee0b30d94ff4ef8210e7611f9b514e6688f30",
+    "desktop/gpui/src/insert_menu/mod.rs": "e2a3dbe11ccb9ecf5b139391e592ef71b1ddb1e27e7bcb5783b4ebb2d2f7fc06",
+    "desktop/gpui/src/insert_menu/parameters.rs": "c30364989ff7c3fcdf75aaaf260f07a337a9005ab543b360098f91334dbeb03d",
+    "desktop/gpui/src/insert_menu/rich.rs": "4eb1576b76273d461856d3b5ca7886474770ff65d7fe7267e86e8954fb5f1456",
+    "desktop/gpui/src/insert_menu/table_grid.rs": "749e8ae9a6840cfcf5b0c892c7d8726c1793284a7d56be27816aa6cca5ba4633",
+    "desktop/gpui/src/insert_menu/table_picker.rs": "bf1c5f336d02259b7e331b3c726771cf928481cfa8d53525bc74eb72f2543d8e",
+    "desktop/gpui/src/insert_menu/tests.rs": "e10f0c5ba52b45d256898dc87735700ea8141da5f59f80b4fcbf600e01f46137",
+    "desktop/gpui/src/insert_menu/view.rs": "eb4f9a0d3c3d60e17e11de335b56ec18ea84bc88bb99e49c3ffe17c50b05cc3c",
+    "desktop/gpui/src/launch_arguments.rs": "c8e62db4daae0b46db8a7424f7e46e5a6292bba904a50d218b07d3e8416f86fd",
+    "desktop/gpui/src/lib.rs": "0e78b6f1b868976f8b76636c3208c1cf9b6feac0f64fc44d05354cdafcf5092d",
+    "desktop/gpui/src/main.rs": "9d7abed148764cdef71cf62eea4d6f42e3c629efbd246400e3a93279beac5662",
+    "desktop/gpui/src/manuscript.rs": "a0b8b6043b7917b785f38d74a4bf43b9596326601bf846a832d9c153a835cb26",
+    "desktop/gpui/src/margin_rail_view.rs": "7f66e08dd3447c012ccacbf21541df3203f8a88af17119f64a45c44425b8e1de",
+    "desktop/gpui/src/marginalia.rs": "b78113990cfa6fdd4f63c4e7602679d628bdc47639dbdfb4b748491b70cf0324",
+    "desktop/gpui/src/marginalia_view.rs": "038630c3fe59d387f8652a32193f0fe8f9d35bf3e7f21901956681098bb05aec",
+    "desktop/gpui/src/math_write.rs": "9a33ecb6418cf02b5c06866840be64be4f926d00da0b5344aa124bb5676ac051",
+    "desktop/gpui/src/native_accounts/auth.rs": "64832c09a8a543c5fce0a1190eaebd86aae5cbe13ceefb38f2906da2a6a4d583",
+    "desktop/gpui/src/native_accounts/callback.rs": "8e9e452faf8f85c69ead9c3a913a290438ac675df81b5506a518deccc3245b91",
+    "desktop/gpui/src/native_accounts/journal.rs": "c4ee110383593288647a54b7643b69cfbb941ee293b91277cf39eadf6eb9f315",
+    "desktop/gpui/src/native_accounts/knowledge_wire.rs": "24edf1b26ff06e1e4e929189021eca9a5e687d0bcf2035eaa4b2aa176a851402",
+    "desktop/gpui/src/native_accounts/mod.rs": "f65de5ae6b17cad470333ea18ce338802214263aade50a2e62e8a9b60268b66c",
+    "desktop/gpui/src/native_accounts/protocol.rs": "2be170a9822bcf237ba92dff5e64dc22bf7ac33af8c442e0d604a24ce21654b3",
+    "desktop/gpui/src/native_accounts/store.rs": "7494bb3ff3de5a1f62f85a558911eacff093f1b9c36b20c7d25ba38f1e974861",
+    "desktop/gpui/src/native_accounts/tests.rs": "73725a1b7c8b04eb151832c850ce1a1c4e21c60562e373a93bf0358ff72fcb7d",
+    "desktop/gpui/src/native_accounts/transport.rs": "7160c07bd668a2ae67953ace691db643cb2221dcd4d5aa4f60cfe17d0b7be8f6",
+    "desktop/gpui/src/native_ai/contract_extractors.rs": "31fac782ce1294f8b16fd507cfadbb6e5b1144a2f72d970e7aba7f9cb94681dc",
+    "desktop/gpui/src/native_ai/coordinator.rs": "a08649c5977396ed2c3f155ad921e8f9a691489494f5e9aa780bd13826059507",
+    "desktop/gpui/src/native_ai/litert_lifecycle.rs": "07271a506bed2dd464b673a3be3402f869caa7c211b47cf41f8213bf771040bf",
+    "desktop/gpui/src/native_ai/loopback_transport.rs": "6eb5a937142fb25f5d5013b179eda4d2fb55a3f429f567fcf45613c48b42ffe4",
+    "desktop/gpui/src/native_ai/mod.rs": "5da8df3bc0264c865393dc67c96b0741b0407a72f67029c015920fc8e91ad24b",
+    "desktop/gpui/src/native_ai/provider_types.rs": "b9a5b88e9121c8d3fc4c83ca342df9b8798a3c5d344833a12be915795b361a4a",
+    "desktop/gpui/src/native_ai/request.rs": "2f1539d4c6daf94e973bac9d89a96162907ac515d50b94bbe8f86305105e757c",
+    "desktop/gpui/src/native_ai/stream_accumulator.rs": "39cb95543ebf50d927c4161e9ae35a3117d5c7ce66845a19d24e463f663d5495",
+    "desktop/gpui/src/native_ai/stream_tests.rs": "af321282597d826c28d2f93c1313987d5e863b4625e82ae37aa24dfab31407b4",
+    "desktop/gpui/src/native_audio/alignment.rs": "554a2e74a8d182ac1d65a8c657a8271915e899e27642c314a332d7c82920d3a3",
+    "desktop/gpui/src/native_audio/backend.rs": "b5313285a995875a5b650630d5f63b5991ebb52515ee344531724de4f4f03978",
+    "desktop/gpui/src/native_audio/cache.rs": "d6b982688ba4a4b08ce5711e16f558affe6176b293a1f191bd7e48568b568195",
+    "desktop/gpui/src/native_audio/live_voice.rs": "cc3b8ac68698f72b574a30a40651d24b74852975561c07d2b51f1cc173dda947",
+    "desktop/gpui/src/native_audio/mod.rs": "eccb70b94fbb194b93d6eacafa8299381fb09b644865835479c458b4f7da4b81",
+    "desktop/gpui/src/native_audio/pcm.rs": "3893869c23480b1ad69c48988b19a80ad01a73c2ec5adc6d8e2ab64b9e69bc62",
+    "desktop/gpui/src/native_audio/request.rs": "15903666c559dd1a9c5453998aa40122a4715da671c9dd522e48d497a1c43eb1",
+    "desktop/gpui/src/native_audio/segment.rs": "f94547531867feaf390247dfc360023b0d0c8f53e8c6f82339650904263c97e1",
+    "desktop/gpui/src/native_audio/state.rs": "c58c2d2228898098677d90260ec553303edc628497b2c00153f9b4217b7618af",
+    "desktop/gpui/src/native_audio/transport.rs": "ad3dde75ec30357dffd443f7275c8dc981cf9e5d5c376fb97ef27672591e0353",
+    "desktop/gpui/src/native_collaboration/error.rs": "b4dc29fa1895c43ff1a8e4cac320af89a318e951aa2c0844ee83c2b695d1799e",
+    "desktop/gpui/src/native_collaboration/identity.rs": "5d724dd50a31efe66d591c7268b21f2fa6f4927c1dae7f361671834e724d658c",
+    "desktop/gpui/src/native_collaboration/mod.rs": "6c8e586f15c13ccd36864873da9ddb202e4755d70c573227bb4dc16a6af6cab2",
+    "desktop/gpui/src/native_collaboration/presence.rs": "9469dda2f4704619d41d436906a9308247f4e4e2cdde79883f905d8d70ee4f18",
+    "desktop/gpui/src/native_collaboration/publishing.rs": "cd85bd401a909bf4374a35577a472d2f10690b66bf430daf73e29172b5370c20",
+    "desktop/gpui/src/native_collaboration/roles.rs": "ce686d715e63158bd9ba43a22159414e0abc20e1ef6a8c504f8f9664c4d8026a",
+    "desktop/gpui/src/native_collaboration/sharing.rs": "41f6c89a3d265d7e60b0cbfc953e18e9bb046ab2ba5cd1373cc0b84b5c5e16f2",
+    "desktop/gpui/src/native_collaboration/transport.rs": "a092f8337925b5eeab7e432e1ebf407a390fa448ed5210c94c2caefe96890d78",
+    "desktop/gpui/src/native_typst.rs": "e422242b21a2f59356b72c40170dafd3f92b542129632e8cda3212032cd14288",
+    "desktop/gpui/src/page_furniture.rs": "a5524cd14d0b2336fcb21eb71ac7ca325e3e5d8ddef70f20d839168fe61a8973",
+    "desktop/gpui/src/paper_grain.rs": "68a3ec58eebb835ab6e419023b66ef487171442e9981cfcda08e230d0a14e857",
+    "desktop/gpui/src/proof.rs": "78ec4290c456bd5bf9b3f11ccb5bfa288c92f73c709691a64e4b35ad936ad0a0",
+    "desktop/gpui/src/revision_view.rs": "7bdfd36d7069e0800c3569ae685aafd627f93097f4b72cc39f1c3b8f5a7e299b",
+    "desktop/gpui/src/revisions.rs": "dfb4aa49ddba7d866660f2543ec6765c1e124c7cabae8b83adf8be521b7d82fc",
+    "desktop/gpui/src/rubric.rs": "3ecf39e6836e86db7a7e5a8b75f93c18f2fc1e5ef5bdc40cad020fee6b549862",
+    "desktop/gpui/src/rubric_view.rs": "a5dc38e5e34842371223610d4f355bf176b4fafae86abcd7f0e33eaacc7a2414",
+    "desktop/gpui/src/semantic_bridge.rs": "24cbe7ca6083210aa87836db81660c31b3a835d2bb1cf993cd7459e48fe385df",
+    "desktop/gpui/src/settings.rs": "c1426fe597a82b2a807fc8234a0680e8cd826eb87ba165f87f0f12927b2a9338",
+    "desktop/gpui/src/settings_view.rs": "66dba10e89b215809c769717aac352263c8d50133e54ab1c9069ecf91ba3eb39",
+    "desktop/gpui/src/source_editor.rs": "5bd5e64cd686ba3c132fd35f211cb4188d07b9de430a4191079096f4ec61b3c0",
+    "desktop/gpui/src/source_session.rs": "b96d85c646f6fbf818e422037301a7122336b6321e3374677779d2aa2a83527f",
+    "desktop/gpui/src/source_view.rs": "8ac8c1eca7544b75232f7f64b1f30f0726587efd575cba51c350c67efcee9403",
+    "desktop/gpui/src/storage.rs": "ec18842af85f8d8b30e56b3ab5b1ca67c29b1a4898498183881507f718e9095a",
+    "desktop/gpui/src/theme.rs": "ce3eea0bc31c01d41c49c7c44bd11db6dc931cc7d437e92f86ea02a2e7f0977c",
+    "desktop/gpui/src/view_state.rs": "523c04060c9debf4b8e7585851b2ea8c7b7d3af20465630d1c02baf258c17587",
+    "desktop/gpui/src/workspace.rs": "3cc6dc44cd2027daf26fd7a08c689d7d1f020da7770b345863b629fa1ae71238",
+    "desktop/gpui/tools/capture-native.py": "129bb728c8fb2ceb7ca69ab0337bf1f28c5d93e9efacd8c060624eda6bdac4b7",
+    "src/components/editor/slash-command-menu.tsx": "300fbafe1b6b94ee0ae629a3e939b991b9fb832fdf049149ba9d2c4745c5a434",
+    "src/components/editor/table-insertion-grid.tsx": "825347bf1e11119f0244fad97af15d901e179f85d850e5a33709dcc052cde659",
+    "src/components/editor/twyne-editor.tsx": "f6ba675eedac4056a55c030d9e248a1f0b61435585c45cd4b429b777401f3921",
+    "src/global.css": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+    "src/utils/editor-commands.ts": "fcccc50c83aa93137ee9bc89881e98dea6cf14b405599ced42700bb6a2121daf",
+    "src/utils/keybindings.ts": "4706407b0319b22dfea2aff644417c376c1a561f328d5209f5dcdaf02468baa7",
+    "src/utils/slash-command-filter.ts": "c02842fae4df81f8aa8a09ad5f11d1944a5fb35ee3bc190d1acdddbabe97dc8a"
+  },
+  "checks": [
+    {
+      "command": [
+        "rtk",
+        "proxy",
+        "devenv",
+        "shell",
+        "--",
+        "rtk",
+        "proxy",
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--features",
+        "ui-tests",
+        "--bin",
+        "twyne-desktop",
+        "--manifest-path",
+        "desktop/gpui/Cargo.toml"
+      ],
+      "exitCode": 0,
+      "status": "passed",
+      "wallSeconds": 105.277,
+      "logSha256": "8c94746f618cc9fa07d55759bc7370867f2d322501c083e2355176d3a3f773b5",
+      "passed": 118,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "testSeconds": 98.48,
+      "evidence": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/checks/full-ui.log",
+        "sha256": "8c94746f618cc9fa07d55759bc7370867f2d322501c083e2355176d3a3f773b5"
+      }
+    },
+    {
+      "command": [
+        "rtk",
+        "proxy",
+        "devenv",
+        "shell",
+        "--",
+        "rtk",
+        "proxy",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "--all-targets",
+        "--features",
+        "ui-tests",
+        "--manifest-path",
+        "desktop/gpui/Cargo.toml",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "status": "passed",
+      "wallSeconds": 10.165,
+      "logSha256": "e76ecbe60eca6f192439392c264a7149553cf9f33567a2370f87bf60a2b8b07f",
+      "evidence": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/checks/clippy.log",
+        "sha256": "e76ecbe60eca6f192439392c264a7149553cf9f33567a2370f87bf60a2b8b07f"
+      }
+    },
+    {
+      "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --no-default-features --lib --manifest-path desktop/gpui/Cargo.toml insert_menu",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "evidence": "Observed terminal completion in root session 88730",
+      "warning": "Existing section_ranges dead-code warning in the pure build; strict desktop Clippy passed"
+    },
+    {
+      "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --no-default-features --lib --manifest-path desktop/gpui/Cargo.toml exit_code_",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "evidence": "Observed terminal completion, root chunk 4c777b"
+    },
+    {
+      "command": "rtk proxy bun desktop/gpui/tools/sync-insert-menu.ts --check",
+      "status": "passed",
+      "commands": 17,
+      "queries": 21,
+      "tableCases": 27,
+      "networkUsed": false,
+      "evidence": "Observed terminal completion, root chunk dbfdd1"
+    }
+  ],
+  "captures": [
+    {
+      "state": "slash-form",
+      "image": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/table.png",
+        "sha256": "72156d7f8c18bdce771fafbe50fbbffff7340cab6932ec47e65a41371afef88d"
+      },
+      "geometry": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/table-geometry.json",
+        "sha256": "e6b8a0f64bf60e466c142399aa23ab29042fae643da6d242af462359f0e9dfcd"
+      },
+      "fixture": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/fixtures/slash-form/The writing page.html",
+        "sha256": "a4bd6c7aa00069c8e419d4efad3bb9420885828ee809654610e9595f4026fd22",
+        "html": "<p>The manuscript stays on this page.</p><p>/table</p>"
+      },
+      "viewport": {
+        "width": 948.0,
+        "height": 640.0
+      },
+      "scaleFactor": 1,
+      "observedElements": [
+        {
+          "element": "Name(\"slash-table-cell-1-1\")",
+          "rect": {
+            "x": 364.0,
+            "y": 102.0,
+            "width": 18.0,
+            "height": 18.0
+          },
+          "visible": true,
+          "focused": false
+        },
+        {
+          "element": "Name(\"slash-table-picker\")",
+          "rect": {
+            "x": 351.0,
+            "y": 64.0,
+            "width": 246.0,
+            "height": 246.0
+          },
+          "visible": true,
+          "focused": null
+        },
+        {
+          "element": "Name(\"slash-table-grid\")",
+          "rect": {
+            "x": 364.0,
+            "y": 102.0,
+            "width": 220.0,
+            "height": 172.0
+          },
+          "visible": true,
+          "focused": true
+        },
+        {
+          "element": "Name(\"slash-table-size\")",
+          "rect": {
+            "x": 364.0,
+            "y": 77.0,
+            "width": 220.0,
+            "height": 17.0
+          },
+          "visible": true,
+          "focused": null
+        },
+        {
+          "element": "Name(\"slash-table-cell-8-10\")",
+          "rect": {
+            "x": 562.0,
+            "y": 256.0,
+            "width": 18.0,
+            "height": 18.0
+          },
+          "visible": true,
+          "focused": false
+        }
+      ]
+    },
+    {
+      "state": "slash-filtered",
+      "image": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/hint.png",
+        "sha256": "5094d80fdd03e3c10663f95d79a51ca0ea3ff161bbf88c693161d6e02752c04f"
+      },
+      "geometry": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/hint-geometry.json",
+        "sha256": "f3766ce815961627e30f51d7676571002d0262fb8b67e586b09aea9e925219af"
+      },
+      "fixture": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/fixtures/slash-filtered/The writing page.html",
+        "sha256": "4078825f87ad32738f0fab98d2a7a9bf3224cbb40881769dae38b221f11bc305",
+        "html": "<p>The manuscript stays on this page.</p><p>/h2</p>"
+      },
+      "viewport": {
+        "width": 948.0,
+        "height": 640.0
+      },
+      "scaleFactor": 1,
+      "observedElements": [
+        {
+          "element": "Name(\"slash-command-menu\")",
+          "rect": {
+            "x": 254.0,
+            "y": 270.0,
+            "width": 288.0,
+            "height": 119.0
+          },
+          "visible": true,
+          "focused": null
+        },
+        {
+          "element": "Name(\"slash-hint-paragraph-heading-2\")",
+          "rect": {
+            "x": 511.0,
+            "y": 349.0,
+            "width": 18.0,
+            "height": 15.0
+          },
+          "visible": true,
+          "focused": null
+        }
+      ]
+    },
+    {
+      "state": "slash",
+      "image": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/menu.png",
+        "sha256": "11b79227aa3598c8dfe048232cadb5a5b505728b255c09b64bca0dffb1bd60fb"
+      },
+      "geometry": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/menu-geometry.json",
+        "sha256": "5d971e755ff2bbecfc2eb13c2e0ec6172b291441d43a3519e5269703bac4f240"
+      },
+      "fixture": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-build-20261005-a/fixtures/slash/The writing page.html",
+        "sha256": "416defa52935a6b3ffd5dfa1d47be0ae943a5c62d734a4924d0b13488780443d",
+        "html": "<p>The manuscript stays on this page.</p><p>/</p>"
+      },
+      "viewport": {
+        "width": 948.0,
+        "height": 640.0
+      },
+      "scaleFactor": 1,
+      "observedElements": [
+        {
+          "element": "Name(\"slash-hint-paragraph-heading-2\")",
+          "rect": {
+            "x": 491.0,
+            "y": 858.0,
+            "width": 18.0,
+            "height": 15.0
+          },
+          "visible": false,
+          "focused": null
+        },
+        {
+          "element": "Name(\"slash-command-menu\")",
+          "rect": {
+            "x": 234.0,
+            "y": 270.0,
+            "width": 288.0,
+            "height": 354.0
+          },
+          "visible": true,
+          "focused": null
+        }
+      ]
+    }
+  ],
+  "sourceBrowser": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-parameters-source-20261005-b/receipt.json",
+    "sha256": "78fae3421df7370e0a0083bbe5e01869d3d3f842381e43f4b615715627596311"
+  },
+  "sourceBrowserCases": 5,
+  "sourceTableInitial": {
+    "rect": {
+      "x": 351.046875,
+      "y": 64,
+      "width": 245.90625,
+      "height": 249.265625
+    },
+    "caption": "1 \u00d7 1 table",
+    "gridFocused": false,
+    "selectedCells": 1
+  },
+  "advisoryReview": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/fixtures/insert-menu/advisory-modal/adoption-review.json",
+    "sha256": "8257664106a0d986afdf1e187a07cdf25f492954258fd9b29e25664cf803a452"
+  },
+  "observations": [
+    "The 8 by 10 native picker accepts pointer/keyboard dimensions; mounted tests insert 2 by 4 with header cells, cover bounds/cancel and reject a queued choice after a document switch.",
+    "Original browser table/note/diagram/image activation removes the slash query; cancel does not restore it. Native parameter activation follows that boundary.",
+    "Native rich registry keys implement heading/list/quote/code/page-break commands. Mod-Enter first exits a code block without deleting selected code; one undo restores the node and selection.",
+    "Actual-font native captures show the picker at x351 y64 width246 height246, the filtered heading shortcut, and an unfiltered width288 menu.",
+    "Sakana fugu-max reviewed four frozen files. Root corrected incomplete/false claims; no proposed product code was adopted from this modal review."
+  ],
+  "knownDifferences": [
+    "The original table box is 245.90625 by 249.265625. Native flex layout rounds 18.4-pixel cells to 18 pixels and the box to 246 by 246; caption synthetic weight and rasterization still differ.",
+    "Native opens with grid focus; the original caller returns focus to the editor. Original keyboard fixture explicitly focuses the grid.",
+    "Native parameter removal/commit use separate undo steps. Original ProseMirror time grouping still needs a matching interaction test.",
+    "Original note/Mermaid modal styling, Mermaid preview, immediate blank equation atoms and the inline image URL bar are still implementation work.",
+    "Native adds Link as requested and clamps the menu to the visible viewport.",
+    "Hints reproduce the original default Mac labels; native rich keybindings resolve Mod for the host OS. Prototype plain-text manuscripts do not yet implement these structural keyboard bindings.",
+    "The rich import and original browser fixtures exercise different room/document presentation defaults; these captures compare insertion surfaces, not full-room or title parity."
+  ],
+  "boundaries": [
+    "Synthetic local manuscripts and isolated native libraries; no user preview library access.",
+    "The new immutable UI build reuses the documented frozen document helper; no new helper release is claimed.",
+    "Mounted GPUI tests and actual native font/GPU captures are separate evidence.",
+    "Original browser evidence does not establish the Electrobun host.",
+    "No authenticated account sync, live AI/knowledge-base request, real audio/device, release, installation or other-OS claim."
+  ]
+}

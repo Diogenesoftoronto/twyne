@@ -1,0 +1,364 @@
+{
+  "provenance": "Actual active InlineNoteNode, original note-editing.ts helpers and current StarterKit ProseMirror parser in isolated JSDOM; no browser/user manuscript/provider mutation.",
+  "sourceFiles": [
+    "src/components/editor/extensions/inline-note-popover.ts",
+    "src/components/editor/note-editing.ts",
+    "src/components/editor/extensions/endnote-node.ts"
+  ],
+  "steps": [
+    {
+      "action": "initial",
+      "html": "<p>A 🦊<sup data-endnote-text=\"Alpha\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Alpha\"></sup> <strong>B é</strong><sup data-endnote-text=\"Beta\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"Beta\"></sup> C<sup data-endnote-text=\"Gamma\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Gamma\"></sup></p>",
+      "notes": [
+        {
+          "kind": "endnote",
+          "number": 1,
+          "pos": 5,
+          "text": "Alpha"
+        },
+        {
+          "kind": "footnote",
+          "number": 1,
+          "pos": 11,
+          "text": "Beta"
+        },
+        {
+          "kind": "endnote",
+          "number": 2,
+          "pos": 14,
+          "text": "Gamma"
+        }
+      ],
+      "selection": {
+        "type": "text",
+        "anchor": 1,
+        "head": 1
+      }
+    },
+    {
+      "action": "selected",
+      "html": "<p>A 🦊<sup data-endnote-text=\"Alpha\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Alpha\"></sup> <strong>B é</strong><sup data-endnote-text=\"Beta\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"Beta\"></sup> C<sup data-endnote-text=\"Gamma\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Gamma\"></sup></p>",
+      "notes": [
+        {
+          "kind": "endnote",
+          "number": 1,
+          "pos": 5,
+          "text": "Alpha"
+        },
+        {
+          "kind": "footnote",
+          "number": 1,
+          "pos": 11,
+          "text": "Beta"
+        },
+        {
+          "kind": "endnote",
+          "number": 2,
+          "pos": 14,
+          "text": "Gamma"
+        }
+      ],
+      "selection": {
+        "type": "node",
+        "anchor": 5
+      }
+    },
+    {
+      "action": "updated",
+      "html": "<p>A 🦊<sup data-endnote-text=\"A &amp; &quot;B&quot; — 東京 🦊\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"A &amp; &quot;B&quot; — 東京 🦊\"></sup> <strong>B é</strong><sup data-endnote-text=\"Beta\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"Beta\"></sup> C<sup data-endnote-text=\"Gamma\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Gamma\"></sup></p>",
+      "notes": [
+        {
+          "kind": "endnote",
+          "number": 1,
+          "pos": 5,
+          "text": "A & \"B\" — 東京 🦊"
+        },
+        {
+          "kind": "footnote",
+          "number": 1,
+          "pos": 11,
+          "text": "Beta"
+        },
+        {
+          "kind": "endnote",
+          "number": 2,
+          "pos": 14,
+          "text": "Gamma"
+        }
+      ],
+      "selection": {
+        "type": "text",
+        "anchor": 5,
+        "head": 5
+      }
+    },
+    {
+      "action": "converted",
+      "html": "<p>A 🦊<sup data-endnote-text=\"A &amp; &quot;B&quot; — 東京 🦊\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"A &amp; &quot;B&quot; — 東京 🦊\"></sup> <strong>B é</strong><sup data-endnote-text=\"Beta\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"Beta\"></sup> C<sup data-endnote-text=\"Gamma\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Gamma\"></sup></p>",
+      "notes": [
+        {
+          "kind": "footnote",
+          "number": 1,
+          "pos": 5,
+          "text": "A & \"B\" — 東京 🦊"
+        },
+        {
+          "kind": "footnote",
+          "number": 2,
+          "pos": 11,
+          "text": "Beta"
+        },
+        {
+          "kind": "endnote",
+          "number": 1,
+          "pos": 14,
+          "text": "Gamma"
+        }
+      ],
+      "selection": {
+        "type": "text",
+        "anchor": 5,
+        "head": 5
+      }
+    },
+    {
+      "action": "empty",
+      "html": "<p>A 🦊<sup data-type=\"footnote\" class=\"twyne-endnote\"></sup> <strong>B é</strong><sup data-endnote-text=\"Beta\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"Beta\"></sup> C<sup data-endnote-text=\"Gamma\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Gamma\"></sup></p>",
+      "notes": [
+        {
+          "kind": "footnote",
+          "number": 1,
+          "pos": 5,
+          "text": ""
+        },
+        {
+          "kind": "footnote",
+          "number": 2,
+          "pos": 11,
+          "text": "Beta"
+        },
+        {
+          "kind": "endnote",
+          "number": 1,
+          "pos": 14,
+          "text": "Gamma"
+        }
+      ],
+      "selection": {
+        "type": "text",
+        "anchor": 5,
+        "head": 5
+      }
+    },
+    {
+      "action": "deleted",
+      "html": "<p>A 🦊 <strong>B é</strong><sup data-endnote-text=\"Beta\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"Beta\"></sup> C<sup data-endnote-text=\"Gamma\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Gamma\"></sup></p>",
+      "notes": [
+        {
+          "kind": "footnote",
+          "number": 1,
+          "pos": 10,
+          "text": "Beta"
+        },
+        {
+          "kind": "endnote",
+          "number": 1,
+          "pos": 13,
+          "text": "Gamma"
+        }
+      ],
+      "selection": {
+        "type": "text",
+        "anchor": 5,
+        "head": 5
+      }
+    }
+  ],
+  "parser": [
+    {
+      "name": "host apparatus trailing LF",
+      "html": "<h1>The scoped notebook</h1><p>Verbatim supporting passage.</p><p>See https://example.org/report/?new=1 and doi:10.5555/detected.</p><p>This offline draft keeps its bibliography separate from the writing.</p>\n",
+      "htmlAfterParse": "<h1>The scoped notebook</h1><p>Verbatim supporting passage.</p><p>See https://example.org/report/?new=1 and doi:10.5555/detected.</p><p>This offline draft keeps its bibliography separate from the writing.</p>",
+      "json": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 1
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "The scoped notebook"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Verbatim supporting passage."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "See https://example.org/report/?new=1 and doi:10.5555/detected."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "This offline draft keeps its bibliography separate from the writing."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "inter-block ASCII whitespace",
+      "html": " \t\r\n<h1>Title</h1>\n \t<p>A</p>\n\f\r<p>B</p>\n",
+      "htmlAfterParse": "<h1>Title</h1><p>A</p><p>B</p>",
+      "json": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "heading",
+            "attrs": {
+              "level": 1
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Title"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "A"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "meaningful top-level text",
+      "html": "before<p>A</p>after",
+      "htmlAfterParse": "<p>before</p><p>A</p><p>after</p>",
+      "json": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "before"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "A"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "after"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "inside prose and pre",
+      "html": "<p> A\n B \t</p>\n<pre><code> A\n B \t</code></pre>\n",
+      "htmlAfterParse": "<p>A B</p><pre><code> A\n B \t</code></pre>",
+      "json": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "A B"
+              }
+            ]
+          },
+          {
+            "type": "codeBlock",
+            "attrs": {
+              "language": null
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": " A\n B \t"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "top-level NBSP is meaningful",
+      "html": "<p>A</p> ",
+      "htmlAfterParse": "<p>A</p><p>&nbsp;</p>",
+      "json": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "A"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": " "
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

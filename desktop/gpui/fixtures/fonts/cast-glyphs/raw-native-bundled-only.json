@@ -1,0 +1,3388 @@
+{
+  "renderer": "actual pinned Linux Cosmic/Swash, fresh empty database with only declared bundled bytes",
+  "systemFontsLoaded": false,
+  "helper": "theme::cast_raw_glyph_font()",
+  "fallbacks": [
+    "Liberation Serif",
+    "Adwaita Mono"
+  ],
+  "requestedPrimary": "Libre Baskerville",
+  "requestedWeight": 600,
+  "requestedStyle": "normal",
+  "sizePx": 16.0,
+  "lineHeightPx": 24.0,
+  "allFiveOriginalGlyphIdsAndNonzeroMasks": true,
+  "automaticLatinBefore": [
+    {
+      "request": "automatic-sans",
+      "text": "Mlle. Sceptique Sœur Encourageante Professeur Athenæum Le Lecteur 0123456789",
+      "sizePx": 11.199999809265137,
+      "advancePx": 433.5855712890625,
+      "glyphs": [
+        {
+          "id": 62,
+          "sourceByte": 0,
+          "xPx": 0.0,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 183,
+          "sourceByte": 1,
+          "xPx": 9.430399894714355,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 183,
+          "sourceByte": 2,
+          "xPx": 11.927999496459961,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 3,
+          "xPx": 14.425600051879883,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 341,
+          "sourceByte": 4,
+          "xPx": 20.787200927734375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 5,
+          "xPx": 23.00480079650879,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 87,
+          "sourceByte": 6,
+          "xPx": 25.98400115966797,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 139,
+          "sourceByte": 7,
+          "xPx": 32.47999954223633,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 8,
+          "xPx": 38.88639831542969,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 207,
+          "sourceByte": 9,
+          "xPx": 45.24799728393555,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 220,
+          "sourceByte": 10,
+          "xPx": 52.0463981628418,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 167,
+          "sourceByte": 11,
+          "xPx": 56.436798095703125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 209,
+          "sourceByte": 12,
+          "xPx": 59.12479782104492,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 224,
+          "sourceByte": 13,
+          "xPx": 66.1471939086914,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 14,
+          "xPx": 72.5647964477539,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 15,
+          "xPx": 78.92639923095703,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 87,
+          "sourceByte": 16,
+          "xPx": 81.90560150146484,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 206,
+          "sourceByte": 17,
+          "xPx": 88.40160369873047,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 224,
+          "sourceByte": 19,
+          "xPx": 99.36640167236328,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 210,
+          "sourceByte": 20,
+          "xPx": 105.78400421142578,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 21,
+          "xPx": 109.9280014038086,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 23,
+          "sourceByte": 22,
+          "xPx": 112.9072036743164,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 190,
+          "sourceByte": 23,
+          "xPx": 119.2352066040039,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 139,
+          "sourceByte": 24,
+          "xPx": 125.66400909423828,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 196,
+          "sourceByte": 25,
+          "xPx": 132.07040405273438,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 224,
+          "sourceByte": 26,
+          "xPx": 138.71200561523438,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 210,
+          "sourceByte": 27,
+          "xPx": 145.12960815429688,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 126,
+          "sourceByte": 28,
+          "xPx": 149.2736053466797,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 161,
+          "sourceByte": 29,
+          "xPx": 155.3664093017578,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 30,
+          "xPx": 161.3920135498047,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 126,
+          "sourceByte": 31,
+          "xPx": 167.7536163330078,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 190,
+          "sourceByte": 32,
+          "xPx": 173.84642028808594,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 220,
+          "sourceByte": 33,
+          "xPx": 180.2752227783203,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 34,
+          "xPx": 184.50881958007812,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 35,
+          "xPx": 190.87042236328125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 80,
+          "sourceByte": 36,
+          "xPx": 193.84962463378906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 210,
+          "sourceByte": 37,
+          "xPx": 200.3456268310547,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 196,
+          "sourceByte": 38,
+          "xPx": 204.27682495117188,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 160,
+          "sourceByte": 39,
+          "xPx": 210.91842651367188,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 40,
+          "xPx": 214.50242614746094,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 214,
+          "sourceByte": 41,
+          "xPx": 220.86402893066406,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 214,
+          "sourceByte": 42,
+          "xPx": 226.48643493652344,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 43,
+          "xPx": 232.1088409423828,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 224,
+          "sourceByte": 44,
+          "xPx": 238.47044372558594,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 210,
+          "sourceByte": 45,
+          "xPx": 244.88804626464844,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 46,
+          "xPx": 249.03204345703125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 1,
+          "sourceByte": 47,
+          "xPx": 252.01124572753906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 220,
+          "sourceByte": 48,
+          "xPx": 258.9776306152344,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 165,
+          "sourceByte": 49,
+          "xPx": 263.3680419921875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 50,
+          "xPx": 269.80804443359375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 190,
+          "sourceByte": 51,
+          "xPx": 276.1696472167969,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 136,
+          "sourceByte": 52,
+          "xPx": 282.59844970703125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 224,
+          "sourceByte": 54,
+          "xPx": 292.8352355957031,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 189,
+          "sourceByte": 55,
+          "xPx": 299.2528381347656,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 56,
+          "xPx": 309.2320251464844,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 56,
+          "sourceByte": 57,
+          "xPx": 312.2112121582031,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 58,
+          "xPx": 317.87841796875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 59,
+          "xPx": 324.2400207519531,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 56,
+          "sourceByte": 60,
+          "xPx": 327.2192077636719,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 61,
+          "xPx": 332.88641357421875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 139,
+          "sourceByte": 62,
+          "xPx": 339.2480163574219,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 220,
+          "sourceByte": 63,
+          "xPx": 345.49761962890625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 64,
+          "xPx": 349.7312316894531,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 224,
+          "sourceByte": 65,
+          "xPx": 356.09283447265625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 210,
+          "sourceByte": 66,
+          "xPx": 362.51043701171875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 67,
+          "xPx": 366.6544494628906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 290,
+          "sourceByte": 68,
+          "xPx": 369.6336364746094,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 291,
+          "sourceByte": 69,
+          "xPx": 377.29443359375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 292,
+          "sourceByte": 70,
+          "xPx": 380.788818359375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 293,
+          "sourceByte": 71,
+          "xPx": 387.2400207519531,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 294,
+          "sourceByte": 72,
+          "xPx": 393.8592224121094,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 295,
+          "sourceByte": 73,
+          "xPx": 400.6576232910156,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 296,
+          "sourceByte": 74,
+          "xPx": 407.5008239746094,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 297,
+          "sourceByte": 75,
+          "xPx": 414.2544250488281,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 298,
+          "sourceByte": 76,
+          "xPx": 420.0448303222656,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 299,
+          "sourceByte": 77,
+          "xPx": 426.54083251953125,
+          "yPx": 0.0,
+          "isEmoji": false
+        }
+      ]
+    },
+    {
+      "request": "automatic-display",
+      "text": "Mlle. Sceptique Sœur Encourageante Professeur Athenæum Le Lecteur 0123456789",
+      "sizePx": 16.0,
+      "advancePx": 705.0399780273438,
+      "glyphs": [
+        {
+          "id": 155,
+          "sourceByte": 0,
+          "xPx": 0.0,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 450,
+          "sourceByte": 1,
+          "xPx": 18.31999969482422,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 450,
+          "sourceByte": 2,
+          "xPx": 24.0,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 3,
+          "xPx": 29.68000030517578,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 683,
+          "sourceByte": 4,
+          "xPx": 39.040000915527344,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 5,
+          "xPx": 43.20000076293945,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 221,
+          "sourceByte": 6,
+          "xPx": 47.45600128173828,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 339,
+          "sourceByte": 7,
+          "xPx": 58.064002990722656,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 8,
+          "xPx": 67.08800506591797,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 509,
+          "sourceByte": 9,
+          "xPx": 76.44800567626953,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 542,
+          "sourceByte": 10,
+          "xPx": 87.60000610351562,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 415,
+          "sourceByte": 11,
+          "xPx": 93.71200561523438,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 515,
+          "sourceByte": 12,
+          "xPx": 99.48800659179688,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 555,
+          "sourceByte": 13,
+          "xPx": 110.27200317382812,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 14,
+          "xPx": 121.61600494384766,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 15,
+          "xPx": 130.9759979248047,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 221,
+          "sourceByte": 16,
+          "xPx": 135.23199462890625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 508,
+          "sourceByte": 17,
+          "xPx": 145.83999633789062,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 555,
+          "sourceByte": 19,
+          "xPx": 162.12799072265625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 517,
+          "sourceByte": 20,
+          "xPx": 173.47198486328125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 21,
+          "xPx": 181.4399871826172,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 58,
+          "sourceByte": 22,
+          "xPx": 185.69598388671875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 468,
+          "sourceByte": 23,
+          "xPx": 197.91998291015625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 339,
+          "sourceByte": 24,
+          "xPx": 209.55198669433594,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 481,
+          "sourceByte": 25,
+          "xPx": 218.57598876953125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 555,
+          "sourceByte": 26,
+          "xPx": 229.135986328125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 517,
+          "sourceByte": 27,
+          "xPx": 240.47998046875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 306,
+          "sourceByte": 28,
+          "xPx": 248.44798278808594,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 390,
+          "sourceByte": 29,
+          "xPx": 257.6319885253906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 30,
+          "xPx": 267.2959899902344,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 306,
+          "sourceByte": 31,
+          "xPx": 276.6559753417969,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 468,
+          "sourceByte": 32,
+          "xPx": 285.8399658203125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 542,
+          "sourceByte": 33,
+          "xPx": 297.4719543457031,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 34,
+          "xPx": 303.5839538574219,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 35,
+          "xPx": 312.9439392089844,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 201,
+          "sourceByte": 36,
+          "xPx": 317.199951171875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 517,
+          "sourceByte": 37,
+          "xPx": 328.67193603515625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 481,
+          "sourceByte": 38,
+          "xPx": 336.5599365234375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 388,
+          "sourceByte": 39,
+          "xPx": 347.11993408203125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 40,
+          "xPx": 353.98394775390625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 530,
+          "sourceByte": 41,
+          "xPx": 363.34393310546875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 530,
+          "sourceByte": 42,
+          "xPx": 370.7999267578125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 43,
+          "xPx": 378.25592041015625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 555,
+          "sourceByte": 44,
+          "xPx": 387.61590576171875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 517,
+          "sourceByte": 45,
+          "xPx": 398.95989990234375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 46,
+          "xPx": 406.9278869628906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 1,
+          "sourceByte": 47,
+          "xPx": 411.18389892578125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 542,
+          "sourceByte": 48,
+          "xPx": 423.9999084472656,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 403,
+          "sourceByte": 49,
+          "xPx": 430.1119079589844,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 50,
+          "xPx": 441.5359191894531,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 468,
+          "sourceByte": 51,
+          "xPx": 450.8959045410156,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 52,
+          "xPx": 462.52789306640625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 555,
+          "sourceByte": 54,
+          "xPx": 476.75189208984375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 464,
+          "sourceByte": 55,
+          "xPx": 488.09588623046875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 56,
+          "xPx": 505.7918701171875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 140,
+          "sourceByte": 57,
+          "xPx": 510.0478820800781,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 58,
+          "xPx": 522.1278686523438,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 59,
+          "xPx": 531.4878540039062,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 140,
+          "sourceByte": 60,
+          "xPx": 535.7438354492188,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 61,
+          "xPx": 547.8238525390625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 339,
+          "sourceByte": 62,
+          "xPx": 557.183837890625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 542,
+          "sourceByte": 63,
+          "xPx": 566.2078247070312,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 64,
+          "xPx": 572.31982421875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 555,
+          "sourceByte": 65,
+          "xPx": 581.6798095703125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 517,
+          "sourceByte": 66,
+          "xPx": 593.0238037109375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 67,
+          "xPx": 600.9918212890625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 639,
+          "sourceByte": 68,
+          "xPx": 605.247802734375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 640,
+          "sourceByte": 69,
+          "xPx": 617.3278198242188,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 641,
+          "sourceByte": 70,
+          "xPx": 624.3038330078125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 642,
+          "sourceByte": 71,
+          "xPx": 634.7198486328125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 643,
+          "sourceByte": 72,
+          "xPx": 644.911865234375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 644,
+          "sourceByte": 73,
+          "xPx": 655.535888671875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 645,
+          "sourceByte": 74,
+          "xPx": 665.055908203125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 646,
+          "sourceByte": 75,
+          "xPx": 675.8399047851562,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 647,
+          "sourceByte": 76,
+          "xPx": 684.0958862304688,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 648,
+          "sourceByte": 77,
+          "xPx": 694.255859375,
+          "yPx": 0.0,
+          "isEmoji": false
+        }
+      ]
+    },
+    {
+      "request": "automatic-body",
+      "text": "Mlle. Sceptique Sœur Encourageante Professeur Athenæum Le Lecteur 0123456789",
+      "sizePx": 20.0,
+      "advancePx": 770.10009765625,
+      "glyphs": [
+        {
+          "id": 93,
+          "sourceByte": 0,
+          "xPx": 0.0,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 271,
+          "sourceByte": 1,
+          "xPx": 18.360000610351562,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 271,
+          "sourceByte": 2,
+          "xPx": 23.80000114440918,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 3,
+          "xPx": 29.240001678466797,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 686,
+          "sourceByte": 4,
+          "xPx": 40.08000183105469,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 5,
+          "xPx": 45.0,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 132,
+          "sourceByte": 6,
+          "xPx": 50.26000213623047,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 208,
+          "sourceByte": 7,
+          "xPx": 61.60000228881836,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 8,
+          "xPx": 72.13999938964844,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 310,
+          "sourceByte": 9,
+          "xPx": 82.97999572753906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 325,
+          "sourceByte": 10,
+          "xPx": 94.91999816894531,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 251,
+          "sourceByte": 11,
+          "xPx": 102.65999603271484,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 312,
+          "sourceByte": 12,
+          "xPx": 108.27999877929688,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 13,
+          "xPx": 119.79999542236328,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 14,
+          "xPx": 131.739990234375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 15,
+          "xPx": 142.57998657226562,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 132,
+          "sourceByte": 16,
+          "xPx": 147.83998107910156,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 309,
+          "sourceByte": 17,
+          "xPx": 159.1799774169922,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 19,
+          "xPx": 176.83998107910156,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 313,
+          "sourceByte": 20,
+          "xPx": 188.7799835205078,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 21,
+          "xPx": 197.4399871826172,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 36,
+          "sourceByte": 22,
+          "xPx": 202.69998168945312,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 278,
+          "sourceByte": 23,
+          "xPx": 215.13998413085938,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 208,
+          "sourceByte": 24,
+          "xPx": 227.2799835205078,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 285,
+          "sourceByte": 25,
+          "xPx": 237.81997680664062,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 26,
+          "xPx": 249.5199737548828,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 313,
+          "sourceByte": 27,
+          "xPx": 261.4599609375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 183,
+          "sourceByte": 28,
+          "xPx": 269.9799499511719,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 240,
+          "sourceByte": 29,
+          "xPx": 280.2999572753906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 30,
+          "xPx": 291.25994873046875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 183,
+          "sourceByte": 31,
+          "xPx": 302.0599365234375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 278,
+          "sourceByte": 32,
+          "xPx": 312.37994384765625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 325,
+          "sourceByte": 33,
+          "xPx": 324.3399353027344,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 34,
+          "xPx": 332.0799255371094,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 35,
+          "xPx": 342.919921875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 125,
+          "sourceByte": 36,
+          "xPx": 348.179931640625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 313,
+          "sourceByte": 37,
+          "xPx": 360.2999267578125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 285,
+          "sourceByte": 38,
+          "xPx": 368.8199157714844,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 239,
+          "sourceByte": 39,
+          "xPx": 380.419921875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 40,
+          "xPx": 387.0799255371094,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 317,
+          "sourceByte": 41,
+          "xPx": 397.919921875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 317,
+          "sourceByte": 42,
+          "xPx": 407.179931640625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 43,
+          "xPx": 416.43994140625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 44,
+          "xPx": 427.2799377441406,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 313,
+          "sourceByte": 45,
+          "xPx": 439.2199401855469,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 46,
+          "xPx": 447.87994384765625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 1,
+          "sourceByte": 47,
+          "xPx": 453.13995361328125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 325,
+          "sourceByte": 48,
+          "xPx": 465.51995849609375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 247,
+          "sourceByte": 49,
+          "xPx": 473.25994873046875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 50,
+          "xPx": 485.2399597167969,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 278,
+          "sourceByte": 51,
+          "xPx": 496.0799560546875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 206,
+          "sourceByte": 52,
+          "xPx": 508.219970703125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 54,
+          "xPx": 523.7599487304688,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 277,
+          "sourceByte": 55,
+          "xPx": 535.699951171875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 56,
+          "xPx": 553.5799560546875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 87,
+          "sourceByte": 57,
+          "xPx": 558.8399658203125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 58,
+          "xPx": 570.3999633789062,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 59,
+          "xPx": 581.239990234375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 87,
+          "sourceByte": 60,
+          "xPx": 586.5,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 61,
+          "xPx": 598.0599975585938,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 208,
+          "sourceByte": 62,
+          "xPx": 608.7999877929688,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 325,
+          "sourceByte": 63,
+          "xPx": 619.3399658203125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 64,
+          "xPx": 627.0799560546875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 65,
+          "xPx": 637.9199829101562,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 313,
+          "sourceByte": 66,
+          "xPx": 649.8599853515625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 67,
+          "xPx": 658.5199584960938,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 651,
+          "sourceByte": 68,
+          "xPx": 663.7799682617188,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 652,
+          "sourceByte": 69,
+          "xPx": 676.199951171875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 653,
+          "sourceByte": 70,
+          "xPx": 683.47998046875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 654,
+          "sourceByte": 71,
+          "xPx": 693.9199829101562,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 655,
+          "sourceByte": 72,
+          "xPx": 705.0599975585938,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 656,
+          "sourceByte": 73,
+          "xPx": 715.9000244140625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 657,
+          "sourceByte": 74,
+          "xPx": 726.800048828125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 658,
+          "sourceByte": 75,
+          "xPx": 738.2200317382812,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 659,
+          "sourceByte": 76,
+          "xPx": 747.4400024414062,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 660,
+          "sourceByte": 77,
+          "xPx": 758.5399780273438,
+          "yPx": 0.0,
+          "isEmoji": false
+        }
+      ]
+    }
+  ],
+  "automaticLatinAfter": [
+    {
+      "request": "automatic-sans",
+      "text": "Mlle. Sceptique Sœur Encourageante Professeur Athenæum Le Lecteur 0123456789",
+      "sizePx": 11.199999809265137,
+      "advancePx": 433.5855712890625,
+      "glyphs": [
+        {
+          "id": 62,
+          "sourceByte": 0,
+          "xPx": 0.0,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 183,
+          "sourceByte": 1,
+          "xPx": 9.430399894714355,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 183,
+          "sourceByte": 2,
+          "xPx": 11.927999496459961,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 3,
+          "xPx": 14.425600051879883,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 341,
+          "sourceByte": 4,
+          "xPx": 20.787200927734375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 5,
+          "xPx": 23.00480079650879,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 87,
+          "sourceByte": 6,
+          "xPx": 25.98400115966797,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 139,
+          "sourceByte": 7,
+          "xPx": 32.47999954223633,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 8,
+          "xPx": 38.88639831542969,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 207,
+          "sourceByte": 9,
+          "xPx": 45.24799728393555,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 220,
+          "sourceByte": 10,
+          "xPx": 52.0463981628418,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 167,
+          "sourceByte": 11,
+          "xPx": 56.436798095703125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 209,
+          "sourceByte": 12,
+          "xPx": 59.12479782104492,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 224,
+          "sourceByte": 13,
+          "xPx": 66.1471939086914,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 14,
+          "xPx": 72.5647964477539,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 15,
+          "xPx": 78.92639923095703,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 87,
+          "sourceByte": 16,
+          "xPx": 81.90560150146484,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 206,
+          "sourceByte": 17,
+          "xPx": 88.40160369873047,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 224,
+          "sourceByte": 19,
+          "xPx": 99.36640167236328,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 210,
+          "sourceByte": 20,
+          "xPx": 105.78400421142578,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 21,
+          "xPx": 109.9280014038086,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 23,
+          "sourceByte": 22,
+          "xPx": 112.9072036743164,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 190,
+          "sourceByte": 23,
+          "xPx": 119.2352066040039,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 139,
+          "sourceByte": 24,
+          "xPx": 125.66400909423828,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 196,
+          "sourceByte": 25,
+          "xPx": 132.07040405273438,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 224,
+          "sourceByte": 26,
+          "xPx": 138.71200561523438,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 210,
+          "sourceByte": 27,
+          "xPx": 145.12960815429688,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 126,
+          "sourceByte": 28,
+          "xPx": 149.2736053466797,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 161,
+          "sourceByte": 29,
+          "xPx": 155.3664093017578,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 30,
+          "xPx": 161.3920135498047,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 126,
+          "sourceByte": 31,
+          "xPx": 167.7536163330078,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 190,
+          "sourceByte": 32,
+          "xPx": 173.84642028808594,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 220,
+          "sourceByte": 33,
+          "xPx": 180.2752227783203,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 34,
+          "xPx": 184.50881958007812,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 35,
+          "xPx": 190.87042236328125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 80,
+          "sourceByte": 36,
+          "xPx": 193.84962463378906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 210,
+          "sourceByte": 37,
+          "xPx": 200.3456268310547,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 196,
+          "sourceByte": 38,
+          "xPx": 204.27682495117188,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 160,
+          "sourceByte": 39,
+          "xPx": 210.91842651367188,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 40,
+          "xPx": 214.50242614746094,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 214,
+          "sourceByte": 41,
+          "xPx": 220.86402893066406,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 214,
+          "sourceByte": 42,
+          "xPx": 226.48643493652344,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 43,
+          "xPx": 232.1088409423828,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 224,
+          "sourceByte": 44,
+          "xPx": 238.47044372558594,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 210,
+          "sourceByte": 45,
+          "xPx": 244.88804626464844,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 46,
+          "xPx": 249.03204345703125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 1,
+          "sourceByte": 47,
+          "xPx": 252.01124572753906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 220,
+          "sourceByte": 48,
+          "xPx": 258.9776306152344,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 165,
+          "sourceByte": 49,
+          "xPx": 263.3680419921875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 50,
+          "xPx": 269.80804443359375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 190,
+          "sourceByte": 51,
+          "xPx": 276.1696472167969,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 136,
+          "sourceByte": 52,
+          "xPx": 282.59844970703125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 224,
+          "sourceByte": 54,
+          "xPx": 292.8352355957031,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 189,
+          "sourceByte": 55,
+          "xPx": 299.2528381347656,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 56,
+          "xPx": 309.2320251464844,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 56,
+          "sourceByte": 57,
+          "xPx": 312.2112121582031,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 58,
+          "xPx": 317.87841796875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 59,
+          "xPx": 324.2400207519531,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 56,
+          "sourceByte": 60,
+          "xPx": 327.2192077636719,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 61,
+          "xPx": 332.88641357421875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 139,
+          "sourceByte": 62,
+          "xPx": 339.2480163574219,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 220,
+          "sourceByte": 63,
+          "xPx": 345.49761962890625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 148,
+          "sourceByte": 64,
+          "xPx": 349.7312316894531,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 224,
+          "sourceByte": 65,
+          "xPx": 356.09283447265625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 210,
+          "sourceByte": 66,
+          "xPx": 362.51043701171875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 336,
+          "sourceByte": 67,
+          "xPx": 366.6544494628906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 290,
+          "sourceByte": 68,
+          "xPx": 369.6336364746094,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 291,
+          "sourceByte": 69,
+          "xPx": 377.29443359375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 292,
+          "sourceByte": 70,
+          "xPx": 380.788818359375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 293,
+          "sourceByte": 71,
+          "xPx": 387.2400207519531,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 294,
+          "sourceByte": 72,
+          "xPx": 393.8592224121094,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 295,
+          "sourceByte": 73,
+          "xPx": 400.6576232910156,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 296,
+          "sourceByte": 74,
+          "xPx": 407.5008239746094,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 297,
+          "sourceByte": 75,
+          "xPx": 414.2544250488281,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 298,
+          "sourceByte": 76,
+          "xPx": 420.0448303222656,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 299,
+          "sourceByte": 77,
+          "xPx": 426.54083251953125,
+          "yPx": 0.0,
+          "isEmoji": false
+        }
+      ]
+    },
+    {
+      "request": "automatic-display",
+      "text": "Mlle. Sceptique Sœur Encourageante Professeur Athenæum Le Lecteur 0123456789",
+      "sizePx": 16.0,
+      "advancePx": 705.0399780273438,
+      "glyphs": [
+        {
+          "id": 155,
+          "sourceByte": 0,
+          "xPx": 0.0,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 450,
+          "sourceByte": 1,
+          "xPx": 18.31999969482422,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 450,
+          "sourceByte": 2,
+          "xPx": 24.0,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 3,
+          "xPx": 29.68000030517578,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 683,
+          "sourceByte": 4,
+          "xPx": 39.040000915527344,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 5,
+          "xPx": 43.20000076293945,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 221,
+          "sourceByte": 6,
+          "xPx": 47.45600128173828,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 339,
+          "sourceByte": 7,
+          "xPx": 58.064002990722656,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 8,
+          "xPx": 67.08800506591797,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 509,
+          "sourceByte": 9,
+          "xPx": 76.44800567626953,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 542,
+          "sourceByte": 10,
+          "xPx": 87.60000610351562,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 415,
+          "sourceByte": 11,
+          "xPx": 93.71200561523438,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 515,
+          "sourceByte": 12,
+          "xPx": 99.48800659179688,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 555,
+          "sourceByte": 13,
+          "xPx": 110.27200317382812,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 14,
+          "xPx": 121.61600494384766,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 15,
+          "xPx": 130.9759979248047,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 221,
+          "sourceByte": 16,
+          "xPx": 135.23199462890625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 508,
+          "sourceByte": 17,
+          "xPx": 145.83999633789062,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 555,
+          "sourceByte": 19,
+          "xPx": 162.12799072265625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 517,
+          "sourceByte": 20,
+          "xPx": 173.47198486328125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 21,
+          "xPx": 181.4399871826172,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 58,
+          "sourceByte": 22,
+          "xPx": 185.69598388671875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 468,
+          "sourceByte": 23,
+          "xPx": 197.91998291015625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 339,
+          "sourceByte": 24,
+          "xPx": 209.55198669433594,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 481,
+          "sourceByte": 25,
+          "xPx": 218.57598876953125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 555,
+          "sourceByte": 26,
+          "xPx": 229.135986328125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 517,
+          "sourceByte": 27,
+          "xPx": 240.47998046875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 306,
+          "sourceByte": 28,
+          "xPx": 248.44798278808594,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 390,
+          "sourceByte": 29,
+          "xPx": 257.6319885253906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 30,
+          "xPx": 267.2959899902344,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 306,
+          "sourceByte": 31,
+          "xPx": 276.6559753417969,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 468,
+          "sourceByte": 32,
+          "xPx": 285.8399658203125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 542,
+          "sourceByte": 33,
+          "xPx": 297.4719543457031,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 34,
+          "xPx": 303.5839538574219,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 35,
+          "xPx": 312.9439392089844,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 201,
+          "sourceByte": 36,
+          "xPx": 317.199951171875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 517,
+          "sourceByte": 37,
+          "xPx": 328.67193603515625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 481,
+          "sourceByte": 38,
+          "xPx": 336.5599365234375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 388,
+          "sourceByte": 39,
+          "xPx": 347.11993408203125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 40,
+          "xPx": 353.98394775390625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 530,
+          "sourceByte": 41,
+          "xPx": 363.34393310546875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 530,
+          "sourceByte": 42,
+          "xPx": 370.7999267578125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 43,
+          "xPx": 378.25592041015625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 555,
+          "sourceByte": 44,
+          "xPx": 387.61590576171875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 517,
+          "sourceByte": 45,
+          "xPx": 398.95989990234375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 46,
+          "xPx": 406.9278869628906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 1,
+          "sourceByte": 47,
+          "xPx": 411.18389892578125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 542,
+          "sourceByte": 48,
+          "xPx": 423.9999084472656,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 403,
+          "sourceByte": 49,
+          "xPx": 430.1119079589844,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 50,
+          "xPx": 441.5359191894531,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 468,
+          "sourceByte": 51,
+          "xPx": 450.8959045410156,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 52,
+          "xPx": 462.52789306640625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 555,
+          "sourceByte": 54,
+          "xPx": 476.75189208984375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 464,
+          "sourceByte": 55,
+          "xPx": 488.09588623046875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 56,
+          "xPx": 505.7918701171875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 140,
+          "sourceByte": 57,
+          "xPx": 510.0478820800781,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 58,
+          "xPx": 522.1278686523438,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 59,
+          "xPx": 531.4878540039062,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 140,
+          "sourceByte": 60,
+          "xPx": 535.7438354492188,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 61,
+          "xPx": 547.8238525390625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 339,
+          "sourceByte": 62,
+          "xPx": 557.183837890625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 542,
+          "sourceByte": 63,
+          "xPx": 566.2078247070312,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 362,
+          "sourceByte": 64,
+          "xPx": 572.31982421875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 555,
+          "sourceByte": 65,
+          "xPx": 581.6798095703125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 517,
+          "sourceByte": 66,
+          "xPx": 593.0238037109375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 67,
+          "xPx": 600.9918212890625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 639,
+          "sourceByte": 68,
+          "xPx": 605.247802734375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 640,
+          "sourceByte": 69,
+          "xPx": 617.3278198242188,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 641,
+          "sourceByte": 70,
+          "xPx": 624.3038330078125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 642,
+          "sourceByte": 71,
+          "xPx": 634.7198486328125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 643,
+          "sourceByte": 72,
+          "xPx": 644.911865234375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 644,
+          "sourceByte": 73,
+          "xPx": 655.535888671875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 645,
+          "sourceByte": 74,
+          "xPx": 665.055908203125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 646,
+          "sourceByte": 75,
+          "xPx": 675.8399047851562,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 647,
+          "sourceByte": 76,
+          "xPx": 684.0958862304688,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 648,
+          "sourceByte": 77,
+          "xPx": 694.255859375,
+          "yPx": 0.0,
+          "isEmoji": false
+        }
+      ]
+    },
+    {
+      "request": "automatic-body",
+      "text": "Mlle. Sceptique Sœur Encourageante Professeur Athenæum Le Lecteur 0123456789",
+      "sizePx": 20.0,
+      "advancePx": 770.10009765625,
+      "glyphs": [
+        {
+          "id": 93,
+          "sourceByte": 0,
+          "xPx": 0.0,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 271,
+          "sourceByte": 1,
+          "xPx": 18.360000610351562,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 271,
+          "sourceByte": 2,
+          "xPx": 23.80000114440918,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 3,
+          "xPx": 29.240001678466797,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 686,
+          "sourceByte": 4,
+          "xPx": 40.08000183105469,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 5,
+          "xPx": 45.0,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 132,
+          "sourceByte": 6,
+          "xPx": 50.26000213623047,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 208,
+          "sourceByte": 7,
+          "xPx": 61.60000228881836,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 8,
+          "xPx": 72.13999938964844,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 310,
+          "sourceByte": 9,
+          "xPx": 82.97999572753906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 325,
+          "sourceByte": 10,
+          "xPx": 94.91999816894531,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 251,
+          "sourceByte": 11,
+          "xPx": 102.65999603271484,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 312,
+          "sourceByte": 12,
+          "xPx": 108.27999877929688,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 13,
+          "xPx": 119.79999542236328,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 14,
+          "xPx": 131.739990234375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 15,
+          "xPx": 142.57998657226562,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 132,
+          "sourceByte": 16,
+          "xPx": 147.83998107910156,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 309,
+          "sourceByte": 17,
+          "xPx": 159.1799774169922,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 19,
+          "xPx": 176.83998107910156,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 313,
+          "sourceByte": 20,
+          "xPx": 188.7799835205078,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 21,
+          "xPx": 197.4399871826172,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 36,
+          "sourceByte": 22,
+          "xPx": 202.69998168945312,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 278,
+          "sourceByte": 23,
+          "xPx": 215.13998413085938,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 208,
+          "sourceByte": 24,
+          "xPx": 227.2799835205078,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 285,
+          "sourceByte": 25,
+          "xPx": 237.81997680664062,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 26,
+          "xPx": 249.5199737548828,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 313,
+          "sourceByte": 27,
+          "xPx": 261.4599609375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 183,
+          "sourceByte": 28,
+          "xPx": 269.9799499511719,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 240,
+          "sourceByte": 29,
+          "xPx": 280.2999572753906,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 30,
+          "xPx": 291.25994873046875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 183,
+          "sourceByte": 31,
+          "xPx": 302.0599365234375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 278,
+          "sourceByte": 32,
+          "xPx": 312.37994384765625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 325,
+          "sourceByte": 33,
+          "xPx": 324.3399353027344,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 34,
+          "xPx": 332.0799255371094,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 35,
+          "xPx": 342.919921875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 125,
+          "sourceByte": 36,
+          "xPx": 348.179931640625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 313,
+          "sourceByte": 37,
+          "xPx": 360.2999267578125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 285,
+          "sourceByte": 38,
+          "xPx": 368.8199157714844,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 239,
+          "sourceByte": 39,
+          "xPx": 380.419921875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 40,
+          "xPx": 387.0799255371094,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 317,
+          "sourceByte": 41,
+          "xPx": 397.919921875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 317,
+          "sourceByte": 42,
+          "xPx": 407.179931640625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 43,
+          "xPx": 416.43994140625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 44,
+          "xPx": 427.2799377441406,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 313,
+          "sourceByte": 45,
+          "xPx": 439.2199401855469,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 46,
+          "xPx": 447.87994384765625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 1,
+          "sourceByte": 47,
+          "xPx": 453.13995361328125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 325,
+          "sourceByte": 48,
+          "xPx": 465.51995849609375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 247,
+          "sourceByte": 49,
+          "xPx": 473.25994873046875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 50,
+          "xPx": 485.2399597167969,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 278,
+          "sourceByte": 51,
+          "xPx": 496.0799560546875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 206,
+          "sourceByte": 52,
+          "xPx": 508.219970703125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 54,
+          "xPx": 523.7599487304688,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 277,
+          "sourceByte": 55,
+          "xPx": 535.699951171875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 56,
+          "xPx": 553.5799560546875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 87,
+          "sourceByte": 57,
+          "xPx": 558.8399658203125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 58,
+          "xPx": 570.3999633789062,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 59,
+          "xPx": 581.239990234375,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 87,
+          "sourceByte": 60,
+          "xPx": 586.5,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 61,
+          "xPx": 598.0599975585938,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 208,
+          "sourceByte": 62,
+          "xPx": 608.7999877929688,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 325,
+          "sourceByte": 63,
+          "xPx": 619.3399658203125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 218,
+          "sourceByte": 64,
+          "xPx": 627.0799560546875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 330,
+          "sourceByte": 65,
+          "xPx": 637.9199829101562,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 313,
+          "sourceByte": 66,
+          "xPx": 649.8599853515625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 679,
+          "sourceByte": 67,
+          "xPx": 658.5199584960938,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 651,
+          "sourceByte": 68,
+          "xPx": 663.7799682617188,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 652,
+          "sourceByte": 69,
+          "xPx": 676.199951171875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 653,
+          "sourceByte": 70,
+          "xPx": 683.47998046875,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 654,
+          "sourceByte": 71,
+          "xPx": 693.9199829101562,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 655,
+          "sourceByte": 72,
+          "xPx": 705.0599975585938,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 656,
+          "sourceByte": 73,
+          "xPx": 715.9000244140625,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 657,
+          "sourceByte": 74,
+          "xPx": 726.800048828125,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 658,
+          "sourceByte": 75,
+          "xPx": 738.2200317382812,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 659,
+          "sourceByte": 76,
+          "xPx": 747.4400024414062,
+          "yPx": 0.0,
+          "isEmoji": false
+        },
+        {
+          "id": 660,
+          "sourceByte": 77,
+          "xPx": 758.5399780273438,
+          "yPx": 0.0,
+          "isEmoji": false
+        }
+      ]
+    }
+  ],
+  "automaticLatinUnchangedAfterRegistration": true,
+  "rows": [
+    {
+      "text": "♠",
+      "glyphId": 2223,
+      "selectedNativeWeight": 700.0,
+      "selectedNativeStyle": "Normal",
+      "nativeAdvancePx": 8.5,
+      "originalBrowserAdvancePx": 8.5,
+      "differencePx": 0.0,
+      "actualBrowserFaces": [
+        {
+          "familyName": "Liberation Serif",
+          "postScriptName": "LiberationSerif-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      "isEmoji": false,
+      "nativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -10 px (device) }, size: Size { 9 px (device) × 10 px (device) } }",
+        "size": "Size { 9 px (device) × 10 px (device) }",
+        "byteCount": 90,
+        "nonzeroBytes": 57,
+        "maskFnv1a64": "49ea9be45c8bc953"
+      }
+    },
+    {
+      "text": "♥",
+      "glyphId": 2225,
+      "selectedNativeWeight": 700.0,
+      "selectedNativeStyle": "Normal",
+      "nativeAdvancePx": 9.5,
+      "originalBrowserAdvancePx": 9.5,
+      "differencePx": 0.0,
+      "actualBrowserFaces": [
+        {
+          "familyName": "Liberation Serif",
+          "postScriptName": "LiberationSerif-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      "isEmoji": false,
+      "nativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -10 px (device) }, size: Size { 9 px (device) × 10 px (device) } }",
+        "size": "Size { 9 px (device) × 10 px (device) }",
+        "byteCount": 90,
+        "nonzeroBytes": 56,
+        "maskFnv1a64": "9609b89dcc1f9368"
+      }
+    },
+    {
+      "text": "♦",
+      "glyphId": 2226,
+      "selectedNativeWeight": 700.0,
+      "selectedNativeStyle": "Normal",
+      "nativeAdvancePx": 8.1640625,
+      "originalBrowserAdvancePx": 8.171875,
+      "differencePx": -0.0078125,
+      "actualBrowserFaces": [
+        {
+          "familyName": "Liberation Serif",
+          "postScriptName": "LiberationSerif-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      "isEmoji": false,
+      "nativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -10 px (device) }, size: Size { 8 px (device) × 11 px (device) } }",
+        "size": "Size { 8 px (device) × 11 px (device) }",
+        "byteCount": 88,
+        "nonzeroBytes": 51,
+        "maskFnv1a64": "2df631bd3e72bb08"
+      }
+    },
+    {
+      "text": "✦",
+      "glyphId": 6836,
+      "selectedNativeWeight": 400.0,
+      "selectedNativeStyle": "Normal",
+      "nativeAdvancePx": 9.600000381469727,
+      "originalBrowserAdvancePx": 9.609375,
+      "differencePx": -0.009374618530273438,
+      "actualBrowserFaces": [
+        {
+          "familyName": "Adwaita Mono",
+          "postScriptName": "Adwaita-Mono",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      "isEmoji": false,
+      "nativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -10 px (device) }, size: Size { 10 px (device) × 9 px (device) } }",
+        "size": "Size { 10 px (device) × 9 px (device) }",
+        "byteCount": 90,
+        "nonzeroBytes": 44,
+        "maskFnv1a64": "e01a7955f3b0519e"
+      }
+    },
+    {
+      "text": "♣",
+      "glyphId": 2224,
+      "selectedNativeWeight": 700.0,
+      "selectedNativeStyle": "Normal",
+      "nativeAdvancePx": 10.5,
+      "originalBrowserAdvancePx": 10.5,
+      "differencePx": 0.0,
+      "actualBrowserFaces": [
+        {
+          "familyName": "Liberation Serif",
+          "postScriptName": "LiberationSerif-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      "isEmoji": false,
+      "nativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -10 px (device) }, size: Size { 11 px (device) × 10 px (device) } }",
+        "size": "Size { 11 px (device) × 10 px (device) }",
+        "byteCount": 110,
+        "nonzeroBytes": 75,
+        "maskFnv1a64": "f71c4203a82638bb"
+      }
+    }
+  ],
+  "boundary": "Only raw Manager assistance glyphs. Chromium synthesis/hinting/GPU pixels, actual assembled UI, other OS and Lora card headings are separate boundaries; circular badge chain unchanged."
+}

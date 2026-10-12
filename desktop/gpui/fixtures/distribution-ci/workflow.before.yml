@@ -1,0 +1,75 @@
+name: GPUI desktop
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "desktop/gpui/**"
+      - ".github/workflows/gpui-desktop.yml"
+  pull_request:
+    paths:
+      - "desktop/gpui/**"
+      - ".github/workflows/gpui-desktop.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    name: Native desktop (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - name: Install document helper dependencies
+        run: bun install --frozen-lockfile
+      - name: Build and test local document helper
+        run: |
+          bun run desktop.gpui.build-helper
+          bun test desktop/gpui/tools/semantic-worker.test.ts
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Install Linux libraries
+        if: runner.os == 'Linux'
+        run: >-
+          sudo apt-get update && sudo apt-get install -y
+          clang pkg-config libfontconfig1-dev libfreetype6-dev
+          libxkbcommon-dev libxkbcommon-x11-dev libxcb1-dev
+          libwayland-dev libssl-dev
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "desktop/gpui -> target"
+      - name: Check formatting
+        run: cargo fmt --manifest-path desktop/gpui/Cargo.toml --check
+      - name: Check native app
+        run: cargo clippy --locked --manifest-path desktop/gpui/Cargo.toml -- -D warnings
+      - name: Test local storage and exchange
+        run: cargo test --locked --no-default-features --manifest-path desktop/gpui/Cargo.toml
+      - name: Test native UI
+        run: cargo test --locked --features ui-tests --manifest-path desktop/gpui/Cargo.toml
+      - name: Build release executable
+        run: cargo build --locked --release --manifest-path desktop/gpui/Cargo.toml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: twyne-gpui-${{ runner.os }}
+          path: |
+            desktop/gpui/target/release/twyne-desktop
+            desktop/gpui/target/release/twyne-desktop.exe
+            desktop/gpui/target/release/twyne-document
+            desktop/gpui/target/release/twyne-document.exe
+            desktop/gpui/README.md
+            desktop/gpui/PORT_PLAN.md
+            desktop/gpui/assets/NOTICE.md
+            desktop/gpui/assets/licenses/**
+            desktop/gpui/assets/fonts/*OFL.txt
+            desktop/gpui/assets/fonts/*LICENSE.txt
+            desktop/gpui/assets/fonts/NOTICE
+            desktop/gpui/vendor/gpui-base/LICENSE-APACHE
+            desktop/gpui/licenses/
+          if-no-files-found: error

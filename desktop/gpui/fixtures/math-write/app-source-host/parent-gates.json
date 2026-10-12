@@ -1,0 +1,30 @@
+{
+  "status": "passed",
+  "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests,native-audio --bin twyne-desktop app::math_source_coordinator::tests",
+  "result": {
+    "passed": 3,
+    "failed": 0,
+    "ignored": 0
+  },
+  "log": "desktop/gpui/target/verification/math-app-inline-canonical-tests-reviewed.log",
+  "hashes": {
+    "desktop/gpui/src/app/math_source_coordinator.rs": "9a2b11a7b64828bb8fa4c6eed8ba3e41fea01eaf57fddba3ce50079dd8cceb2f",
+    "desktop/gpui/src/app.rs": "ad20d7484ba61805c02231b5d8b1761a84bd1ffeccb447846d30c1a598068169",
+    "desktop/gpui/src/app/house_coordinator.rs": "40be6aebc418f62b28ce7f98ed69531d22ee39ab7b533971b6503b10d55049e3",
+    "desktop/gpui/src/app/settings_coordinator.rs": "562c00fccc18225e5ae52e7687c09e352b0db8d9b845824a4c1bf6ae96b1d980",
+    "desktop/gpui/src/app/status_coordinator.rs": "592c754266fbee5cb7174182c42caacdc808bc772145bd3f2ae0e65bb4b36118",
+    "desktop/gpui/src/app/apparatus_coordinator.rs": "6a6204d01befa2cbaad946e37620b68ac78eae86b7cd74f7243f8e3edf992b9a",
+    "desktop/gpui/src/app/cast_coordinator.rs": "2640a056cbee5e07e296e6c953d69f0120f9a458421eda30f410b3fd3913f7dd",
+    "desktop/gpui/src/app/rubric_coordinator.rs": "323a61fa6650defe3de453d59d3e4591bbfce9756eaf6afe181a0b5b304dba4a",
+    "desktop/gpui/fixtures/math-write/app-source-host/view_tests.rs": "81c74a47c4f3d67ce8e1cfccc0594034d7e0c143db96e5f5cfbcfd65fcc6fcd9",
+    "desktop/gpui/src/document_edit.rs": "c00646844e2e31ac2ddc1cc1701269ecdd12322a2129c506e6c72f4a95503faf",
+    "desktop/gpui/src/editor/view.rs": "aef8332e5b2915a479a7c7ffad2624897f38186f91e62cdeee5ced35eabf5b14",
+    "desktop/gpui/src/editor/view_math_source.rs": "635f48f44f30f48d6eae81fef4f0bf4da6a73eeb6c1cb826ebf4ea422b1a47b5",
+    "desktop/gpui/src/editor/math_source_flow.rs": "dd9c351c85922a703aee9d2648a8b18d6e3d66beb37631d705a2fb60902ab373"
+  },
+  "boundaries": [
+    "Actual application inline/block forms, canonical converter, real Store save/reload and owner routes in mounted windows",
+    "Inline admission enabled after six retained-child mounted gates",
+    "No OS input, renderer, original-browser baseline or complete pixel parity proof"
+  ]
+}

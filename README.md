@@ -183,6 +183,19 @@ variables, and the custom-domain steps.
 
 ## Desktop app
 
+A native, offline writing room built with [GPUI Kit](https://gpui-kit.com/)
+is available alongside the hosted desktop shell:
+
+```bash
+bun run desktop.gpui         # build and launch the Rust app
+bun run desktop.gpui.build   # build the release executable
+```
+
+It provides local manuscripts, Markdown writing and reading, notebooks,
+autosave, import/export, find, focus mode, and a reversible archive. It uses a
+separate local library. See [the GPUI desktop guide](desktop/gpui/README.md)
+for platform requirements, storage, shortcuts, and feature coverage.
+
 A native desktop build wraps the hosted app via
 [Electrobun](https://www.electrobun.dev):
 

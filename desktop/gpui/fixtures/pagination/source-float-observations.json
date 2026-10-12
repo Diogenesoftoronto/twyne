@@ -1,0 +1,484 @@
+{
+  "boundary": "Isolated original global.css, original Lora 3.008 variable, and original paginate over actual DOM offsetHeight. Classes/spacers manually activate the declared engine path, not current full-route registration or plugin scheduling proof.",
+  "font": {
+    "path": "src/assets/typst/lora-Lora-wght.ttf",
+    "sha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7"
+  },
+  "browser": "154.0.8037.57",
+  "attemptedNetworkRequests": 0,
+  "observations": [
+    {
+      "input": {
+        "name": "adjacent paragraphs retain remaining float",
+        "contentH": 1024,
+        "text": "The following paragraph carries on.",
+        "manual": false
+      },
+      "geometry": {
+        "pageH": 1056,
+        "pageW": 816,
+        "gap": 24,
+        "marginTop": 16,
+        "marginBottom": 16,
+        "marginLeft": 248,
+        "marginRight": 248,
+        "contentH": 1024,
+        "contentW": 320
+      },
+      "passes": [
+        {
+          "pass": 0,
+          "metrics": [
+            {
+              "pos": 0,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            },
+            {
+              "pos": 1,
+              "height": 65,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            }
+          ],
+          "firstGlyphX": 98.265625,
+          "firstGlyphY": 4,
+          "paragraphTop": 40.484375,
+          "artworkTop": 2.640625,
+          "artworkBottom": 90.328125,
+          "result": {
+            "breaks": [],
+            "pageCount": 1
+          },
+          "stable": true
+        }
+      ]
+    },
+    {
+      "input": {
+        "name": "manual spacer clears the opening float",
+        "contentH": 1024,
+        "text": "The following paragraph carries on.",
+        "manual": true
+      },
+      "geometry": {
+        "pageH": 1056,
+        "pageW": 816,
+        "gap": 24,
+        "marginTop": 16,
+        "marginBottom": 16,
+        "marginLeft": 248,
+        "marginRight": 248,
+        "contentH": 1024,
+        "contentW": 320
+      },
+      "passes": [
+        {
+          "pass": 0,
+          "metrics": [
+            {
+              "pos": 0,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            },
+            {
+              "pos": 1,
+              "height": 0,
+              "marginTop": 0,
+              "marginBottom": 0,
+              "forcedBreak": true
+            },
+            {
+              "pos": 2,
+              "height": 65,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            }
+          ],
+          "firstGlyphX": 98.265625,
+          "firstGlyphY": 4,
+          "paragraphTop": 40.484375,
+          "artworkTop": 2.640625,
+          "artworkBottom": 90.328125,
+          "result": {
+            "breaks": [
+              {
+                "blockIndex": 1,
+                "pos": 1,
+                "height": 1039.9,
+                "forced": true,
+                "page": 1
+              }
+            ],
+            "pageCount": 2
+          },
+          "stable": false
+        },
+        {
+          "pass": 1,
+          "metrics": [
+            {
+              "pos": 0,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            },
+            {
+              "pos": 1,
+              "height": 0,
+              "marginTop": 0,
+              "marginBottom": 0,
+              "forcedBreak": true
+            },
+            {
+              "pos": 2,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            }
+          ],
+          "firstGlyphX": 0,
+          "firstGlyphY": 4,
+          "paragraphTop": 1080.375,
+          "artworkTop": 2.640625,
+          "artworkBottom": 90.328125,
+          "result": {
+            "breaks": [
+              {
+                "blockIndex": 1,
+                "pos": 1,
+                "height": 1039.9,
+                "forced": true,
+                "page": 1
+              }
+            ],
+            "pageCount": 2
+          },
+          "stable": true
+        }
+      ]
+    },
+    {
+      "input": {
+        "name": "automatic spacer stable after clear",
+        "contentH": 100,
+        "text": "The following paragraph carries ordinary words into the next room.",
+        "manual": false
+      },
+      "geometry": {
+        "pageH": 1056,
+        "pageW": 816,
+        "gap": 24,
+        "marginTop": 478,
+        "marginBottom": 478,
+        "marginLeft": 248,
+        "marginRight": 248,
+        "contentH": 100,
+        "contentW": 320
+      },
+      "passes": [
+        {
+          "pass": 0,
+          "metrics": [
+            {
+              "pos": 0,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            },
+            {
+              "pos": 1,
+              "height": 97,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            }
+          ],
+          "firstGlyphX": 98.265625,
+          "firstGlyphY": 4,
+          "paragraphTop": 40.484375,
+          "artworkTop": 2.640625,
+          "artworkBottom": 90.328125,
+          "result": {
+            "breaks": [
+              {
+                "blockIndex": 1,
+                "pos": 1,
+                "height": 1039.9,
+                "forced": false,
+                "page": 1
+              }
+            ],
+            "pageCount": 2
+          },
+          "stable": false
+        },
+        {
+          "pass": 1,
+          "metrics": [
+            {
+              "pos": 0,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            },
+            {
+              "pos": 1,
+              "height": 65,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            }
+          ],
+          "firstGlyphX": 0,
+          "firstGlyphY": 4,
+          "paragraphTop": 1080.375,
+          "artworkTop": 2.640625,
+          "artworkBottom": 90.328125,
+          "result": {
+            "breaks": [
+              {
+                "blockIndex": 1,
+                "pos": 1,
+                "height": 1039.9,
+                "forced": false,
+                "page": 1
+              }
+            ],
+            "pageCount": 2
+          },
+          "stable": true
+        }
+      ]
+    },
+    {
+      "input": {
+        "name": "automatic spacer/float feedback",
+        "contentH": 90,
+        "text": "The following paragraph carries on.",
+        "manual": false
+      },
+      "geometry": {
+        "pageH": 1056,
+        "pageW": 816,
+        "gap": 24,
+        "marginTop": 483,
+        "marginBottom": 483,
+        "marginLeft": 248,
+        "marginRight": 248,
+        "contentH": 90,
+        "contentW": 320
+      },
+      "passes": [
+        {
+          "pass": 0,
+          "metrics": [
+            {
+              "pos": 0,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            },
+            {
+              "pos": 1,
+              "height": 65,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            }
+          ],
+          "firstGlyphX": 98.265625,
+          "firstGlyphY": 4,
+          "paragraphTop": 40.484375,
+          "artworkTop": 2.640625,
+          "artworkBottom": 90.328125,
+          "result": {
+            "breaks": [
+              {
+                "blockIndex": 1,
+                "pos": 1,
+                "height": 1039.9,
+                "forced": false,
+                "page": 1
+              }
+            ],
+            "pageCount": 2
+          },
+          "stable": false
+        },
+        {
+          "pass": 1,
+          "metrics": [
+            {
+              "pos": 0,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            },
+            {
+              "pos": 1,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            }
+          ],
+          "firstGlyphX": 0,
+          "firstGlyphY": 4,
+          "paragraphTop": 1080.375,
+          "artworkTop": 2.640625,
+          "artworkBottom": 90.328125,
+          "result": {
+            "breaks": [],
+            "pageCount": 1
+          },
+          "stable": false
+        },
+        {
+          "pass": 2,
+          "metrics": [
+            {
+              "pos": 0,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            },
+            {
+              "pos": 1,
+              "height": 65,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            }
+          ],
+          "firstGlyphX": 98.265625,
+          "firstGlyphY": 4,
+          "paragraphTop": 40.484375,
+          "artworkTop": 2.640625,
+          "artworkBottom": 90.328125,
+          "result": {
+            "breaks": [
+              {
+                "blockIndex": 1,
+                "pos": 1,
+                "height": 1039.9,
+                "forced": false,
+                "page": 1
+              }
+            ],
+            "pageCount": 2
+          },
+          "stable": false
+        },
+        {
+          "pass": 3,
+          "metrics": [
+            {
+              "pos": 0,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            },
+            {
+              "pos": 1,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            }
+          ],
+          "firstGlyphX": 0,
+          "firstGlyphY": 4,
+          "paragraphTop": 1080.375,
+          "artworkTop": 2.640625,
+          "artworkBottom": 90.328125,
+          "result": {
+            "breaks": [],
+            "pageCount": 1
+          },
+          "stable": false
+        },
+        {
+          "pass": 4,
+          "metrics": [
+            {
+              "pos": 0,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            },
+            {
+              "pos": 1,
+              "height": 65,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            }
+          ],
+          "firstGlyphX": 98.265625,
+          "firstGlyphY": 4,
+          "paragraphTop": 40.484375,
+          "artworkTop": 2.640625,
+          "artworkBottom": 90.328125,
+          "result": {
+            "breaks": [
+              {
+                "blockIndex": 1,
+                "pos": 1,
+                "height": 1039.9,
+                "forced": false,
+                "page": 1
+              }
+            ],
+            "pageCount": 2
+          },
+          "stable": false
+        },
+        {
+          "pass": 5,
+          "metrics": [
+            {
+              "pos": 0,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            },
+            {
+              "pos": 1,
+              "height": 32,
+              "marginTop": 0,
+              "marginBottom": 8.1,
+              "forcedBreak": false
+            }
+          ],
+          "firstGlyphX": 0,
+          "firstGlyphY": 4,
+          "paragraphTop": 1080.375,
+          "artworkTop": 2.640625,
+          "artworkBottom": 90.328125,
+          "result": {
+            "breaks": [],
+            "pageCount": 1
+          },
+          "stable": false
+        }
+      ]
+    }
+  ]
+}

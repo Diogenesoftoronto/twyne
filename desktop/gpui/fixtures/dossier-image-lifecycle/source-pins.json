@@ -1,0 +1,97 @@
+{
+  "kind": "read-only current source audit",
+  "crates": {
+    "gpui-pre": "0.3.7",
+    "gpui-pre-linux": "0.3.7",
+    "gpui-pre-wgpu": "0.3.7",
+    "wgpu": "29.0.4"
+  },
+  "files": [
+    {
+      "path": "desktop/gpui/Cargo.lock",
+      "sha256": "44f147eca43dddc0f20802a4f0cf05eb36596cf3e6cf86c00ddc15d12c617c83"
+    },
+    {
+      "path": "desktop/gpui/src/app.rs",
+      "sha256": "f5e49f1d4ee936b333c9bf52b4b7119d2468b1e9f2f84c3b88360dfe9e550ea9"
+    },
+    {
+      "path": "desktop/gpui/src/dossier_view.rs",
+      "sha256": "45537aaf8ab2ebd3c258a21ad6b0c482b0131c0fc525fdbec2408e0e256bf8aa"
+    },
+    {
+      "path": "desktop/gpui/src/dossier_paper.rs",
+      "sha256": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e"
+    },
+    {
+      "path": "desktop/gpui/src/dossier_stamp.rs",
+      "sha256": "02e148677556cf5db9a4f0b13aef4373171a93c6e34888e901a510b1a6376ed3"
+    },
+    {
+      "path": "desktop/gpui/src/dossier_multiply.rs",
+      "sha256": "fee08f1898d6068f91de577d6284fdd2760e827bcab8d1f7f9cc027a7780a439"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre/src/window.rs",
+      "sha256": "802a2ef83a5cca1efa95eee62556f9f38a98afc1f500e10b19dbec3eeeac23fc"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre/src/app.rs",
+      "sha256": "075e8977cd92dc5937ed638522eda17507da39d2a0bf9602fad1fc46df0f941f"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre/src/app/async_context.rs",
+      "sha256": "9ce9c6f7fa3621679d4785d74686e81300cdc765b500245d8a92a8d33aed3094"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre/src/assets.rs",
+      "sha256": "44e116678b8b351ecb7fb45a3163b58288d551fbc72049ddc7a8d255d589bcff"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre/src/platform.rs",
+      "sha256": "9de7e0b0f29c51b149263b9bc9b4061bfbe41849e296b75df9cf259d9bbbdc4c"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre/src/scene.rs",
+      "sha256": "bec00dd28b02b70238483b20ed7766abc8c361a765ede2281076a888892beac4"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre/src/view.rs",
+      "sha256": "11eeda4ac05a0b03b22df9ffd58fc08ce1f6b0ef57af6cd8e7679d06f4601d94"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre/src/elements/canvas.rs",
+      "sha256": "3e09646e725d31c10a88be290c146d6a6e829e0be173e6bc82c138461668e646"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_context.rs",
+      "sha256": "e55ddbb0fc1f4fe00bd7f5a2da9fa8ab53f1b337297e86b62fb3e5ccf8f605e6"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs",
+      "sha256": "8902431999319e8d9fa7688a0bd54113836344f6e01226c35ee61878b0d55c02"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_atlas.rs",
+      "sha256": "a83974f0d64bf87bd5d763e1031dfb2ec845e3f100dc0efcafa8aca9129fe8c8"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre-linux/src/linux/x11/window.rs",
+      "sha256": "ceab15df2c676ef586491e67aee1e22b70616789e456f66606102dfccd4b4fb8"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre-linux/src/linux/wayland/window.rs",
+      "sha256": "ca16191b42f35c4776d427a858491723ab144de6d4acfbbb323992d20841b897"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre-linux/src/linux/headless/window.rs",
+      "sha256": "7305a0c1a1d26752750f4b38cc8342570653c0ef9f9715f9062ec052a910fda9"
+    }
+  ],
+  "cachedPrimarySource": {
+    "crate": "wgpu",
+    "version": "29.0.4",
+    "pathInCrate": "src/api/queue.rs",
+    "sha256": "b3811f0df3ccad53d990bfd66c650759abb67654779b08e160a437b51abd7c71"
+  }
+}

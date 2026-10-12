@@ -39,7 +39,7 @@
     "serve": "node server.js",
     "storybook": "storybook dev --host 127.0.0.1 -p ${TWYNE_STORYBOOK_PORT:-6006} --ci",
     "storybook.build": "storybook build",
-    "test": "bun run prompts:check && bun run i18n:prepare && bun test --conditions=production --preload ./tests/qwik-test-preload.ts",
+    "test": "bun run prompts:check && bun run i18n:prepare && bun test --conditions=production --preload ./tests/qwik-test-preload.ts tests src convex evals packages",
     "tools:build": "bun run --cwd packages/twyne-tools build",
     "tools:check": "bun run --cwd packages/twyne-tools check",
     "tools:test": "bun --cwd packages/twyne-tools test",
@@ -68,7 +68,16 @@
     "eval:instruments": "bun evals/instruments/run.ts",
     "eval:room-routing": "bun evals/instruments/room-routing.ts",
     "bench:instruments": "bun evals/instruments/run.ts --benchmark-only",
-    "test:models": "playwright test --config playwright.models.config.ts"
+    "test:models": "playwright test --config playwright.models.config.ts",
+    "desktop.gpui": "bun desktop/gpui/tools/build-helper.ts run",
+    "desktop.gpui.build": "bun desktop/gpui/tools/build-helper.ts build",
+    "desktop.gpui.build-helper": "bun desktop/gpui/tools/build-helper.ts",
+    "desktop.gpui.package": "rtk proxy bun desktop/gpui/packaging/stage.ts stage",
+    "desktop.gpui.package.verify": "rtk proxy bun desktop/gpui/packaging/stage.ts verify",
+    "desktop.gpui.package.test": "rtk proxy bun test desktop/gpui/fixtures/distribution/stage.test.ts",
+    "desktop.gpui.check": "cargo check --locked --manifest-path desktop/gpui/Cargo.toml",
+    "desktop.gpui.test": "cargo test --locked --no-default-features --manifest-path desktop/gpui/Cargo.toml",
+    "desktop.gpui.test-ui": "cargo test --locked --features ui-tests --manifest-path desktop/gpui/Cargo.toml"
   },
   "devDependencies": {
     "@builder.io/qwik": "npm:@qwik.dev/core@2.0.0-beta.42",

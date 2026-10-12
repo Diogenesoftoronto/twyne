@@ -1,0 +1,179 @@
+{
+  "system": "Actual Linux Cosmic/Swash platform text system",
+  "sourceFamily": "Lora",
+  "nativeFamily": "Twyne Body",
+  "version": "3.008",
+  "distinctSelectedFaces": true,
+  "sourceVariableRequiresStaticWeightInstances": true,
+  "canonicalFamilyMappingOnlyAtRender": true,
+  "faces": [
+    {
+      "style": "Regular",
+      "fontId": "FontId(0)",
+      "sourceSha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7",
+      "glyphs": [
+        {
+          "character": "A",
+          "glyphId": 1,
+          "advanceUnits": 626.0
+        },
+        {
+          "character": "W",
+          "glyphId": 165,
+          "advanceUnits": 995.0
+        },
+        {
+          "character": "a",
+          "glyphId": 183,
+          "advanceUnits": 516.0
+        },
+        {
+          "character": "g",
+          "glyphId": 240,
+          "advanceUnits": 553.0
+        },
+        {
+          "character": "m",
+          "glyphId": 277,
+          "advanceUnits": 894.0
+        },
+        {
+          "character": "x",
+          "glyphId": 356,
+          "advanceUnits": 530.0
+        },
+        {
+          "character": "é",
+          "glyphId": 219,
+          "advanceUnits": 542.0
+        }
+      ]
+    },
+    {
+      "style": "Bold",
+      "fontId": "FontId(2)",
+      "sourceSha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7",
+      "glyphs": [
+        {
+          "character": "A",
+          "glyphId": 1,
+          "advanceUnits": 668.0
+        },
+        {
+          "character": "W",
+          "glyphId": 165,
+          "advanceUnits": 1016.0
+        },
+        {
+          "character": "a",
+          "glyphId": 183,
+          "advanceUnits": 524.0
+        },
+        {
+          "character": "g",
+          "glyphId": 240,
+          "advanceUnits": 557.0
+        },
+        {
+          "character": "m",
+          "glyphId": 277,
+          "advanceUnits": 920.0
+        },
+        {
+          "character": "x",
+          "glyphId": 356,
+          "advanceUnits": 548.0
+        },
+        {
+          "character": "é",
+          "glyphId": 219,
+          "advanceUnits": 538.0
+        }
+      ]
+    },
+    {
+      "style": "Italic",
+      "fontId": "FontId(1)",
+      "sourceSha256": "22d8d8854b53807aa664ca34f2031a9ed57a1d0dea296b8b96cdd3aad937a2b3",
+      "glyphs": [
+        {
+          "character": "A",
+          "glyphId": 1,
+          "advanceUnits": 631.0
+        },
+        {
+          "character": "W",
+          "glyphId": 165,
+          "advanceUnits": 994.0
+        },
+        {
+          "character": "a",
+          "glyphId": 183,
+          "advanceUnits": 548.0
+        },
+        {
+          "character": "g",
+          "glyphId": 240,
+          "advanceUnits": 518.0
+        },
+        {
+          "character": "m",
+          "glyphId": 277,
+          "advanceUnits": 876.0
+        },
+        {
+          "character": "x",
+          "glyphId": 356,
+          "advanceUnits": 545.0
+        },
+        {
+          "character": "é",
+          "glyphId": 219,
+          "advanceUnits": 477.0
+        }
+      ]
+    },
+    {
+      "style": "Bold Italic",
+      "fontId": "FontId(3)",
+      "sourceSha256": "22d8d8854b53807aa664ca34f2031a9ed57a1d0dea296b8b96cdd3aad937a2b3",
+      "glyphs": [
+        {
+          "character": "A",
+          "glyphId": 1,
+          "advanceUnits": 667.0
+        },
+        {
+          "character": "W",
+          "glyphId": 165,
+          "advanceUnits": 1010.0
+        },
+        {
+          "character": "a",
+          "glyphId": 183,
+          "advanceUnits": 549.0
+        },
+        {
+          "character": "g",
+          "glyphId": 240,
+          "advanceUnits": 520.0
+        },
+        {
+          "character": "m",
+          "glyphId": 277,
+          "advanceUnits": 878.0
+        },
+        {
+          "character": "x",
+          "glyphId": 356,
+          "advanceUnits": 543.0
+        },
+        {
+          "character": "é",
+          "glyphId": 219,
+          "advanceUnits": 470.0
+        }
+      ]
+    }
+  ]
+}

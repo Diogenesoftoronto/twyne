@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "status": "frozen-authored-unapplied-uncompiled-unexecuted",
+  "ownership": "NEW fixtures/dossier-image-lifecycle/retained-settings-host/** only",
+  "artifactSha256": {
+    "desktop/gpui/fixtures/dossier-image-lifecycle/retained-settings-host/README.md": "ff15b9165baa7b0da6d2ecd9c16d95f90d1eed2df1cebc42cdbd54bf9f3ac30a",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/retained-settings-host/build-patch.py": "5fadcf24cb72ad8d6cf71f7d587ab5557e8a973beb859bd88d6d8b98bddb5c95",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/retained-settings-host/freeze.py": "d5cbde627923b9718da7ca490a77964a9808778fbee7965ccd1b5e4780000f5e",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/retained-settings-host/host_tests.rs": "28e7ac5ef3ad7dbfd93da8776639d4d596a492a58d76cb3a332fdb7d177e72a1",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/retained-settings-host/integration.patch": "2ac5c3ce56ad24dd042e7f49faf7362cfe44c767e27a495f5929ca67761a3f1a",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/retained-settings-host/patch-base.json": "0e17bb9512a260b4cee34df2477950f8d8bd86c7178be1f816f7c4ba948b6182",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/retained-settings-host/source-pins.json": "a90e80ee99cc98147160764a47d7f14ec0baeb9ced120ba5beb049cb7ae1bcf5"
+  },
+  "workerChecks": {
+    "pythonAstSyntax": true,
+    "rustSyntaxFormattingOnly": true,
+    "unappliedPatchApplyCheck": true,
+    "cargo": false,
+    "native": false
+  },
+  "parentFilter": "dossier_retained_settings_host"
+}

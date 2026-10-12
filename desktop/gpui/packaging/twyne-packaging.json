@@ -1,0 +1,219 @@
+{
+  "schemaVersion": 2,
+  "product": "Twyne",
+  "summary": "Offline integrity contract for a flat tree of native Twyne executables, required notices and platform metadata scaffolds. Staging does not assemble/install/sign an OS application bundle.",
+  "provenance": {
+    "appId": "desktop/gpui/src/main.rs:525",
+    "helperDiscovery": "desktop/gpui/src/semantic_bridge.rs:195",
+    "mathHelper": "desktop/gpui/src/math_write.rs:678",
+    "dataDirectories": "desktop/gpui/src/storage.rs:56",
+    "importExtensions": "desktop/gpui/src/storage.rs:310",
+    "window": "desktop/gpui/src/main.rs:511",
+    "electrobunReference": "electrobun.config.ts",
+    "referenceWindow": "desktop/main.ts",
+    "releaseWorkflow": ".github/workflows/gpui-desktop.yml"
+  },
+  "identifiers": {
+    "appId": "love.twyne.gpui",
+    "linuxDesktopId": "love.twyne.gpui",
+    "macBundleId": "love.twyne.gpui",
+    "windowsAppUserModelId": "love.twyne.gpui",
+    "referenceElectrobunIdentifier": "love.twyne.desktop",
+    "dataDirectoryQualifier": "love",
+    "dataDirectoryOrganization": "twyne",
+    "dataDirectoryApplication": "twyne-gpui",
+    "dataDirectoryEnvOverride": "TWYNE_GPUI_DATA_DIR",
+    "helperPathEnvOverride": "TWYNE_DOCUMENT_HELPER"
+  },
+  "executables": [
+    {
+      "id": "desktop",
+      "cargoBinary": "twyne-desktop",
+      "targetName": "twyne-desktop",
+      "required": true,
+      "wired": true,
+      "role": "native GPUI application",
+      "windowsExtension": ".exe"
+    },
+    {
+      "id": "document",
+      "cargoBinary": "twyne-document",
+      "targetName": "twyne-document",
+      "required": true,
+      "wired": true,
+      "role": "packaged Bun document helper (source/HTML reconciliation, starter generation, MathJax export)",
+      "windowsExtension": ".exe",
+      "discovery": "Sibling of the desktop executable; TWYNE_DOCUMENT_HELPER overrides for development."
+    },
+    {
+      "id": "math-write",
+      "cargoBinary": "twyne-math-write",
+      "targetName": "twyne-math-write",
+      "required": true,
+      "wired": false,
+      "role": "packaged Bun KaTeX Write diagnostic helper",
+      "windowsExtension": ".exe",
+      "discovery": "Absolute path supplied by the caller; no PATH or sibling discovery is implemented yet.",
+      "wiringNote": "Built and copied to target/release by tools/build-helper.ts and required for a complete distribution, but not yet constructed by the application; only tests and the math-write fixtures call MathWriteRenderer::with_executable."
+    }
+  ],
+  "notices": {
+    "files": [
+      "README.md",
+      "PORT_PLAN.md",
+      "assets/NOTICE.md",
+      "assets/fonts/LICENSE",
+      "assets/fonts/NOTICE",
+      "vendor/gpui-base/LICENSE-APACHE",
+      "vendor/gpui-pre-linux/LICENSE-APACHE",
+      "vendor/gpui-pre-wgpu/LICENSE-APACHE",
+      "licenses/hypher-LICENSE-APACHE",
+      "licenses/hypher-LICENSE-MIT"
+    ],
+    "globs": [
+      "assets/licenses/*",
+      "assets/fonts/*OFL.txt",
+      "assets/fonts/*LICENSE.txt",
+      "licenses/*"
+    ]
+  },
+  "platformMetadata": {
+    "linux": [
+      {
+        "source": "packaging/platform/linux/love.twyne.gpui.desktop",
+        "target": "share/applications/love.twyne.gpui.desktop"
+      },
+      {
+        "source": "packaging/platform/linux/love.twyne.gpui.metainfo.xml",
+        "target": "share/metainfo/love.twyne.gpui.metainfo.xml"
+      },
+      {
+        "source": "packaging/platform/linux/love.twyne.gpui.xml",
+        "target": "share/mime/packages/love.twyne.gpui.xml"
+      }
+    ],
+    "macos": [
+      {
+        "source": "packaging/platform/macos/Info.plist",
+        "target": "scaffolds/macos/Info.plist.in"
+      }
+    ],
+    "windows": [
+      {
+        "source": "packaging/platform/windows/twyne.rc",
+        "target": "scaffolds/windows/twyne.rc.in"
+      },
+      {
+        "source": "packaging/platform/windows/twyne.manifest",
+        "target": "scaffolds/windows/twyne.manifest.in"
+      }
+    ]
+  },
+  "icons": {
+    "linux": [
+      {
+        "source": "assets/public/icon-512.png",
+        "target": "share/icons/hicolor/512x512/apps/love.twyne.gpui.png"
+      },
+      {
+        "source": "assets/public/icon-192.png",
+        "target": "share/icons/hicolor/192x192/apps/love.twyne.gpui.png"
+      },
+      {
+        "source": "assets/public/favicon.svg",
+        "target": "share/icons/hicolor/scalable/apps/love.twyne.gpui.svg"
+      }
+    ],
+    "macos": [
+      {
+        "source": "assets/public/icon-512.png",
+        "target": "scaffolds/macos/AppIcon.png"
+      }
+    ],
+    "windows": [
+      {
+        "source": "assets/public/favicon.ico",
+        "target": "scaffolds/windows/twyne.ico"
+      }
+    ]
+  },
+  "fileAssociations": [
+    {
+      "extension": ".typ",
+      "mime": "application/x-typst",
+      "description": "Typst source"
+    },
+    {
+      "extension": ".twyne.json",
+      "mime": "application/json",
+      "description": "Twyne document backup"
+    },
+    {
+      "extension": ".twyne",
+      "mime": "application/json",
+      "description": "Twyne prototype draft"
+    },
+    {
+      "extension": ".html",
+      "mime": "text/html",
+      "description": "HTML document"
+    },
+    {
+      "extension": ".htm",
+      "mime": "text/html",
+      "description": "HTML document"
+    },
+    {
+      "extension": ".md",
+      "mime": "text/markdown",
+      "description": "Markdown document"
+    },
+    {
+      "extension": ".markdown",
+      "mime": "text/markdown",
+      "description": "Markdown document"
+    },
+    { "extension": ".txt", "mime": "text/plain", "description": "Plain text" }
+  ],
+  "urlSchemes": [
+    {
+      "scheme": "twyne",
+      "source": "electrobun.config.ts urlSchemes",
+      "purpose": "ATProto OAuth deep-link callbacks on macOS",
+      "implementedInGpui": false,
+      "registeredByPackaging": false,
+      "note": "Historical Electrobun reference only. No native callback adapter exists; no staged metadata registers this URL scheme."
+    }
+  ],
+  "launch": {
+    "title": "Twyne",
+    "widthPx": 1280,
+    "heightPx": 860,
+    "xPx": 80,
+    "yPx": 60,
+    "cliArguments": [
+      "--data-dir PATH",
+      "FILE.twyne.json",
+      "FILE.typ",
+      "FILE.html",
+      "FILE.md",
+      "FILE.txt",
+      "FILE.twyne"
+    ],
+    "environment": {
+      "TWYNE_GPUI_DATA_DIR": "Overrides the local library location.",
+      "TWYNE_DOCUMENT_HELPER": "Overrides the packaged document helper path."
+    }
+  },
+  "versions": {
+    "productVersionSource": "package.json",
+    "nativeCrateVersionSource": "desktop/gpui/Cargo.toml",
+    "note": "The native crate and product versions may differ. The flat staged manifest records both without rewriting either; OS metadata templates still require concrete release/build versions."
+  },
+  "platformAssembly": {
+    "status": "not-assembled",
+    "macos": "Metadata template and original PNG only. Contents/MacOS helper placement, concrete versions, minimum-OS validation, ICNS creation, signing and runtime launch remain unimplemented.",
+    "windows": "Uncompiled resource/manifest templates and original ICO only. Concrete versions, resource compilation, installer/association registration, signing and runtime launch remain unimplemented.",
+    "linux": "Desktop/MIME/icon metadata is staged only. No system installation, dependency relocation, clean-host launch or update mechanism is performed."
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "scope": "Actual built UI-test executable CLI prelaunch checks; no display/app launch",
+  "binary": "/tmp/twyne-gpui-dossier-current-ui-20261005-y0s3c7mh/twyne-desktop",
+  "binarySha256": "a561a61375182dcde61f1123cf5e8b6980bb7a1f8820c06b573fc61c0ea921f3",
+  "buildReceipt": "/tmp/twyne-gpui-dossier-current-ui-20261005-y0s3c7mh/build-receipt.json",
+  "passed": 9,
+  "cases": [
+    {
+      "arguments": ["--capture-size", "badx360"],
+      "exitCode": 1,
+      "expectedError": "Invalid capture width: invalid digit found in string",
+      "observedError": "Twyne could not start: Invalid capture width: invalid digit found in string"
+    },
+    {
+      "arguments": ["--capture-size", "320xbad"],
+      "exitCode": 1,
+      "expectedError": "Invalid capture height: invalid digit found in string",
+      "observedError": "Twyne could not start: Invalid capture height: invalid digit found in string"
+    },
+    {
+      "arguments": ["--capture-size", "4294967296x360"],
+      "exitCode": 1,
+      "expectedError": "Invalid capture width: number too large to fit in target type",
+      "observedError": "Twyne could not start: Invalid capture width: number too large to fit in target type"
+    },
+    {
+      "arguments": ["--capture-size", "319x360"],
+      "exitCode": 1,
+      "expectedError": "Capture size must be 320\u20133840 by 360\u20132160 pixels.",
+      "observedError": "Twyne could not start: Capture size must be 320\u20133840 by 360\u20132160 pixels."
+    },
+    {
+      "arguments": ["--capture-size", "320X360"],
+      "exitCode": 1,
+      "expectedError": "--capture-size needs WIDTHxHEIGHT",
+      "observedError": "Twyne could not start: --capture-size needs WIDTHxHEIGHT"
+    },
+    {
+      "arguments": ["--capture-size", "+320x+360"],
+      "exitCode": 1,
+      "expectedError": "Capture size requires a capture state.",
+      "observedError": "Twyne could not start: Capture size requires a capture state."
+    },
+    {
+      "arguments": ["--capture-size"],
+      "exitCode": 1,
+      "expectedError": "--capture-size needs WIDTHxHEIGHT",
+      "observedError": "Twyne could not start: --capture-size needs WIDTHxHEIGHT"
+    },
+    {
+      "arguments": ["--capture-size", "+320x+360", "--help"],
+      "exitCode": 0,
+      "stdout": "Twyne GPUI desktop.\n\nUsage: twyne-desktop [--data-dir PATH] [FILE.twyne.json | FILE.typ | FILE.html | FILE.md | FILE.txt | FILE.twyne ...]\n\nFiles are imported as copies into your library.\nTWYNE_GPUI_DATA_DIR also overrides the library location."
+    },
+    {
+      "arguments": ["--capture-size", "+3840x+2160", "--version"],
+      "exitCode": 0,
+      "stdout": "Twyne GPUI 0.1.0"
+    }
+  ],
+  "directRustFixture": {
+    "passed": 20,
+    "compilerWarningsDenied": true
+  },
+  "boundaries": [
+    "Only capture-size slice was extracted.",
+    "Other flags retain original main parser.",
+    "Default build flag availability still requires a separate current default check."
+  ]
+}

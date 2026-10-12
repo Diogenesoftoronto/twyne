@@ -16,6 +16,7 @@ import {
   toAgentPersona,
 } from "../../../convex/agentPrompts";
 import { loadPersonasFromIdb } from "../../utils/idb";
+import { PersonaCard } from "../../components/personas/persona-card";
 import { INK_SWATCHES } from "../../utils/palette";
 import {
   loadRoomSettingsLocally,
@@ -37,6 +38,26 @@ function linesFromTextarea(value: string): string[] | undefined {
     .map((line) => line.trim().replace(/^[-•—]\s*/, ""))
     .filter(Boolean);
   return lines.length > 0 ? lines : undefined;
+}
+
+/**
+ * Sample notes may span lines — a ruling, then a sign-off on its own — so
+ * they are separated by a blank line. A box with no blank lines at all is
+ * read the older way, one sample per line.
+ */
+function samplesFromTextarea(value: string): string[] | undefined {
+  const normalized = value.replace(/\r\n?/g, "\n").trim();
+  if (!/\n\s*\n/.test(normalized)) return linesFromTextarea(normalized);
+  const samples = normalized
+    .split(/\n\s*\n/)
+    .map((block) =>
+      block
+        .split("\n")
+        .map((line) => line.trim())
+        .join("\n"),
+    )
+    .filter(Boolean);
+  return samples.length > 0 ? samples : undefined;
 }
 
 /**
@@ -85,6 +106,7 @@ interface BoardStore {
   draftCriticalMethod: string;
   draftVoice: string;
   draftSignatureMoves: string;
+  draftHallmarks: string;
   draftAvoidances: string;
   draftSampleLines: string;
   draftIcon: string;
@@ -98,10 +120,12 @@ interface BoardStore {
   newCriticalMethod: string;
   newVoice: string;
   newSignatureMoves: string;
+  newHallmarks: string;
   newAvoidances: string;
   newSampleLines: string;
   newIcon: string;
   newColor: string;
+  newImage: string;
   showResetConfirm: boolean;
   showVoicePreviewId: string | null;
   roomSettings: RoomSettings;
@@ -121,6 +145,7 @@ export default component$(() => {
     draftCriticalMethod: "",
     draftVoice: "",
     draftSignatureMoves: "",
+    draftHallmarks: "",
     draftAvoidances: "",
     draftSampleLines: "",
     draftIcon: "",
@@ -134,10 +159,12 @@ export default component$(() => {
     newCriticalMethod: "",
     newVoice: "",
     newSignatureMoves: "",
+    newHallmarks: "",
     newAvoidances: "",
     newSampleLines: "",
     newIcon: "❧",
     newColor: COLOR_SWATCHES[0].value,
+    newImage: "",
     showResetConfirm: false,
     showVoicePreviewId: null,
     roomSettings: DEFAULT_ROOM_SETTINGS,
@@ -244,8 +271,9 @@ export default component$(() => {
     store.draftCriticalMethod = p.criticalMethod ?? "";
     store.draftVoice = p.voice ?? "";
     store.draftSignatureMoves = (p.signatureMoves ?? []).join("\n");
+    store.draftHallmarks = (p.hallmarks ?? []).join("\n");
     store.draftAvoidances = (p.avoidances ?? []).join("\n");
-    store.draftSampleLines = (p.sampleLines ?? []).join("\n");
+    store.draftSampleLines = (p.sampleLines ?? []).join("\n\n");
     store.draftIcon = p.icon;
     store.draftColor = p.color;
   });
@@ -264,8 +292,9 @@ export default component$(() => {
             criticalMethod: store.draftCriticalMethod.trim() || undefined,
             voice: store.draftVoice.trim() || undefined,
             signatureMoves: linesFromTextarea(store.draftSignatureMoves),
+            hallmarks: linesFromTextarea(store.draftHallmarks),
             avoidances: linesFromTextarea(store.draftAvoidances),
-            sampleLines: linesFromTextarea(store.draftSampleLines),
+            sampleLines: samplesFromTextarea(store.draftSampleLines),
             icon: store.draftIcon,
             color: store.draftColor,
           }
@@ -308,6 +337,7 @@ export default component$(() => {
       role: store.newRole.trim() || "The Editor",
       color: store.newColor,
       icon: store.newIcon.trim() || "❧",
+      imageUrl: store.newImage || undefined,
       description:
         store.newDescription.trim() || "A sharp, insightful editorial voice.",
       focus: store.newFocus.trim() || "General editing",
@@ -315,8 +345,9 @@ export default component$(() => {
       criticalMethod: store.newCriticalMethod.trim() || undefined,
       voice: store.newVoice.trim() || undefined,
       signatureMoves: linesFromTextarea(store.newSignatureMoves),
+      hallmarks: linesFromTextarea(store.newHallmarks),
       avoidances: linesFromTextarea(store.newAvoidances),
-      sampleLines: linesFromTextarea(store.newSampleLines),
+      sampleLines: samplesFromTextarea(store.newSampleLines),
     };
     store.newName = "";
     store.newRole = "";
@@ -326,10 +357,12 @@ export default component$(() => {
     store.newCriticalMethod = "";
     store.newVoice = "";
     store.newSignatureMoves = "";
+    store.newHallmarks = "";
     store.newAvoidances = "";
     store.newSampleLines = "";
     store.newIcon = "❧";
     store.newColor = COLOR_SWATCHES[0].value;
+    store.newImage = "";
     store.adding = false;
     await persistPersonas([...store.personas, p]);
   });
@@ -377,8 +410,8 @@ export default component$(() => {
       style={{ fontFamily: "var(--font-serif)" }}
     >
       <div class="max-w-4xl mx-auto px-6 py-8">
-        <div class="flex items-center justify-between mb-6">
-          <div>
+        <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-4 mb-8">
+          <div class="min-w-0 flex-1 basis-80">
             <p
               class="dept-label mb-1"
               style={{ fontFamily: "var(--font-typewriter)" }}
@@ -400,31 +433,12 @@ export default component$(() => {
               drives the notes they file.
             </p>
           </div>
-          <div class="flex items-center gap-3">
-            <button
-              onClick$={() => {
-                store.adding = true;
-              }}
-              class="btn-press text-sm"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              + New editor
-            </button>
-            <button
-              onClick$={reset}
-              class="btn-paper text-sm"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Reset defaults
-            </button>
-            <Link
-              href="/editor"
-              class="btn-paper text-sm"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              ← Back to desk
-            </Link>
-          </div>
+          <Link
+            href="/editor"
+            class="btn-paper inline-flex min-w-40 shrink-0 items-center justify-center whitespace-nowrap"
+          >
+            ← Back to desk
+          </Link>
         </div>
 
         {store.adding && (
@@ -438,16 +452,77 @@ export default component$(() => {
             >
               New editor
             </h3>
-            <div class="grid grid-cols-[auto_1fr] gap-3 items-start">
-              <input
-                value={store.newIcon}
-                onInput$={(e) => {
-                  store.newIcon = (e.target as HTMLInputElement).value;
-                }}
-                class="room-input w-12 text-center text-lg"
-                maxLength={2}
-                placeholder="❧"
-              />
+            <div class="grid grid-cols-[auto_1fr] gap-4 items-start">
+              <div class="flex w-40 flex-col gap-2">
+                <input
+                  value={store.newIcon}
+                  onInput$={(e) => {
+                    store.newIcon = (e.target as HTMLInputElement).value;
+                  }}
+                  class="room-input w-12 text-center text-lg"
+                  maxLength={2}
+                  placeholder="❧"
+                />
+                <div
+                  class="flex aspect-[4/5] w-full items-center justify-center overflow-hidden"
+                  style={{
+                    border: "1px dashed var(--color-paper-3)",
+                    background: store.newImage
+                      ? `center / cover no-repeat url("${store.newImage}")`
+                      : "transparent",
+                    color: "var(--color-ink-light)",
+                  }}
+                  aria-label="Portrait preview"
+                >
+                  {!store.newImage && (
+                    <span class="px-2 text-center text-xs">No portrait</span>
+                  )}
+                </div>
+                <label class="btn-paper cursor-pointer text-center text-xs">
+                  {store.newImage ? "Change portrait" : "Upload portrait"}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    class="sr-only"
+                    onChange$={async (e) => {
+                      const input = e.target as HTMLInputElement;
+                      const file = input.files?.[0];
+                      input.value = "";
+                      if (!file) return;
+                      const bmp = await createImageBitmap(file);
+                      // Cover-crop to the 4:5 plate and keep it small: the
+                      // portrait is stored inline with the persona.
+                      const W = 480;
+                      const H = 600;
+                      const scale = Math.max(W / bmp.width, H / bmp.height);
+                      const canvas = document.createElement("canvas");
+                      canvas.width = W;
+                      canvas.height = H;
+                      const ctx = canvas.getContext("2d")!;
+                      ctx.drawImage(
+                        bmp,
+                        (W - bmp.width * scale) / 2,
+                        (H - bmp.height * scale) / 2,
+                        bmp.width * scale,
+                        bmp.height * scale,
+                      );
+                      store.newImage = canvas.toDataURL("image/webp", 0.82);
+                    }}
+                  />
+                </label>
+                {store.newImage && (
+                  <button
+                    type="button"
+                    class="text-xs underline"
+                    style={{ color: "var(--color-ink-light)" }}
+                    onClick$={() => {
+                      store.newImage = "";
+                    }}
+                  >
+                    Remove portrait
+                  </button>
+                )}
+              </div>
               <div class="space-y-2">
                 <input
                   value={store.newName}
@@ -522,6 +597,18 @@ export default component$(() => {
                   class="room-textarea"
                 />
                 <textarea
+                  value={store.newHallmarks}
+                  onInput$={(e) => {
+                    store.newHallmarks = (
+                      e.target as HTMLTextAreaElement
+                    ).value;
+                  }}
+                  placeholder={
+                    "Hallmarks — visible tics that sign every note, one per line\nOpen with a one-word verdict in bold\nSign off with « — L. »"
+                  }
+                  class="room-textarea"
+                />
+                <textarea
                   value={store.newAvoidances}
                   onInput$={(e) => {
                     store.newAvoidances = (
@@ -540,7 +627,7 @@ export default component$(() => {
                       e.target as HTMLTextAreaElement
                     ).value;
                   }}
-                  placeholder="Sample lines in this editor's voice, one per line"
+                  placeholder="Sample notes in this editor's voice, separated by a blank line"
                   class="room-textarea"
                 />
                 <div>
@@ -710,34 +797,15 @@ export default component$(() => {
           </div>
         </section>
 
-        <div class="space-y-3">
+        <div class="space-y-5">
           {store.personas.map((p, idx) => {
             const isEditing = store.editingId === p.id;
             const showPreview = store.showVoicePreviewId === p.id;
             return (
-              <div key={p.id} class="room-card p-4">
-                <div class="flex items-start gap-3">
-                  <div class="flex flex-col gap-1 pt-1">
-                    <button
-                      onClick$={() => move(idx, -1)}
-                      disabled={idx === 0}
-                      class="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] disabled:opacity-20"
-                      title="Move up"
-                    >
-                      ▲
-                    </button>
-                    <button
-                      onClick$={() => move(idx, 1)}
-                      disabled={idx === store.personas.length - 1}
-                      class="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] disabled:opacity-20"
-                      title="Move down"
-                    >
-                      ▼
-                    </button>
-                  </div>
-
-                  {isEditing ? (
-                    <div class="flex-1 grid grid-cols-[auto_1fr] gap-3 items-start">
+              <div key={p.id}>
+                {isEditing ? (
+                  <div class="room-card p-4 flex items-start gap-3">
+                    <div class="flex-1 grid grid-cols-[auto_1fr] gap-4 items-start">
                       <input
                         value={store.draftIcon}
                         onInput$={(e) => {
@@ -830,6 +898,16 @@ export default component$(() => {
                           placeholder="Signature moves, one per line"
                         />
                         <textarea
+                          value={store.draftHallmarks}
+                          onInput$={(e) => {
+                            store.draftHallmarks = (
+                              e.target as HTMLTextAreaElement
+                            ).value;
+                          }}
+                          class="room-textarea"
+                          placeholder="Hallmarks — visible tics, one per line"
+                        />
+                        <textarea
                           value={store.draftAvoidances}
                           onInput$={(e) => {
                             store.draftAvoidances = (
@@ -847,7 +925,7 @@ export default component$(() => {
                             ).value;
                           }}
                           class="room-textarea"
-                          placeholder="Sample lines, one per line"
+                          placeholder="Sample notes, separated by a blank line"
                         />
                         <div>
                           <p
@@ -886,97 +964,84 @@ export default component$(() => {
                         </div>
                       </div>
                     </div>
-                  ) : (
-                    <div class="flex-1">
-                      <div class="flex items-center gap-2 mb-1">
-                        <span class="text-xl" style={{ color: p.color }}>
-                          {p.icon}
-                        </span>
-                        <h3
-                          class="text-base font-semibold"
-                          style={{
-                            fontFamily: "var(--font-display)",
-                            color: "var(--color-ink)",
-                          }}
-                        >
-                          {p.name}
-                        </h3>
-                        <span
-                          class="text-[0.6rem] text-[var(--color-ink-muted)] uppercase"
-                          style={{
-                            fontFamily: "var(--font-typewriter)",
-                            letterSpacing: "0.15em",
-                          }}
-                        >
-                          {p.id}
-                        </span>
-                      </div>
-                      <p
-                        class="text-xs text-[var(--color-accent)] mb-1"
-                        style={{ fontFamily: "var(--font-typewriter)" }}
-                      >
-                        {p.role}
-                      </p>
-                      <p
-                        class="text-sm text-[var(--color-ink-light)] leading-relaxed mb-1"
-                        style={{ fontFamily: "var(--font-serif)" }}
-                      >
-                        {p.description}
-                      </p>
-                      <p
-                        class="text-[0.7rem] text-[var(--color-ink-muted)]"
-                        style={{ fontFamily: "var(--font-typewriter)" }}
-                      >
-                        Focus: {p.focus}
-                      </p>
-                      {p.backstory && (
-                        <p
-                          class="mt-2 text-xs italic leading-5 text-[var(--color-ink-light)]"
-                          style={{ fontFamily: "var(--font-serif)" }}
-                        >
-                          {p.backstory}
-                        </p>
-                      )}
-
+                  </div>
+                ) : (
+                  <>
+                    <PersonaCard persona={p}>
                       <button
-                        onClick$={() => toggleVoicePreview(p.id)}
-                        class="mt-2 text-[0.65rem] text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                        style={{
-                          fontFamily: "var(--font-typewriter)",
-                          letterSpacing: "0.12em",
-                          textTransform: "uppercase",
-                        }}
+                        onClick$={() => move(idx, -1)}
+                        disabled={idx === 0}
+                        class="disabled:opacity-20 hover:text-[var(--color-ink)]"
+                        title="Move up"
+                        aria-label={`Move ${p.name} up`}
                       >
-                        {showPreview
-                          ? "▾ Hide voice prompt"
-                          : "▸ Show voice prompt"}
+                        ▲
                       </button>
-                      {showPreview && (
-                        <pre class="preview mt-2">{buildVoicePreview(p)}</pre>
-                      )}
-                    </div>
-                  )}
-
-                  {!isEditing && (
-                    <div class="flex gap-2">
+                      <button
+                        onClick$={() => move(idx, 1)}
+                        disabled={idx === store.personas.length - 1}
+                        class="disabled:opacity-20 hover:text-[var(--color-ink)]"
+                        title="Move down"
+                        aria-label={`Move ${p.name} down`}
+                      >
+                        ▼
+                      </button>
                       <button
                         onClick$={() => startEditing(p)}
-                        class="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+                        class="hover:text-[var(--color-accent)]"
                       >
                         Edit
                       </button>
                       <button
                         onClick$={() => remove(p.id)}
-                        class="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                        class="hover:text-[var(--color-vermilion)]"
                       >
                         Remove
                       </button>
-                    </div>
-                  )}
-                </div>
+                    </PersonaCard>
+                    <button
+                      onClick$={() => toggleVoicePreview(p.id)}
+                      class="mt-1.5 ml-1 text-[0.65rem] text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+                      style={{
+                        fontFamily: "var(--font-typewriter)",
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {showPreview
+                        ? "▾ Hide voice prompt"
+                        : "▸ Show voice prompt"}
+                    </button>
+                    {showPreview && (
+                      <pre class="preview mt-2">{buildVoicePreview(p)}</pre>
+                    )}
+                  </>
+                )}
               </div>
             );
           })}
+        </div>
+
+        <div class="flex items-center justify-end gap-4 mt-8 mb-8">
+          <button
+            onClick$={reset}
+            class="btn-paper inline-flex min-w-40 items-center justify-center whitespace-nowrap"
+          >
+            Reset defaults
+          </button>
+          <button
+            onClick$={() => {
+              store.adding = true;
+            }}
+            class="btn-paper inline-flex min-w-40 items-center justify-center whitespace-nowrap"
+            style={{
+              background: "var(--color-ink)",
+              color: "var(--color-paper)",
+              borderColor: "var(--color-ink)",
+            }}
+          >
+            + New editor
+          </button>
         </div>
 
         {store.personas.length === 0 && (

@@ -1,0 +1,188 @@
+--- a/desktop/gpui/vendor/gpui-pre/src/platform.rs
++++ b/desktop/gpui/vendor/gpui-pre/src/platform.rs
+@@ -958,8 +958,15 @@
+     fn on_button_layout_changed(&self, _callback: Box<dyn FnMut()>) {}
+     fn draw(&self, scene: &Scene);
+     fn schedule_frame(&self) {}
+     fn sprite_atlas(&self) -> Arc<dyn PlatformAtlas>;
++    /// Whether the active backend implements byte-channel destination multiply
++    /// on its current target and polychrome atlas formats. Unsupported or
++    /// unavailable backends must refuse; this is not inferred from the OS.
++    /// Backdrop opacity, caller order and device-grid constraints are separate.
++    fn supports_destination_multiply(&self) -> bool {
++        false
++    }
+     fn is_subpixel_rendering_supported(&self) -> bool;
+ 
+     // macOS specific methods
+     fn get_title(&self) -> String {
+--- a/desktop/gpui/vendor/gpui-pre/src/window.rs
++++ b/desktop/gpui/vendor/gpui-pre/src/window.rs
+@@ -4965,8 +4965,15 @@
+         });
+         Ok(())
+     }
+ 
++    /// Returns the active backend's destination-multiply format capability.
++    /// This does not certify the caller's backdrop, paint order, image format,
++    /// device alignment or ancestor opacity. Do not cache this across recovery.
++    pub fn supports_destination_multiply(&self) -> bool {
++        self.platform_window.supports_destination_multiply()
++    }
++
+     /// Paint ONE already-composited premultiplied BGRA group using destination
+     /// multiplication. The caller must have painted an opaque backdrop across
+     /// the whole bounds first, and must paint this AFTER all live descendants.
+     /// This is not general CSS blend-mode support for transparent backdrops.
+@@ -4987,8 +4994,14 @@
+         );
+         if group_opacity == 0. || bounds.is_empty() {
+             return Ok(());
+         }
++        // Refuse before any atlas allocation/upload or scene/layer recording.
++        // An unavailable overlay must not poison an otherwise ordinary frame.
++        anyhow::ensure!(
++            self.supports_destination_multiply(),
++            "destination-multiply unavailable for this backend's current target/atlas formats"
++        );
+         anyhow::ensure!(
+             self.platform_window.background_appearance() == WindowBackgroundAppearance::Opaque,
+             "destination-multiply refuses transparent windows"
+         );
+--- a/desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_atlas.rs
++++ b/desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_atlas.rs
+@@ -67,8 +67,14 @@
+             context.device.clone(),
+             context.queue.clone(),
+             context.color_texture_format(),
+         )
++    }
++
++    /// The format used by the current polychrome/subpixel texture storage.
++    /// Read actual atlas state, including an in-place device-recovery update.
++    pub(crate) fn color_texture_format(&self) -> wgpu::TextureFormat {
++        self.0.lock().backend.color_texture_format
+     }
+ 
+     pub fn before_frame(&self) {
+         let mut lock = self.0.lock();
+--- a/desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs
++++ b/desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs
+@@ -210,8 +210,21 @@
+         self.path_msaa_view = None;
+     }
+ }
+ 
++fn destination_multiply_formats_supported(
++    target_format: wgpu::TextureFormat,
++    atlas_format: wgpu::TextureFormat,
++) -> bool {
++    let supported = |format| {
++        matches!(
++            format,
++            wgpu::TextureFormat::Bgra8Unorm | wgpu::TextureFormat::Rgba8Unorm
++        )
++    };
++    supported(target_format) && supported(atlas_format)
++}
++
+ struct WgpuRendererCore {
+     resources: WgpuResources,
+     atlas: Arc<WgpuAtlas>,
+     path_globals_offset: u64,
+@@ -224,9 +237,8 @@
+     is_bgr: bool,
+     dual_source_blending: bool,
+     adapter_info: wgpu::AdapterInfo,
+     target_format: wgpu::TextureFormat,
+-    destination_multiply_supported: bool,
+     max_texture_size: u32,
+ }
+ 
+ /// GPU resources of a windowed renderer. A surface is only ever configured against the
+@@ -1136,8 +1148,19 @@
+     }
+ 
+     pub fn sprite_atlas(&self) -> &Arc<WgpuAtlas> {
+         &self.atlas
++    }
++
++    /// Reports capability from the active configured renderer and live atlas.
++    /// Released, unconfigured or device-lost states never admit new overlays.
++    pub fn supports_destination_multiply(&self) -> bool {
++        let RendererState::Ready { core, .. } = &self.state else {
++            return false;
++        };
++        !self.device_lost()
++            && self.surface_config.format == core.target_format
++            && core.supports_destination_multiply()
+     }
+ 
+     pub fn supports_dual_source_blending(&self) -> bool {
+         self.core().is_some_and(|core| core.dual_source_blending)
+@@ -1404,17 +1427,17 @@
+             is_bgr: false,
+             dual_source_blending,
+             adapter_info: context.adapter.get_info(),
+             target_format,
+-            destination_multiply_supported: matches!(
+-                target_format,
+-                wgpu::TextureFormat::Bgra8Unorm | wgpu::TextureFormat::Rgba8Unorm
+-            ) && matches!(
+-                context.color_texture_format(),
+-                wgpu::TextureFormat::Bgra8Unorm | wgpu::TextureFormat::Rgba8Unorm
+-            ),
+             max_texture_size,
+         }
++    }
++
++    fn supports_destination_multiply(&self) -> bool {
++        destination_multiply_formats_supported(
++            self.target_format,
++            self.atlas.color_texture_format(),
++        ) && self.resources().pipelines.poly_multiply.is_some()
+     }
+ 
+     fn resources(&self) -> &WgpuResources {
+         &self.resources
+@@ -1529,9 +1552,9 @@
+     ) -> Result<wgpu::SubmissionIndex> {
+         // Fail before encoding: byte-channel CSS multiplication must not be
+         // silently promoted to linear/sRGB or a different atlas representation.
+         anyhow::ensure!(
+-            self.destination_multiply_supported
++            self.supports_destination_multiply()
+                 || !scene
+                     .polychrome_sprites
+                     .iter()
+                     .any(|sprite| { sprite.blend == PolychromeSpriteBlend::DestinationMultiply }),
+--- a/desktop/gpui/vendor/gpui-pre-linux/src/linux/x11/window.rs
++++ b/desktop/gpui/vendor/gpui-pre-linux/src/linux/x11/window.rs
+@@ -1783,8 +1783,12 @@
+         let inner = self.0.state.borrow();
+         inner.renderer.sprite_atlas().clone()
+     }
+ 
++    fn supports_destination_multiply(&self) -> bool {
++        self.0.state.borrow().renderer.supports_destination_multiply()
++    }
++
+     fn show_window_menu(&self, position: Point<Pixels>) {
+         let state = self.0.state.borrow();
+ 
+         check_reply(
+--- a/desktop/gpui/vendor/gpui-pre-linux/src/linux/wayland/window.rs
++++ b/desktop/gpui/vendor/gpui-pre-linux/src/linux/wayland/window.rs
+@@ -1991,8 +1991,12 @@
+         let state = self.borrow();
+         state.renderer.sprite_atlas().clone()
+     }
+ 
++    fn supports_destination_multiply(&self) -> bool {
++        self.borrow().renderer.supports_destination_multiply()
++    }
++
+     fn show_window_menu(&self, position: Point<Pixels>) {
+         let state = self.borrow();
+         let serial = state.client.get_serial(SerialKind::MousePress);
+         if let Some(toplevel) = state.surface_state.toplevel() {

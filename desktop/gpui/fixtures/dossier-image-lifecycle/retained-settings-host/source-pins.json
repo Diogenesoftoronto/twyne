@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "purpose": "Read-only host/API provenance, not a compiled test receipt",
+  "sourceSha256": {
+    "desktop/gpui/src/app.rs": "278e111dc5ebcc8fcb0d15b351b93bf1e647b45f63cbeee6c901616291ec07b0",
+    "desktop/gpui/src/app/settings_coordinator.rs": "45c9b59f70aa997e34479f91784248ccf77a9d4b233eb525ec6f11f98cfeda09",
+    "desktop/gpui/src/dossier_view.rs": "b4d8118d95810e47347265955e0989c0e93159977f9c37ada4d964e30c07a27a",
+    "desktop/gpui/src/dossier.rs": "3e01062a4c160e377593cdc48e82b5564dcdee14ff43d680b9d2318cb035e893",
+    "desktop/gpui/src/dossier_image_lifecycle.rs": "ec0855df3359b3ac8d0b4da2183f7b0d1a18e5bd164e9e4dc99c6a6b472ba037",
+    "desktop/gpui/vendor/gpui-pre/src/platform.rs": "afeb3dc3e05f74e8f3abb71b7a9d66a32e26cd45f6b8eb7c571480c41f56e1d4",
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": "c92daa1dd3a3bdcb477bed4d9368f7c47851453c6a387d31aa793860abefbc9b",
+    "desktop/gpui/vendor/gpui-base/src/test_support.rs": "b8dc971a7b1f48401d811e678ae23fb6103194d19bfed55ddb34b07c5f561709",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/integration.patch": "58e8db1631ffa91ca2062f8f1c5a9825171425a7d45b7037e44b256298ba1907",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/diagnostic_hooks.rs": "00c7167a5383a5ab7efee09bfa6a7e70f2708876153dd038f0e4283f592dc758",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/freeze.json": "d6731b4f0a2838f51119f7117e7dcb15c96da5113b858503ec83a27f8dd10158"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "display": "new isolated Xvfb (terminated)",
+  "browser": "154.0.8037.57",
+  "blockedNetworkRequests": 0,
+  "native": "X11",
+  "source_preserved": true,
+  "all_line_bounds_within_page": true,
+  "exact_line_texts_by_case": [
+    true,
+    false,
+    true,
+    true,
+    true
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "status": "FROZEN_AUTHORED_DRIVER_NOT_EXECUTED",
+  "frozenUtc": "2026-10-05T05:50:36.535045+00:00",
+  "ownership": "Only NEW fixtures/math-write/native-host artifacts; frozen inline flow/shared/runtime/Source files were untouched.",
+  "workerValidation": [
+    "Python compile/AST syntax only; driver never imported or executed",
+    "JSON parse and authored fixture/literal/hash inspection"
+  ],
+  "notExecuted": [
+    "Xvfb/X11/XTEST/native/display/library loading",
+    "Cargo/Devenv/rustc",
+    "browser/network/provider/account/install"
+  ],
+  "expectedAcceptanceEntries": {
+    "defaultBlock": 9,
+    "optionalInlineAdditional": 1
+  },
+  "parentExecution": "python3 desktop/gpui/fixtures/math-write/native-host/check-native.py --binary <fresh-parent-ui-tests-binary> --output <new-directory> [--inline]",
+  "parentReportedReadyBinary": {
+    "path": "target/verification/math-inline-stamp-reviewed-6vvh7hsn/twyne-desktop",
+    "sha256": "eb9140901ef286468573d7036e1c7e6bc799705348511b0f0a3efcbfd26f90b1",
+    "verificationBoundary": "Parent-provided readiness/hash; worker did not execute the binary."
+  },
+  "artifacts": [
+    {
+      "path": "desktop/gpui/fixtures/math-write/native-host/check-native.py",
+      "bytes": 36573,
+      "sha256": "565ca5ec17e42d2f5a0b917cba319d336af0ff896206054fac5a275b1e5b2d3f"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/native-host/equations.typ",
+      "bytes": 8923,
+      "sha256": "b1893ad992aa6fd7e9f59a61aab357a2d33343356dec7c77b0f490b95ee8d874"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/native-host/input-contract.json",
+      "bytes": 1344,
+      "sha256": "0288ddebdaa4dfeb2a5d84d276c6b887c0495583e953771adf5748fb9cd590a1"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/native-host/README.md",
+      "bytes": 8297,
+      "sha256": "46a5ce0f2096bd26c3860c09d4f97f47173e75cf5da7f1c918604803b5922cdd"
+    }
+  ],
+  "inspectedContextHashes": [
+    {
+      "path": "desktop/gpui/fixtures/dossier-native/check-native.py",
+      "sha256": "a5bdb6b9b905667af78c7faa9f23532946570f48cc6e576b21dc7a6f3a737f27"
+    },
+    {
+      "path": "desktop/gpui/src/capture_geometry.rs",
+      "sha256": "fbb77c371762dc50bc357440441666f8daa9cb91ec061cf1a5a4b99580916300"
+    },
+    {
+      "path": "desktop/gpui/src/editor/math_source_editor.rs",
+      "sha256": "6cee7f944402b135ce21a778d14e2c71476f615be78a1fc84c47217c108e4ed9"
+    },
+    {
+      "path": "desktop/gpui/src/editor/view_math_source.rs",
+      "sha256": "139eca38cf52aab6d729e4e10fe8d5f79cd30cb8a61d995a5c6e498d54fe6674"
+    },
+    {
+      "path": "desktop/gpui/src/app/math_source_coordinator.rs",
+      "sha256": "9a2b11a7b64828bb8fa4c6eed8ba3e41fea01eaf57fddba3ce50079dd8cceb2f"
+    },
+    {
+      "path": "desktop/gpui/src/storage.rs",
+      "sha256": "ec18842af85f8d8b30e56b3ab5b1ca67c29b1a4898498183881507f718e9095a"
+    },
+    {
+      "path": "src/components/editor/extensions/math.ts",
+      "sha256": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2"
+    },
+    {
+      "path": "src/components/editor/math/math-source-editor.ts",
+      "sha256": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb"
+    },
+    {
+      "path": "src/utils/typst/document.ts",
+      "sha256": "bb2e205a15dea4aad7e7a88410376168fe8afc64a4f822af455bcb7b5e797685"
+    }
+  ],
+  "limits": [
+    "Specific authored Typst/HTML inspection corpus, not a general converter/compiler",
+    "No Source baseline, KaTeX/browser pixel, provider, timing-race or other-OS certification",
+    "XImage/XTEST ABI and all actual input/save/history/exit gates require Parent execution",
+    "Forced cleanup cannot satisfy clean quit; failed receipts must remain failed"
+  ]
+}

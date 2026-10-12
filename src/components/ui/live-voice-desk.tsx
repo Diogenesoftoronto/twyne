@@ -1,6 +1,7 @@
 import {
   $,
   component$,
+  useSignal,
   useStore,
   useVisibleTask$,
   useStyles$,
@@ -13,12 +14,14 @@ import { loadPersonasFromIdb } from "../../utils/idb";
 import { LIVE_OPEN_EVENT } from "../../utils/live-voice-workspace";
 import {
   endLiveVoice,
+  liveVoiceLevels,
   liveVoiceState,
   LIVE_STATE_EVENT,
   muteLiveVoice,
   reviewVoiceEdit,
   startLiveVoice,
 } from "../../utils/live-voice";
+import { PersonaPortrait } from "../personas/persona-portrait";
 import styles from "./live-voice-desk.css?inline";
 
 type Access = {
@@ -28,27 +31,66 @@ type Access = {
   sessionBudgetMicros: number;
   consentGranted: boolean;
 };
+
+type CastMember = {
+  id: string;
+  name: string;
+  role: string;
+  color: string;
+  imageUrl?: string;
+};
+
+const toCast = (p: CastMember): CastMember => ({
+  id: p.id,
+  name: p.name,
+  role: p.role,
+  color: p.color,
+  imageUrl: p.imageUrl,
+});
+
+const MIC_ICON = (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    aria-hidden="true"
+  >
+    <rect x="9" y="3" width="6" height="11" rx="3" />
+    <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+  </svg>
+);
+
+/**
+ * A conversation with one editor, face to face.
+ *
+ * The editor's portrait is the whole interface: it opens its mouth in time
+ * with the voice you hear, and a halo around it follows your microphone, so
+ * you can tell who is talking without reading a status line. Everything that
+ * is not the conversation — credit, consent, fine print — stays folded
+ * until it is needed.
+ */
 export const LiveVoiceDesk = component$(() => {
   useStyles$(styles);
   const client = useConvexClient();
   const auth = useAuth();
   const live = useStore(liveVoiceState());
+  const stage = useSignal<HTMLElement>();
   const ui = useStore({
     open: false,
     compact: false,
     author: "Le Lecteur",
     passage: "",
-    cast: PERSONAS.map((p) => ({
-      id: p.id,
-      name: p.name,
-      role: p.role,
-      icon: p.icon,
-    })),
+    cast: PERSONAS.map(toCast),
     access: null as Access | null,
     loading: false,
     error: "",
     consent: false,
     elapsed: 0,
+    transcript: false,
   });
   const refresh = $(async () => {
     if (!client.value || !auth.value.user) return;
@@ -95,13 +137,7 @@ export const LiveVoiceDesk = component$(() => {
         ).detail;
         if (["idle", "error"].includes(live.status)) {
           const cast = await loadPersonasFromIdb().catch(() => null);
-          if (cast?.length)
-            ui.cast = cast.map((p) => ({
-              id: p.id,
-              name: p.name,
-              role: p.role,
-              icon: p.icon,
-            }));
+          if (cast?.length) ui.cast = cast.map(toCast);
           ui.author =
             ui.cast.find(
               (p) => p.name === detail?.author || p.id === detail?.author,
@@ -121,9 +157,27 @@ export const LiveVoiceDesk = component$(() => {
           ? Math.floor((Date.now() - live.startedAt) / 1000)
           : 0;
       }, 1000);
+      // Levels go straight onto the stage's custom properties each frame;
+      // routing 60 updates a second through the store would re-render the
+      // desk for nothing. Smoothed so the jaw eases rather than flickers.
+      let frame = 0;
+      let voice = 0;
+      let mic = 0;
+      const animate = () => {
+        frame = requestAnimationFrame(animate);
+        const el = stage.value;
+        if (!el) return;
+        const { input, output } = liveVoiceLevels();
+        voice += (output - voice) * (output > voice ? 0.55 : 0.2);
+        mic += (input - mic) * (input > mic ? 0.5 : 0.12);
+        el.style.setProperty("--pp-level", voice.toFixed(3));
+        el.style.setProperty("--mic-level", mic.toFixed(3));
+      };
+      frame = requestAnimationFrame(animate);
       window.addEventListener(LIVE_STATE_EVENT, sync);
       window.addEventListener(LIVE_OPEN_EVENT, open);
       cleanup(() => {
+        cancelAnimationFrame(frame);
         clearInterval(tick);
         window.removeEventListener(LIVE_STATE_EVENT, sync);
         window.removeEventListener(LIVE_OPEN_EVENT, open);
@@ -135,44 +189,53 @@ export const LiveVoiceDesk = component$(() => {
 
   const active = !["idle", "error"].includes(live.status);
   const connected = ["listening", "speaking"].includes(live.status);
-  const speaker = ui.cast.find(
-    (p) => p.name === (active ? live.author : ui.author),
-  );
+  const author = active ? live.author : ui.author;
+  const speaker = ui.cast.find((p) => p.name === author) ?? ui.cast[0];
+  const firstName = (speaker?.name ?? author).split(" ").at(-1);
+  const signedIn = Boolean(auth.value.user);
+  const access = ui.access;
+  const affordable = !!access && access.availableMicros >= 500_000;
+  const canStart =
+    signedIn && !!access?.eligible && affordable && ui.consent && !ui.loading;
   const status =
     live.status === "connecting"
-      ? "Connecting microphone…"
+      ? "Connecting…"
       : live.status === "closing"
-        ? "Finishing and settling credit…"
+        ? "Wrapping up…"
         : live.status === "speaking"
-          ? "Speaking · you can interrupt"
+          ? `${firstName} is speaking — just talk to interrupt`
           : live.status === "listening"
             ? live.muted
-              ? "Microphone muted"
-              : "Listening"
+              ? "You’re muted"
+              : "Listening…"
             : live.finalized
               ? "Conversation ended"
-              : "Talk through your next draft";
+              : `Talk your draft through with ${firstName}`;
+  const lastUser = [...live.turns].reverse().find((t) => t.role === "user");
+  const lastEditor = [...live.turns]
+    .reverse()
+    .find((t) => t.role === "assistant");
+  const clock = `${Math.floor(ui.elapsed / 60)}:${String(ui.elapsed % 60).padStart(2, "0")}`;
+
   return (
     // Keep the host mounted: returning null reruns visible tasks on close,
     // whose voice-state reset would schedule another render indefinitely.
     <aside
-      class={`live-voice-desk ${ui.compact ? "is-compact" : ""}`}
+      class={["live-voice-desk", { "is-compact": ui.compact }]}
       hidden={!ui.open}
       aria-label="Live voice desk"
+      data-status={live.status}
+      style={{ "--pp-color": speaker?.color }}
     >
-      <header class="live-voice-head">
-        <span class="live-voice-character" aria-hidden="true">
-          {speaker?.icon ?? "♧"}
-        </span>
-        <div class="live-voice-heading">
-          <h2 id="live-voice-heading" tabIndex={-1}>
-            The voice desk <span>Pro</span>
-          </h2>
-          <p role="status">{status}</p>
-        </div>
+      <header class="lvd-bar">
+        <h2 id="live-voice-heading" tabIndex={-1}>
+          <span class="lvd-live-dot" aria-hidden="true" />
+          {active ? "Live" : "Voice"}
+          {active && <span class="lvd-clock">{clock}</span>}
+        </h2>
         <button
           type="button"
-          class="tool-btn"
+          class="lvd-icon-btn"
           aria-label={ui.compact ? "Expand voice desk" : "Minimize voice desk"}
           onClick$={() => {
             ui.compact = !ui.compact;
@@ -183,7 +246,7 @@ export const LiveVoiceDesk = component$(() => {
         {!active && (
           <button
             type="button"
-            class="tool-btn"
+            class="lvd-icon-btn"
             aria-label="Close voice desk"
             onClick$={() => {
               ui.open = false;
@@ -193,79 +256,140 @@ export const LiveVoiceDesk = component$(() => {
           </button>
         )}
       </header>
+
+      <section
+        ref={stage}
+        class="lvd-stage"
+        data-muted={live.muted ? "true" : undefined}
+      >
+        <div class="lvd-face">
+          <span class="lvd-halo" aria-hidden="true" />
+          <PersonaPortrait
+            personaId={speaker?.id}
+            name={speaker?.name ?? author}
+            color={speaker?.color}
+            imageUrl={speaker?.imageUrl}
+            size={ui.compact ? 56 : 148}
+            speaking={connected ? "live" : undefined}
+          />
+        </div>
+        {!ui.compact && (
+          <div class="lvd-identity">
+            <p class="lvd-name">{speaker?.name ?? author}</p>
+            <p class="lvd-role">{speaker?.role}</p>
+          </div>
+        )}
+        <p class="lvd-status" role="status">
+          {live.working ? "Working on it…" : status}
+        </p>
+      </section>
+
       {!ui.compact && (
-        <div class="live-voice-body">
-          <label class="live-voice-speaker">
-            Your editor
-            <select
-              value={active ? live.author : ui.author}
-              disabled={active}
-              onChange$={(_, element) => {
-                ui.author = element.value;
-              }}
+        <div class="lvd-body">
+          {!active && (
+            <div
+              class="lvd-cast"
+              role="radiogroup"
+              aria-label="Choose who to talk with"
             >
               {ui.cast.map((p) => (
-                <option
+                <button
                   key={p.id}
-                  value={p.name}
-                >{`${p.name} · ${p.role}`}</option>
+                  type="button"
+                  role="radio"
+                  class="lvd-cast-pick"
+                  aria-checked={p.name === ui.author}
+                  aria-label={`${p.name}, ${p.role}`}
+                  title={`${p.name} · ${p.role}`}
+                  style={{ "--pp-color": p.color }}
+                  onClick$={() => {
+                    ui.author = p.name;
+                  }}
+                >
+                  <PersonaPortrait
+                    personaId={p.id}
+                    name={p.name}
+                    color={p.color}
+                    imageUrl={p.imageUrl}
+                    size={40}
+                  />
+                </button>
               ))}
-            </select>
-          </label>
-          {!active && !live.startedAt && (
-            <p class="live-voice-intro">
-              Talk, interrupt, and keep writing. Ask your editor to find a
-              passage, look up a source, or help rewrite a sentence.
-            </p>
+            </div>
           )}
+
           {ui.passage && !active && (
-            <blockquote class="live-voice-context">
-              Starting from this comment: {ui.passage.slice(0, 220)}
+            <blockquote class="lvd-context">
+              <span>About this note</span>
+              {ui.passage.slice(0, 220)}
               {ui.passage.length > 220 ? "…" : ""}
             </blockquote>
           )}
-          {(live.userTranscript || live.assistantTranscript || active) && (
-            <div class="live-voice-captions" aria-label="Conversation captions">
-              <div>
-                <h3>You</h3>
-                <p>
-                  {live.userTranscript.slice(-1000) ||
-                    "Your words will appear here."}
-                </p>
-              </div>
-              <div>
-                <h3>{active ? live.author : ui.author}</h3>
-                <p>
-                  {live.assistantTranscript.slice(-1000) ||
-                    "Ready when you are."}
-                </p>
-              </div>
+
+          {(active || live.turns.length > 0) && (
+            <div class="lvd-captions" aria-label="Conversation captions">
+              {ui.transcript ? (
+                <ol class="lvd-transcript">
+                  {live.turns.map((turn, i) => (
+                    <li key={i} data-role={turn.role}>
+                      <span>{turn.role === "user" ? "You" : firstName}</span>
+                      {turn.text.trim()}
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <>
+                  {lastEditor && (
+                    <p class="lvd-caption lvd-caption--editor">
+                      {lastEditor.text.trim().slice(-320)}
+                    </p>
+                  )}
+                  {lastUser && (
+                    <p class="lvd-caption lvd-caption--you">
+                      <span>You</span>
+                      {lastUser.text.trim().slice(-200)}
+                    </p>
+                  )}
+                  {!lastEditor && !lastUser && (
+                    <p class="lvd-caption lvd-caption--hint">
+                      Say hello — or ask about the passage you’re stuck on.
+                    </p>
+                  )}
+                </>
+              )}
+              {live.turns.length > 2 && (
+                <button
+                  type="button"
+                  class="lvd-link"
+                  onClick$={() => {
+                    ui.transcript = !ui.transcript;
+                  }}
+                >
+                  {ui.transcript ? "Latest only" : "Full transcript"}
+                </button>
+              )}
             </div>
           )}
-          {live.working && (
-            <p class="live-voice-notice" role="status">
-              Working on your request…
-            </p>
-          )}
+
           {live.notice && (
-            <p class="live-voice-notice" role="status">
+            <p class="lvd-notice" role="status">
               {live.notice}
             </p>
           )}
+
           {live.pending && (
-            <section class="live-voice-edit" aria-label="Proposed draft edit">
-              <h3>
+            <section class="lvd-edit" aria-label="Proposed draft edit">
+              <p class="lvd-edit-kicker">
                 {live.pending.kind === "append"
-                  ? "Add to the draft"
-                  : "Proposed revision"}
-              </h3>
+                  ? `${firstName} suggests adding`
+                  : `${firstName} suggests`}
+              </p>
               {live.pending.original && <del>{live.pending.original}</del>}
               <ins>{live.pending.text || "Remove this passage"}</ins>
-              <p>Say “apply the edit” or “discard it”.</p>
-              <div class="live-voice-actions">
+              <div class="lvd-edit-actions">
                 <button
                   type="button"
-                  class="btn-press"
+                  class="lvd-pill lvd-pill--solid"
                   disabled={live.working}
                   onClick$={() => reviewVoiceEdit(true)}
                 >
@@ -273,17 +397,19 @@ export const LiveVoiceDesk = component$(() => {
                 </button>
                 <button
                   type="button"
-                  class="btn-paper"
+                  class="lvd-pill"
                   disabled={live.working}
                   onClick$={() => reviewVoiceEdit(false)}
                 >
                   Discard
                 </button>
+                <span>or just say so</span>
               </div>
             </section>
           )}
+
           {live.sources.length > 0 && (
-            <ul class="live-voice-sources">
+            <ul class="lvd-sources">
               {live.sources.map((source) => (
                 <li key={source.url}>
                   <a
@@ -298,135 +424,117 @@ export const LiveVoiceDesk = component$(() => {
               ))}
             </ul>
           )}
+
           {(live.error || ui.error) && (
-            <p role="alert" class="live-voice-error">
+            <p role="alert" class="lvd-error">
               {live.error || ui.error}
             </p>
           )}
+
           {!active && (
-            <div class="live-voice-credit">
-              {!auth.value.user ? (
+            <div class="lvd-gate">
+              {!signedIn ? (
                 <p>
-                  <a href="/signin/">Sign in</a> to use Pro voice or your
-                  welcome credit.
+                  <a href="/signin/">Sign in</a> to talk with your editors. New
+                  accounts start with welcome credit.
                 </p>
-              ) : ui.loading ? (
+              ) : ui.loading && !access ? (
                 <p>Checking your credit…</p>
-              ) : ui.access ? (
-                <>
-                  <p>
-                    <strong>
-                      ${(ui.access.availableMicros / 1_000_000).toFixed(2)}
-                    </strong>{" "}
-                    available{" "}
-                    {ui.access.welcome
-                      ? "· welcome credit included"
-                      : "in your wallet"}
-                  </p>
-                  {!ui.access.eligible && (
-                    <p>
-                      <a href="/pricing/">Get Pro</a> to continue after your
-                      welcome credit.
-                    </p>
-                  )}
-                  <p>
-                    Up to $0.50 credit reserved per conversation. App requests
-                    use up to $0.05 each in addition. Unused voice credit is
-                    released when the session settles.
-                  </p>
-                  {!ui.access.consentGranted && (
-                    <label class="live-voice-consent">
-                      <input
-                        type="checkbox"
-                        checked={ui.consent}
-                        onChange$={(_, element) => {
-                          ui.consent = element.checked;
-                        }}
-                      />
-                      <span>
-                        I allow microphone audio and supplied draft context to
-                        be processed and logged by the voice provider through
-                        Not Organic.
-                      </span>
-                    </label>
-                  )}
-                </>
-              ) : (
-                <button type="button" class="btn-paper" onClick$={refresh}>
+              ) : !access ? (
+                <button type="button" class="lvd-link" onClick$={refresh}>
                   Check voice access
                 </button>
+              ) : !access.eligible ? (
+                <p>
+                  Voice is part of Pro. <a href="/pricing/">See plans</a>
+                </p>
+              ) : !affordable ? (
+                <p>
+                  ${(access.availableMicros / 1_000_000).toFixed(2)} left — a
+                  conversation needs $0.50. <a href="/pricing/">Add credit</a>
+                </p>
+              ) : (
+                !access.consentGranted && (
+                  <label class="lvd-consent">
+                    <input
+                      type="checkbox"
+                      checked={ui.consent}
+                      onChange$={(_, element) => {
+                        ui.consent = element.checked;
+                      }}
+                    />
+                    <span>
+                      Let the voice provider process and log my microphone audio
+                      and the draft I share, through Not Organic.
+                    </span>
+                  </label>
+                )
               )}
-              <p class="live-voice-detail">
-                GPT Live · Marin voice · your editor’s perspective. Audio isn’t
-                recorded in Twyne. Transcript captions stay in this session.
-              </p>
+              {access && (
+                <details class="lvd-fine">
+                  <summary>
+                    ${(access.availableMicros / 1_000_000).toFixed(2)}{" "}
+                    {access.welcome ? "welcome credit" : "in your wallet"} · how
+                    billing works
+                  </summary>
+                  <p>
+                    Up to $0.50 is reserved per conversation; app requests use
+                    up to $0.05 each on top. Unused credit is released when the
+                    session settles. GPT Live voice, speaking from your editor’s
+                    perspective. Audio isn’t recorded in Twyne; captions stay in
+                    this session.
+                  </p>
+                </details>
+              )}
             </div>
           )}
         </div>
       )}
-      <footer class="live-voice-footer">
+
+      <footer class="lvd-controls">
         {active ? (
           <>
-            <div class="live-voice-meter" aria-hidden="true">
-              {[0.5, 0.8, 1, 0.7, 0.4].map((scale, i) => (
-                <span
-                  key={i}
-                  style={{
-                    transform: `scaleY(${live.muted ? 0.15 : 0.15 + live.level * scale})`,
-                  }}
-                />
-              ))}
-            </div>
-            <span class="live-voice-time">
-              {Math.floor(ui.elapsed / 60)}:
-              {String(ui.elapsed % 60).padStart(2, "0")}
-            </span>
             <button
               type="button"
-              class="btn-paper"
+              class="lvd-round"
               disabled={!connected}
               aria-pressed={live.muted}
+              aria-label={live.muted ? "Unmute microphone" : "Mute microphone"}
+              title={live.muted ? "Unmute" : "Mute"}
               onClick$={() => muteLiveVoice()}
             >
-              {live.muted ? "Unmute" : "Mute"}
+              {MIC_ICON}
+              {live.muted && <span class="lvd-slash" aria-hidden="true" />}
             </button>
             <button
               type="button"
-              class="btn-press"
+              class="lvd-end"
               disabled={live.status === "closing"}
               onClick$={() => {
                 endLiveVoice();
               }}
             >
-              {live.status === "connecting" ? "Cancel" : "End conversation"}
+              {live.status === "connecting" ? "Cancel" : "End"}
             </button>
           </>
         ) : (
-          <>
-            <a href="/pricing/">Plans & credits</a>
-            <button
-              type="button"
-              class="btn-press"
-              disabled={
-                !auth.value.user ||
-                !ui.access?.eligible ||
-                ui.access.availableMicros < 500_000 ||
-                !ui.consent ||
-                ui.loading
-              }
-              onClick$={async () => {
-                if (!client.value) return;
-                await startLiveVoice(
-                  client.value,
-                  ui.author,
-                  ui.passage,
-                  !ui.access?.consentGranted && ui.consent,
-                );
-              }}
-            >
-              Start conversation
-            </button>
-          </>
+          <button
+            type="button"
+            class="lvd-start"
+            disabled={!canStart}
+            onClick$={async () => {
+              if (!client.value) return;
+              await startLiveVoice(
+                client.value,
+                ui.author,
+                ui.passage,
+                !ui.access?.consentGranted && ui.consent,
+              );
+            }}
+          >
+            {MIC_ICON}
+            {live.finalized ? "Talk again" : "Start talking"}
+          </button>
         )}
       </footer>
     </aside>

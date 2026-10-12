@@ -1,0 +1,154 @@
+{
+  "generatedBy": "src/utils/compositor-toolbar.ts, typography-options.ts, palette.ts, and src/types/index.ts",
+  "tabs": [
+    {
+      "id": "home",
+      "label": "Home",
+      "groups": ["Character", "Type", "Styles", "Lists", "Alignment"]
+    },
+    {
+      "id": "insert",
+      "label": "Insert",
+      "groups": ["Objects", "Breaks", "Notes"]
+    },
+    {
+      "id": "review",
+      "label": "Review",
+      "groups": ["Comments", "Listening", "Versions", "Proofing"]
+    },
+    {
+      "id": "view",
+      "label": "View",
+      "groups": ["Navigation", "Page", "Help"]
+    }
+  ],
+  "fonts": [
+    ["Lora (default)", ""],
+    ["Lora (serif)", "\"Lora\", Georgia, serif"],
+    ["Libre Baskerville (display)", "\"Libre Baskerville\", Georgia, serif"],
+    ["DM Sans", "\"DM Sans\", system-ui, sans-serif"],
+    ["Special Elite", "\"Special Elite\", Courier, monospace"],
+    ["Monospace", "ui-monospace, \"SFMono-Regular\", Consolas, monospace"]
+  ],
+  "sizes": [
+    ["13.5", ""],
+    ["9", "9pt"],
+    ["10", "10pt"],
+    ["11", "11pt"],
+    ["12", "12pt"],
+    ["14", "14pt"],
+    ["16", "16pt"],
+    ["18", "18pt"],
+    ["24", "24pt"],
+    ["30", "30pt"],
+    ["36", "36pt"],
+    ["48", "48pt"]
+  ],
+  "lineSpacings": [
+    ["Single", "1"],
+    ["1.15", "1.15"],
+    ["1.5", "1.5"],
+    ["Double", "2"]
+  ],
+  "paragraphSpacings": [
+    ["Default", ""],
+    ["None", "0"],
+    ["6 pt", "6"],
+    ["12 pt", "12"],
+    ["18 pt", "18"],
+    ["24 pt", "24"]
+  ],
+  "highlights": [
+    ["Butter", "#fbeaa8"],
+    ["Rose", "#f8d3d4"],
+    ["Sky", "#cfe0f2"],
+    ["Mint", "#d5e6c4"],
+    ["Lilac", "#dcdff4"],
+    ["Peach", "#fadfd5"]
+  ],
+  "textColors": [
+    ["Ink", "#1f1b16"],
+    ["Vermilion", "#c1272d"],
+    ["Cobalt", "#2c4a7c"],
+    ["Olive", "#556134"],
+    ["Periwinkle", "#454f9e"],
+    ["Amber", "#7a5a07"],
+    ["Sienna", "#964f40"]
+  ],
+  "colors": [
+    {
+      "raw": " #C27 ",
+      "normalized": "#cc2277"
+    },
+    {
+      "raw": "456789",
+      "normalized": "#456789"
+    },
+    {
+      "raw": "#ff",
+      "normalized": null
+    },
+    {
+      "raw": "var(--color-ink)",
+      "normalized": null
+    },
+    {
+      "raw": "#１２３",
+      "normalized": null
+    },
+    {
+      "raw": "#c1272d",
+      "normalized": "#c1272d"
+    }
+  ],
+  "defaultLayout": {
+    "width": "normal",
+    "margin": "normal",
+    "marginX": 2,
+    "marginLeft": 2,
+    "marginRight": 2,
+    "marginTop": 1,
+    "marginBottom": 1,
+    "runningHeader": false,
+    "pageNumbers": true,
+    "showMarginGuides": false,
+    "openingInitial": {
+      "mode": "illuminated",
+      "collection": "botanical",
+      "size": "medium"
+    },
+    "pageBorder": "plain",
+    "columns": 1,
+    "columnGap": 1.5,
+    "paper": "letter",
+    "orientation": "portrait",
+    "marginUnit": "rem"
+  },
+  "marginRange": {
+    "left": {
+      "min": 0,
+      "max": 8,
+      "step": 0.25
+    },
+    "right": {
+      "min": 0,
+      "max": 8,
+      "step": 0.25
+    },
+    "top": {
+      "min": 0,
+      "max": 8,
+      "step": 0.25
+    },
+    "bottom": {
+      "min": 0,
+      "max": 8,
+      "step": 0.25
+    }
+  },
+  "case": {
+    "source": "THE  OLD FOX AND the SEA",
+    "title": "The  Old Fox and the Sea",
+    "upper": "THE  OLD FOX AND THE SEA"
+  }
+}

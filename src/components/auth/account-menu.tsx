@@ -13,6 +13,7 @@ import {
   useAuth,
 } from "../../utils/auth-context";
 import { useConvexClient } from "../../utils/convex-context";
+import { useFeatureFlags } from "../../utils/posthog-context";
 import { api } from "../../../convex/_generated/api";
 import { AuthPanel } from "./auth-panel";
 import { Icon } from "../ui/icon";
@@ -61,8 +62,10 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
   const auth = useAuth();
   const nav = useNavigate();
   const convexClient = useConvexClient();
+  const featureFlags = useFeatureFlags();
   const internalOpen = useSignal(false);
   const failedAvatar = useSignal<string | null>(null);
+  const writerAlias = useSignal<string | null>(null);
   const invitations = useStore<PendingInvitation[]>([]);
   const sharedFolios = useStore<SharedFolio[]>([]);
   const invitationError = useSignal<string | null>(null);
@@ -82,7 +85,19 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
 
     invitations.splice(0, invitations.length);
     sharedFolios.splice(0, sharedFolios.length);
+    writerAlias.value = null;
     if (!client || !authenticated) return;
+
+    const unsubscribeAlias = client.onUpdate(
+      api.profiles.getMyHandle,
+      {},
+      (profile) => {
+        writerAlias.value = profile?.handle ?? null;
+      },
+      () => {
+        writerAlias.value = null;
+      },
+    );
 
     const replaceInvitations = (pending: PendingInvitation[]) => {
       invitations.splice(0, invitations.length, ...pending);
@@ -104,6 +119,7 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
     );
     cleanup(unsubscribeInvitations);
     cleanup(unsubscribeShared);
+    cleanup(unsubscribeAlias);
   });
 
   const rejectInvitation = $(async (lixId: string) => {
@@ -210,6 +226,14 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
           style="z-index: var(--z-dropdown);"
         >
           <div class="flex flex-col gap-1 pb-2 border-b border-[var(--color-paper-3)]">
+            {writerAlias.value && (
+              <a
+                class="px-2 py-1.5 text-sm underline"
+                href={`/${writerAlias.value}/`}
+              >
+                Your Twyne alias: /{writerAlias.value}
+              </a>
+            )}
             <button
               type="button"
               class="flex w-full items-center gap-2 text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
@@ -221,6 +245,19 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
             >
               <Icon name="settings" size={16} /> Preferences
             </button>
+            {featureFlags.value.flags.pricing && (
+              <button
+                type="button"
+                class="flex w-full items-center gap-2 text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
+                style={{ fontFamily: "var(--font-display)" }}
+                onClick$={() => {
+                  menuOpen.value = false;
+                  void nav("/pricing/");
+                }}
+              >
+                <Icon name="list" size={16} /> Plans &amp; billing
+              </button>
+            )}
             <button
               type="button"
               class="flex w-full items-center gap-2 text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"

@@ -1,0 +1,70 @@
+{
+  "status": "frozen_unapplied_for_root_review",
+  "checkedAt": "2026-10-05T04:33:30.924153+00:00",
+  "ownedFiles": [
+    "desktop/gpui/src/editor/view_math_source.rs",
+    "desktop/gpui/fixtures/math-write/source-host/host_tests.rs",
+    "desktop/gpui/fixtures/math-write/source-host/integration.patch",
+    "desktop/gpui/fixtures/math-write/source-host/source-contract.test.ts",
+    "desktop/gpui/fixtures/math-write/source-host/source-contract.json",
+    "desktop/gpui/fixtures/math-write/source-host/README.md"
+  ],
+  "hashes": {
+    "desktop/gpui/src/editor/view_math_source.rs": "ca19fbcae04620df072ed179da80c9feaff14cacec1c46af045e92c628c87bd1",
+    "desktop/gpui/fixtures/math-write/source-host/host_tests.rs": "b88b58184859db3aa4c5138a05d972c9f2ebfcd29eb10f9ecff0776f52ee650c",
+    "desktop/gpui/fixtures/math-write/source-host/integration.patch": "dfb4cdb3161ec098aaafa023e8d55f9465a632599c5101b476f1710b02eac0da",
+    "desktop/gpui/fixtures/math-write/source-host/source-contract.test.ts": "2360eb46b0f8ff1c0d38047703d6506e939762a7320746616c2ba0a9400916d8",
+    "desktop/gpui/fixtures/math-write/source-host/source-contract.json": "79fda2f670d262ef821228f8632fbe2ce83ab70fe8e8425ecaa98a78a531ea78",
+    "desktop/gpui/fixtures/math-write/source-host/README.md": "41a5864b33f241f7a47c27a96a2531fee3a5d4d504a13ed07e5835b49d890f58"
+  },
+  "unappliedPatch": {
+    "path": "desktop/gpui/fixtures/math-write/source-host/integration.patch",
+    "files": [
+      "desktop/gpui/src/editor/view.rs"
+    ],
+    "applyCheck": "pass against current shared view",
+    "baseSha256": "ea8561e6e9e8f3cb2e7a00e8c338f41f68041e3ad5f05d0596a4947ee0c021ed",
+    "applicationPerformed": false
+  },
+  "localChecks": {
+    "rustfmtSyntaxAndFormat": "pass; edition2024/skip_children",
+    "sourceCallbackBun": {
+      "passed": 5,
+      "failed": 0,
+      "assertions": 116,
+      "scope": "AST-extracted original callback guards and frozen32 keydown decisions; local chain/event spies only"
+    }
+  },
+  "authoredNativeHostTests": {
+    "count": 14,
+    "filter": "editor::view::math_source::tests",
+    "compiled": false,
+    "executed": false
+  },
+  "api": {
+    "context": "editor::view::{MathSourceHostContext,MathSourcePreflight}",
+    "setContext": "RichEditorView::set_math_source_context(Option<MathSourceHostContext>,cx)",
+    "retire": "RichEditorView::retire_math_source(cx)",
+    "form": "RichEditorView::math_source_form()->Option<Entity<MathSourceEditorView>>",
+    "presentation": "RichEditorView::math_source_presentation()->Option<MathSourcePresentation>",
+    "layoutGetter": "RichEditorView::math_form_at(path) internal",
+    "inlineDefault": false
+  },
+  "parentExistingEvidence": [
+    "../native-source-form/parent-gates.json:9 mounted form tests; not this host",
+    "../edit-source/parent-gates.json:8 native command checks; not product adoption"
+  ],
+  "remaining": [
+    "Root real canonical converter/context/product mounting and guarded persistence",
+    "Separate actual inline form reservation/paragraph/pagination integration",
+    "Host typecheck/mounted tests and actual native input/focus/IME/scroll/render proof",
+    "CurrentSource renderer/CSS fidelity remains refused; no diagnostic adoption",
+    "Selected outline/block baseline/vertical resizing/19.6px native lineheight/accessibility announcement parity remain separate"
+  ],
+  "executionProhibitionsHonored": [
+    "no Cargo/Devenv/rustc/native execution",
+    "no browser/network/provider/install",
+    "no existing shared source written",
+    "no dependency changes"
+  ]
+}

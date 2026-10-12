@@ -1,0 +1,98 @@
+{
+  "format_version": 1,
+  "frozen_utc": "2026-10-05T05:07:20.284636+00:00",
+  "status": "UNCOMPILED_UNAPPLIED_INTEGRATION_CANDIDATE",
+  "execution_boundary": "Only syntax formatting, static patch/context inspection, and hashes. No Cargo, Devenv, rustc, native/browser/provider/network execution.",
+  "module_path_after_parent_integration": "editor::view::math_source_flow",
+  "parent_test_filter": "editor::view::math_source_flow::tests",
+  "authored_mounted_tests": 6,
+  "owned_artifacts": [
+    {
+      "path": "desktop/gpui/src/editor/math_source_flow.rs",
+      "bytes": 15665,
+      "sha256": "6ce620a0d0787ea837c786147b9d7b8c4324f93556b6ed353a6d07e0f7951036"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/inline-source-flow/integration.patch",
+      "bytes": 20342,
+      "sha256": "62802cbe578dde4554abb6989be6a61a730324810cedd8cd318c4d2e8594f488"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/inline-source-flow/view_tests.rs",
+      "bytes": 15077,
+      "sha256": "d40b3d2b540cfaf52a4517f300eeafd782360ad75816ac3e9b5eeb8519e7cbfd"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/inline-source-flow/README.md",
+      "bytes": 7884,
+      "sha256": "ede58c11341aad765d002a7564b0df449fa798fe5bcfb474a153c5f48ba09aea"
+    }
+  ],
+  "existing_file_changes": "integration.patch only; shared files untouched by this lane",
+  "patch_targets": [
+    {
+      "path": "desktop/gpui/src/editor/view.rs",
+      "base_sha256": "1c28c171b352067067d4e48526388d2043a555076995de32fae405a304a027b1",
+      "proposed_sha256": "aef8332e5b2915a479a7c7ffad2624897f38186f91e62cdeee5ced35eabf5b14"
+    },
+    {
+      "path": "desktop/gpui/src/editor/paragraph_flow.rs",
+      "base_sha256": "639088b3e64a7786d97dc89c9c1188e1d67f66f0a9db00daf5205a02559df421",
+      "proposed_sha256": "7c9ad7eae6e70970c7110949c59e8757dcbddf1d8e96ab51f53c4435526ec7e9"
+    },
+    {
+      "path": "desktop/gpui/src/editor/view_comments.rs",
+      "base_sha256": "86cc3f82c60f4a3fdb4c14e1d1eb40f2916ea786b498978959440a6729c592bf",
+      "proposed_sha256": "5f761d277fb68776b0d15afbc1a2e554a925fbb5b56edc1bf46212e4e0ccc911"
+    },
+    {
+      "path": "desktop/gpui/src/editor/view_notes.rs",
+      "base_sha256": "2013fd401563c9ba53de600a969f40022173d7e7ffcaf21928eae44fb1a37e42",
+      "proposed_sha256": "c602ab7c392e7b3cf5b9fe03e779df52e51176ae30fe67245a196d7ed738208b"
+    },
+    {
+      "path": "desktop/gpui/src/editor/view_pagination.rs",
+      "base_sha256": "3ef07f84bbf6b0c70c0b9d37e2d737c7239ccd37364e7c368d2a841d75fee25e",
+      "proposed_sha256": "0ad825e9b686f6ae1cdd99d41d950e2cad60cd0cb977814251800dc92487ab0f"
+    }
+  ],
+  "source_and_native_context": [
+    {
+      "path": "src/components/editor/extensions/math.ts",
+      "sha256": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2"
+    },
+    {
+      "path": "src/components/editor/math/math.css",
+      "sha256": "f29bbdea2806650b758422416d2a8e08a5a985f908feeddc8442362c412308b0"
+    },
+    {
+      "path": "src/components/editor/math/math-source-editor.ts",
+      "sha256": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb"
+    },
+    {
+      "path": "desktop/gpui/src/editor/math_source_editor.rs",
+      "sha256": "6cee7f944402b135ce21a778d14e2c71476f615be78a1fc84c47217c108e4ed9"
+    },
+    {
+      "path": "desktop/gpui/src/editor/view_math_source.rs",
+      "sha256": "635f48f44f30f48d6eae81fef4f0bf4da6a73eeb6c1cb826ebf4ea422b1a47b5"
+    },
+    {
+      "path": "/home/diogenes/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gpui-pre-0.3.7/src/element.rs",
+      "sha256": "1eea2303609c4aca23e44e623a9d44eded93ad8b70f86e3e4c7446b3e0238b4c"
+    }
+  ],
+  "static_checks": {
+    "rustfmt": "Owned module/tests syntax-formatted with skip_children=true",
+    "patch_context": "git apply --check completed with exit code 0"
+  },
+  "unproven_boundaries": [
+    "Rust/API compatibility of new private Piece/cache/flow/frame hooks and mounted tests",
+    "Actual retained AnyElement measurement/prepaint/paint/input/dispatch/a11y lifecycle",
+    "Native first-label baseline versus open Source flex baseline",
+    "Native outer/control device-pixel edge snapping",
+    "Source intrinsic/minimum/maximum width and manual vertical resize",
+    "Mixed form/comment/note/drag/scroll/page-boundary behavior",
+    "Source renderer/KaTeX preview geometry; no renderer adopted"
+  ]
+}

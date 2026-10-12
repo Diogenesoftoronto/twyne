@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "renderer": "Version: ImageMagick 7.1.2-31 Q16-HDRI x86_64 8309dc92a:20260903 https://imagemagick.org\nCopyright: (C) 1999 ImageMagick Studio LLC\nLicense: https://imagemagick.org/license/\nFeatures: Cipher DPC HDRI OpenMP \nDelegates (built-in): bzlib cairo djvu fftw fontconfig freetype heic jng jp2 jpeg jxl lcms lqr lzma openexr pangocairo png raqm raw rsvg tiff uhdr webp x xml zlib zstd\nCompiler: gcc (16.2)",
+  "sourceRules": [
+    {
+      "selector": ".paper-sheet",
+      "sha256": "87212b07026e139b98eee9d13f9b3e363b6ace39383e63775c3af2bbfc4417a1"
+    },
+    {
+      "selector": ".paper-foxed::after",
+      "sha256": "43538cf7cf54783547f0b07e1520bc64e04975d93ceb09864024998795f54d8c"
+    }
+  ],
+  "root": "/home/diogenes/Projects/twyne",
+  "cases": [
+    {
+      "preset": "editorial",
+      "width": 1280,
+      "height": 860,
+      "svgSha256": "303dc2e79083934a5fded7d54f7c78e226f4244509ceb97d1e3fc174a393a351",
+      "png": "raster/editorial-1280.png",
+      "pngSha256": "4dbcebccfd72ac65b9bba3e0224429bd8862a0a79ea5ad55f252e752c82761f4"
+    },
+    {
+      "preset": "foolscap",
+      "width": 1280,
+      "height": 860,
+      "svgSha256": "85b01733a39c931e968707cba0f271f006c4e8041bfbd84049007232a55edccf",
+      "png": "raster/foolscap-1280.png",
+      "pngSha256": "bf41b31bd0305813e39bc810e750605ffca16f66b60aa4352a81a2c9bca275ca"
+    },
+    {
+      "preset": "broadsheet",
+      "width": 1280,
+      "height": 860,
+      "svgSha256": "a61b416f217a8f42f7f09b16203290fc1e8932d4b49e31a1f02ccf43b0ce31fb",
+      "png": "raster/broadsheet-1280.png",
+      "pngSha256": "074d45096fe4b40a68c22c24ea9331ada5135f0317f4cf9459461511005f6cdc"
+    },
+    {
+      "preset": "nightpress",
+      "width": 1280,
+      "height": 860,
+      "svgSha256": "9d9b8d49ca55ef18e753b4104ecbd1785405c487948227a279c2fe47fcf71e5a",
+      "png": "raster/nightpress-1280.png",
+      "pngSha256": "2b4abdf829fd0886563ae5248fed4b883174b0501c0c2bd4b0ac69292fb8dbfe"
+    },
+    {
+      "preset": "editorial",
+      "width": 620,
+      "height": 860,
+      "svgSha256": "dada2cc43aaa15c70f31603795dc7760e49f6fca3484fe49f0694fea62f9aab9",
+      "png": "raster/editorial-620.png",
+      "pngSha256": "8e967d9bc848a1a24ade05c07c32de56c308c991304665ef775647a495280449"
+    },
+    {
+      "preset": "foolscap",
+      "width": 620,
+      "height": 860,
+      "svgSha256": "e2d03957cc7795b7fc1a03a9e9840f8f2d9204e6d7063c6ae11e75ae2026ae44",
+      "png": "raster/foolscap-620.png",
+      "pngSha256": "8138e06e01fb5a97331459c1d3ed180ff7945bc7b57e78302ff59010a59221c7"
+    },
+    {
+      "preset": "broadsheet",
+      "width": 620,
+      "height": 860,
+      "svgSha256": "3c00977c728797e523b295f812d8a0c86da6c69ec70e7191ad90a08f696783e6",
+      "png": "raster/broadsheet-620.png",
+      "pngSha256": "1a676f9d6c94fe363e84d1ca6affb83e4ac9d119da368e70377fd551207dcbb0"
+    },
+    {
+      "preset": "nightpress",
+      "width": 620,
+      "height": 860,
+      "svgSha256": "fbe24a5b9d0502b7e8ebcf3ce66753fc36b44d56ab344a664e0e4f82dfa61503",
+      "png": "raster/nightpress-620.png",
+      "pngSha256": "e5787a05c30ea64d0403f66d35f2dce17b252bb3bdf167d54e19e7ef6e1714a8"
+    }
+  ],
+  "suppliedEvidence": [
+    {
+      "kind": "original Source app baseline supplied by Parent",
+      "path": "/tmp/twyne-gpui-dossier-current-web.png",
+      "sha256": "f9ec87a602d7ce54c05c836dc2ba78664f752d00e9f43e921797a5bffcdcdba4"
+    },
+    {
+      "kind": "preparation-before native app baseline supplied by Parent",
+      "path": "/tmp/twyne-dossier-styled-capture-20261005-ejfqyltz/frame.png",
+      "sha256": "ec2899efce49b86d7e4bd01c5eff59b5d3dadbb08db378be0a6b53a2c55c5b06"
+    }
+  ],
+  "includes": "CSS-derived seven background gradient geometry only",
+  "excludes": "Source inset-shadow blur; foxing multiply over descendants; GPUI paint; browser raster comparison",
+  "proof": "Standalone Librsvg projection/snapshot receipt, not Source or native pixel parity"
+}

@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests,native-audio --lib dossier_stamp::tests",
+  "result": {
+    "passed": 7,
+    "failed": 0,
+    "ignored": 0
+  },
+  "log": "desktop/gpui/target/verification/dossier-stamp-tests-reviewed.log",
+  "hashes": {
+    "desktop/gpui/src/lib.rs": "65cb337bdd30c9ea7e481492ae98567517258a6db303ce9d2ca8a4352488c792",
+    "desktop/gpui/src/dossier_view.rs": "ec2e707bb1689afe927d9efea740e7eca124a48255c2bf550166113432a26f7d",
+    "desktop/gpui/src/dossier_stamp.rs": "02e148677556cf5db9a4f0b13aef4373171a93c6e34888e901a510b1a6376ed3",
+    "desktop/gpui/fixtures/dossier-stamp/stamp_tests.rs": "c9414899d201dd5d82531144bbfea4606d7ceb0d6ae82732dc56d009278e6771",
+    "desktop/gpui/fixtures/dossier-stamp/outlines.json": "89df759aee3a8ccaeca831b79aa2580ace14bdb7679123d39e1db6acaecbd062"
+  },
+  "reviewedRepairs": [
+    "Import pinned gpui_kit::test::TestWindowExt in the mounted fixture."
+  ],
+  "boundaries": [
+    "Original installed font shaping, actual SVG raster bytes, rotation/layout and mounted focus tests",
+    "No actual GPU screenshot, browser hinting equivalence or full Dossier parity proof"
+  ]
+}

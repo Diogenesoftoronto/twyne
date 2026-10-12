@@ -1,0 +1,483 @@
+{
+  "schemaVersion": 1,
+  "execution": "TypeScript-erased original guard prefix in isolated Node VM; no browser or provider module",
+  "source": {
+    "research": "src/utils/background-research.ts",
+    "researchSha256": "0751d7e8610c74dfdf125a92fb2da26fe9cca47fd099e873ed204a06a05b0c91",
+    "interface": "export interface ResearchCommandResult {\n  ok: boolean;\n  message?: string;\n}",
+    "minimumDeclaration": "const MIN_DRAFT_CHARS = 120;",
+    "guards": "\n  const direction = instructions.trim();\n  if (!direction) return { ok: false, message: \"Write a direction first.\" };\n  if (!activeFolioId || !lastDraftText) {\n    return { ok: false, message: \"Open a folio with draft text first.\" };\n  }\n  if (lastDraftText.trim().length < MIN_DRAFT_CHARS) {\n    return {\n      ok: false,\n      message:\n        \"The folio needs a little more draft text before it can be steered.\",\n    };\n  }\n  if (passInFlight) {\n    return { ok: false, message: \"Let the current search settle first.\" };\n  }\n  const aiSettings = await loadAiSettingsFromIdb();\n  if (!aiSettings || !hasConfiguredAiProvider(aiSettings)) {\n    return {\n      ok: false,\n      message:\n        \"Choose an AI provider in Settings before steering a draft-wide pass.\",\n    };\n  }\n  ",
+    "guardsSha256": "c4d7b813e84fd4abfa306d2e21565e06c547189888d6ff21136fdc73bf3cdaac",
+    "route": "src/routes/editor/index.tsx",
+    "routeSha256": "262ffc6cb75f0072e8012d6265504afc663a4c45d21f665766347ae2ea091df6",
+    "normalizeText": "text.replace(/\\s+/g, \" \").trim()"
+  },
+  "offline": {
+    "passInFlight": false,
+    "aiSettings": null
+  },
+  "rows": [
+    {
+      "name": "empty direction before missing draft",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "",
+        "folioId": null,
+        "text": ""
+      },
+      "normalizedText": "",
+      "rawUtf16Units": 0,
+      "normalizedUtf16Units": 0,
+      "result": {
+        "ok": false,
+        "message": "Write a direction first."
+      },
+      "calls": {
+        "settingsLoads": 0,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "ECMAScript whitespace-only direction",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "  ﻿",
+        "folioId": null,
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "rawUtf16Units": 120,
+      "normalizedUtf16Units": 120,
+      "result": {
+        "ok": false,
+        "message": "Write a direction first."
+      },
+      "calls": {
+        "settingsLoads": 0,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "missing folio before provider",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": null,
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "rawUtf16Units": 120,
+      "normalizedUtf16Units": 120,
+      "result": {
+        "ok": false,
+        "message": "Open a folio with draft text first."
+      },
+      "calls": {
+        "settingsLoads": 0,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "empty folio id",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "",
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "rawUtf16Units": 120,
+      "normalizedUtf16Units": 120,
+      "result": {
+        "ok": false,
+        "message": "Open a folio with draft text first."
+      },
+      "calls": {
+        "settingsLoads": 0,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "empty manuscript before short draft",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": ""
+      },
+      "normalizedText": "",
+      "rawUtf16Units": 0,
+      "normalizedUtf16Units": 0,
+      "result": {
+        "ok": false,
+        "message": "Open a folio with draft text first."
+      },
+      "calls": {
+        "settingsLoads": 0,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "ECMAScript manuscript whitespace",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": " \t\r\n ﻿   "
+      },
+      "normalizedText": "",
+      "rawUtf16Units": 9,
+      "normalizedUtf16Units": 0,
+      "result": {
+        "ok": false,
+        "message": "Open a folio with draft text first."
+      },
+      "calls": {
+        "settingsLoads": 0,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "119 ASCII UTF16 units",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "rawUtf16Units": 119,
+      "normalizedUtf16Units": 119,
+      "result": {
+        "ok": false,
+        "message": "The folio needs a little more draft text before it can be steered."
+      },
+      "calls": {
+        "settingsLoads": 0,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "120 ASCII UTF16 units",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "rawUtf16Units": 120,
+      "normalizedUtf16Units": 120,
+      "result": {
+        "ok": false,
+        "message": "Choose an AI provider in Settings before steering a draft-wide pass."
+      },
+      "calls": {
+        "settingsLoads": 1,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "59 astral characters are 118 units",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": "🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿"
+      },
+      "normalizedText": "🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿",
+      "rawUtf16Units": 118,
+      "normalizedUtf16Units": 118,
+      "result": {
+        "ok": false,
+        "message": "The folio needs a little more draft text before it can be steered."
+      },
+      "calls": {
+        "settingsLoads": 0,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "60 astral characters are 120 units",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": "🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿"
+      },
+      "normalizedText": "🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿",
+      "rawUtf16Units": 120,
+      "normalizedUtf16Units": 120,
+      "result": {
+        "ok": false,
+        "message": "Choose an AI provider in Settings before steering a draft-wide pass."
+      },
+      "calls": {
+        "settingsLoads": 1,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "astral plus ASCII at119",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": "🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿x"
+      },
+      "normalizedText": "🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿x",
+      "rawUtf16Units": 119,
+      "normalizedUtf16Units": 119,
+      "result": {
+        "ok": false,
+        "message": "The folio needs a little more draft text before it can be steered."
+      },
+      "calls": {
+        "settingsLoads": 0,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "astral plus ASCII at120",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": "🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿xx"
+      },
+      "normalizedText": "🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿xx",
+      "rawUtf16Units": 120,
+      "normalizedUtf16Units": 120,
+      "result": {
+        "ok": false,
+        "message": "Choose an AI provider in Settings before steering a draft-wide pass."
+      },
+      "calls": {
+        "settingsLoads": 1,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "normalized internal whitespace at120",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \t\r\n y"
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx y",
+      "rawUtf16Units": 124,
+      "normalizedUtf16Units": 120,
+      "result": {
+        "ok": false,
+        "message": "Choose an AI provider in Settings before steering a draft-wide pass."
+      },
+      "calls": {
+        "settingsLoads": 1,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "normalization changes raw120 to119",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "rawUtf16Units": 120,
+      "normalizedUtf16Units": 119,
+      "result": {
+        "ok": false,
+        "message": "The folio needs a little more draft text before it can be steered."
+      },
+      "calls": {
+        "settingsLoads": 0,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "trailing whitespace cannot reach threshold",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  "
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "rawUtf16Units": 120,
+      "normalizedUtf16Units": 118,
+      "result": {
+        "ok": false,
+        "message": "The folio needs a little more draft text before it can be steered."
+      },
+      "calls": {
+        "settingsLoads": 0,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "NEL is not ECMAScript whitespace",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \t  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "rawUtf16Units": 124,
+      "normalizedUtf16Units": 123,
+      "result": {
+        "ok": false,
+        "message": "Choose an AI provider in Settings before steering a draft-wide pass."
+      },
+      "calls": {
+        "settingsLoads": 1,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "zero-width direction is not trimmed away",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "​",
+        "folioId": "draft",
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "rawUtf16Units": 120,
+      "normalizedUtf16Units": 120,
+      "result": {
+        "ok": false,
+        "message": "Choose an AI provider in Settings before steering a draft-wide pass."
+      },
+      "calls": {
+        "settingsLoads": 1,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "literal text is not HTML projection",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": "draft",
+        "text": "<p>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>"
+      },
+      "normalizedText": "<p>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>",
+      "rawUtf16Units": 126,
+      "normalizedUtf16Units": 126,
+      "result": {
+        "ok": false,
+        "message": "Choose an AI provider in Settings before steering a draft-wide pass."
+      },
+      "calls": {
+        "settingsLoads": 1,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "instructions are never executable",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "await runOnce(); fetch(\"https://provider.invalid/\")",
+        "folioId": "draft",
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "rawUtf16Units": 120,
+      "normalizedUtf16Units": 120,
+      "result": {
+        "ok": false,
+        "message": "Choose an AI provider in Settings before steering a draft-wide pass."
+      },
+      "calls": {
+        "settingsLoads": 1,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "folio id follows original truthiness",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "Primary sources",
+        "folioId": " ",
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "rawUtf16Units": 120,
+      "normalizedUtf16Units": 120,
+      "result": {
+        "ok": false,
+        "message": "Choose an AI provider in Settings before steering a draft-wide pass."
+      },
+      "calls": {
+        "settingsLoads": 1,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    },
+    {
+      "name": "BOM trim leaves120 units",
+      "request": {
+        "command": "apparatusSteerOffline",
+        "instructions": "﻿Primary sources ",
+        "folioId": "draft",
+        "text": "﻿xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx "
+      },
+      "normalizedText": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "rawUtf16Units": 122,
+      "normalizedUtf16Units": 120,
+      "result": {
+        "ok": false,
+        "message": "Choose an AI provider in Settings before steering a draft-wide pass."
+      },
+      "calls": {
+        "settingsLoads": 1,
+        "configuredAiChecks": 0,
+        "research": 0,
+        "network": 0
+      }
+    }
+  ]
+}

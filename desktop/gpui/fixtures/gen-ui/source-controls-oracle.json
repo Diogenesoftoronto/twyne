@@ -1,0 +1,47 @@
+{
+  "scope": "Executed original Source in a fresh offline Chrome editor. Does not prove Electrobun host or live account/AI behavior.",
+  "browserVersion": "Google Chrome 154.0.8037.57",
+  "inputHashes": {
+    "src/components/ui/numeric-stepper.tsx": "93bfe849a57bfa6d09790c604afcbf372e0e70e2464218db91118c151b9ac359",
+    "src/components/editor/extensions/struggle-tracker.ts": "5c95750bd53c1732c6532632e6d55ea97d0314cfe3cd5f37839bf14692d5585e",
+    "src/utils/in-flow-tools.ts": "9596fcb4f61541905ccb039528cbfd4e1ac31de465c020e51c34b7a8a7cf0d9d"
+  },
+  "captureReceipt": "desktop/gpui/target/verification/genui-source-cards-20261005-e/receipt.json",
+  "frames": [
+    {
+      "action": "initial",
+      "min": "8",
+      "max": "28"
+    },
+    {
+      "action": "minimum ArrowUp",
+      "min": "9",
+      "max": "28"
+    },
+    {
+      "action": "minimum ArrowDown",
+      "min": "8",
+      "max": "28"
+    },
+    {
+      "action": "minimum typed 79",
+      "min": "79",
+      "max": "80"
+    },
+    {
+      "action": "maximum typed 200",
+      "min": "79",
+      "max": "120"
+    },
+    {
+      "action": "minimum cleared and blurred",
+      "min": "",
+      "max": "120"
+    },
+    {
+      "action": "empty minimum ArrowUp",
+      "min": "80",
+      "max": "120"
+    }
+  ]
+}

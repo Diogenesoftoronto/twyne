@@ -1,0 +1,28 @@
+{
+  "kind": "source-backed-unapplied-proposal",
+  "atlasScope": "one WgpuAtlas per X11/Wayland WgpuRenderer; shared device/queue is not shared atlas",
+  "currentConsumers": "one mounted Dossier per WritingRoom; all image consumers in the same atlas must share one registry",
+  "preparedImages": { "paper": 1, "stampVariants": 8, "optionalPremultipliedMultiply": 1, "productMultiplyMounted": false },
+  "limits": { "consumers": 4, "imagesPerConsumer": 10, "activeAndPendingUniqueImages": 64, "registryRawBgraBytes": 268435456 },
+  "requiredOrder": [
+    "qualify actual window/application and live consumer lease",
+    "validate and accept candidate images before committing retained pointers",
+    "retire leases only at actual root unmount, retaining shared images",
+    "queue full window refresh and record latest checked ownership epoch",
+    "ordinary App-controlled frame paints persistent WritingRoom marker",
+    "ordinary draw swaps and clears the old CPU Scene, then returns to App::finish_update",
+    "deferred marker callback revalidates exact epoch/full-refresh ticket",
+    "Window::drop_image removes only zero-lease keys in this atlas"
+  ],
+  "refusedReceipts": ["stale epoch", "different window/application", "before full refresh", "before marker paint", "duplicate", "retired consumer reuse", "closed window", "counter exhaustion"],
+  "unsupportedOrUnproved": [
+    "manual or nested caller-controlled draw/defer sequencing",
+    "panic/unwind frame completion",
+    "non-Linux/FreeBSD atlas sharing and native behavior",
+    "successful surface presentation or GPU-idle acknowledgement",
+    "immediate VRAM reclamation, total GPU bytes or global atlas eviction",
+    "external retained Arc CPU memory",
+    "actual mounted/native interactions, repeated transitions and multi-window GPU proof"
+  ],
+  "tests": { "deterministicRustAuthored": 13, "executed": false, "constructedReceiptsAreNativeProof": false }
+}

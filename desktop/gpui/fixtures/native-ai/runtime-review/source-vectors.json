@@ -1,0 +1,869 @@
+{
+  "version": 1,
+  "sourceHashes": {
+    "src/utils/ai-client.ts": "95acd02327b2d6fe6f478642ea9cd4a4c498c51f8da385cd5c358b7a00372ecc",
+    "src/types/index.ts": "f2414d311f91e39a071f837449baac29a146ecb02960546f68a0e09a4208394b",
+    "src/utils/llm-parsing.ts": "10304a9ddbd8b91b5bfe73c3f9ba371f47f0beb8578ab26de31fa75cd72b6c6e",
+    "src/utils/research-targets.ts": "301c8fafc8970dae19915267ccd009485604e1166f47f59af276a7fe1b168914",
+    "src/utils/reasoning-tags.ts": "7f072f056b0821aeca4c216a0e0432f3748a058833063f09df81f24decc8f338",
+    "desktop/litert-server.ts": "052349c65dc23e7952d5fccbd0c5927455be963bdd43ee436959a749408f7e96"
+  },
+  "boundaries": {
+    "routing": "Original declarations over already-normalized settings; normalization injection/stripping excluded.",
+    "lifecycle": "Original declarations with fake environment/files/spawn/readiness/clock; no real child/model/socket.",
+    "transport": "Native captured HTTP/SSE subset is synthetic and not original AI SDK transport."
+  },
+  "judge": [
+    {
+      "name": "inline-fences",
+      "input": "prefix ```JSON{\"score\":8.5,\"rationale\":\"Quoted } brace\"}``` suffix",
+      "result": {
+        "score": 9,
+        "rationale": "Quoted } brace"
+      },
+      "nativeBoundary": null
+    },
+    {
+      "name": "negative-json",
+      "input": "{\"score\":-2.5,\"rationale\":\"Low\"}",
+      "result": {
+        "score": 1,
+        "rationale": "Low"
+      },
+      "nativeBoundary": null
+    },
+    {
+      "name": "reasoning",
+      "input": "<think>score: 10</think>{\"score\":6,\"rationale\":\"Grounded\"}",
+      "result": {
+        "score": 6,
+        "rationale": "Grounded"
+      },
+      "nativeBoundary": null
+    },
+    {
+      "name": "named-fallback",
+      "input": "Score﻿= 7 Rationale: \"Some support\"",
+      "result": {
+        "score": 7,
+        "rationale": "Some support"
+      },
+      "nativeBoundary": null
+    },
+    {
+      "name": "unrelated-digits",
+      "input": "The 9 assertions await evidence",
+      "result": null,
+      "nativeBoundary": null
+    },
+    {
+      "name": "unicode-digit",
+      "input": "score: ٣ rationale: \"No ASCII score\"",
+      "result": null,
+      "nativeBoundary": null
+    },
+    {
+      "name": "fallback-default",
+      "input": "score: 99",
+      "result": {
+        "score": 10,
+        "rationale": "The draft does part of the work and leaves the rest to the writer."
+      },
+      "nativeBoundary": null
+    },
+    {
+      "name": "json-zero",
+      "input": "{\"score\":0,\"rationale\":\"\"}",
+      "result": {
+        "score": 1,
+        "rationale": ""
+      },
+      "nativeBoundary": null
+    },
+    {
+      "name": "malformed",
+      "input": "{\"score\":4,\"rationale\":\"unclosed",
+      "result": {
+        "score": 4,
+        "rationale": "The draft does part of the work and leaves the rest to the writer."
+      },
+      "nativeBoundary": null
+    },
+    {
+      "name": "numeric-overflow",
+      "input": "{\"score\":1e400,\"rationale\":\"Source clamps Infinity\"}",
+      "result": {
+        "score": 5,
+        "rationale": "Source clamps Infinity"
+      },
+      "nativeBoundary": "Refused nonfinite JSON representation"
+    }
+  ],
+  "fences": [
+    {
+      "input": "before ```JSON{\"x\":1}``` after",
+      "result": "before {\"x\":1} after"
+    },
+    {
+      "input": "```python\ncode\n```",
+      "result": "python\ncode"
+    },
+    {
+      "input": "﻿```json\n{}\n``` ",
+      "result": "{}"
+    }
+  ],
+  "tagged": [
+    {
+      "input": "😀 leading DOSSIER: {\"x\":\"} escaped \\\"\"} tail",
+      "tag": "DOSSIER",
+      "result": {
+        "value": {
+          "x": "} escaped \""
+        },
+        "start": 11,
+        "end": 40
+      }
+    },
+    {
+      "input": "prefix probe: {\"next\":{\"ask\":\"東京\"}} suffix",
+      "tag": "PROBE",
+      "result": {
+        "value": {
+          "next": {
+            "ask": "東京"
+          }
+        },
+        "start": 7,
+        "end": 35
+      }
+    },
+    {
+      "input": "SYNTHESIZE: {\"x\":1",
+      "tag": "SYNTHESIZE",
+      "result": null
+    },
+    {
+      "input": "PROBE: {broken}",
+      "tag": "PROBE",
+      "result": null
+    }
+  ],
+  "research": [
+    {
+      "name": "wrapper-sort-dedupe",
+      "input": "{\"targets\":[{\"kind\":\"quote\",\"anchor\":\" Alpha passage \",\"query\":\"a search\",\"importance\":2.4},{\"kind\":\"person\",\"anchor\":\"Beta passage\",\"query\":\"b search\",\"importance\":5},{\"kind\":\"event\",\"anchor\":\"ALPHA PASSAGE\",\"query\":\"new search\",\"importance\":4},{\"kind\":\"work\",\"anchor\":\"Gamma passage\",\"query\":\"B SEARCH\",\"importance\":4},{\"kind\":\"QUOTE\",\"anchor\":\"Delta passage\",\"reason\":\"  why?  \",\"importance\":4.5}]}",
+      "result": [
+        {
+          "id": "k-1-7civ5v",
+          "kind": "person",
+          "anchor": "Beta passage",
+          "reason": "Needs a verifiable source",
+          "query": "b search",
+          "importance": 5
+        },
+        {
+          "id": "k-2-c4g0nd",
+          "kind": "claim",
+          "anchor": "Delta passage",
+          "reason": "why?",
+          "query": "Delta passage",
+          "importance": 5
+        },
+        {
+          "id": "k-0-1ret3w7",
+          "kind": "quote",
+          "anchor": "Alpha passage",
+          "reason": "Needs a verifiable source",
+          "query": "a search",
+          "importance": 2
+        }
+      ],
+      "sourceResultJson": null,
+      "nativeBoundary": null
+    },
+    {
+      "name": "items-wrapper",
+      "input": "{\"items\":[null,[],{\"anchor\":\"東京😀\",\"query\":\"emoji source\",\"importance\":0},{\"anchor\":\"Later\",\"importance\":1}]}",
+      "result": [
+        {
+          "id": "k-0-fly52t",
+          "kind": "claim",
+          "anchor": "東京😀",
+          "reason": "Needs a verifiable source",
+          "query": "emoji source",
+          "importance": 1
+        },
+        {
+          "id": "k-1-mtd6zt",
+          "kind": "claim",
+          "anchor": "Later",
+          "reason": "Needs a verifiable source",
+          "query": "Later",
+          "importance": 1
+        }
+      ],
+      "sourceResultJson": null,
+      "nativeBoundary": null
+    },
+    {
+      "name": "utf16-minimum",
+      "input": "{\"results\":[{\"anchor\":\"😀a\",\"query\":\"😀b\"},{\"anchor\":\"😀\",\"query\":\"valid\"}]}",
+      "result": [
+        {
+          "id": "k-0-1f5e4yj",
+          "kind": "claim",
+          "anchor": "😀a",
+          "reason": "Needs a verifiable source",
+          "query": "😀b",
+          "importance": 3
+        }
+      ],
+      "sourceResultJson": null,
+      "nativeBoundary": null
+    },
+    {
+      "name": "array-after-object",
+      "input": "irrelevant {} then [{\"anchor\":\"A claim\",\"query\":\"A source\"}]",
+      "result": [
+        {
+          "id": "k-0-18opcx4",
+          "kind": "claim",
+          "anchor": "A claim",
+          "reason": "Needs a verifiable source",
+          "query": "A source",
+          "importance": 3
+        }
+      ],
+      "sourceResultJson": null,
+      "nativeBoundary": null
+    },
+    {
+      "name": "trailing-array-prose",
+      "input": "[{\"anchor\":\"A claim\",\"query\":\"A source\"}] trailing prose",
+      "result": [],
+      "sourceResultJson": null,
+      "nativeBoundary": null
+    },
+    {
+      "name": "query-fallback",
+      "input": "[{\"anchor\":\"Meaningful claim\",\"query\":\" x \",\"importance\":\"5\"}]",
+      "result": [
+        {
+          "id": "k-0-17vk5zr",
+          "kind": "claim",
+          "anchor": "Meaningful claim",
+          "reason": "Needs a verifiable source",
+          "query": "Meaningful claim",
+          "importance": 3
+        }
+      ],
+      "sourceResultJson": null,
+      "nativeBoundary": null
+    },
+    {
+      "name": "slice-and-sort",
+      "input": "{\"targets\":[{\"anchor\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"query\":\"qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq\",\"reason\":\"rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr\",\"importance\":2},{\"anchor\":\"Short next\",\"query\":\"other query\",\"importance\":5}]}",
+      "result": [
+        {
+          "id": "k-1-z9tvgu",
+          "kind": "claim",
+          "anchor": "Short next",
+          "reason": "Needs a verifiable source",
+          "query": "other query",
+          "importance": 5
+        },
+        {
+          "id": "k-0-11zndkw",
+          "kind": "claim",
+          "anchor": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "reason": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr",
+          "query": "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq",
+          "importance": 2
+        }
+      ],
+      "sourceResultJson": null,
+      "nativeBoundary": null
+    },
+    {
+      "name": "js-whitespace",
+      "input": "[{\"anchor\":\"﻿ claim \",\"query\":\"﻿source　\"}]",
+      "result": [
+        {
+          "id": "k-0-1ghamb3",
+          "kind": "claim",
+          "anchor": "claim",
+          "reason": "Needs a verifiable source",
+          "query": "source",
+          "importance": 3
+        }
+      ],
+      "sourceResultJson": null,
+      "nativeBoundary": null
+    },
+    {
+      "name": "unsupported-surrogate-cut",
+      "input": "{\"targets\":[{\"anchor\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa😀 tail\",\"query\":\"valid source\"}]}",
+      "result": null,
+      "sourceResultJson": "[{\"id\":\"k-0-1wgz85r\",\"kind\":\"claim\",\"anchor\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\ud83d\",\"reason\":\"Needs a verifiable source\",\"query\":\"valid source\",\"importance\":3}]",
+      "nativeBoundary": "Unsupported Source UTF16 slice boundary"
+    },
+    {
+      "name": "unsupported-numeric-overflow",
+      "input": "{\"targets\":[{\"anchor\":\"A claim\",\"query\":\"A source\",\"importance\":1e400}]}",
+      "result": null,
+      "sourceResultJson": "[{\"id\":\"k-0-18opcx4\",\"kind\":\"claim\",\"anchor\":\"A claim\",\"reason\":\"Needs a verifiable source\",\"query\":\"A source\",\"importance\":5}]",
+      "nativeBoundary": "Unsupported Source nonfinite JSON number"
+    }
+  ],
+  "routing": [
+    {
+      "name": "text-override",
+      "feature": "rubric-judge",
+      "settings": {
+        "defaultProviderId": "anthropic",
+        "providers": [
+          {
+            "id": "anthropic",
+            "name": "anthropic",
+            "type": "anthropic",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "claude"
+          },
+          {
+            "id": "local",
+            "name": "local",
+            "type": "litert",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "minicpm5-2b"
+          }
+        ],
+        "perFeature": {
+          "rubric-judge": {
+            "providerId": "local",
+            "temperature": 0.1,
+            "maxTokens": 123
+          }
+        }
+      },
+      "result": {
+        "providerId": "local",
+        "model": "minicpm5-2b",
+        "temperature": 0.1,
+        "maxTokens": 123
+      },
+      "hasAi": true,
+      "hasVoice": true
+    },
+    {
+      "name": "voice-eligibility",
+      "feature": "voice-narration",
+      "settings": {
+        "defaultProviderId": "anthropic",
+        "providers": [
+          {
+            "id": "anthropic",
+            "name": "anthropic",
+            "type": "anthropic",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "claude"
+          },
+          {
+            "id": "fish",
+            "name": "fish",
+            "type": "fishaudio",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "old-model"
+          }
+        ],
+        "perFeature": {}
+      },
+      "result": {
+        "providerId": "fish",
+        "model": "s2-pro",
+        "temperature": 0.4,
+        "maxTokens": null
+      },
+      "hasAi": true,
+      "hasVoice": true
+    },
+    {
+      "name": "openai-transcription",
+      "feature": "voice-transcription",
+      "settings": {
+        "providers": [
+          {
+            "id": "openai",
+            "name": "openai",
+            "type": "openai",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "gpt-4.1"
+          }
+        ],
+        "perFeature": {}
+      },
+      "result": {
+        "providerId": "openai",
+        "model": "gpt-4o-mini-transcribe",
+        "temperature": 0.4,
+        "maxTokens": null
+      },
+      "hasAi": true,
+      "hasVoice": true
+    },
+    {
+      "name": "direct-audio",
+      "feature": "voice-transcription",
+      "settings": {
+        "providers": [
+          {
+            "id": "compatible",
+            "name": "compatible",
+            "type": "openai-compatible",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "known",
+            "modelModalities": {
+              "known": {
+                "input": [
+                  "audio"
+                ],
+                "output": [
+                  "text"
+                ]
+              }
+            }
+          }
+        ],
+        "perFeature": {}
+      },
+      "result": {
+        "providerId": "compatible",
+        "model": "known",
+        "temperature": 0.4,
+        "maxTokens": null
+      },
+      "hasAi": true,
+      "hasVoice": true
+    },
+    {
+      "name": "negative-modalities",
+      "feature": "voice-transcription",
+      "settings": {
+        "providers": [
+          {
+            "id": "compatible",
+            "name": "compatible",
+            "type": "openai-compatible",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "gemma",
+            "modelModalities": {
+              "gemma": {
+                "input": [
+                  "text"
+                ],
+                "output": [
+                  "text"
+                ]
+              }
+            }
+          }
+        ],
+        "perFeature": {}
+      },
+      "result": {
+        "providerId": "compatible",
+        "model": "gpt-4o-mini-transcribe",
+        "temperature": 0.4,
+        "maxTokens": null
+      },
+      "hasAi": true,
+      "hasVoice": true
+    },
+    {
+      "name": "tinker-anthropic",
+      "feature": "voice-transcription",
+      "settings": {
+        "providers": [
+          {
+            "id": "tinker",
+            "name": "tinker",
+            "type": "anthropic-compatible",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "inkling",
+            "baseUrl": "https://TINKER.thinkingmachines.dev/path"
+          }
+        ],
+        "perFeature": {}
+      },
+      "result": {
+        "providerId": "tinker",
+        "model": "inkling",
+        "temperature": 0.4,
+        "maxTokens": null
+      },
+      "hasAi": true,
+      "hasVoice": true
+    },
+    {
+      "name": "unknown-provider-configured",
+      "feature": "persona-analysis",
+      "settings": {
+        "providers": [
+          {
+            "id": "unknown",
+            "name": "unknown",
+            "type": "future-provider",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "future"
+          }
+        ],
+        "perFeature": {}
+      },
+      "result": {
+        "providerId": "unknown",
+        "model": "future",
+        "temperature": 0.5,
+        "maxTokens": null
+      },
+      "hasAi": true,
+      "hasVoice": false
+    },
+    {
+      "name": "voice-only-no-text",
+      "feature": "persona-feedback",
+      "settings": {
+        "providers": [
+          {
+            "id": "browser",
+            "name": "browser",
+            "type": "supertonic",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "voice"
+          }
+        ],
+        "perFeature": {}
+      },
+      "result": null,
+      "hasAi": false,
+      "hasVoice": true
+    },
+    {
+      "name": "persona-voice-quirk",
+      "feature": "persona-analysis",
+      "persona": {
+        "providerId": "fish"
+      },
+      "settings": {
+        "providers": [
+          {
+            "id": "text",
+            "name": "text",
+            "type": "anthropic",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "claude"
+          },
+          {
+            "id": "fish",
+            "name": "fish",
+            "type": "fishaudio",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "voice-model"
+          }
+        ],
+        "perFeature": {
+          "persona-analysis": {
+            "model": "feature-model",
+            "maxTokens": 91
+          }
+        }
+      },
+      "result": {
+        "providerId": "fish",
+        "model": "voice-model",
+        "temperature": 0.5,
+        "maxTokens": 91
+      },
+      "hasAi": true,
+      "hasVoice": true
+    },
+    {
+      "name": "persona-explicit",
+      "feature": "persona-reply",
+      "persona": {
+        "providerId": "missing",
+        "model": "explicit",
+        "temperature": 0
+      },
+      "settings": {
+        "providers": [
+          {
+            "id": "text",
+            "name": "text",
+            "type": "anthropic",
+            "apiKey": "synthetic-not-a-key",
+            "defaultModel": "claude"
+          }
+        ],
+        "perFeature": {}
+      },
+      "result": {
+        "providerId": "text",
+        "model": "explicit",
+        "temperature": 0,
+        "maxTokens": null
+      },
+      "hasAi": true,
+      "hasVoice": false
+    }
+  ],
+  "lifecycle": [
+    {
+      "name": "disabled",
+      "ready": false,
+      "port": null,
+      "checks": 0,
+      "kills": 0,
+      "calls": []
+    },
+    {
+      "name": "case-sensitive-flag",
+      "ready": false,
+      "port": null,
+      "checks": 0,
+      "kills": 0,
+      "calls": []
+    },
+    {
+      "name": "missing",
+      "ready": false,
+      "port": null,
+      "checks": 0,
+      "kills": 0,
+      "calls": []
+    },
+    {
+      "name": "registered-ready",
+      "ready": true,
+      "port": 45123,
+      "checks": 1,
+      "kills": 1,
+      "calls": [
+        {
+          "stage": "list",
+          "args": [],
+          "stdout": "pipe",
+          "stderr": "ignore"
+        },
+        {
+          "stage": "serve",
+          "args": [
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "45123"
+          ],
+          "stdout": "inherit",
+          "stderr": "inherit"
+        }
+      ]
+    },
+    {
+      "name": "import-ready",
+      "ready": true,
+      "port": 45123,
+      "checks": 1,
+      "kills": 1,
+      "calls": [
+        {
+          "stage": "list",
+          "args": [],
+          "stdout": "pipe",
+          "stderr": "ignore"
+        },
+        {
+          "stage": "import",
+          "args": [
+            "<fixture-model>",
+            "minicpm5-2b"
+          ],
+          "stdout": "inherit",
+          "stderr": "inherit"
+        },
+        {
+          "stage": "serve",
+          "args": [
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "45123"
+          ],
+          "stdout": "inherit",
+          "stderr": "inherit"
+        }
+      ]
+    },
+    {
+      "name": "registry-failure-then-import",
+      "ready": true,
+      "port": 45123,
+      "checks": 1,
+      "kills": 1,
+      "calls": [
+        {
+          "stage": "list",
+          "args": [],
+          "stdout": "pipe",
+          "stderr": "ignore"
+        },
+        {
+          "stage": "import",
+          "args": [
+            "<fixture-model>",
+            "minicpm5-2b"
+          ],
+          "stdout": "inherit",
+          "stderr": "inherit"
+        },
+        {
+          "stage": "serve",
+          "args": [
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "45123"
+          ],
+          "stdout": "inherit",
+          "stderr": "inherit"
+        }
+      ]
+    },
+    {
+      "name": "import-failed",
+      "ready": false,
+      "port": null,
+      "checks": 0,
+      "kills": 0,
+      "calls": [
+        {
+          "stage": "list",
+          "args": [],
+          "stdout": "pipe",
+          "stderr": "ignore"
+        },
+        {
+          "stage": "import",
+          "args": [
+            "<fixture-model>",
+            "minicpm5-2b"
+          ],
+          "stdout": "inherit",
+          "stderr": "inherit"
+        }
+      ]
+    },
+    {
+      "name": "spawn-failed",
+      "ready": false,
+      "port": null,
+      "checks": 0,
+      "kills": 0,
+      "calls": [
+        {
+          "stage": "list",
+          "args": [],
+          "stdout": "pipe",
+          "stderr": "ignore"
+        },
+        {
+          "stage": "serve",
+          "args": [
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "45123"
+          ],
+          "stdout": "inherit",
+          "stderr": "inherit"
+        }
+      ]
+    },
+    {
+      "name": "child-exited",
+      "ready": false,
+      "port": null,
+      "checks": 1,
+      "kills": 1,
+      "calls": [
+        {
+          "stage": "list",
+          "args": [],
+          "stdout": "pipe",
+          "stderr": "ignore"
+        },
+        {
+          "stage": "serve",
+          "args": [
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "45123"
+          ],
+          "stdout": "inherit",
+          "stderr": "inherit"
+        }
+      ]
+    },
+    {
+      "name": "timeout",
+      "ready": false,
+      "port": null,
+      "checks": 2,
+      "kills": 1,
+      "calls": [
+        {
+          "stage": "list",
+          "args": [],
+          "stdout": "pipe",
+          "stderr": "ignore"
+        },
+        {
+          "stage": "serve",
+          "args": [
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "45123"
+          ],
+          "stdout": "inherit",
+          "stderr": "inherit"
+        }
+      ]
+    },
+    {
+      "name": "tcp-before-exited-check",
+      "ready": true,
+      "port": 45123,
+      "checks": 1,
+      "kills": 1,
+      "calls": [
+        {
+          "stage": "list",
+          "args": [],
+          "stdout": "pipe",
+          "stderr": "ignore"
+        },
+        {
+          "stage": "serve",
+          "args": [
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "45123"
+          ],
+          "stdout": "inherit",
+          "stderr": "inherit"
+        }
+      ]
+    }
+  ]
+}

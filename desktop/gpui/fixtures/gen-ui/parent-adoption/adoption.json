@@ -1,0 +1,91 @@
+{
+  "status": "core_source_contracts_pass_and_native_bodies_compile_unmounted",
+  "recordedUnix": 1791198105.2764845,
+  "inputs": {
+    "desktop/gpui/src/gen_ui/props.rs": "585c417167b5afb127ff14934bb27999106037e4f13452073cc2b2f9c5fa32c6",
+    "desktop/gpui/src/gen_ui/stream.rs": "075c3079c6c98bb3f9263e08649a91987a9cabdd1c1ae834ceb833c28aaeb3f9",
+    "desktop/gpui/src/gen_ui/mod.rs": "5d4baa9661360a315ee60354128fd26b776c42396869609726167d4b45c5ced0",
+    "desktop/gpui/src/gen_ui/spec.rs": "992329c1a05ceb90fe1aa23d932e326aaec81023e3cbf1ff3df94be13ddf5c6c",
+    "desktop/gpui/src/gen_ui/source_oracle_tests.rs": "5d8e28ef614b5b8635c7774b5a90b6d37512eed5e4d94c2a77d1710badaef517",
+    "desktop/gpui/src/gen_ui/model.rs": "6e64cdf54a67687e5c51112282b6e3e36b2a888ee40a8776f5bbba742f83a5c8",
+    "desktop/gpui/src/gen_ui/view.rs": "be13d86231cac21806bc324e759e8732478f574d672f301091bb002caa80fe70",
+    "desktop/gpui/src/gen_ui/seed.rs": "1f58d9a88921484a86f2cfd942e93c5558a308f72532b383980c937ebd3bb9a6",
+    "desktop/gpui/src/gen_ui/seed_oracle_tests.rs": "bf1011877217bea14a7c803d5ffba45d7b60630111daa96dfc291c5f47affc87",
+    "desktop/gpui/src/lib.rs": "a1996778a82ff4228bd0899706d3fc2ca48cec1ef0d570782734eb77b326ea47",
+    "desktop/gpui/Cargo.toml": "72400ce488eb644e1aeca961548cbfe3fa068fda2be5ba020dc249205d1318b8",
+    "desktop/gpui/Cargo.lock": "44f147eca43dddc0f20802a4f0cf05eb36596cf3e6cf86c00ddc15d12c617c83",
+    "desktop/gpui/src/dossier_multiply.rs": "5f105698616eada168fd4e168c98a193b86a56729ba205b103bb6be6a8c99373",
+    "desktop/gpui/src/app.rs": "74236c58084a63f5f9dc73e58615df739071b3cf0b8023020c9a150cfc2bbe6b",
+    "desktop/gpui/src/app/settings_coordinator.rs": "596e33fce625b83a678c7e647d0798e765b0000c0c5d9d246c6fa55194769326",
+    "desktop/gpui/fixtures/dossier-multiply/native-probe/main.rs": "f9a631267b688503d6a4485c52cc4e11a1cbea769cc5a27d405002e68c27b4e0",
+    "src/components/in-flow/catalog.ts": "3876e05f235370affdcd2ef6c01294556b83d0f77ee41ff7bdd3051e38e916fb",
+    "src/components/in-flow/tool-renderer.tsx": "9732ada5353d1573d61b1954620a49e6aee1b9788edfeb440893dbd0a04eaf0f",
+    "src/components/editor/extensions/struggle-tracker.ts": "5c95750bd53c1732c6532632e6d55ea97d0314cfe3cd5f37839bf14692d5585e",
+    "src/utils/in-flow-tools.ts": "9596fcb4f61541905ccb039528cbfd4e1ac31de465c020e51c34b7a8a7cf0d9d",
+    "src/utils/struggle-signals.ts": "ecadbbcbb1aaabf6b744c4faf91a6b8a007e1b02b2d16a23c0a3fc6315151a10",
+    "src/utils/writing-tools-storage.ts": "df8bd6e3181056b181ebf330270e1bcc1bbd95d5ab52081caf1ff054f2cf601f",
+    "src/global.css": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+    "desktop/gpui/fixtures/gen-ui/source-oracle.ts": "690145b126459abc2f50abc00ba449d1d9339a6d0ef13177b1a7f8cc4afe771a",
+    "desktop/gpui/fixtures/gen-ui/source-oracle.json": "6c1aa447e47303f28c2549c586a49c404fa7271ac4695bc1e21c03a9aec962d2",
+    "desktop/gpui/fixtures/gen-ui/seed-oracle.ts": "602a52d69dfd5daf06d03d1ccc19a6b888d0693fe3e6e28e238e546d8e51b2fb",
+    "desktop/gpui/fixtures/gen-ui/seed-oracle.json": "414489933c27cc7de414ff9ec0b6f11c247c736f3a5dbb34f5b90c0b852f1fb2"
+  },
+  "core": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/genui-core-fabe5d57f725"
+  },
+  "unitTestsPassed": 36,
+  "sourceValidationCases": 45,
+  "sourceStreamCases": 18,
+  "sourceStreamSnapshots": 32,
+  "sourceSeedAndOfflineCases": 59,
+  "sourceSentenceCases": 11,
+  "desktopClippy": {
+    "exitCode": 0,
+    "allTargets": true,
+    "features": [
+      "ui-tests",
+      "native-audio"
+    ],
+    "warningsDenied": true,
+    "completionLog": "Final direct unified-exec session 74984; completion chunk ca7d81"
+  },
+  "multiplyGuardTests": {
+    "passed": 5,
+    "scope": "Existing synthetic premultiplied image guard tests, not fresh GPU capture",
+    "session": 91964
+  },
+  "sourcePackages": {
+    "@json-render/core": {
+      "version": "0.21.0",
+      "manifestSha256": "33db02756a63c452d953f6c9d2c2c0bbce0ff00a2164c0be046f2b41cf9bbea0"
+    },
+    "zod": {
+      "version": "4.4.3",
+      "manifestSha256": "c630bd10b52dcf71c112a2bf78dbf2734b9db58d62de663b8d86c2ec2c8cda2e"
+    }
+  },
+  "notCompleted": [
+    "WritingRoom mounting",
+    "Original card and rail/popover/shelf",
+    "Rich document and undo integration",
+    "Saved tool and notebook callbacks",
+    "Jev and main AI provider calls",
+    "Account sync and knowledge connections",
+    "Source/native actual interaction and pixel comparisons",
+    "Lone UTF-16 surrogate compatibility"
+  ],
+  "advisoryCorrection": "The actions proposal incorrectly said Jot lacks read-back. Current writing-tools-storage.ts saveWritingToolsNotebook serializes writes and verifies the loaded notebook against the snapshot before resolving. Source action review did not include this implementation.",
+  "previewChangedByThisWave": false,
+  "sourceWebAndConvexEdited": false,
+  "modelJobs": [
+    "sakana-genui-props-worker-c0290d9d4cbd",
+    "sakana-genui-stream-worker-1e6b9c1a84ea",
+    "sakana-genui-seed-worker-6632c37f1b79",
+    "sakana-genui-actions-review-defe6af59aa4"
+  ],
+  "nextSavedCodecJob": {
+    "job": "sakana-genui-saved-worker-b46e30ed377a",
+    "handle": 29752,
+    "statusAtLaunch": "running"
+  }
+}

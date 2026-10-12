@@ -1,0 +1,30 @@
+{
+  "display": "new isolated Xvfb, terminated",
+  "backend": "X11",
+  "input": "separate-process XTEST",
+  "clipboard": "separate-process xclip on owned display",
+  "fixture": "explicit retained test metadata; no provider activity",
+  "notes": true,
+  "checks": [
+    "Owned X11 window is actually activated before text input",
+    "Actual Board opens retained scoped sources with citation enabled and provider preview disabled",
+    "Actual blank Enter is consumed, Shift-Enter writes a line, and modified Enter keeps the draft with the original offline provider error without writing manuscript or bibliography",
+    "Actual Board context switch retains the steering draft and original error",
+    "Actual cite inserts a durable native footnote before its source timestamp is confirmed and keeps foreign rows exact",
+    "Actual focused editor Ctrl-Z and Ctrl-Y restore the draft and its single citation exactly",
+    "Actual unblurred note textarea Ctrl-S files the latest text, keeps the popup input focused and presents Saved locally",
+    "Actual Reference dismissal captures the pending multiline note before restoring its manuscript marker",
+    "Actual Kind select previews without filing, then confirms Endnote with the authored multiline text retained",
+    "Actual focused note reference Undo and Redo restore kind conversion without replacing its note text",
+    "Actual Copy all publishes writer and background sources for the exact active scope to a separate X11 clipboard client",
+    "Actual style change files only local metadata and preserves the cited manuscript",
+    "Actual full-page Back returns to the scoped Apparatus Board with a fresh steering mount",
+    "Actual backup obstruction keeps accepted source bytes and blocks full-page departure",
+    "Actual Retry files the held scoped removal once while preserving the footnote and foreign rows",
+    "Actual Ctrl-Q exits cleanly with the accepted bibliography and cited manuscript"
+  ],
+  "binarySha256": "be489cbd5e16862cb4458cba4b9ff637df20b86487e964082f1115854101d7c9",
+  "completedAt": "2026-10-05T00:26:21.220273+00:00",
+  "provenance": "Actual isolated X11 run after integrated Wayland clipboard, math foundation and native pagination host; this retained Apparatus fixture requests continuous layout, so these 16 checks establish native regression only, not paginated page GPU parity.",
+  "outputDirectory": "/tmp/twyne-apparatus-host-native-pagination-integrated"
+}

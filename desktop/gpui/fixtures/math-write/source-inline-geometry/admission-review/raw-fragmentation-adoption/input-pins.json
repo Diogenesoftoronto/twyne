@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "scope": "Exact inspected original and fresh inputs; historical failures/receipts are not rewritten.",
+  "parentReportedOriginalTests": "13 PASS, as reported by Parent; not rerun by worker.",
+  "inputs": [
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/analyze.py",
+      "bytes": 35158,
+      "sha256": "cceaefd7383e1cfb76ec0a1f26b4fe09d4afa13a448bd05f7c451a7d0fe1ac2d"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/test_analyze.py",
+      "bytes": 15832,
+      "sha256": "21044b5c1697c7146b8c0c85988c4c1f080244f41befbbade3e97e086c673472"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/freeze.json",
+      "bytes": 2072,
+      "sha256": "89067e67365f36e2c30da5f84bca9ce36b675f2661bf0845b02feb3069aecdd1"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/source-inputs.json",
+      "bytes": 5684,
+      "sha256": "e1fe61d9b9a88408881c728c2e086a0a32cf0f35540e24d4c209f05c0d9deccd"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/cases.json",
+      "bytes": 1725,
+      "sha256": "4d3334dc4c37922db8750d83a20fcca195bd7c587d7886669f2f8d9dcaf14079"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/fixture-server.ts",
+      "bytes": 10957,
+      "sha256": "e997a23fc2eb325ba22d6248556321560eb645b3ba5a972df6695a58edb0cdec"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/observe.js",
+      "bytes": 15752,
+      "sha256": "e962aec7f943b034b49eefd4f915d91cdf7fdcc9c07750fdc5c173c9813d88dd"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-8430f5ec-4a79-4e9e-865d-6a805e712a07/02-open-markers.json",
+      "bytes": 145729,
+      "sha256": "cbe0ae7b066ecb691a55276cd9a45f99a4069c0f07b9b6df221c01226234471b"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-8430f5ec-4a79-4e9e-865d-6a805e712a07/02-open-markers-dom-snapshot.json",
+      "bytes": 34152,
+      "sha256": "637efb3416d22500758bfa407994ecf768968f0db441fcc5bd343257cd61b33d"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-8430f5ec-4a79-4e9e-865d-6a805e712a07/03-open-control.json",
+      "bytes": 199872,
+      "sha256": "a38e5fbe16e5f1a6c4a962ec6410a28e8831f60e8cd10136557319f78946557a"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-8430f5ec-4a79-4e9e-865d-6a805e712a07/03-open-control-dom-snapshot.json",
+      "bytes": 36506,
+      "sha256": "a19443221ee4ce7b9391676708e92a39c1b0bfdcb768e1400bf8c4531c2262e9"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-8430f5ec-4a79-4e9e-865d-6a805e712a07/server-provenance.json",
+      "bytes": 6530,
+      "sha256": "1553195ad7297040487a85a5bd0336f4c9b71fa21afdd7ceb7c4ae27a1366707"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-8430f5ec-4a79-4e9e-865d-6a805e712a07/configuration.json",
+      "bytes": 8680,
+      "sha256": "b1106eb30df58b2668a0626721df85b931f9bd0ff8ea6229eb6b4c8ba8f82dce"
+    }
+  ]
+}

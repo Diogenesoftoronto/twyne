@@ -1,0 +1,1352 @@
+You are an advisory Sakana Max coding subagent for the Twyne GPUI port. You are not alone in the codebase. Do not revert any other edits. Your exclusive responsibility is a proposal for the single file named below. No tools, network, or filesystem access is needed; all authoritative inputs are below. The coordinator owns integration, shared modules, UI host, cargo, and verification. Preserve exact source behavior, explain any limits, and do not claim runtime tests were executed.
+
+Own proposal only: desktop/gpui/src/gen_ui/support_text.rs. Propose an actual measured GPUI Element for Source Claim Check support text, NOT a flex row of separate blocks. API public fn support_text(label:&str,hint:Option<&str>,filled:bool,colors:crate::theme::Palette)->gpui_kit::AnyElement. Source uses inline strong 14px Lora followed, when unfilled, by inline muted 12px text " — {hint}", with inherited unitless line-height 1.55 and shared baselines. Filled shows only muted struck-through strong. Normal CSS whitespace wrapping, within available width; must preserve multiword labels, Unicode/emoji, shrink widths, and oversized-word overflow. Use real text shaping and stable byte offsets, no estimates based on character count. Shaping different font sizes requires separate shaped runs but wrapping and paint must share one line layout. MinContent and MaxContent must make progress. GPUI 0.7.0 Element APIs exactly as supplied. No changes to view.rs/chrome.rs/theme.rs, no dependencies, no strings in a block that visually stack where Source flows inline. Explain baseline/linebox assumptions and any unsupported Unicode tailoring; actual source-browser pixels are the integration gate.
+
+Return ONLY one JSON object with keys code (complete Rust source as a string), notes (array of strings), and cases (array of concrete verification cases). No Markdown fences.
+
+AUTHORITATIVE INPUT desktop/gpui/src/chrome.rs (line slice (0, 505)):
+use crate::{
+    assets::{self, TwyneIcon},
+    theme,
+};
+use chrono::{Datelike, Local, NaiveDate};
+use gpui_kit::component::{
+    Sizable,
+    button::{Button, ButtonVariants},
+};
+use gpui_kit::prelude::*;
+use gpui_kit::{
+    App, AvailableSpace, Bounds, Element, ElementId, Font, FontWeight, GlobalElementId,
+    InspectorElementId, IntoElement, LayoutId, Pixels, Point, Role, ShapedLine, SharedString, Size,
+    Style, TextAlign, TextRun, Window, div, font, point, px, rgb, size,
+};
+use std::{cell::RefCell, rc::Rc};
+use unicode_segmentation::UnicodeSegmentation;
+
+mod focus_outline;
+pub use focus_outline::focus_outline;
+mod page_selector;
+pub use page_selector::PageSelectorTrigger;
+
+/// The original Chromium menu-list arrow in its20px reserved slot. Its path
+/// and stroke are independent of the selected option's font or length.
+pub fn page_selector_arrow(color: u32) -> gpui_kit::AnyElement {
+    gpui_kit::canvas(
+        |bounds, _, _| {
+            let mut arrow = gpui_kit::PathBuilder::stroke(px(2.));
+            arrow.move_to(bounds.origin + point(px(8.), px(12.)));
+            arrow.line_to(bounds.origin + point(px(12.), px(16.)));
+            arrow.line_to(bounds.origin + point(px(16.), px(12.)));
+            arrow.build().expect("The fixed menu-list arrow is valid")
+        },
+        move |_, arrow, window, _| window.paint_path(arrow, rgb(color)),
+    )
+    .w(px(20.))
+    .h(px(28.))
+    .flex_shrink_0()
+    .into_any_element()
+}
+
+pub fn dept_label(label: &str, cx: &App) -> impl IntoElement {
+    tracked_typewriter(
+        &label.to_uppercase(),
+        10.,
+        3.2,
+        theme::palette(cx).ink_muted,
+    )
+}
+
+pub fn tracked_typewriter(
+    label: &str,
+    size: f32,
+    tracking: f32,
+    color: u32,
+) -> gpui_kit::AnyElement {
+    tracked_text(
+        label,
+        font(theme::TYPEWRITER_FONT),
+        size,
+        tracking,
+        color,
+        size * 1.5,
+    )
+}
+
+pub fn tracked_text(
+    label: &str,
+    face: Font,
+    size: f32,
+    tracking: f32,
+    color: u32,
+    line_height: f32,
+) -> gpui_kit::AnyElement {
+    div()
+        .id(SharedString::from(format!("dept-{label}")))
+        .role(Role::Label)
+        .font_family(face.family.clone())
+        .font_weight(face.weight)
+        .text_size(px(size))
+        .line_height(px(line_height))
+        .text_color(rgb(color))
+        .aria_label(label.to_owned())
+        .child(TrackedRun {
+            label: label.to_owned().into(),
+            size,
+            tracking,
+            color,
+            face,
+            line_height,
+        })
+        .into_any_element()
+}
+
+/// CSS can wrap the masthead department at spaces and hyphens. Each run
+/// retains fractional glyph advances and the trailing letter spacing.
+pub fn wrapping_dept_label(label: &str, cx: &App) -> impl IntoElement {
+    let label = label.to_uppercase();
+    let color = theme::palette(cx).ink_muted;
+    wrapping_typewriter(&label, 3.2, color)
+}
+
+pub fn wrapping_typewriter(label: &str, tracking: f32, color: u32) -> gpui_kit::AnyElement {
+    wrapped_tracked_text(
+        label,
+        font(theme::TYPEWRITER_FONT),
+        10.,
+        tracking,
+        color,
+        15.,
+        WrappedBreakPolicy::Normal,
+    )
+}
+
+/// CSS normal line breaks with overflow-wrap:anywhere as the fallback for a
+/// single oversized segment. Tracking follows the shaped grapheme clusters.
+pub fn wrapping_tracked_text(
+    label: &str,
+    face: Font,
+    size: f32,
+    tracking: f32,
+    color: u32,
+    line_height: f32,
+) -> gpui_kit::AnyElement {
+    wrapped_tracked_text(
+        label,
+        face,
+        size,
+        tracking,
+        color,
+        line_height,
+        WrappedBreakPolicy::Anywhere,
+    )
+}
+
+/// Chromium's printable-ASCII word-break:break-all opportunities, preserving
+/// punctuation restrictions. Other text retains the existing Unicode path.
+pub fn break_all_text(
+    label: &str,
+    face: Font,
+    size: f32,
+    color: u32,
+    line_height: f32,
+) -> gpui_kit::AnyElement {
+    wrapped_tracked_text(
+        label,
+        face,
+        size,
+        0.,
+        color,
+        line_height,
+        WrappedBreakPolicy::AsciiBreakAll,
+    )
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum WrappedBreakPolicy {
+    Normal,
+    Anywhere,
+    AsciiBreakAll,
+}
+
+fn wrapped_tracked_text(
+    label: &str,
+    face: Font,
+    size: f32,
+    tracking: f32,
+    color: u32,
+    line_height: f32,
+    policy: WrappedBreakPolicy,
+) -> gpui_kit::AnyElement {
+    div()
+        .id(SharedString::from(format!("wrapped-{label}")))
+        .role(Role::Label)
+        .aria_label(label.to_owned())
+        .min_w_0()
+        .max_w_full()
+        .child(WrappedTrackedRun {
+            label: label.to_owned().into(),
+            face,
+            size,
+            line_height,
+            tracking,
+            color,
+            policy,
+        })
+        .into_any_element()
+}
+
+struct WrappedTrackedRun {
+    label: SharedString,
+    face: Font,
+    size: f32,
+    line_height: f32,
+    tracking: f32,
+    color: u32,
+    policy: WrappedBreakPolicy,
+}
+
+struct TrackedGlyph {
+    start: usize,
+    shape: ShapedLine,
+}
+
+struct WrappedTrackedLayout {
+    label: SharedString,
+    shape: ShapedLine,
+    glyphs: Vec<TrackedGlyph>,
+    normal_breaks: Vec<usize>,
+    tracking: f32,
+    line_height: f32,
+    anywhere: bool,
+    placements: Vec<(usize, Point<Pixels>)>,
+}
+
+impl WrappedTrackedLayout {
+    fn new(
+        label: SharedString,
+        shape: ShapedLine,
+        tracking: f32,
+        line_height: f32,
+        policy: WrappedBreakPolicy,
+    ) -> Self {
+        let mut cursor = shape.cursor();
+        let glyphs = label
+            .grapheme_indices(true)
+            .map(|(start, grapheme)| TrackedGlyph {
+                start,
+                shape: cursor.take_until(start + grapheme.len()),
+            })
+            .collect();
+        let normal_breaks = if policy != WrappedBreakPolicy::Normal
+            && label.bytes().all(|byte| byte.is_ascii_graphic())
+        {
+            // Chromium uses printable-ASCII compatibility pairs rather than
+            // raw UAX14 for normal CSS wrapping. This is a character rule,
+            // independent of URL syntax. See host-apparatus/README.md for the
+            // primary generator/iterator sources and the bounded contract.
+            let bytes = label.as_bytes();
+            let mut breaks = (1..bytes.len())
+                .filter(|&index| {
+                    Self::ascii_normal_break(bytes, index)
+                        || (policy == WrappedBreakPolicy::AsciiBreakAll
+                            && Self::ascii_break_all_extra(bytes[index - 1], bytes[index]))
+                })
+                .collect::<Vec<_>>();
+            breaks.push(label.len());
+            breaks
+        } else {
+            // Preserve the typewriter helper's existing opportunities and the
+            // current Unicode/whitespace/control path without ASCII tailoring.
+            unicode_linebreak::linebreaks(&label)
+                .map(|(end, _)| end)
+                .collect()
+        };
+        Self {
+            label,
+            shape,
+            glyphs,
+            normal_breaks,
+            tracking,
+            line_height,
+            anywhere: policy == WrappedBreakPolicy::Anywhere,
+            placements: Vec::new(),
+        }
+    }
+
+    fn ascii_normal_break(bytes: &[u8], index: usize) -> bool {
+        let previous = bytes[index - 1];
+        let next = bytes[index];
+        if previous == b'-' && next.is_ascii_digit() {
+            // A leading minus stays attached to its number; an alphanumeric
+            // prefix permits a break after a hyphen in a longer token.
+            return index > 1 && bytes[index - 2].is_ascii_alphanumeric();
+        }
+        if matches!(
+            next,
+            b'!' | b')' | b',' | b'.' | b'/' | b':' | b';' | b'?' | b']' | b'}'
+        ) || (previous == b'?' && matches!(next, b'"' | b'\''))
+            || (previous == b'-' && next == b'$')
+            || previous.is_ascii_alphanumeric()
+            || matches!(
+                previous,
+                b'$' | b'\'' | b'(' | b'/' | b'<' | b'@' | b'[' | b'^'..=b'`' | b'{'
+            )
+        {
+            return false;
+        }
+        matches!(previous, b'-' | b'?') || matches!(next, b'(' | b'<' | b'[' | b'{')
+    }
+
+    fn ascii_break_all_extra(previous: u8, next: u8) -> bool {
+        use unicode_linebreak::BreakClass::*;
+        // The printable-ASCII subset of Chromium's additional break-all
+        // class opportunities. Normal compatibility opportunities still take
+        // precedence; a zero here falls back to them, not to arbitrary cuts.
+        // See kBreakAllLineBreakClassTable / ShouldBreakAfterBreakAll in the
+        // primary iterator linked from host-apparatus/README.md.
+        let class = |byte| {
+            if byte == b'+' {
+                Alphabetic
+            } else {
+                unicode_linebreak::break_property(u32::from(byte))
+            }
+        };
+        let previous = class(previous);
+        let current = class(next);
+        if current == After && next != b'|' {
+            return false;
+        }
+        match previous {
+            Alphabetic | After | Numeric | Symbol => matches!(
+                current,
+                Alphabetic | After | Hyphen | Numeric | OpenPunctuation | Prefix
+            ),
+            ClosePunctuation | CloseParenthesis => {
+                matches!(current, Alphabetic | After | Hyphen | Numeric | Prefix)
+            }
+            Exclamation | Postfix => matches!(
+                current,
+                Alphabetic | After | Hyphen | Numeric | Postfix | Prefix
+            ),
+            InfixSeparator => matches!(current, Alphabetic | After | Hyphen | Numeric),
+            Hyphen => current == Numeric,
+            Prefix => current == Postfix,
+            _ => false,
+        }
+    }
+
+    fn width(&self, start: usize, end: usize) -> Pixels {
+        let end = start + self.label[start..end].trim_end().len();
+        let first = self.glyphs.partition_point(|glyph| glyph.start < start);
+        let last = self.glyphs.partition_point(|glyph| glyph.start < end);
+        self.shape.x_for_index(end) - self.shape.x_for_index(start)
+            + px(self.tracking * (last - first) as f32)
+    }
+
+    fn measure(&mut self, wrap_width: Option<Pixels>) -> Size<Pixels> {
+        let mut ranges = Vec::new();
+        let mut start = 0;
+        while start < self.label.len() {
+            start += self.label[start..].len() - self.label[start..].trim_start().len();
+            if start == self.label.len() {
+                break;
+            }
+            let mut chosen = None;
+            for end in self
+                .normal_breaks
+                .iter()
+                .copied()
+                .filter(|end| *end > start)
+            {
+                if wrap_width.is_some_and(|width| self.width(start, end) > width) {
+                    if self.anywhere && chosen.is_none() {
+                        // CSS retries at grapheme boundaries only when no
+                        // ordinary break fits this line. A following oversized
+                        // segment cannot cancel an already-fitting normal break.
+                        // Always admit one complete grapheme to make progress.
+                        let width = wrap_width.unwrap();
+                        for (offset, grapheme) in self.label[start..end].grapheme_indices(true) {
+                            let candidate = start + offset + grapheme.len();
+                            if self.width(start, candidate) > width {
+                                chosen = chosen.or(Some(candidate));
+                                break;
+                            }
+                            chosen = Some(candidate);
+                        }
+                    } else {
+                        chosen = chosen.or(Some(end));
+                    }
+                    break;
+                }
+                chosen = Some(end);
+            }
+            let end = chosen.unwrap_or(self.label.len());
+            ranges.push(start..end);
+            start = end;
+        }
+        self.placements.clear();
+        let mut widest = px(0.);
+        for (row, range) in ranges.iter().enumerate() {
+            let end = range.start + self.label[range.clone()].trim_end().len();
+            let first = self
+                .glyphs
+                .partition_point(|glyph| glyph.start < range.start);
+            let last = self.glyphs.partition_point(|glyph| glyph.start < end);
+            widest = widest.max(self.width(range.start, end));
+            for index in first..last {
+                self.placements.push((
+                    index,
+                    point(
+                        self.shape.x_for_index(self.glyphs[index].start)
+                            - self.shape.x_for_index(range.start)
+                            + px(self.tracking * (index - first) as f32),
+                        px(row as f32 * self.line_height),
+                    ),
+                ));
+            }
+        }
+        let intrinsic = self.width(0, self.label.len());
+        let width = wrap_width.map_or(intrinsic, |width| intrinsic.min(width).max(widest));
+        size(width, px(ranges.len().max(1) as f32 * self.line_height))
+    }
+}
+
+impl IntoElement for WrappedTrackedRun {
+    type Element = Self;
+    fn into_element(self) -> Self::Element {
+        self
+    }
+}
+
+impl Element for WrappedTrackedRun {
+    type RequestLayoutState = Rc<RefCell<WrappedTrackedLayout>>;
+    type PrepaintState = ();
+    fn id(&self) -> Option<ElementId> {
+        None
+    }
+    fn source_location(&self) -> Option<&'static core::panic::Location<'static>> {
+        None
+    }
+    fn request_layout(
+        &mut self,
+        _: Option<&GlobalElementId>,
+        _: Option<&InspectorElementId>,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> (LayoutId, Self::RequestLayoutState) {
+        let shape = window.text_system().shape_line(
+            self.label.clone(),
+            px(self.size),
+            &[TextRun {
+                len: self.label.len(),
+                font: self.face.clone(),
+                color: rgb(self.color).into(),
+                ..Default::default()
+            }],
+            None,
+        );
+        let state = Rc::new(RefCell::new(WrappedTrackedLayout::new(
+            self.label.clone(),
+            shape,
+            self.tracking,
+            self.line_height,
+            self.policy,
+        )));
+        let measure_state = state.clone();
+        let id = window.request_measured_layout(Style::default(), move |known, available, _, _| {
+            let width = known.width.or(match available.width {
+                AvailableSpace::Definite(width) => Some(width),
+                AvailableSpace::MinContent => Some(px(0.)),
+                AvailableSpace::MaxContent => None,
+            });
+            measure_state.borrow_mut().measure(width)
+        });
+        let _ = cx;
+        (id, state)
+    }
+    fn prepaint(
+        &mut self,
+        _: Option<&GlobalElementId>,
+        _: Option<&InspectorElementId>,
+        bounds: Bounds<Pixels>,
+        state: &mut Self::RequestLayoutState,
+        _: &mut Window,
+        _: &mut App,
+    ) {
+        state.borrow_mut().measure(Some(bounds.size.width));
+    }
+    fn paint(
+        &mut self,
+        _: Option<&GlobalElementId>,
+        _: Option<&InspectorElementId>,
+        bounds: Bounds<Pixels>,
+        state: &mut Self::RequestLayoutState,
+        _: &mut (),
+        window: &mut Window,
+        cx: &mut App,
+    ) {
+        let state = state.borrow();
+        for (index, position) in &state.placements {
+            let _ = state.glyphs[*index].shape.paint(
+                bounds.origin + *position,
+                px(self.line_height),
+                TextAlign::Left,
+                None,
+                window,
+                cx,
+            );
+        }
+    }
+}
+
+struct TrackedRun {
+    label: SharedString,
+    size: f32,
+    tracking: f32,
+    color: u32,
+    face: Font,
+    line_height: f32,
+}
+struct TrackedRunLayout {
+    parts: Vec<(ShapedLine, Pixels)>,
+}
+
+AUTHORITATIVE INPUT desktop/gpui/src/theme.rs (line slice (0, 160)):
+//! Twyne's web palette and type faces projected into native GPUI controls.
+//!
+//! Palette constants are generated from src/global.css. Presets and custom
+//! overrides use the same preference shape as src/utils/theme.ts.
+
+use gpui_kit::component::{Theme, ThemeMode};
+use gpui_kit::{App, Font, FontFallbacks, FontFeatures, Global, Hsla, SharedString, font, px, rgb};
+use serde::{Deserialize, Serialize};
+use std::{
+    borrow::Cow,
+    collections::BTreeMap,
+    sync::{Arc, OnceLock},
+};
+
+pub const SANS_FONT: &str = "DM Sans";
+/// Original DM Sans 4.004 at the actual paper-button axes opsz12/wght600.
+/// Use only for 12px/600 UI controls; canonical/default family stays DM Sans.
+pub const BUTTON_FONT: &str = "Twyne Button Sans";
+/// Exact original File U+25BE fallback. Restrict this face to that glyph;
+/// shared Sans and Typst font selection remain unchanged.
+pub const FILE_DISCLOSURE_FONT: &str = "Noto Sans Math";
+// Original Lora 3.008 outlines, instantiated for the native renderer. The
+// derived internal name respects Lora's Reserved Font Name; source stays Lora.
+pub const SERIF_FONT: &str = "Twyne Body";
+pub const DISPLAY_FONT: &str = "Libre Baskerville";
+pub const TYPEWRITER_FONT: &str = "Special Elite";
+// The web root does not load JetBrains Mono or Fira Code, though its CSS
+// names them first. Use Twyne's existing bundled mono export fallback so
+// native code has an available face on every supported platform.
+pub const MONO_FONT: &str = "DejaVu Sans Mono";
+/// Original math textarea's actual ui-monospace fallback in the Source fixture.
+/// The retained UA value node selects this already bundled regular face.
+pub const MATH_SOURCE_MONO_FONT: &str = "Noto Sans Mono";
+/// Original app's measured Noto Mono 2.014 fallback, restricted to Source UI.
+/// Regular400/heading600 are unchanged outlines; native comment oblique uses
+/// the original browser's quarter-shear mechanism, with its raster gap explicit.
+pub const SOURCE_FONT: &str = "Twyne Source";
+/// Original DM Sans 4.004 opsz11/wght400 for 11px Source helper and footer labels.
+pub const SOURCE_HELPER_FONT: &str = "Twyne Source Label";
+/// Footer-only alias of the exact original 11px/400 optical-size face.
+/// Default Sans/source attributes/Typst families and bytes remain unchanged.
+pub const FOOTER_FONT: &str = SOURCE_HELPER_FONT;
+pub const SERIF_CJK_FALLBACK_FONT: &str = "Droid Sans Fallback";
+
+/// Maps the canonical source family only while selecting a native UI face.
+/// Stored HTML/Typst family names and font menu labels remain unchanged.
+pub fn resolve_ui_font_family(family: &str) -> SharedString {
+    match family {
+        "Lora" | SERIF_FONT => SERIF_FONT.into(),
+        SANS_FONT => SANS_FONT.into(),
+        BUTTON_FONT => BUTTON_FONT.into(),
+        DISPLAY_FONT => DISPLAY_FONT.into(),
+        MONO_FONT => MONO_FONT.into(),
+        TYPEWRITER_FONT => TYPEWRITER_FONT.into(),
+        other => other.to_owned().into(),
+    }
+}
+
+/// The exact CJK face used by the original browser's Lora writing fixture.
+/// The caller applies this to a final Lora Font after explicit family marks;
+/// Latin glyphs remain in the original primary face. Only the Arc is cloned.
+pub fn serif_font_fallbacks() -> FontFallbacks {
+    static FALLBACKS: OnceLock<FontFallbacks> = OnceLock::new();
+    FALLBACKS
+        .get_or_init(|| FontFallbacks::from_fonts(vec![SERIF_CJK_FALLBACK_FONT.into()]))
+        .clone()
+}
+
+/// The original Source fixture selects this same Droid face for CJK/kana.
+/// Hangul and emoji remain platform fallback boundaries; no font lookup or
+/// generation occurs here, only a clone of the cached immutable chain.
+pub fn source_font_fallbacks() -> FontFallbacks {
+    serif_font_fallbacks()
+}
+
+pub fn source_font() -> Font {
+    let mut face = font(SOURCE_FONT);
+    face.fallbacks = Some(source_font_fallbacks());
+    face
+}
+
+/// Original Apparatus URL/details fallback selected by Chrome at 11px/400.
+/// This unmodified Noto Sans Mono 2.014 face is already embedded alongside the
+/// Source originals. Restrict it to Apparatus; shared mono and Source adapters
+/// retain their existing families, styles, and fallback chains.
+pub fn apparatus_mono_font() -> Font {
+    font("Noto Sans Mono")
+}
+
+/// The original span requests600/normal and Chrome selects Regular Math3.000.
+/// GPUI retains that original glyph/advance; Chromium fallback faux-bold is
+/// a separate tiny-glyph raster boundary, not an invented heavier face.
+pub fn file_disclosure_font() -> Font {
+    let mut face = font(FILE_DISCLOSURE_FONT);
+    face.weight = gpui_kit::FontWeight::SEMIBOLD;
+    face
+}
+
+/// The original Cast circles request DM Sans 400, but their source symbols
+/// select Inter (heart), Liberation Sans (spade/diamond/club), and Adwaita Mono
+/// (four-point star). Apply this cached chain only to those badge glyphs.
+/// All three exact original fallback faces are bundled for offline selection.
+pub fn cast_badge_font() -> Font {
+    static FALLBACKS: OnceLock<FontFallbacks> = OnceLock::new();
+    let mut face = font(SANS_FONT);
+    face.fallbacks = Some(
+        FALLBACKS
+            .get_or_init(|| {
+                FontFallbacks::from_fonts(vec![
+                    "Inter".into(),
+                    "Liberation Sans".into(),
+                    "Adwaita Mono".into(),
+                ])
+            })
+            .clone(),
+    );
+    face
+}
+
+/// The original Manager assistance glyphs inherit Libre Baskerville 16px/600.
+/// Its missing suit glyphs select Liberation Serif Bold; the four-point star
+/// selects Adwaita Mono Regular. Use only for these raw Manager spans, never
+/// the DM Sans circles or Lora card headings. All source symbols stay intact.
+pub fn cast_raw_glyph_font() -> Font {
+    static FALLBACKS: OnceLock<FontFallbacks> = OnceLock::new();
+    let mut face = font(DISPLAY_FONT);
+    face.weight = gpui_kit::FontWeight::SEMIBOLD;
+    face.fallbacks = Some(
+        FALLBACKS
+            .get_or_init(|| {
+                FontFallbacks::from_fonts(vec!["Liberation Serif".into(), "Adwaita Mono".into()])
+            })
+            .clone(),
+    );
+    face
+}
+pub const REM_PX: f32 = 16.;
+pub const DEPARTMENT_LABEL_PX: f32 = 10.;
+pub const MASTHEAD_PX: f32 = 32.;
+pub const PAPER_BUTTON_PX: f32 = 12.;
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum ThemePreset {
+    System,
+    Foolscap,
+    Broadsheet,
+    Nightpress,
+    #[default]
+    #[serde(other)]
+    Editorial,
+}
+
+impl ThemePreset {
+    /// The order of the original Settings Appearance cards.
+    pub const APPEARANCE_ORDER: &'static [Self] = &[
+        Self::Editorial,
+        Self::Foolscap,
+        Self::Broadsheet,
+        Self::Nightpress,
+
+AUTHORITATIVE INPUT src/components/in-flow/tool-renderer.tsx (line slice (0, None)):
+/**
+ * The Qwik side of the tool catalog: one component per catalog entry, and a
+ * renderer that picks by `type`. json-render ships renderers for React, Vue,
+ * Svelte and Solid; this is the same contract — spec in, components out — for
+ * Qwik, and it only ever sees specs `validateToolSpec` has already passed.
+ */
+import { component$, useSignal, useStore } from "@qwik.dev/core";
+import { NumericStepper } from "../ui/numeric-stepper";
+import { inFlowController } from "../editor/extensions/struggle-tracker";
+import type { ActiveTool } from "../../utils/in-flow-tools";
+import type { SavedToolConfig } from "../../utils/saved-tools";
+import type {
+  ClaimCheckProps,
+  ReaderQuestionsProps,
+  RhythmStripProps,
+  SentenceLabProps,
+} from "./catalog";
+
+/** What "Keep this tool" should remember about the tool as the writer left it. */
+export function configFor(tool: ActiveTool): SavedToolConfig {
+  const element = tool.spec.elements.tool;
+  switch (element.type) {
+    case "RhythmStrip":
+      return {
+        targetMin: element.props.targetMin,
+        targetMax: element.props.targetMax,
+      };
+    case "ClaimCheck":
+      return { slots: element.props.slots.map((slot) => slot.label) };
+    case "ReaderQuestions":
+      return element.props.angle ? { angle: element.props.angle } : {};
+    default:
+      return {};
+  }
+}
+
+export const ToolRenderer = component$<{ tool: ActiveTool }>(({ tool }) => {
+  const element = tool.spec.elements.tool;
+  switch (element.type) {
+    case "SentenceLab":
+      return (
+        <SentenceLab
+          key={tool.id}
+          props={element.props}
+          filling={tool.status === "filling"}
+        />
+      );
+    case "RhythmStrip":
+      return <RhythmStrip key={tool.id} props={element.props} />;
+    case "ClaimCheck":
+      return <ClaimCheck key={tool.id} props={element.props} />;
+    case "ReaderQuestions":
+      return (
+        <ReaderQuestions
+          key={tool.id}
+          props={element.props}
+          filling={tool.status === "filling"}
+        />
+      );
+  }
+});
+
+/* ── Sentence Lab ──────────────────────────────────────────────── */
+
+/**
+ * The writer's own attempts beside fresh ones. Clicking any line loads it into
+ * a working copy they can edit before it replaces the sentence — so mixing
+ * the start of one attempt with the end of another is just typing.
+ */
+const SentenceLab = component$<{ props: SentenceLabProps; filling: boolean }>(
+  ({ props, filling }) => {
+    const working = useSignal(props.sentence);
+    const Row = ({ text, label }: { text: string; label: string }) => (
+      <li>
+        <button
+          type="button"
+          class={[
+            "in-flow-choice",
+            { "in-flow-choice--on": working.value === text },
+          ]}
+          onClick$={() => {
+            working.value = text;
+          }}
+          title={`Load this ${label} into the working copy`}
+        >
+          {text}
+        </button>
+      </li>
+    );
+    return (
+      <div class="in-flow-body">
+        {props.attempts.length > 0 && (
+          <section>
+            <p class="in-flow-label">Your earlier tries</p>
+            <ol class="in-flow-list">
+              {props.attempts.map((text) => (
+                <Row key={`a-${text}`} text={text} label="attempt" />
+              ))}
+            </ol>
+          </section>
+        )}
+        <section>
+          <p class="in-flow-label">Other ways</p>
+          <ol class="in-flow-list">
+            {props.variants.map((text) => (
+              <Row key={`v-${text}`} text={text} label="variant" />
+            ))}
+          </ol>
+          {filling && (
+            <p class="in-flow-quiet" role="status">
+              Finding other wordings…
+            </p>
+          )}
+        </section>
+        <section>
+          <label class="in-flow-label" for="in-flow-working">
+            Working copy
+          </label>
+          <textarea
+            id="in-flow-working"
+            class="in-flow-textarea"
+            rows={3}
+            value={working.value}
+            onInput$={(_, el) => {
+              working.value = el.value;
+            }}
+          />
+          <div class="in-flow-actions">
+            <button
+              type="button"
+              class="btn-press"
+              disabled={
+                !working.value.trim() || working.value === props.sentence
+              }
+              onClick$={() =>
+                inFlowController()?.applyVariant(working.value.trim())
+              }
+            >
+              Use this
+            </button>
+            <span class="in-flow-quiet">Undo puts yours back.</span>
+          </div>
+        </section>
+      </div>
+    );
+  },
+);
+
+/* ── Rhythm Strip ──────────────────────────────────────────────── */
+
+const RhythmStrip = component$<{ props: RhythmStripProps }>(({ props }) => {
+  // The band lives in the spec (the controller re-seeds it), so a kept tool
+  // remembers exactly the band the writer settled on.
+  const band = { min: props.targetMin, max: props.targetMax };
+  const scale = Math.max(
+    band.max * 1.4,
+    ...props.sentences.map((s) => s.words),
+  );
+  const long = props.sentences.filter((s) => s.words > band.max).length;
+  const short = props.sentences.filter((s) => s.words < band.min).length;
+  const lengths = props.sentences.map((s) => s.words);
+  const flat =
+    lengths.length >= 4 && Math.max(...lengths) - Math.min(...lengths) <= 4;
+  const summary = flat
+    ? "The sentences are all about the same length."
+    : long || short
+      ? [
+          long && `${long} run${long === 1 ? "s" : ""} long`,
+          short && `${short} ${short === 1 ? "is" : "are"} clipped`,
+        ]
+          .filter(Boolean)
+          .join(", ") + "."
+      : "The lengths vary within the band.";
+  return (
+    <div
+      class="in-flow-body"
+      data-rhythm-min={band.min}
+      data-rhythm-max={band.max}
+    >
+      <p class="in-flow-summary">{summary}</p>
+      <ol class="in-flow-rhythm" aria-label="Sentence lengths">
+        {props.sentences.map((s, i) => {
+          const tone =
+            s.words > band.max ? "long" : s.words < band.min ? "short" : "fit";
+          return (
+            <li key={`${i}-${s.words}`}>
+              <button
+                type="button"
+                class={`in-flow-bar in-flow-bar--${tone}`}
+                style={{ "--bar": `${(s.words / scale) * 100}%` }}
+                onMouseEnter$={() => inFlowController()?.highlightSentence(i)}
+                onFocus$={() => inFlowController()?.highlightSentence(i)}
+                onMouseLeave$={() =>
+                  inFlowController()?.highlightSentence(null)
+                }
+                onBlur$={() => inFlowController()?.highlightSentence(null)}
+                onClick$={() => inFlowController()?.selectSentence(i)}
+                title={s.text}
+                aria-label={`Sentence ${i + 1}: ${s.words} words. Select it in the draft.`}
+              >
+                <span class="in-flow-bar__fill" />
+                <span class="in-flow-bar__count">{s.words}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+      <div class="in-flow-row in-flow-band">
+        <span class="in-flow-label">Comfortable length</span>
+        <NumericStepper
+          value={band.min}
+          min={1}
+          max={band.max - 1}
+          density="compact"
+          ariaLabel="Shortest comfortable sentence, in words"
+          onValue$={(value) => {
+            if (value !== null)
+              inFlowController()?.setRhythmBand(value, band.max);
+          }}
+        />
+        <span aria-hidden="true">–</span>
+        <NumericStepper
+          value={band.max}
+          min={band.min + 1}
+          max={120}
+          density="compact"
+          suffix=" words"
+          ariaLabel="Longest comfortable sentence, in words"
+          onValue$={(value) => {
+            if (value !== null)
+              inFlowController()?.setRhythmBand(band.min, value);
+          }}
+        />
+      </div>
+      <p class="in-flow-quiet">
+        Hover a bar to find its sentence; click to select it.
+      </p>
+    </div>
+  );
+});
+
+/* ── Claim Check ───────────────────────────────────────────────── */
+
+const SLOT_HINT: Record<string, string> = {
+  "A source": "Who else says so? The Apparatus can look.",
+  "An example": "One concrete case, right after the claim.",
+  "A number": "A figure, and where it comes from.",
+};
+
+const ClaimCheck = component$<{ props: ClaimCheckProps }>(({ props }) => {
+  const state = useStore({
+    slots: props.slots.map((slot) => ({ ...slot })),
+    adding: "",
+    message: "",
+    searching: false,
+  });
+  const open = state.slots.filter((slot) => !slot.filled).length;
+  return (
+    <div class="in-flow-body">
+      <blockquote class="in-flow-claim">{props.claim}</blockquote>
+      <p class="in-flow-summary">
+        {open === 0
+          ? "Every kind of support you asked for is here."
+          : `${open} kind${open === 1 ? "" : "s"} of support still missing.`}
+      </p>
+      <ul class="in-flow-slots">
+        {state.slots.map((slot, i) => (
+          <li key={slot.label} class={{ "is-filled": slot.filled }}>
+            <label class="in-flow-slot">
+              <input
+                type="checkbox"
+                checked={slot.filled}
+                onChange$={(_, el) => {
+                  state.slots[i].filled = el.checked;
+                }}
+              />
+              <span>
+                <strong>{slot.label}</strong>
+                {!slot.filled && SLOT_HINT[slot.label] && (
+                  <span class="in-flow-quiet"> — {SLOT_HINT[slot.label]}</span>
+                )}
+              </span>
+            </label>
+            {!slot.filled && slot.label === "A source" && (
+              <button
+                type="button"
+                class="btn-paper in-flow-mini"
+                disabled={state.searching}
+                onClick$={async () => {
+                  state.searching = true;
+                  state.message = "";
+                  const error =
+                    (await inFlowController()?.research(props.claim)) ?? null;
+                  state.searching = false;
+                  state.message =
+                    error ?? "Searching — results land in the Apparatus.";
+                }}
+              >
+                {state.searching ? "Looking…" : "Find"}
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      <input
+        class="in-flow-input"
+        placeholder="Another kind of support…"
+        value={state.adding}
+        onInput$={(_, el) => {
+          state.adding = el.value;
+        }}
+        onKeyDown$={(event) => {
+          const label = state.adding.trim().slice(0, 60);
+          if (event.key !== "Enter" || !label) return;
+          if (state.slots.length >= 5) return;
+          if (!state.slots.some((slot) => slot.label === label))
+            state.slots.push({ label, filled: false });
+          state.adding = "";
+        }}
+        aria-label="Add a kind of support"
+      />
+      {state.message && (
+        <p class="in-flow-quiet" role="status">
+          {state.message}
+        </p>
+      )}
+    </div>
+  );
+});
+
+/* ── Reader Questions ──────────────────────────────────────────── */
+
+const ReaderQuestions = component$<{
+  props: ReaderQuestionsProps;
+  filling: boolean;
+}>(({ props, filling }) => {
+  const state = useStore({
+    angle: props.angle,
+    answered: [] as string[],
+    jotted: [] as string[],
+  });
+  return (
+    <div class="in-flow-body">
+      <label class="in-flow-label" for="in-flow-angle">
+        Reading as
+      </label>
+      <div class="in-flow-row">
+        <input
+          id="in-flow-angle"
+          class="in-flow-input"
+          placeholder="the piece's intended reader"
+          value={state.angle}
+          onInput$={(_, el) => {
+            state.angle = el.value;
+          }}
+          onKeyDown$={(event) => {
+            if (event.key === "Enter") inFlowController()?.reask(state.angle);
+          }}
+        />
+        <button
+          type="button"
+          class="btn-paper in-flow-mini"
+          disabled={filling || state.angle === props.angle}
+          onClick$={() => inFlowController()?.reask(state.angle)}
+        >
+          Ask
+        </button>
+      </div>
+      <ol class="in-flow-list">
+        {props.questions.map((question) => {
+          const answered = state.answered.includes(question);
+          const jotted = state.jotted.includes(question);
+          return (
+            <li
+              key={question}
+              class={["in-flow-question", { "is-answered": answered }]}
+            >
+              <label class="in-flow-slot">
+                <input
+                  type="checkbox"
+                  checked={answered}
+                  onChange$={(_, el) => {
+                    state.answered = el.checked
+                      ? [...state.answered, question]
+                      : state.answered.filter((q) => q !== question);
+                  }}
+                />
+                <span>{question}</span>
+              </label>
+              <button
+                type="button"
+                class="btn-paper in-flow-mini"
+                disabled={jotted}
+                title="Save this question to your scraps"
+                onClick$={async () => {
+                  if (await inFlowController()?.jot(question))
+                    state.jotted = [...state.jotted, question];
+                }}
+              >
+                {jotted ? "Jotted" : "Jot"}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+      {filling && (
+        <p class="in-flow-quiet" role="status">
+          Imagining the reader…
+        </p>
+      )}
+    </div>
+  );
+});
+
+AUTHORITATIVE INPUT src/global.css (line slice (6270, 6530)):
+  pointer-events: none;
+}
+.in-flow-popover {
+  position: fixed;
+  z-index: var(--z-dropdown);
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+}
+.in-flow-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.8rem 0.9rem 0.7rem;
+  border: 1px solid var(--color-paper-3);
+  border-left: 3px solid var(--color-cobalt);
+  border-radius: 2px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font: 0.875rem/1.55 var(--font-serif);
+  box-shadow:
+    0 1px 0 var(--color-paper-3),
+    0 8px 24px -16px rgb(0 0 0 / 0.35);
+}
+.in-flow-card__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  column-gap: 0.5rem;
+}
+.in-flow-card__title {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--color-ink);
+  cursor: pointer;
+  text-align: left;
+}
+.in-flow-card__title:hover {
+  color: var(--color-cobalt);
+}
+.in-flow-card__maybe {
+  font: 0.6875rem var(--font-typewriter);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.in-flow-card__close {
+  border: 0;
+  background: none;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+.in-flow-card__close:hover {
+  color: var(--color-vermilion);
+}
+.in-flow-card__reason {
+  grid-column: 1 / -1;
+  margin: 0.15rem 0 0;
+  font-style: italic;
+  color: var(--color-ink-light);
+  font-size: 0.8125rem;
+}
+.in-flow-card__notice {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+.in-flow-card__foot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--color-paper-3);
+}
+.in-flow-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.in-flow-body section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.in-flow-label {
+  margin: 0;
+  font: 0.6875rem var(--font-typewriter);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.in-flow-quiet {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+.in-flow-summary {
+  margin: 0;
+  color: var(--color-ink);
+}
+.in-flow-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.in-flow-choice {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px dashed var(--color-paper-3);
+  border-radius: 2px;
+  background: var(--color-paper-soft);
+  color: var(--color-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.in-flow-choice:hover,
+.in-flow-choice:focus-visible {
+  border-color: var(--color-cobalt);
+}
+.in-flow-choice--on {
+  border-style: solid;
+  border-color: var(--color-cobalt);
+  background: color-mix(in srgb, var(--color-cobalt) 7%, var(--color-paper));
+}
+.in-flow-textarea,
+.in-flow-input {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  background: var(--color-paper-soft);
+  color: var(--color-ink);
+  font: inherit;
+  resize: vertical;
+}
+.in-flow-textarea:focus,
+.in-flow-input:focus {
+  outline: none;
+  border-color: var(--color-cobalt);
+}
+.in-flow-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.in-flow-band {
+  flex-wrap: wrap;
+}
+.in-flow-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.2rem;
+}
+.in-flow-mini {
+  flex-shrink: 0;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+}
+.in-flow-link {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-cobalt);
+  font: 0.8125rem var(--font-serif);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+/* Rhythm Strip: one bar per sentence, the band shown by colour. */
+.in-flow-rhythm {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.in-flow-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.in-flow-bar__fill {
+  width: var(--bar);
+  min-width: 3px;
+  height: 100%;
+  border-radius: 1px;
+  background: var(--color-ink-light);
+  transition: width 180ms ease-out;
+}
+.in-flow-bar--long .in-flow-bar__fill {
+  background: var(--color-vermilion);
+}
+.in-flow-bar--short .in-flow-bar__fill {
+  background: var(--color-cobalt);
+}
+.in-flow-bar__count {
+  margin-left: 0.35rem;
+  font: 0.6875rem var(--font-typewriter);
+  color: var(--color-ink-muted);
+}
+.in-flow-bar:hover .in-flow-bar__fill,
+.in-flow-bar:focus-visible .in-flow-bar__fill {
+  filter: brightness(1.15);
+  outline: 1px solid var(--color-ink);
+}
+/* Claim Check */
+.in-flow-claim {
+  margin: 0;
+  padding-left: 0.6rem;
+  border-left: 2px solid var(--color-ink);
+  font-style: italic;
+}
+.in-flow-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.in-flow-slots li,
+.in-flow-question {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.in-flow-slot {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  cursor: pointer;
+}
+.in-flow-slot input {
+  accent-color: var(--color-cobalt);
+  flex-shrink: 0;
+}
+.in-flow-slots .is-filled strong,
+.in-flow-question.is-answered span {
+  color: var(--color-ink-muted);
+  text-decoration: line-through;
+}
+

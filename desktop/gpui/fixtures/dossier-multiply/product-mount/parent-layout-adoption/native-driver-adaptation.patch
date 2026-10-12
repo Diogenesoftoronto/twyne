@@ -1,0 +1,242 @@
+--- a/desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/check-native.py
++++ b/desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/check-native.py
+@@ -58,9 +58,79 @@
+     images = image_map(lifecycle)
+     return all(identifier in images and images[identifier]["atlasPresent"] for identifier in ids)
+ 
+ 
+-def owned_class(helper):
++"""Unapplied pure predicates inserted into the existing native proof driver.
++
++No native/window/atlas operation is performed by these helpers. Synthetic tests
++exercise observation validation, never create a successful native receipt.
++The original driver's require() is supplied by the insertion context.
++"""
++
++
++def observed_foxing(lifecycle):
++    foxing = lifecycle.get("foxing")
++    require(isinstance(foxing, dict), "Reviewed product foxing observation hook is absent")
++    require(isinstance(foxing.get("supportsDestinationMultiply"), bool),
++            "Backend support must be an actual Window observation")
++    require(isinstance(foxing.get("prepared"), bool), "Missing actual preparation observation")
++    return foxing
++
++
++def prepared_mount_ready(state, expected_support):
++    lifecycle = state["dossierImageLifecycle"]
++    foxing = observed_foxing(lifecycle)
++    if lifecycle["invalidationQueued"] or lifecycle["pendingCount"] != 0 or not foxing["prepared"]:
++        return False
++    require(isinstance(foxing.get("transparent"), bool), "Missing prepared transparency observation")
++    if expected_support != "any":
++        require(foxing["supportsDestinationMultiply"] is (expected_support == "supported"),
++                "Actual backend support differs from the requested native proof lane")
++    viewport = state["viewport"]
++    if foxing["logicalWidth"] != viewport["width"] or foxing["logicalHeight"] != viewport["height"] \
++            or foxing["scaleFactor"] != state["scaleFactor"]:
++        return False
++    images = image_map(lifecycle)
++    identifier = foxing.get("imageId")
++    if foxing["transparent"]:
++        require(identifier is None, "Transparent preparation must not own a group image")
++        if foxing["paintStatus"] != "Transparent":
++            return False
++    else:
++        require(isinstance(identifier, str) and identifier, "Nontransparent preparation must expose its exact image ID")
++        if identifier not in images or not images[identifier]["active"]:
++            return False
++        if foxing["supportsDestinationMultiply"]:
++            if foxing["paintStatus"] != "Recorded" or not images[identifier]["atlasPresent"]:
++                return False
++        else:
++            if foxing["paintStatus"] != "UnsupportedBackend":
++                return False
++            require(not images[identifier]["atlasPresent"],
++                    "Unsupported product backend must not upload its premultiplied group")
++    ordinary = {key: value for key, value in images.items() if key != identifier}
++    # This REAL native lane never relaxes the original-font stamp gate.
++    # Default NoopTextSystem test preparation is not admitted here.
++    return len(ordinary) == 9 and lifecycle["activeCount"] == 9 + int(identifier is not None) \
++        and all(image["active"] for image in ordinary.values()) \
++        and sum(image["atlasPresent"] for image in ordinary.values()) >= 2
++
++
++def expected_uploaded_ids(lifecycle):
++    foxing = observed_foxing(lifecycle)
++    identifiers = set(image_map(lifecycle))
++    # Call only after the original real navigation uploads ALL eight stamp
++    # variants. Before that, this is an expectation, not an upload observation.
++    if not foxing["supportsDestinationMultiply"] and foxing.get("imageId") is not None:
++        identifiers.remove(foxing["imageId"])
++    return identifiers
++
++
++def uploaded_ids(lifecycle):
++    return {identifier for identifier, image in image_map(lifecycle).items() if image["atlasPresent"]}
++
++
++def owned_class(helper, expected_support):
+     class AtlasNative(helper.Native):
+         def __init__(self, binary, output, fixture):
+             self.observed_events = []
+             self.seen_sequence = 0
+@@ -236,15 +306,16 @@
+             require(self.owned_window is not None and 800 <= width <= 1280 and 650 <= height <= 860,
+                     "Resize is outside the bounded owned-screen fixture")
+             self.x.XResizeWindow(self.connection, self.owned_window, width, height)
+             self.x.XFlush(self.connection)
+-            return self.wait_state(f"actual resize {width}x{height}", lambda state:
++            self.wait_state(f"actual resize {width}x{height}", lambda state:
+                 state["viewport"] == {"width": width, "height": height}
+                 and not state["dossierImageLifecycle"]["invalidationQueued"]
+                 and state["dossierImageLifecycle"]["pendingCount"] == 0
+                 and any(image["active"] and image["pixelWidth"] == width
+                         and image["pixelHeight"] == height and image["atlasPresent"]
+                         for image in state["dossierImageLifecycle"]["images"]))
++            return self.ready_lifecycle("actual resized product preparation", active="prepared")
+ 
+         def scroll_to(self, identifier, scroller):
+             for _ in range(MAX_WHEEL_STEPS):
+                 state = self.state()
+@@ -266,10 +337,10 @@
+         def ready_lifecycle(self, description, active=None, ids=None, painted=()):
+             return self.wait_state(description, lambda state:
+                 not state["dossierImageLifecycle"]["invalidationQueued"]
+                 and state["dossierImageLifecycle"]["pendingCount"] == 0
+-                and (active is None or state["dossierImageLifecycle"]["activeCount"] == active)
+-                and (active != 9 or sum(image["atlasPresent"] for image in state["dossierImageLifecycle"]["images"]) >= 2)
++                and (active is None or (prepared_mount_ready(state, expected_support) if active == "prepared"
++                     else state["dossierImageLifecycle"]["activeCount"] == active))
+                 and (ids is None or set(image_map(state["dossierImageLifecycle"])) == set(ids))
+                 and all_present(state["dossierImageLifecycle"], painted))
+ 
+         def events_after(self, sequence):
+@@ -331,8 +402,10 @@
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument("--binary", type=Path, required=True, help="Parent-reviewed ui-tests binary with this hook patch applied")
+     parser.add_argument("--expected-binary-sha256", help="Optional immutable Parent binary pin; drift refuses before launch")
+     parser.add_argument("--output", type=Path, help="Fresh nonexistent private output directory")
++    parser.add_argument("--expect-multiply", choices=("supported", "unsupported", "any"), default="supported",
++                        help="Observed Window backend policy; default requires actual supported product recording/upload")
+     args = parser.parse_args()
+     helper = load_helper()
+     binary = args.binary.resolve(strict=True)
+     require(binary.is_file() and os.access(binary, os.X_OK), "Use an actual executable ui-tests binary")
+@@ -350,11 +423,14 @@
+         "hookPatchSha256": digest(HERE / "integration.patch"), "fixtureSha256": digest(fixture),
+         "isolatedHelperSha256": digest(HELPER), "sourcePins": pins,
+         "display": "fresh owned Xvfb -displayfd -nolisten tcp, caller DISPLAY ignored",
+         "input": "XTEST existing observed controls/real resize; two fresh identical bounds before clicks",
++        "expectedMultiplyBackend": args.expect_multiply,
++        "productGroupProof": "Actual observed optional ID/count/status/upload/retirement; not Source radial raster equivalence",
+         "checks": [], "limits": [
+             "Atlas contains/drop observations do not establish successful scene presentation, GPU idle or driver memory reclamation",
+             "DPR1 only; no occlusion/device recovery/multiwindow/global memory/sustained stress proof",
++            "Recorded is a scene admission observation, not a presentation/GPU-completion or exact Source foxing-raster receipt",
+             "Settings has no observed activation control while Dossier is mounted; retained-form Settings→Back requires an independent mounted host gate",
+             "Theme is driven through actual Settings after real Dossier cancellation; no injected theme event",
+             "Window/app close is accepted only as clean process exit, not a post-close atlas or GPU receipt",
+         ]}
+@@ -372,22 +448,26 @@
+         require(document["workspace"]["provenance"] == baseline["workspace"]["provenance"], "Imported source/provenance changed")
+         require(document["workspace"].get("brief") == baseline["workspace"].get("brief"), "Image proof accidentally filed Dossier metadata")
+ 
+     try:
+-        ui = owned_class(helper)(binary, output, fixture)
++        ui = owned_class(helper, args.expect_multiply)(binary, output, fixture)
+         ui.start(import_fixture=True)
+         path, baseline = ui.wait("actual imported nonempty source copy", ui.document)
+         require(baseline["body"].encode() == fixture_bytes
+                 and baseline["workspace"]["content"]["typstSource"].encode() == fixture_bytes
+                 and bytes(baseline["workspace"]["provenance"]["originalBytes"]) == fixture_bytes,
+                 "Actual CLI import did not retain the exact authored canonical source/provenance")
+         (output / "imported-manuscript.json").write_bytes(path.read_bytes())
+-        state = ui.ready_lifecycle("real initial prepared set and uploaded paper/stamp", active=9)
++        state = ui.ready_lifecycle("real initial prepared set and uploaded paper/stamp", active="prepared")
+         initial = state["dossierImageLifecycle"]
+         initial_ids = set(image_map(initial))
++        initial_group = observed_foxing(initial)["imageId"]
++        expected_initial_uploaded = expected_uploaded_ids(initial)
+         require(sum(image["atlasPresent"] for image in initial["images"]) >= 2,
+                 "Initial actual painted paper/stamp keys were never uploaded")
+-        passed("Actual form attaches nine prepared image IDs to the observed window; painted keys are distinct from CPU preparations")
++        passed("Actual form retains nine real ordinary preparations plus the observed optional foxing group; CPU refs and atlas uploads stay distinct",
++               {"foxing": observed_foxing(initial), "preparedCount": len(initial_ids),
++                "actualUploadedIds": sorted(uploaded_ids(initial))})
+ 
+         ui.edit("dossier-answer-0", TITLE)
+         ui.section(2)
+         ui.edit("dossier-answer-2", AUDIENCE)
+@@ -399,26 +479,34 @@
+             current = ui.wait_state(f"actual stamp {reviewed} / 7", lambda state:
+                 ui.node(state, "dossier-reviewed-stamp") is not None
+                 and (ui.node(state, "dossier-reviewed-stamp")["label"] or "").casefold() == f"{reviewed} / 7 reviewed")
+             ui.retain_state(f"stamp-{reviewed}", current)
+-        state = ui.ready_lifecycle("all eight actual stamp variants uploaded", active=9, ids=initial_ids, painted=initial_ids)
++        state = ui.ready_lifecycle("all eight actual stamp variants uploaded", active="prepared", ids=initial_ids, painted=expected_initial_uploaded)
++        initial_uploaded = uploaded_ids(state["dossierImageLifecycle"])
++        require(initial_uploaded == expected_initial_uploaded, "Observed upload set must include all nine ordinary images and only the admitted optional group")
+         require(state["dossierImageLifecycle"]["epoch"] == initial["epoch"], "Text/step changes unexpectedly replaced prepared images")
+         passed("Existing section navigation paints all eight count variants without new prepared IDs/epochs or manuscript edits")
+ 
+         sequence = ui.seen_sequence
+         resized = ui.resize(1100, 780)
+         new_ids = set(image_map(resized["dossierImageLifecycle"]))
+-        old_paper, new_paper = initial_ids - new_ids, new_ids - initial_ids
+-        require(len(old_paper) == len(new_paper) == 1, "Observed resize must change only the actual paper image at fixed DPR/palette")
+-        resize_proof = ui.prove_retired(old_paper, sequence, old_paper)
++        old_viewport, new_viewport = initial_ids - new_ids, new_ids - initial_ids
++        resized_group = observed_foxing(resized["dossierImageLifecycle"])["imageId"]
++        require(len(old_viewport) == 1 + int(initial_group is not None)
++                and len(new_viewport) == 1 + int(resized_group is not None),
++                "Resize must replace paper plus the optional full-viewport group, preserving eight stamp IDs")
++        if initial_group is not None:
++            require(initial_group in old_viewport and resized_group in new_viewport, "Viewport group ID did not replace with paper")
++        resized_uploaded = uploaded_ids(resized["dossierImageLifecycle"])
++        resize_proof = ui.prove_retired(old_viewport, sequence, old_viewport & initial_uploaded)
+         require(all_present(resized["dossierImageLifecycle"], initial_ids & new_ids), "Resize evicted active shared stamp IDs")
+         ui.retain_state("actual-resized-paper", resized)
+-        passed("Real resize retains stamp keys and removes the old uploaded paper only after qualified refresh/marker/deferred drop", resize_proof)
++        passed("Real resize retains all eight stamp keys and retires old paper/optional group after qualified marker/deferred drops", resize_proof)
+ 
+         sequence = ui.seen_sequence
+         restored = ui.resize(1280, 860)
+-        restored = ui.ready_lifecycle("same cached paper ID actually reuploaded", active=9, ids=initial_ids, painted=initial_ids)
+-        resize_back = ui.prove_retired(new_paper, sequence, new_paper)
++        restored = ui.ready_lifecycle("same cached viewport IDs actually reuploaded", active="prepared", ids=initial_ids, painted=expected_initial_uploaded)
++        resize_back = ui.prove_retired(new_viewport, sequence, new_viewport & resized_uploaded)
+         ui.assert_answers()
+         passed("Resize back reuses original CPU-cache ImageId and actually reuploads it; local title/multiline controls stay exact", resize_back)
+ 
+         before = ui.state()
+@@ -473,16 +561,16 @@
+         departed = ui.wait_state("actual mounted House and completed marker retirement", lambda state:
+             ui.node(state, "native-house") is not None and ui.node(state, "dossier-form") is None
+             and state["dossierImageLifecycle"]["activeCount"] == 0
+             and state["dossierImageLifecycle"]["pendingCount"] == 0)
+-        route_proof = ui.prove_retired(initial_ids, sequence, initial_ids)
++        route_proof = ui.prove_retired(initial_ids, sequence, initial_uploaded)
+         ui.retain_state("actual-house-route-retired", departed)
+         unchanged(ui.document()[1], baseline)
+         passed("Successful existing House route actually unmounts the form and retires every uploaded old key after the real marker", route_proof)
+ 
+         ui.click("house-desk")
+         ui.click("create-dossier")
+-        reopened = ui.ready_lifecycle("actual same-cache Dossier reopen", active=9, ids=initial_ids)
++        reopened = ui.ready_lifecycle("actual same-cache Dossier reopen", active="prepared", ids=initial_ids)
+         require(reopened["dossierImageLifecycle"]["consumerIds"] != before["dossierImageLifecycle"]["consumerIds"],
+                 "Reopen revived a retired consumer instead of allocating a fresh lease")
+         require(sum(image["atlasPresent"] for image in reopened["dossierImageLifecycle"]["images"]) >= 2,
+                 "Actually painted cached paper/stamp did not reupload after route return")
+@@ -521,9 +609,9 @@
+                 lambda record: record["generation"] > prior_generation and record["preference"]["preset"] == preset)
+             write_json(output / f"actual-{preset}-appearance.json", appearance)
+             ui.click("settings-back")
+             ui.click("create-dossier")
+-            return ui.ready_lifecycle(f"actual {preset} Dossier preparation", active=9)
++            return ui.ready_lifecycle(f"actual {preset} Dossier preparation", active="prepared")
+ 
+         night = choose_theme("nightpress")
+         night_ids = set(image_map(night["dossierImageLifecycle"]))
+         require(night_ids.isdisjoint(initial_ids), "Actual palette change did not prepare distinct paper/stamp images")

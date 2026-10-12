@@ -1,0 +1,195 @@
+{
+  "folioId": "twyne-gpui-parity",
+  "contexts": [
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 860
+      },
+      "nodes": [
+        {
+          "section": "the-notebook",
+          "rect": {
+            "x": 265,
+            "y": 193.7937469482422,
+            "width": 8,
+            "height": 32.390625
+          },
+          "styles": "Element: span.twyne-section-drag-handle\nBox: x=265 y=194 w=8 h=32\nChildren: 0  Text length: 2\nScroll Y: size=32 client=32 overflowing=false top=0\nScroll X: size=8 client=8 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=18px font-weight=400 line-height=32.4px opacity=0.55 transform=matrix(1, 0, 0, 1, -24, 3.2) white-space=normal overflow=visible\nVisibility: opacity=0.55",
+          "dom": {
+            "text": "⋮⋮",
+            "html": "<span data-section-drag-handle=\"the-notebook\" draggable=\"true\" contenteditable=\"false\" class=\"twyne-section-drag-handle ProseMirror-widget\" role=\"button\" aria-label=\"Move section: The notebook\" title=\"Drag to move The notebook\" style=\"position: absolute; transform: translate(-1.5rem, 0.2rem); cursor: grab; user-select: none; opacity: 0.55;\">⋮⋮</span>",
+            "glyphRange": {
+              "x": 265,
+              "y": 197.7937469482422,
+              "width": 8,
+              "height": 23
+            },
+            "heading": {
+              "tag": "H1",
+              "text": "The notebook",
+              "x": 289,
+              "y": 238.59375,
+              "width": 704,
+              "height": 66.390625,
+              "margin": "48px 0px 18px",
+              "font": ""
+            },
+            "previous": null
+          },
+          "platformFonts": [
+            {
+              "familyName": "Noto Sans Math",
+              "postScriptName": "NotoSansMath-Regular",
+              "isCustomFont": false,
+              "glyphCount": 2
+            }
+          ]
+        },
+        {
+          "section": "a-note-for-the-next-draft",
+          "rect": {
+            "x": 265,
+            "y": 504.32501220703125,
+            "width": 8,
+            "height": 32.390625
+          },
+          "styles": "Element: span.twyne-section-drag-handle\nBox: x=265 y=504 w=8 h=32\nChildren: 0  Text length: 2\nScroll Y: size=32 client=32 overflowing=false top=0\nScroll X: size=8 client=8 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=18px font-weight=400 line-height=32.4px opacity=0.55 transform=matrix(1, 0, 0, 1, -24, 3.2) white-space=normal overflow=visible\nVisibility: opacity=0.55",
+          "dom": {
+            "text": "⋮⋮",
+            "html": "<span data-section-drag-handle=\"a-note-for-the-next-draft\" draggable=\"true\" contenteditable=\"false\" class=\"twyne-section-drag-handle ProseMirror-widget\" role=\"button\" aria-label=\"Move section: A note for the next draft\" title=\"Drag to move A note for the next draft\" style=\"position: absolute; transform: translate(-1.5rem, 0.2rem); cursor: grab; user-select: none; opacity: 0.55;\">⋮⋮</span>",
+            "glyphRange": {
+              "x": 265,
+              "y": 508.32501220703125,
+              "width": 8,
+              "height": 23
+            },
+            "heading": {
+              "tag": "H2",
+              "text": "A note for the next draft",
+              "x": 289,
+              "y": 529.03125,
+              "width": 704,
+              "height": 30,
+              "margin": "36px 0px 9.6px",
+              "font": ""
+            },
+            "previous": {
+              "tag": "P",
+              "text": "Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.",
+              "x": 289,
+              "y": 428.25,
+              "width": 704,
+              "height": 64.78125,
+              "margin": "0px 0px 8.1px",
+              "font": ""
+            }
+          },
+          "platformFonts": [
+            {
+              "familyName": "Noto Sans Math",
+              "postScriptName": "NotoSansMath-Regular",
+              "isCustomFont": false,
+              "glyphCount": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "viewport": {
+        "width": 620,
+        "height": 860
+      },
+      "nodes": [
+        {
+          "section": "the-notebook",
+          "rect": {
+            "x": 10,
+            "y": 172.1999969482422,
+            "width": 8,
+            "height": 32.390625
+          },
+          "styles": "Element: span.twyne-section-drag-handle\nBox: x=10 y=172 w=8 h=32\nChildren: 0  Text length: 2\nScroll Y: size=32 client=32 overflowing=false top=0\nScroll X: size=8 client=8 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=18px font-weight=400 line-height=32.4px opacity=0.55 transform=matrix(1, 0, 0, 1, -24, 3.2) white-space=normal overflow=visible\nVisibility: opacity=0.55",
+          "dom": {
+            "text": "⋮⋮",
+            "html": "<span data-section-drag-handle=\"the-notebook\" draggable=\"true\" contenteditable=\"false\" class=\"twyne-section-drag-handle ProseMirror-widget\" role=\"button\" aria-label=\"Move section: The notebook\" title=\"Drag to move The notebook\" style=\"position: absolute; transform: translate(-1.5rem, 0.2rem); cursor: grab; user-select: none; opacity: 0.55;\">⋮⋮</span>",
+            "glyphRange": {
+              "x": 10,
+              "y": 176.1999969482422,
+              "width": 8,
+              "height": 23
+            },
+            "heading": {
+              "tag": "H1",
+              "text": "The notebook",
+              "x": 34,
+              "y": 217,
+              "width": 554,
+              "height": 66.390625,
+              "margin": "48px 0px 18px",
+              "font": ""
+            },
+            "previous": null
+          },
+          "platformFonts": [
+            {
+              "familyName": "Noto Sans Math",
+              "postScriptName": "NotoSansMath-Regular",
+              "isCustomFont": false,
+              "glyphCount": 2
+            }
+          ]
+        },
+        {
+          "section": "a-note-for-the-next-draft",
+          "rect": {
+            "x": 10,
+            "y": 547.5125122070312,
+            "width": 8,
+            "height": 32.390625
+          },
+          "styles": "Element: span.twyne-section-drag-handle\nBox: x=10 y=548 w=8 h=32\nChildren: 0  Text length: 2\nScroll Y: size=32 client=32 overflowing=false top=0\nScroll X: size=8 client=8 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=18px font-weight=400 line-height=32.4px opacity=0.55 transform=matrix(1, 0, 0, 1, -24, 3.2) white-space=normal overflow=visible\nVisibility: opacity=0.55",
+          "dom": {
+            "text": "⋮⋮",
+            "html": "<span data-section-drag-handle=\"a-note-for-the-next-draft\" draggable=\"true\" contenteditable=\"false\" class=\"twyne-section-drag-handle ProseMirror-widget\" role=\"button\" aria-label=\"Move section: A note for the next draft\" title=\"Drag to move A note for the next draft\" style=\"position: absolute; transform: translate(-1.5rem, 0.2rem); cursor: grab; user-select: none; opacity: 0.55;\">⋮⋮</span>",
+            "glyphRange": {
+              "x": 10,
+              "y": 551.5125122070312,
+              "width": 8,
+              "height": 23
+            },
+            "heading": {
+              "tag": "H2",
+              "text": "A note for the next draft",
+              "x": 34,
+              "y": 572.21875,
+              "width": 554,
+              "height": 30,
+              "margin": "36px 0px 9.6px",
+              "font": ""
+            },
+            "previous": {
+              "tag": "P",
+              "text": "Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.",
+              "x": 34,
+              "y": 439.046875,
+              "width": 554,
+              "height": 97.171875,
+              "margin": "0px 0px 8.1px",
+              "font": ""
+            }
+          },
+          "platformFonts": [
+            {
+              "familyName": "Noto Sans Math",
+              "postScriptName": "NotoSansMath-Regular",
+              "isCustomFont": false,
+              "glyphCount": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

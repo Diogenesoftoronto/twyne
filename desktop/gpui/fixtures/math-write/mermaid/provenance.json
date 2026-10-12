@@ -1,0 +1,63 @@
+{
+  "provenance": "Fixture-only exact published Source stylesheet with its contiguous vendor block replaced, or exact 0.18.1 vendor rules scoped to .twyne-math; original wrappers/nonvendor CSS retained. Source/dist files are never modified.",
+  "build": {
+    "theme": "q-DLDk_g9T.js",
+    "core": "q-WTkmwudD.js",
+    "math": "q-DpI6tGnI.js",
+    "mermaidMath": "q-CXMH3UgJ.js",
+    "css": "CxHd3gM_-style.css"
+  },
+  "originalSourceHashes": {
+    "theme": "db26bb43aa9fee42faa825cdf6c2d4220c59e854cfba61dec70121cb5526cb12",
+    "originalVendor": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "replacementVendor": "0fb711c9c74cb1718661933948b653fbc09a627da5dde8926b4d10585370993e",
+    "mathWrapper": "f29bbdea2806650b758422416d2a8e08a5a985f908feeddc8442362c412308b0",
+    "builtCss": "71ddc6c68996dc01fed4c53b636dac92d573440504478b8cda76a4778ae701b7"
+  },
+  "moduleHashes": {
+    "theme": "72689e12f797d26bf046cfd462bcd5582a5fc006a6cadc0db016da492a587dba",
+    "core": "43628f503e6a1557b7ab9b94f578c71953235d44d056aea10b456eb6be56c644",
+    "math": "ff72fff9061382a13adf875341b4fb13bd7c536e4bdad3adcf2aba1c2ead9fbe",
+    "mermaidMath": "21bd345c89fcc9bfb21603dd9a186d5d69ec63a4d86ac778a5aecb13103e7314"
+  },
+  "styles": {
+    "original": {
+      "sha256": "71ddc6c68996dc01fed4c53b636dac92d573440504478b8cda76a4778ae701b7",
+      "bytes": 278414
+    },
+    "replacement": {
+      "sha256": "c638d847fed5bd0b0a742018bea946618cbe22d2f1ca2ad12677369938cf16ec",
+      "bytes": 279817
+    },
+    "scoped": {
+      "sha256": "7454d5ea7c848af7d70aa5f31b63bc02cb26e67bbffb983e3351c91170e80a89",
+      "bytes": 302846
+    }
+  },
+  "vendorNodeRange": {
+    "start": 1534,
+    "end": 1784,
+    "count": 250,
+    "faces": 20,
+    "assetUrls": 60
+  },
+  "vendorRuleCounts": {
+    "old": 230,
+    "replacement": 229
+  },
+  "versions": {
+    "mermaid": "11.15.0",
+    "directKatex": "0.18.1",
+    "mermaidKatex": "0.16.47"
+  },
+  "proposedSourceVendor": {
+    "sha256": "4a4db5ba76f58e8b9b5ad3817b51c97bd71e0efc1806832b64bee4c668ee1509",
+    "bytes": 63803,
+    "scopes": [
+      ".twyne-math",
+      ".twyne-math-source-preview"
+    ],
+    "applied": false,
+    "previewMeasured": false
+  }
+}

@@ -1,0 +1,660 @@
+You are a weaker advisory subagent working in isolation. Root is editing the native app; you are not alone in the codebase and must not revert or request product edits. Ownership: only a JSON account-menu parity specification. Use the exact supplied current Source as authority. Return ONLY JSON, <=1200 words, with keys guest_menu, signed_in_menu, interactions, styling, unsupported_routes. Each menu specifies exact text, order and conditional behavior. Distinguish verified Source from unknown native wiring. Do not invent sign-in registration, network behavior, capabilities, routes or icons. No redesign or implementation. The account dropdown and AuthPanel are being ported to GPUI Kit 0.7.0. Root will implement and review.
+
+FILE src/components/auth/account-menu.tsx
+import {
+  $,
+  component$,
+  useOnDocument,
+  useSignal,
+  useStore,
+  useVisibleTask$,
+  type Signal,
+} from "@qwik.dev/core";
+import { useNavigate } from "@qwik.dev/router";
+import {
+  hasAuthenticatedConvexIdentity,
+  useAuth,
+} from "../../utils/auth-context";
+import { useConvexClient } from "../../utils/convex-context";
+import { api } from "../../../convex/_generated/api";
+import { AuthPanel } from "./auth-panel";
+import { Icon } from "../ui/icon";
+import {
+  accountAvatarUrl,
+  accountDisplayName,
+  accountInitials,
+} from "../../utils/account-display";
+
+interface AccountMenuProps {
+  /**
+   * Optional externally-controlled open state. When provided, the menu reads
+   * and writes this signal so other UI (deep links, sign-in nudges) can open
+   * it. When omitted, the menu manages its own open state internally.
+   */
+  open?: Signal<boolean>;
+}
+
+interface PendingInvitation {
+  lixId: string;
+  folioName: string;
+  role: "editor" | "commenter";
+  invitedAt: number;
+}
+
+interface SharedFolio {
+  lixId: string;
+  folioId: string;
+  folioName: string;
+  role: "editor" | "commenter";
+  updatedAt: number;
+}
+
+/**
+ * The Editor's Office — the account affordance shared across the app.
+ *
+ * Signed out, it's a single user icon that opens the sign-in panel. Signed in,
+ * it shows the writer's name (and avatar, if their session carries one) with a
+ * dropdown to Preferences, the Manual, and the AuthPanel (which holds sign-out).
+ *
+ * This is the exact control the editor toolbar uses; the landing header mounts
+ * the same component so a signed-in writer sees a consistent account menu
+ * instead of a "Sign in" link.
+ */
+export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
+  const auth = useAuth();
+  const nav = useNavigate();
+  const convexClient = useConvexClient();
+  const internalOpen = useSignal(false);
+  const failedAvatar = useSignal<string | null>(null);
+  const invitations = useStore<PendingInvitation[]>([]);
+  const sharedFolios = useStore<SharedFolio[]>([]);
+  const invitationError = useSignal<string | null>(null);
+  const invitationBusy = useSignal<string | null>(null);
+  // Pick the effective signal once. Signals are serializable across the QRL
+  // boundary, so handlers can use `menuOpen.value` directly (closures can't).
+  const menuOpen = open ?? internalOpen;
+  const rootRef = useSignal<HTMLElement>();
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async ({ track, cleanup }) => {
+    track(() => auth.value.user?.id);
+    const authenticated = track(() =>
+      hasAuthenticatedConvexIdentity(auth.value),
+    );
+    const client = track(() => convexClient.value);
+
+    invitations.splice(0, invitations.length);
+    sharedFolios.splice(0, sharedFolios.length);
+    if (!client || !authenticated) return;
+
+    const replaceInvitations = (pending: PendingInvitation[]) => {
+      invitations.splice(0, invitations.length, ...pending);
+    };
+    const replaceSharedFolios = (shared: SharedFolio[]) => {
+      sharedFolios.splice(0, sharedFolios.length, ...shared);
+    };
+    const unsubscribeInvitations = client.onUpdate(
+      api.collaboration.listPendingInvitations,
+      {},
+      replaceInvitations,
+      () => undefined,
+    );
+    const unsubscribeShared = client.onUpdate(
+      api.collaboration.listSharedWithMe,
+      {},
+      replaceSharedFolios,
+      () => undefined,
+    );
+    cleanup(unsubscribeInvitations);
+    cleanup(unsubscribeShared);
+  });
+
+  const rejectInvitation = $(async (lixId: string) => {
+    const client = convexClient.value;
+    if (!client) return;
+    invitationBusy.value = lixId;
+    invitationError.value = null;
+    try {
+      await client.mutation(api.collaboration.rejectInvitation, { lixId });
+      const index = invitations.findIndex((invite) => invite.lixId === lixId);
+      if (index >= 0) invitations.splice(index, 1);
+    } catch {
+      invitationError.value = "Could not decline that invitation. Try again.";
+    } finally {
+      invitationBusy.value = null;
+    }
+  });
+
+  const accountDisplay = auth.value.user
+    ? accountDisplayName(auth.value.user)
+    : null;
+  const accountTitle = accountDisplay
+    ? `Signed in as ${accountDisplay}`
+    : "Editor's office";
+  const avatar = accountAvatarUrl(auth.value.user?.image);
+  const showAvatar = avatar && failedAvatar.value !== avatar;
+
+  // Close on outside click / Escape, matching dropdown conventions elsewhere.
+  useOnDocument(
+    "click",
+    $((e) => {
+      if (!menuOpen.value) return;
+      const root = rootRef.value;
+      const target = e.target as Node | null;
+      if (root && target && !root.contains(target)) {
+        menuOpen.value = false;
+      }
+    }),
+  );
+  useOnDocument(
+    "keydown",
+    $((e) => {
+      if (menuOpen.value && (e as KeyboardEvent).key === "Escape") {
+        menuOpen.value = false;
+      }
+    }),
+  );
+
+  return (
+    <div class="relative" ref={rootRef}>
+      <button
+        type="button"
+        onClick$={() => {
+          menuOpen.value = !menuOpen.value;
+        }}
+        class={`icon-btn ${
+          accountDisplay
+            ? "gap-1.5 border border-[var(--color-sage)] bg-[var(--color-paper-soft)] px-2 py-1.5 text-[var(--color-ink)] hover:text-[var(--color-vermilion)]"
+            : "p-1.5 text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
+        }`}
+        title={accountTitle}
+        aria-label={
+          accountDisplay
+            ? `Open account menu. Signed in as ${accountDisplay}`
+            : "Open the editor's office (account)"
+        }
+        aria-expanded={menuOpen.value}
+      >
+        {accountDisplay &&
+          (showAvatar ? (
+            <img
+              src={avatar}
+              alt=""
+              width="20"
+              height="20"
+              class="h-5 w-5 flex-shrink-0 rounded-full object-cover"
+              aria-hidden="true"
+              referrerPolicy="no-referrer"
+              onError$={() => {
+                failedAvatar.value = avatar ?? null;
+              }}
+            />
+          ) : (
+            <span
+              class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-paper-3)] text-[9px] font-semibold"
+              aria-hidden="true"
+            >
+              {accountInitials(accountDisplay)}
+            </span>
+          ))}
+        {!accountDisplay && <Icon name="user" size={18} />}
+        {accountDisplay && (
+          <span
+            class="hidden max-w-[8.5rem] truncate text-[11px] font-semibold lg:inline"
+            style={{ fontFamily: "var(--font-sans)" }}
+          >
+            {accountDisplay}
+          </span>
+        )}
+      </button>
+      {menuOpen.value && (
+        <div
+          class="absolute right-0 top-full mt-2 w-72 folio p-3 space-y-2"
+          style="z-index: var(--z-dropdown);"
+        >
+          <div class="flex flex-col gap-1 pb-2 border-b border-[var(--color-paper-3)]">
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
+              style={{ fontFamily: "var(--font-display)" }}
+              onClick$={() => {
+                menuOpen.value = false;
+                void nav("/settings/");
+              }}
+            >
+              <Icon name="settings" size={16} /> Preferences
+            </button>
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
+              style={{ fontFamily: "var(--font-display)" }}
+              onClick$={() => {
+                menuOpen.value = false;
+                void nav("/desk/");
+              }}
+            >
+              <Icon name="house" size={16} /> My Desk
+            </button>
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
+              style={{ fontFamily: "var(--font-display)" }}
+              onClick$={() => {
+                menuOpen.value = false;
+                void nav("/docs/");
+              }}
+            >
+              <Icon name="book-open" size={16} /> The Manual
+            </button>
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
+              style={{ fontFamily: "var(--font-display)" }}
+              onClick$={() => {
+                menuOpen.value = false;
+                void nav("/privacy-ledger/");
+              }}
+            >
+              <Icon name="shield-check" size={16} /> Privacy ledger
+            </button>
+          </div>
+          {invitations.length > 0 && (
+            <section class="space-y-2 border-b border-[var(--color-paper-3)] pb-3">
+              <p
+                class="px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-light)]"
+                style={{ fontFamily: "var(--font-sans)" }}
+              >
+                Invitations
+              </p>
+              {invitations.map((invitation) => (
+                <div
+                  key={invitation.lixId}
+                  class="rounded-sm bg-[var(--color-paper-soft)] px-2.5 py-2"
+                >
+                  <p class="truncate text-sm text-[var(--color-ink)]">
+                    {invitation.folioName}
+                  </p>
+                  <p class="mt-0.5 text-[11px] text-[var(--color-ink-light)]">
+                    Invited as {invitation.role}
+                  </p>
+                  <div class="mt-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      class="text-xs font-semibold text-[var(--color-vermilion)] hover:underline disabled:opacity-50"
+                      disabled={invitationBusy.value === invitation.lixId}
+                      onClick$={() => {
+                        menuOpen.value = false;
+                        void nav(
+                          `/editor?shared=${encodeURIComponent(invitation.lixId)}`,
+                        );
+                      }}
+                    >
+                      Open
+                    </button>
+                    <button
+                      type="button"
+                      class="text-xs text-[var(--color-ink-light)] hover:text-[var(--color-ink)] disabled:opacity-50"
+                      disabled={invitationBusy.value === invitation.lixId}
+                      onClick$={() => rejectInvitation(invitation.lixId)}
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {invitationError.value && (
+                <p
+                  class="px-2 text-xs text-[var(--color-vermilion)]"
+                  role="alert"
+                >
+                  {invitationError.value}
+                </p>
+              )}
+            </section>
+          )}
+          {sharedFolios.length > 0 && (
+            <section class="space-y-1 border-b border-[var(--color-paper-3)] pb-3">
+              <p
+                class="px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-light)]"
+                style={{ fontFamily: "var(--font-sans)" }}
+              >
+                Shared with me
+              </p>
+              {sharedFolios.map((folio) => (
+                <button
+                  key={folio.lixId}
+                  type="button"
+                  class="block w-full rounded-sm px-2.5 py-2 text-left hover:bg-[var(--color-paper-soft)] focus-ring"
+                  onClick$={() => {
+                    menuOpen.value = false;
+                    void nav(
+                      `/editor?shared=${encodeURIComponent(folio.lixId)}`,
+                    );
+                  }}
+                >
+                  <span class="block truncate text-sm text-[var(--color-ink)]">
+                    {folio.folioName}
+                  </span>
+                  <span class="mt-0.5 block text-[11px] text-[var(--color-ink-light)]">
+                    {folio.role === "editor" ? "Can edit" : "Can comment"}
+                  </span>
+                </button>
+              ))}
+            </section>
+          )}
+          <AuthPanel />
+        </div>
+      )}
+    </div>
+  );
+});
+
+FILE src/components/auth/auth-panel.tsx
+import { $, component$, useStore } from "@qwik.dev/core";
+import { useAuth } from "../../utils/auth-context";
+import { accountDisplayName } from "../../utils/account-display";
+import { signOut } from "../../utils/auth-client";
+import { startNotOrganicSignIn } from "../../utils/notorganic-connect";
+import type { AppError } from "../../types/application-errors";
+import { normalizeApplicationError } from "../../utils/application-errors";
+import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
+import { ApplicationNotice } from "../ui/application-notice";
+import { captureProductEvent } from "../../utils/product-analytics";
+import {
+  clearAuthAttempt,
+  rememberAuthAttempt,
+} from "../../utils/auth-analytics";
+
+/**
+ * The Editor's Office sign-in panel.
+ *
+ * Twyne accounts are Not Organic accounts: one button, one redirect. The same
+ * DID backs your plan, hosted inference and PDS publishing.
+ */
+export const AuthPanel = component$<{ returnTo?: string }>((props) => {
+  const auth = useAuth();
+  const store = useStore({
+    redirecting: false,
+    error: null as AppError | null,
+  });
+
+  const handleSignIn = $(async () => {
+    store.redirecting = true;
+    store.error = null;
+    rememberAuthAttempt({ method: "notorganic", flow: "signin" });
+    void captureProductEvent("sign_in_started", {
+      method: "notorganic",
+      flow: "signin",
+    });
+    try {
+      await startNotOrganicSignIn(props.returnTo);
+    } catch (error) {
+      clearAuthAttempt();
+      reportApplicationDiagnostic("twyne:auth:notorganic-sign-in", error, {
+        operation: "notorganic-sign-in",
+      });
+      const appError = normalizeApplicationError(error, {
+        source: "auth",
+        metadata: { operation: "notorganic-sign-in" },
+      });
+      void captureProductEvent("sign_in_failed", {
+        method: "notorganic",
+        flow: "signin",
+        error_code: appError.code,
+      });
+      store.error = appError;
+      store.redirecting = false;
+    }
+  });
+
+  if (auth.value.loading) {
+    return (
+      <div class="p-5">
+        <p class="dept-label">The Editor's Office</p>
+        <p class="mt-3 text-[var(--color-ink-light)]">…loading…</p>
+      </div>
+    );
+  }
+
+  const user = auth.value.user;
+  if (user) {
+    return (
+      <div class="p-5">
+        <p class="dept-label">The Editor's Office</p>
+        <div class="mt-3 flex items-center gap-3">
+          <div class="flex-1 min-w-0">
+            <p
+              class="text-sm text-[var(--color-ink)] truncate"
+              style="font-family: var(--font-display); font-weight: 600;"
+            >
+              On the masthead
+            </p>
+            <p
+              class="text-[11px] text-[var(--color-ink-muted)] truncate"
+              style="font-family: var(--font-typewriter); letter-spacing: 0.08em;"
+            >
+              {accountDisplayName(user)}
+            </p>
+          </div>
+          <button
+            onClick$={() => void signOut()}
+            class="btn-paper flex-shrink-0"
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div class="p-5">
+      <p class="dept-label">The Editor's Office</p>
+      <p
+        class="mt-3 text-[1.05rem] leading-snug text-[var(--color-ink)]"
+        style="font-family: var(--font-display); font-weight: 600;"
+      >
+        Sign in with your Not Organic account.
+      </p>
+      <p
+        class="mt-1 text-[12px] leading-5 text-[var(--color-ink-light)]"
+        style="font-family: var(--font-serif); font-style: italic;"
+      >
+        New here? You can create one on the next page. The same account holds
+        your plan, your credit and your published writing.
+      </p>
+      {store.error && (
+        <div class="mt-4">
+          <ApplicationNotice error={store.error} compact />
+        </div>
+      )}
+      <button
+        type="button"
+        onClick$={handleSignIn}
+        disabled={store.redirecting}
+        class="btn-press mt-5 w-full"
+      >
+        {store.redirecting ? "Redirecting…" : "Continue with Not Organic"}
+      </button>
+    </div>
+  );
+});
+
+FILE src/utils/account-display.ts
+/** Public account identity, kept separate from the private contact address. */
+export interface AccountIdentity {
+  name?: string | null;
+  handle?: string | null;
+  image?: string | null;
+  email?: string | null;
+}
+
+export interface AccountProfile {
+  displayName?: string | null;
+  handle?: string | null;
+  avatarUrl?: string | null;
+}
+
+export function accountName(
+  value: string | null | undefined,
+): string | undefined {
+  const name = value?.trim();
+  // Old sessions may have an email in the name field. Never expose that as
+  // a label, tooltip, accessible name, initial, or collaborator identity.
+  if (!name || /\S+@\S+/.test(name) || name.startsWith("did:"))
+    return undefined;
+  return name;
+}
+
+export function accountAvatarUrl(
+  value: string | null | undefined,
+): string | undefined {
+  const url = value?.trim();
+  if (!url || /[\\\s]/.test(url)) return undefined;
+  if (url.startsWith("/") && !url.startsWith("//")) return url;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:" || parsed.username || parsed.password)
+      return undefined;
+    return url;
+  } catch {
+    return undefined;
+  }
+}
+
+export function accountDisplayName(
+  user: AccountIdentity | null | undefined,
+  profile?: AccountProfile | null,
+): string {
+  return (
+    accountName(profile?.displayName) ||
+    accountName(user?.name) ||
+    accountName(profile?.handle) ||
+    accountName(user?.handle) ||
+    "Writer"
+  );
+}
+
+export function accountInitials(name: string): string {
+  const safeName = accountName(name);
+  if (!safeName) return "W";
+  const words = safeName.split(/\s+/);
+  return (
+    Array.from(words[0])[0] +
+    (words.length > 1 ? Array.from(words[words.length - 1])[0] : "")
+  ).toLocaleUpperCase();
+}
+
+/** Merge only authenticated profile fields; email stays available privately. */
+export function withAccountProfile<T extends AccountIdentity>(
+  user: T,
+  profile: AccountProfile | null,
+): T & { name: string; image: string | undefined; handle: string | undefined } {
+  return {
+    ...user,
+    name: accountDisplayName(user, profile),
+    image: accountAvatarUrl(profile?.avatarUrl) || accountAvatarUrl(user.image),
+    handle: accountName(profile?.handle) || accountName(user.handle),
+  };
+}
+
+CSS excerpt
+.dept-label {
+  font-family: var(--font-typewriter);
+  font-size: 0.625rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.folio {
+  background: var(--color-paper-soft);
+  border: 1px solid var(--color-paper-3);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--emboss) 60%, transparent) inset,
+    0 14px 32px -22px color-mix(in srgb, var(--shade) 40%, transparent),
+    0 2px 0 color-mix(in srgb, var(--shade) 5%, transparent);
+}
+/* Editorial button — a small set, hot-press feel */
+.btn-press {
+  font-family: var(--font-typewriter);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  padding: 0.55rem 1rem;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border: 1px solid var(--color-ink);
+  border-radius: 2px;
+  transition:
+    transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+  cursor: pointer;
+}
+.btn-press:hover {
+  background: var(--color-vermilion-2);
+  border-color: var(--color-vermilion-2);
+  box-shadow: 0 4px 14px -8px
+    color-mix(in srgb, var(--color-vermilion-2) 60%, transparent);
+}
+.btn-press:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: none;
+}
+.btn-press:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-paper {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.45rem 0.9rem;
+  background: var(--color-paper-soft);
+  color: var(--color-ink);
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.18s ease;
+  cursor: pointer;
+}
+.btn-paper:hover {
+  background: var(--color-paper-2);
+  border-color: var(--color-ink-muted);
+  box-shadow: 0 3px 10px -6px color-mix(in srgb, var(--shade) 25%, transparent);
+}
+.btn-paper:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+/* Small icon-only control — consistent hit target + accessible focus */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  min-height: 1.75rem;
+  border-radius: 2px;
+  color: var(--color-ink-muted);
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    transform 0.1s ease;
+  cursor: pointer;
+}
+.icon-btn:hover {
+  color: var(--color-ink);
+  background: var(--color-paper-2);
+}
+.icon-btn:active {
+  transform: scale(0.9);
+}
+.icon-btn:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 1px;
+}

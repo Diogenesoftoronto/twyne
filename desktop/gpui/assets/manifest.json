@@ -1,0 +1,3229 @@
+{
+  "schemaVersion": 1,
+  "generator": "desktop/gpui/tools/sync-assets.ts",
+  "semanticIconRenderer": "src/utils/icon-system.ts",
+  "reiconVersion": "1.2.1",
+  "assets": [
+    {
+      "path": "apple-touch-icon.png",
+      "file": "public/apple-touch-icon.png",
+      "source": "public/apple-touch-icon.png",
+      "sourceSha256": "4ccd75b874a21f12c4a29f885683b4813cb37430e0578f1dbbeda5c6bdbd7cbd",
+      "sha256": "4ccd75b874a21f12c4a29f885683b4813cb37430e0578f1dbbeda5c6bdbd7cbd",
+      "bytes": 14482
+    },
+    {
+      "path": "approval-stamp.svg",
+      "file": "public/approval-stamp.svg",
+      "source": "public/approval-stamp.svg",
+      "sourceSha256": "f193f97c7e740871302795f8cb6ad51fb793e5915941510325796002151c59ff",
+      "sha256": "f193f97c7e740871302795f8cb6ad51fb793e5915941510325796002151c59ff",
+      "bytes": 2387
+    },
+    {
+      "path": "assets/avatars/engraved-2026-09/fox.avif",
+      "file": "public/assets/avatars/engraved-2026-09/fox-avif.webp",
+      "source": "public/assets/avatars/engraved-2026-09/fox.avif",
+      "sourceSha256": "5978d82b446b6b84bbae5b30db7dd4ad73d81ba12725c5831767c06e684168a3",
+      "sha256": "e6fbd554a47f0865a6435f57077da6f8422f03528e6e929e6c441ac72d1948fe",
+      "bytes": 67658,
+      "rgbaSha256": "f68d90b2681042b68d395934f3adb6378365873046667575b713e844afa399d0",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/avatars/engraved-2026-09/fox.webp",
+      "file": "public/assets/avatars/engraved-2026-09/fox.webp",
+      "source": "public/assets/avatars/engraved-2026-09/fox.webp",
+      "sourceSha256": "2e0c6fbf017ae5d6b54f3f740664da7f4b5f494e51954e2d5ac3db8f42aee8f6",
+      "sha256": "2e0c6fbf017ae5d6b54f3f740664da7f4b5f494e51954e2d5ac3db8f42aee8f6",
+      "bytes": 19096
+    },
+    {
+      "path": "assets/avatars/engraved-2026-09/hare.avif",
+      "file": "public/assets/avatars/engraved-2026-09/hare-avif.webp",
+      "source": "public/assets/avatars/engraved-2026-09/hare.avif",
+      "sourceSha256": "fbeb8595fb0d55c67336895542165199d450a7f605c4011840f4b237ae94cac8",
+      "sha256": "26a539a069a7a19446db256f0a8410251af6ef7fc9891f1af209f7d5a8cff215",
+      "bytes": 45106,
+      "rgbaSha256": "e17096fe9b8cf80ec5f51bfe23cbd419480d11a07dbd409c70484851f1eaa928",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/avatars/engraved-2026-09/hare.webp",
+      "file": "public/assets/avatars/engraved-2026-09/hare.webp",
+      "source": "public/assets/avatars/engraved-2026-09/hare.webp",
+      "sourceSha256": "050161dea10291610614b69a54915e9cf7257059559d62a642d365258ffab052",
+      "sha256": "050161dea10291610614b69a54915e9cf7257059559d62a642d365258ffab052",
+      "bytes": 12788
+    },
+    {
+      "path": "assets/avatars/engraved-2026-09/owl.avif",
+      "file": "public/assets/avatars/engraved-2026-09/owl-avif.webp",
+      "source": "public/assets/avatars/engraved-2026-09/owl.avif",
+      "sourceSha256": "5cc5d7a22536693fff73e482938e7ab60657b74974a928130220688083a90ffc",
+      "sha256": "2e15b48a7426c66388a3ce3e62219ce44dbafdf089e87aa514cad2cccda34f57",
+      "bytes": 69438,
+      "rgbaSha256": "5a0b47db100a155c7aee9b74ce1f7c319a4681aecdc0235d5934c7bf4b118b97",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/avatars/engraved-2026-09/owl.webp",
+      "file": "public/assets/avatars/engraved-2026-09/owl.webp",
+      "source": "public/assets/avatars/engraved-2026-09/owl.webp",
+      "sourceSha256": "eef611ee9e8343dcbf7cd6659e1de9e4abcc06d6ba1e90b54a50953539eae71b",
+      "sha256": "eef611ee9e8343dcbf7cd6659e1de9e4abcc06d6ba1e90b54a50953539eae71b",
+      "bytes": 21620
+    },
+    {
+      "path": "assets/avatars/engraved-2026-09/raven.avif",
+      "file": "public/assets/avatars/engraved-2026-09/raven-avif.webp",
+      "source": "public/assets/avatars/engraved-2026-09/raven.avif",
+      "sourceSha256": "4125330fc2d26f7b2ad255cc71e00f847d891b91f34d3b34343583683de08d8f",
+      "sha256": "758948d5d55a9eee058f702507500fc46525d2a3fb6b25d53fe5bc9d75dc4378",
+      "bytes": 49096,
+      "rgbaSha256": "512beab513e9a4f679e5d6908dc43eac7e6772abfe38c1ddd8b10068dd5fd869",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/avatars/engraved-2026-09/raven.webp",
+      "file": "public/assets/avatars/engraved-2026-09/raven.webp",
+      "source": "public/assets/avatars/engraved-2026-09/raven.webp",
+      "sourceSha256": "ae34d3f5c9734d26cbe99745b1e471f10346e158151c48e6f90969f7180fa704",
+      "sha256": "ae34d3f5c9734d26cbe99745b1e471f10346e158151c48e6f90969f7180fa704",
+      "bytes": 14352
+    },
+    {
+      "path": "assets/branch.svg",
+      "file": "public/assets/branch.svg",
+      "source": "public/assets/branch.svg",
+      "sourceSha256": "ceda9527638f29af852e5875350683e4a8dfb77fd31fdbb4b66a3b0b109f4c13",
+      "sha256": "ceda9527638f29af852e5875350683e4a8dfb77fd31fdbb4b66a3b0b109f4c13",
+      "bytes": 4885
+    },
+    {
+      "path": "assets/correction-marks.svg",
+      "file": "public/assets/correction-marks.svg",
+      "source": "public/assets/correction-marks.svg",
+      "sourceSha256": "652c0ec642d060c4fbd25e602d9ba0681602201ed4200e5b8a7bbcb7b414a290",
+      "sha256": "652c0ec642d060c4fbd25e602d9ba0681602201ed4200e5b8a7bbcb7b414a290",
+      "bytes": 5097
+    },
+    {
+      "path": "assets/editor-byline.svg",
+      "file": "public/assets/editor-byline.svg",
+      "source": "public/assets/editor-byline.svg",
+      "sourceSha256": "0c6e7ede46872c17c97a571007a29960e45c1cfb63ec3fcd317d5916091ddf17",
+      "sha256": "0c6e7ede46872c17c97a571007a29960e45c1cfb63ec3fcd317d5916091ddf17",
+      "bytes": 7326
+    },
+    {
+      "path": "assets/editorial-marks.svg",
+      "file": "public/assets/editorial-marks.svg",
+      "source": "public/assets/editorial-marks.svg",
+      "sourceSha256": "ff422d5f4a942d41c62643d0ee962161f0963dc134d157866fb70f3aa153eca7",
+      "sha256": "ff422d5f4a942d41c62643d0ee962161f0963dc134d157866fb70f3aa153eca7",
+      "bytes": 9069
+    },
+    {
+      "path": "assets/griffin-mark.svg",
+      "file": "public/assets/griffin-mark.svg",
+      "source": "public/assets/griffin-mark.svg",
+      "sourceSha256": "e8a070006eabfccbf51b7aec90ac2c955fc28c4cf9073f09b2a38c0c6edebe0a",
+      "sha256": "e8a070006eabfccbf51b7aec90ac2c955fc28c4cf9073f09b2a38c0c6edebe0a",
+      "bytes": 3528
+    },
+    {
+      "path": "assets/handshake-alt.svg",
+      "file": "public/assets/handshake-alt.svg",
+      "source": "public/assets/handshake-alt.svg",
+      "sourceSha256": "51e74b0a40783309321875924861bda0e7578b253dcee31618d61d524bef1ea0",
+      "sha256": "51e74b0a40783309321875924861bda0e7578b253dcee31618d61d524bef1ea0",
+      "bytes": 13045
+    },
+    {
+      "path": "assets/handshake-logo.svg",
+      "file": "public/assets/handshake-logo.svg",
+      "source": "public/assets/handshake-logo.svg",
+      "sourceSha256": "8a8831a5638aadac1db641a655d5b9dbe12bb30228480879cd92b129ff555ff1",
+      "sha256": "8a8831a5638aadac1db641a655d5b9dbe12bb30228480879cd92b129ff555ff1",
+      "bytes": 5145
+    },
+    {
+      "path": "assets/hero-glow.png",
+      "file": "public/assets/hero-glow.png",
+      "source": "public/assets/hero-glow.png",
+      "sourceSha256": "f5b75db295cefdb15a41b64180c8aea34ddbf4686741048364eada1b2d76ed06",
+      "sha256": "f5b75db295cefdb15a41b64180c8aea34ddbf4686741048364eada1b2d76ed06",
+      "bytes": 241029
+    },
+    {
+      "path": "assets/illuminated-initials/a-alt.avif",
+      "file": "public/assets/illuminated-initials/a-alt.webp",
+      "source": "public/assets/illuminated-initials/a-alt.avif",
+      "sourceSha256": "8d1c05fa1a85e70c2f22a162596e2eb0b320f84cb9744c6073d8ac10105cebdf",
+      "sha256": "1a05685dfb123a2a6ef72867210c3ea3ff1fb3d93fce98376bccccd1b3ad415c",
+      "bytes": 920606,
+      "rgbaSha256": "887ecb53f7c0292126632374061b21f189067339da598cd459f60092eec71a2a",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/a.avif",
+      "file": "public/assets/illuminated-initials/a.webp",
+      "source": "public/assets/illuminated-initials/a.avif",
+      "sourceSha256": "0a0e94aec3a64f9abc9729765752f755669168d84e2ac2fb11faa9e90fec52fa",
+      "sha256": "49a5663104f1d42ef2e997da98ddfc7babf1e9ef92ab6cba95c62663ba0ec0db",
+      "bytes": 895748,
+      "rgbaSha256": "1268b0dab0970975ce02cf0c7efc108227eae06c4b7dc37cd4ef340244e43468",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/b-alt.avif",
+      "file": "public/assets/illuminated-initials/b-alt.webp",
+      "source": "public/assets/illuminated-initials/b-alt.avif",
+      "sourceSha256": "fd3afcedb054302174f398ebf431e7c8f74f64724c5de4e1c1ac910fdda05e5f",
+      "sha256": "de638b07bee43216657cdfe8b58a057b498f48e87fb246224e5e738f955bc98b",
+      "bytes": 806972,
+      "rgbaSha256": "3d8d59d38379f9491e5bdc3fa5b45115ccd0e9ce75dcc82dc8673eabf9d602cb",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/b.avif",
+      "file": "public/assets/illuminated-initials/b.webp",
+      "source": "public/assets/illuminated-initials/b.avif",
+      "sourceSha256": "c230e25530541ad64596118a5798c508c337ff9c7d1887db060c3c401d577208",
+      "sha256": "4a215320c4d59c8bd1d3b8d886e554698a97de9a328b209d8ff9bd25f9c372f8",
+      "bytes": 910888,
+      "rgbaSha256": "6261790ca8db9fc1e1e1db83b94b36983ac37d40de0e0305dc0caa7d060185a2",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/c-alt.avif",
+      "file": "public/assets/illuminated-initials/c-alt.webp",
+      "source": "public/assets/illuminated-initials/c-alt.avif",
+      "sourceSha256": "6bf9cf198e1693af80d6161f35aaf04fea5066918912afd2c908735906e7026d",
+      "sha256": "06f33f032f8571825909b0a24d2c70ca224c97bfd286d441a54d40a419aa2ae2",
+      "bytes": 666942,
+      "rgbaSha256": "dcddeb8161b50f8092d79c232a5b2e564000cc32d41797bee7018f204f957705",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/c.avif",
+      "file": "public/assets/illuminated-initials/c.webp",
+      "source": "public/assets/illuminated-initials/c.avif",
+      "sourceSha256": "10c70178293412f8fb75142395fe1bc3c7418f12de6100139fbe8d389e7ad677",
+      "sha256": "a6d54f130fe3266f6391f42d48071f6eb6b84cb5885a08e6e9581e06f1f4e9dc",
+      "bytes": 891826,
+      "rgbaSha256": "5bc9e58432c1283a17baf501c4818b99bb03a6d2c774331ee0b1b4bb6ca379a8",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/d-alt.avif",
+      "file": "public/assets/illuminated-initials/d-alt.webp",
+      "source": "public/assets/illuminated-initials/d-alt.avif",
+      "sourceSha256": "5afdcac7aad929364ccae672640f8953ee3f069034111dd8ed108ddf0a80b0dc",
+      "sha256": "a3b26af815d99dbc396ed53730f2568e0a4e2b97b9e3e17997f5f1538a48e382",
+      "bytes": 752662,
+      "rgbaSha256": "a1f4b17e592d69309d27a5c525bbdaf36657fb4c33b3b88ad3dd5f5c7fe31ff6",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/d.avif",
+      "file": "public/assets/illuminated-initials/d.webp",
+      "source": "public/assets/illuminated-initials/d.avif",
+      "sourceSha256": "06ce561eb0f8255fbbe3328e370b0f787c12d166cd590ca60b306a79307eb206",
+      "sha256": "91a75021e9bc6fb24eabc05c10f8d5d4baf1e105bcdca8be666ce29d50d2f890",
+      "bytes": 941492,
+      "rgbaSha256": "947ef5df3d138e434ddf8f041c23dde1d1612482ea846e7cc35fa536667921e3",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/e-alt.avif",
+      "file": "public/assets/illuminated-initials/e-alt.webp",
+      "source": "public/assets/illuminated-initials/e-alt.avif",
+      "sourceSha256": "0b01dcd42622c72ef21456a90e61d5c5e9650e262cabb681f32deae921bedccb",
+      "sha256": "1ce21f348207fb91820a488ba80d47a648e8d142ef5b0a955c19102fe0392b9e",
+      "bytes": 735354,
+      "rgbaSha256": "38d47d1e15366c0236e10ff33cb4e50a28161274577c795f5a0b587d18981750",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/e.avif",
+      "file": "public/assets/illuminated-initials/e.webp",
+      "source": "public/assets/illuminated-initials/e.avif",
+      "sourceSha256": "19d68efb054f35220a108d91126e1252c53e96dcfed043756830db9356e40577",
+      "sha256": "7c5d7cca1122ced5a452c995a62e74929ad16dd6367d7ff0b59341a28e4af4a3",
+      "bytes": 822488,
+      "rgbaSha256": "2abcc2337dd2cf1cc89c82727025db7da98ede14f754cdba36956137a6aac79c",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/f-alt.avif",
+      "file": "public/assets/illuminated-initials/f-alt.webp",
+      "source": "public/assets/illuminated-initials/f-alt.avif",
+      "sourceSha256": "b3b66b1f3c0c731b5dd8422bc6d15cdccabd5969cac941479ffec411e0a352de",
+      "sha256": "d532b028ed1a7f6bfc284aaeecd68eb2ab6339268aa79f3ca1dbbae72bdb0fec",
+      "bytes": 714658,
+      "rgbaSha256": "95edb0806b946cac339e04791578ceb36694c3e08431cb051ff7544add967c3e",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/f.avif",
+      "file": "public/assets/illuminated-initials/f.webp",
+      "source": "public/assets/illuminated-initials/f.avif",
+      "sourceSha256": "9a4019a7651511d8031e3ade4304cc85ac2eb3f3f980f44222790a0dc2b58e6c",
+      "sha256": "20b7c8bcc7ae52ff4cb5cc9f52f3aee37e6a3a78df115e25f5959899bb817cde",
+      "bytes": 850916,
+      "rgbaSha256": "b55e303212e6320abad8b44c212450a03ac812224d099f05fee4431768b9f7d1",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/g-alt.avif",
+      "file": "public/assets/illuminated-initials/g-alt.webp",
+      "source": "public/assets/illuminated-initials/g-alt.avif",
+      "sourceSha256": "4c0513cbe76b4b5447673314fd0cd4bdd3835477af29b18854572454e9425ba2",
+      "sha256": "1447b6a4b6b344831d7d1eccdfe0df7f7ed94450eb71cb44addc4ad8dc451b09",
+      "bytes": 756838,
+      "rgbaSha256": "97726240a76a9da176b1aca2ca67245f1a3af94146128a3f4af6b3ce078e5ff3",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/g.avif",
+      "file": "public/assets/illuminated-initials/g.webp",
+      "source": "public/assets/illuminated-initials/g.avif",
+      "sourceSha256": "8b27a1c12d154d013e9a4b195418183ab94b415d974eff624cbb4430c475cbfe",
+      "sha256": "8316411e8599e24548281c6f9026c3035955961528f98c244e27362ba29f346c",
+      "bytes": 908008,
+      "rgbaSha256": "13b86e4fcfef3b324b36d21c5b3084dbaa90f205a431a9c0e223511b19cb196e",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/h-alt.avif",
+      "file": "public/assets/illuminated-initials/h-alt.webp",
+      "source": "public/assets/illuminated-initials/h-alt.avif",
+      "sourceSha256": "ed54742207d0e88949c2bf7ed2b53e65e55a971350592529051470483344c54e",
+      "sha256": "78c36218437ff231dcc773d9bc8e0d692697e9a26ee74fbad93e7dce6cb4d74a",
+      "bytes": 782478,
+      "rgbaSha256": "473da389219be7483796b1e19a982efea19e1934f814488ce7c67b3b49a41786",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/h.avif",
+      "file": "public/assets/illuminated-initials/h.webp",
+      "source": "public/assets/illuminated-initials/h.avif",
+      "sourceSha256": "e577176c62ab6869b647fc952801b96c29c27b6d6e7bfae6da8802410a8f576c",
+      "sha256": "b476c193a91b87f10a3849c06f4166407126a166c2de8637d80a156486c25fdb",
+      "bytes": 861948,
+      "rgbaSha256": "6c9bda1a12faa942f6b5aa397b072be0123e702ba7d90882a6fdc22cd2e23558",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/i-alt.avif",
+      "file": "public/assets/illuminated-initials/i-alt.webp",
+      "source": "public/assets/illuminated-initials/i-alt.avif",
+      "sourceSha256": "edd5807786c87a76afc0bec9a216301d31fb81d074b1082bf53013a1b76a9f20",
+      "sha256": "00d9c819696b87a38ad19f68452a5c2bccbafddcebd3cf52da979e3ed4349c2f",
+      "bytes": 684048,
+      "rgbaSha256": "8f822ecb0a5137e08bd882a17675639bca9a3540791484875fc126b823ae4064",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/i.avif",
+      "file": "public/assets/illuminated-initials/i.webp",
+      "source": "public/assets/illuminated-initials/i.avif",
+      "sourceSha256": "62c96a413d0221e0d2398e60771def4d92d541c4a60fcd4a4f442a5d82a9a5a4",
+      "sha256": "202bf41f87d01ee82f4138d8e506697b5d638d8240496965343c9f31a3cf9130",
+      "bytes": 709752,
+      "rgbaSha256": "bdb6130b8f21b4555fbfbba185ec39aa4d9919f5846978118fec0ab149e6a2cc",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/j-alt.avif",
+      "file": "public/assets/illuminated-initials/j-alt.webp",
+      "source": "public/assets/illuminated-initials/j-alt.avif",
+      "sourceSha256": "efea59c3080d88182e135be55fe16c5f43dce8370411c1c198ad7a0ea74ec8ef",
+      "sha256": "52aec4ca572fb8438e592d94ac5c33d66fd55a94c18720fe5d20c688878e3167",
+      "bytes": 675644,
+      "rgbaSha256": "7d9b6484f2f18ffb6770cf5fc7b83ca141512057265655a3d3bc4c0c14cce72b",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/j.avif",
+      "file": "public/assets/illuminated-initials/j.webp",
+      "source": "public/assets/illuminated-initials/j.avif",
+      "sourceSha256": "3c15b4336df6d5701ce030c167961ee6153e40754aca59a223e8ad25111f23e4",
+      "sha256": "ecd819be2ee953dd5fdf8d694c9f842ccbe6d02e80c50e38f2498f981460dd72",
+      "bytes": 727490,
+      "rgbaSha256": "dc53f52897142f7f209e2813eb9dd8db18245970705df95fca3b63637c637d32",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/k-alt.avif",
+      "file": "public/assets/illuminated-initials/k-alt.webp",
+      "source": "public/assets/illuminated-initials/k-alt.avif",
+      "sourceSha256": "45cbaeeb98aaa7437837314ec0b7a477771655de4fc49e8de379224b66d63547",
+      "sha256": "36c9f1269e0799a92df46732c2502dfd1d88b40113c19bda84e71786e669e893",
+      "bytes": 850212,
+      "rgbaSha256": "b01b114c9070ee1df44c7b7a77a15853a180b98030d025f845f18d4d790bf1d6",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/k.avif",
+      "file": "public/assets/illuminated-initials/k.webp",
+      "source": "public/assets/illuminated-initials/k.avif",
+      "sourceSha256": "b36e5e274cb5e1112c627aa4d851cf75045c30f4e6fe47a82ff31ff5e79b69ec",
+      "sha256": "00ff70c27552126b0f89894624f48a10972a4726127a7930225fa018bd62a642",
+      "bytes": 948180,
+      "rgbaSha256": "d28d2e4ad99165973e8f5cd0a437fea5947fa8b9885696e00927c6b864faa9b3",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/l-alt.avif",
+      "file": "public/assets/illuminated-initials/l-alt.webp",
+      "source": "public/assets/illuminated-initials/l-alt.avif",
+      "sourceSha256": "9298dcf452dcd240e8c676843f9fe29bae3f556cd378503c5c960ae9ccd59830",
+      "sha256": "49f69e0422a2e1527fc58e5d31c73da01d8b0ae41df5eb809ded1d21a78b2509",
+      "bytes": 625610,
+      "rgbaSha256": "866e3690c18aafd756ab20e2264b840f86c733a2be22b56759ed88e671c9a643",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/l.avif",
+      "file": "public/assets/illuminated-initials/l.webp",
+      "source": "public/assets/illuminated-initials/l.avif",
+      "sourceSha256": "b86da9d2416aa93b4e998c258a234411f069cada814d4ae0652e1fc4eab90ee7",
+      "sha256": "a547a0ca7d421b232fa2fc9dad59ce56c8f9cf0a2d2546a4f466da8f451ad72f",
+      "bytes": 680568,
+      "rgbaSha256": "dbf0f2bec777a1be7fa68391e8005bff90e5413a5588f678beeb3eaf8bfb70d5",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/m-alt.avif",
+      "file": "public/assets/illuminated-initials/m-alt.webp",
+      "source": "public/assets/illuminated-initials/m-alt.avif",
+      "sourceSha256": "b01373ea65ecf742d405f51003159892f013b6608fff7e5d02849d2a2d5db72e",
+      "sha256": "d16daf9995b7ff44078bbfb1ab51cdb5bc7fcfbda0eb23c137837d3d081ab583",
+      "bytes": 824428,
+      "rgbaSha256": "71b9ea23f74b28ae5f01ecf813fdb251402126825e633bf5076f99221f59fe22",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/m.avif",
+      "file": "public/assets/illuminated-initials/m.webp",
+      "source": "public/assets/illuminated-initials/m.avif",
+      "sourceSha256": "8ddc849e1b168f8c19cebcaedd1d7660e3a8a646f83ef2709f4e16884bbce126",
+      "sha256": "e9f89085ed5ed736cbba9f73425c105da3f23e655b297facf2f7e6451d37a1ea",
+      "bytes": 978834,
+      "rgbaSha256": "1c98cb7a35b20724b9f8152a7c1d247693b810dad2bfb460ce7f53da21a6f81d",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/n-alt.avif",
+      "file": "public/assets/illuminated-initials/n-alt.webp",
+      "source": "public/assets/illuminated-initials/n-alt.avif",
+      "sourceSha256": "fc1879165455d179a7b751d3878ff2bd6a2458a83f8f8b0d037a698cd760d8ab",
+      "sha256": "ad2b101e9f6e59752f76f9d6049e3cf49a7ee5c676915ac10e825aa864618913",
+      "bytes": 918130,
+      "rgbaSha256": "5d0ddf52aa31a8e7ab9be39cb4ec6e94e4e90bed15b5369d0756af7928075f45",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/n.avif",
+      "file": "public/assets/illuminated-initials/n.webp",
+      "source": "public/assets/illuminated-initials/n.avif",
+      "sourceSha256": "d75ab91a142c203aa316b2b58ae2b4726c1e935be8d74c0bbfa8140fc6d97730",
+      "sha256": "cdd8ea8eebdbf009f3ad466816a37227420490a3d5a67e5ddaa0a5255975ef96",
+      "bytes": 976394,
+      "rgbaSha256": "b5aadf6c5cd4ad7b5efb7eb5e0d6609a038d4c682d1d62700aa665249a649908",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/o-alt.avif",
+      "file": "public/assets/illuminated-initials/o-alt.webp",
+      "source": "public/assets/illuminated-initials/o-alt.avif",
+      "sourceSha256": "353cf6079d5c7d5e43415bed64f1bb43784ea120ab6b40be238c2115c5d8e8d4",
+      "sha256": "c3a22afe8ee7ec3645f7848a35f4d1e98674093c3bb24a17c90b6b33516257f0",
+      "bytes": 1004082,
+      "rgbaSha256": "50a7f151a2ee81dedc2168dfd0dc45e2448f5ebe2110854090336f0e8af43a72",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/o.avif",
+      "file": "public/assets/illuminated-initials/o.webp",
+      "source": "public/assets/illuminated-initials/o.avif",
+      "sourceSha256": "88902c0945d849a03dcb42766e14d08e136e62e82dd0520f76dbfed48f879404",
+      "sha256": "2b450749d99cf67b46d7f2afbbfc2fad2d500b923ba8071089d647adb7e2afb4",
+      "bytes": 917410,
+      "rgbaSha256": "74147c55121ae3b949e33b3742fc5fcad0926c0483e27a74a95d2a4c98f45908",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/p-alt.avif",
+      "file": "public/assets/illuminated-initials/p-alt.webp",
+      "source": "public/assets/illuminated-initials/p-alt.avif",
+      "sourceSha256": "db8205dec33c42676213240b6e69453c5b53e61bf53a08e4e5cbb3fbe76e1281",
+      "sha256": "a2ef004ca4475f25e83e028681e4f4681f5e8c34e86cc97ae7a228c280dcf7ce",
+      "bytes": 953416,
+      "rgbaSha256": "54601875fe7717a22416415c55512f46c867bed191ae93a37b3b757dfc154a18",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/p.avif",
+      "file": "public/assets/illuminated-initials/p.webp",
+      "source": "public/assets/illuminated-initials/p.avif",
+      "sourceSha256": "f758c7a9212b87eaf03ec6bcc3888c11552c9514d4544db8e36fc6a708ae3c05",
+      "sha256": "8cda6c75252d070baeaa80c217cdd0ef1e1c12812ec0ff4d3b6b0488a4acc2df",
+      "bytes": 923806,
+      "rgbaSha256": "dd52f3c35a2b796db54c8a2006ce1e81c156526992793ed94c339200ba45328e",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/q-alt.avif",
+      "file": "public/assets/illuminated-initials/q-alt.webp",
+      "source": "public/assets/illuminated-initials/q-alt.avif",
+      "sourceSha256": "6df78051e2323abc71bd845b8bb1802fed0f847b7ebdda2d5dcb0b67e0749a81",
+      "sha256": "2181cfc2b953c1f0f32341714657ce05ad1588ed73befa533079bc87582570af",
+      "bytes": 1000654,
+      "rgbaSha256": "734abf79d5d29c361e613aed88c6b606d511f1b54b40d7e01f88bb0cf6f9c89a",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/q.avif",
+      "file": "public/assets/illuminated-initials/q.webp",
+      "source": "public/assets/illuminated-initials/q.avif",
+      "sourceSha256": "381eae7d81f234e6f8bf2934e4209a01545ca6967a9ee75eb296443c173026b4",
+      "sha256": "eaf7856f2c0cedea866883c383bfb4b451b97308f7849ec4841bb24ee858d715",
+      "bytes": 891626,
+      "rgbaSha256": "1c16a7b16c50b470bfe7b6c457367802599295d6a7dbd55cd1c5e88dd13594f8",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/r-alt.avif",
+      "file": "public/assets/illuminated-initials/r-alt.webp",
+      "source": "public/assets/illuminated-initials/r-alt.avif",
+      "sourceSha256": "3a4ec2d303366bb8f421b3a16f341308b57da74731f9a68386f9a6a369f47417",
+      "sha256": "8ca01d9a6f1ff3f60035ff8e6a50e5fd77bae366ca1ed19e076f708d899884e7",
+      "bytes": 932288,
+      "rgbaSha256": "508a81a4d7f7c5bbc37c4a29f71befd6ea60045264555497189a3a86a606d249",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/r.avif",
+      "file": "public/assets/illuminated-initials/r.webp",
+      "source": "public/assets/illuminated-initials/r.avif",
+      "sourceSha256": "55c2fb052610ad70b083139bdda6c3998a2566cbde6b55713f27c75ae73274cd",
+      "sha256": "43775a7a4312490fbe61377f1b9040fd73aab541fbe50f34d873317ee168e9db",
+      "bytes": 1006342,
+      "rgbaSha256": "8d22c059ea7f1dcc85f98f29bf6a089fe0c4d3a3e3b2ef6a52ab31d38a9347e2",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/s-alt.avif",
+      "file": "public/assets/illuminated-initials/s-alt.webp",
+      "source": "public/assets/illuminated-initials/s-alt.avif",
+      "sourceSha256": "0b6a842ace12228c9389fe959172c8f51266b065fe3806eeb86e0557c0818984",
+      "sha256": "70e40d496414db09358176b8de23d8c5edea1b732334c23846867b522ffcbff4",
+      "bytes": 981710,
+      "rgbaSha256": "f13c9742f18c88ae50b1b04f0dfe3902b019d51ec981c078c8ff23f42a41ba97",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/s.avif",
+      "file": "public/assets/illuminated-initials/s.webp",
+      "source": "public/assets/illuminated-initials/s.avif",
+      "sourceSha256": "1c2de7c47cd30b795ea8ccedc3a93615cda7182fc4948b8206d5a490e9e61232",
+      "sha256": "dd8b1af6fdcc41207e72806a42f271a12290d9ea0026c4301b210c90dffe5380",
+      "bytes": 1027560,
+      "rgbaSha256": "0d05af01a34115f52d4ddd6ed6186920f1a7826e32624e2e7b3a0c907e0ced6f",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/t-alt.avif",
+      "file": "public/assets/illuminated-initials/t-alt.webp",
+      "source": "public/assets/illuminated-initials/t-alt.avif",
+      "sourceSha256": "f8716eb71a6096a57bd87adba839d6e190455c490a32af39d14603f3d6a6be7c",
+      "sha256": "16d0b0a86ba30bf9a3a7c42e6929b84cb86789e67d5d87ecb61923b3a0dec995",
+      "bytes": 763514,
+      "rgbaSha256": "982e1b53f223b5e26addf5611e9237a3c223cd565711a83bfcc67d473f602389",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/t.avif",
+      "file": "public/assets/illuminated-initials/t.webp",
+      "source": "public/assets/illuminated-initials/t.avif",
+      "sourceSha256": "e21311d1de61b09b02cf3c938a5793dde28f53acc03b5d16838880dda1e74db9",
+      "sha256": "9fa9fef84b9edc3da580520d3daa312a354ded198fd10a1a89eb7301948250bc",
+      "bytes": 858342,
+      "rgbaSha256": "111aab2f3a50b494a9b2efb85504e6c9820892c65845d768bcf2c2c17f6d5e34",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/u-alt.avif",
+      "file": "public/assets/illuminated-initials/u-alt.webp",
+      "source": "public/assets/illuminated-initials/u-alt.avif",
+      "sourceSha256": "2beb5f040a25dee7e32fc8f0f0e1590426820b469dab459748333d4894ef2641",
+      "sha256": "ce286f50de76dc18a2342249f235dfa09d722fba6214b97b26ff87d4c9817e14",
+      "bytes": 906318,
+      "rgbaSha256": "332353b3cc084df70702a5f47fc92b8fe70c71b7a825384e0a07d4c76f8f97f7",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/u.avif",
+      "file": "public/assets/illuminated-initials/u.webp",
+      "source": "public/assets/illuminated-initials/u.avif",
+      "sourceSha256": "98499e1d470ac8703e61edd126d8ec47cdd4366fa5a4897bb179dfa379e90fd9",
+      "sha256": "dfcd3dd8b9d6df2aa16b6400c555761f06925ad3b41a1560c7bd31224853c871",
+      "bytes": 902526,
+      "rgbaSha256": "98d208f35961bed54b3f65d928cafba3a778e6a49f33588ff3786bf60dfe84f6",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/v-alt.avif",
+      "file": "public/assets/illuminated-initials/v-alt.webp",
+      "source": "public/assets/illuminated-initials/v-alt.avif",
+      "sourceSha256": "7c56042f99f4bed5b734a7c9390485c538ae29048527b02737374e63f605862c",
+      "sha256": "b12c04451dcb7255c98cadb17946e96810efb9944a6e020d0a55ee8610dac758",
+      "bytes": 979632,
+      "rgbaSha256": "ec8e24bc1f6226fbd65521f25234f2d8064f76b4880c4d322e1b48c7a5b6d9f3",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/v.avif",
+      "file": "public/assets/illuminated-initials/v.webp",
+      "source": "public/assets/illuminated-initials/v.avif",
+      "sourceSha256": "cd79e8bde084dd97ecec11748832d50b8a37f097b52a84b712647883c06d01b5",
+      "sha256": "a38c6bd60cb0b0d9cd92b06b5e493f2aa88d60b190c713e494eac7b3b4aee107",
+      "bytes": 911584,
+      "rgbaSha256": "c951c1ccbedf3c0b6060f186cb5c712ae592c8576fa746965a95a089c3a937ab",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/w-alt.avif",
+      "file": "public/assets/illuminated-initials/w-alt.webp",
+      "source": "public/assets/illuminated-initials/w-alt.avif",
+      "sourceSha256": "719a06362a433a31ec79ef1f2dee7310a61d1c6a264cadd44ed9135143c1b236",
+      "sha256": "441639e390b4d6161b673eea9ff62277f1307784dd8fc91695929a0c0bbe2c0c",
+      "bytes": 972868,
+      "rgbaSha256": "22814eef4a71cbca55f0cb6d669a5f83246e4b0d57c6ecab7723a9016fcbe7a1",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/w.avif",
+      "file": "public/assets/illuminated-initials/w.webp",
+      "source": "public/assets/illuminated-initials/w.avif",
+      "sourceSha256": "38515d11bf7e68984723757f5c27a7393c1d212809c8fe979d762875605fefe7",
+      "sha256": "8e07e4f40567514da0a3a5cf363524d26366bf280c110081dbce2ffdafd7a6b7",
+      "bytes": 1082012,
+      "rgbaSha256": "98243c5d5f6628ba131cf4fa150f9e07b91f6809e8f783ee644a9c3a870de68c",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/x-alt.avif",
+      "file": "public/assets/illuminated-initials/x-alt.webp",
+      "source": "public/assets/illuminated-initials/x-alt.avif",
+      "sourceSha256": "7f7425701a44a1b6b2742d2b121174e567a90dd1c712146c634015f52c014925",
+      "sha256": "5841387866574cdd16d2582c2829f679afd1345f2cc970275d0946f9edce9003",
+      "bytes": 984886,
+      "rgbaSha256": "ce6af40a158543ef3e79d6bc200431ed53f0326078c3ef9a4c019d7a2f407971",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/x.avif",
+      "file": "public/assets/illuminated-initials/x.webp",
+      "source": "public/assets/illuminated-initials/x.avif",
+      "sourceSha256": "f7d3bc4518303676bbd5c1cd04bdf9c7a5acff10dbf897e6865764fb306ce69c",
+      "sha256": "c78b1e34dd6690195a4dec0b74a168716fb4eaed4dff7574c51a0caaa7be55cf",
+      "bytes": 973596,
+      "rgbaSha256": "36c4ebd80ee4e06f4a67bb4786181b09300908b3701148fb23fbe6c3b36b6b68",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/y-alt.avif",
+      "file": "public/assets/illuminated-initials/y-alt.webp",
+      "source": "public/assets/illuminated-initials/y-alt.avif",
+      "sourceSha256": "9900c152eef2b286c14965ac8adb9d7de36143444fe4dcfe50df6dab7af030a3",
+      "sha256": "7fa58ae9f546a0e393a0cb9c3ec5a7916df9eaeac1697e9b748b60f73becec8d",
+      "bytes": 816248,
+      "rgbaSha256": "92c41b52b5e99c0723140a2e753bdb16081d0960b4d6117a101c857c00dea691",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/y.avif",
+      "file": "public/assets/illuminated-initials/y.webp",
+      "source": "public/assets/illuminated-initials/y.avif",
+      "sourceSha256": "c1b1047aac9a03b54682f6ae2faad4ebf59b1c1a4f20dc50b6ff42d66ab97116",
+      "sha256": "dbc7f640663f292b68a0cafe66cb5406a0b5e7df27f730753e966ebe01d67524",
+      "bytes": 852840,
+      "rgbaSha256": "95f90d6f92128557a41a4651fd74817b44c8c42a8a69a5e0fd5160b049112cb6",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/z-alt.avif",
+      "file": "public/assets/illuminated-initials/z-alt.webp",
+      "source": "public/assets/illuminated-initials/z-alt.avif",
+      "sourceSha256": "5abb62cb2b3e4a396b72c70575db81a4bb93a91952f463cd181d43601b2dc6c1",
+      "sha256": "73e3ab928a918c9c664b9fab239e2c3a48b021c8148cdb7ee9ce0756c5fab681",
+      "bytes": 832948,
+      "rgbaSha256": "bf334d79b2b480e218bf857ed197654ee942d0ce44e5424120c435d486918790",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/illuminated-initials/z.avif",
+      "file": "public/assets/illuminated-initials/z.webp",
+      "source": "public/assets/illuminated-initials/z.avif",
+      "sourceSha256": "3d2a0175029a3253d1d52c3944172d740c7dcd091e9ab9cafe258b116367b820",
+      "sha256": "e0b114a807a55b9057bef0f9c30d629cc7147a3f6664bed95a15b947c74ba085",
+      "bytes": 703586,
+      "rgbaSha256": "401b39b3239c6db720ff8a6106965b1351e7e9f0e571c71e54d70c96a660ae6e",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/manual/editors/angel-transparent-480.webp",
+      "file": "public/assets/manual/editors/angel-transparent-480.webp",
+      "source": "public/assets/manual/editors/angel-transparent-480.webp",
+      "sourceSha256": "477b0aa98dbf82e688de8d12d7636e0f524b2a17c48f60c935eb5ed53f63c850",
+      "sha256": "477b0aa98dbf82e688de8d12d7636e0f524b2a17c48f60c935eb5ed53f63c850",
+      "bytes": 333776
+    },
+    {
+      "path": "assets/manual/editors/angel-transparent.webp",
+      "file": "public/assets/manual/editors/angel-transparent.webp",
+      "source": "public/assets/manual/editors/angel-transparent.webp",
+      "sourceSha256": "2c2139d577b02a5354046892a77065ae1b0a58f8e0effda9f78a9a570068fceb",
+      "sha256": "2c2139d577b02a5354046892a77065ae1b0a58f8e0effda9f78a9a570068fceb",
+      "bytes": 1668442
+    },
+    {
+      "path": "assets/manual/editors/angel.webp",
+      "file": "public/assets/manual/editors/angel.webp",
+      "source": "public/assets/manual/editors/angel.webp",
+      "sourceSha256": "01fc0749d0dbded39e4f3f83bd0cf7224ea80de831c4238a1f54f22a161d0c58",
+      "sha256": "01fc0749d0dbded39e4f3f83bd0cf7224ea80de831c4238a1f54f22a161d0c58",
+      "bytes": 89498
+    },
+    {
+      "path": "assets/manual/editors/devil-transparent-480.webp",
+      "file": "public/assets/manual/editors/devil-transparent-480.webp",
+      "source": "public/assets/manual/editors/devil-transparent-480.webp",
+      "sourceSha256": "e49d2c16bf314d6574bb658b66297bea8760f8358cde9985b7232113bc0c826a",
+      "sha256": "e49d2c16bf314d6574bb658b66297bea8760f8358cde9985b7232113bc0c826a",
+      "bytes": 281502
+    },
+    {
+      "path": "assets/manual/editors/devil-transparent.webp",
+      "file": "public/assets/manual/editors/devil-transparent.webp",
+      "source": "public/assets/manual/editors/devil-transparent.webp",
+      "sourceSha256": "15a7d2037365592f01304f6f17fc99bb598e0cbf92c94f8774000bc5fb04ea6c",
+      "sha256": "15a7d2037365592f01304f6f17fc99bb598e0cbf92c94f8774000bc5fb04ea6c",
+      "bytes": 1420890
+    },
+    {
+      "path": "assets/manual/editors/devil.webp",
+      "file": "public/assets/manual/editors/devil.webp",
+      "source": "public/assets/manual/editors/devil.webp",
+      "sourceSha256": "b7497d76b7544180a86e3da6136413dd104bba1c10cb875a5e741ee490f2e9e9",
+      "sha256": "b7497d76b7544180a86e3da6136413dd104bba1c10cb875a5e741ee490f2e9e9",
+      "bytes": 76168
+    },
+    {
+      "path": "assets/manual/editors/editor-transparent-480.webp",
+      "file": "public/assets/manual/editors/editor-transparent-480.webp",
+      "source": "public/assets/manual/editors/editor-transparent-480.webp",
+      "sourceSha256": "14a787651af5b5ddc4c010320feb263ca216e3bafff0510b782683e026b4ef33",
+      "sha256": "14a787651af5b5ddc4c010320feb263ca216e3bafff0510b782683e026b4ef33",
+      "bytes": 278072
+    },
+    {
+      "path": "assets/manual/editors/editor-transparent.webp",
+      "file": "public/assets/manual/editors/editor-transparent.webp",
+      "source": "public/assets/manual/editors/editor-transparent.webp",
+      "sourceSha256": "63f4a55226d38ad32ecd4da2bc196533bfe464b83ec396b500ea92ca7d20f690",
+      "sha256": "63f4a55226d38ad32ecd4da2bc196533bfe464b83ec396b500ea92ca7d20f690",
+      "bytes": 1410130
+    },
+    {
+      "path": "assets/manual/editors/editor.webp",
+      "file": "public/assets/manual/editors/editor.webp",
+      "source": "public/assets/manual/editors/editor.webp",
+      "sourceSha256": "27a0ca7b7edde8d2b146a1d97da4406690263d2d21042357ad03e657f897abee",
+      "sha256": "27a0ca7b7edde8d2b146a1d97da4406690263d2d21042357ad03e657f897abee",
+      "bytes": 65120
+    },
+    {
+      "path": "assets/manual/editors/manifest.json",
+      "file": "public/assets/manual/editors/manifest.json",
+      "source": "public/assets/manual/editors/manifest.json",
+      "sourceSha256": "5ac87215b69dd870d141f9d5f5f8cca9301a1c8c7776e73617333e7a2f1fb60b",
+      "sha256": "5ac87215b69dd870d141f9d5f5f8cca9301a1c8c7776e73617333e7a2f1fb60b",
+      "bytes": 2973
+    },
+    {
+      "path": "assets/manual/editors/reader-transparent-480.webp",
+      "file": "public/assets/manual/editors/reader-transparent-480.webp",
+      "source": "public/assets/manual/editors/reader-transparent-480.webp",
+      "sourceSha256": "66503de78732046b1433c754280d6ccdba1f5d06460d5872a173990a8c3a149b",
+      "sha256": "66503de78732046b1433c754280d6ccdba1f5d06460d5872a173990a8c3a149b",
+      "bytes": 304098
+    },
+    {
+      "path": "assets/manual/editors/reader-transparent.webp",
+      "file": "public/assets/manual/editors/reader-transparent.webp",
+      "source": "public/assets/manual/editors/reader-transparent.webp",
+      "sourceSha256": "d58ed23b5feea8e1fb41b2ca54cc4f67797f2f44d46de1cea1b28fece57a581d",
+      "sha256": "d58ed23b5feea8e1fb41b2ca54cc4f67797f2f44d46de1cea1b28fece57a581d",
+      "bytes": 1582514
+    },
+    {
+      "path": "assets/manual/editors/reader.webp",
+      "file": "public/assets/manual/editors/reader.webp",
+      "source": "public/assets/manual/editors/reader.webp",
+      "sourceSha256": "deb2ac61e3a8bc7d6e91e454b6fc29a194c8abb32dcc00f4deeb549bcf95d565",
+      "sha256": "deb2ac61e3a8bc7d6e91e454b6fc29a194c8abb32dcc00f4deeb549bcf95d565",
+      "bytes": 78508
+    },
+    {
+      "path": "assets/manual/editors/scholar-transparent-480.webp",
+      "file": "public/assets/manual/editors/scholar-transparent-480.webp",
+      "source": "public/assets/manual/editors/scholar-transparent-480.webp",
+      "sourceSha256": "74e7fcbbbf592bc00c5a57805dec7d7e68edb4e1637e643983b9683612acf930",
+      "sha256": "74e7fcbbbf592bc00c5a57805dec7d7e68edb4e1637e643983b9683612acf930",
+      "bytes": 354238
+    },
+    {
+      "path": "assets/manual/editors/scholar-transparent.webp",
+      "file": "public/assets/manual/editors/scholar-transparent.webp",
+      "source": "public/assets/manual/editors/scholar-transparent.webp",
+      "sourceSha256": "84351d62ec8f0c9abd74f2faa54303b71a3b2002f06251a775563e877090d34b",
+      "sha256": "84351d62ec8f0c9abd74f2faa54303b71a3b2002f06251a775563e877090d34b",
+      "bytes": 1746042
+    },
+    {
+      "path": "assets/manual/editors/scholar.webp",
+      "file": "public/assets/manual/editors/scholar.webp",
+      "source": "public/assets/manual/editors/scholar.webp",
+      "sourceSha256": "ceb2e72d666209f4bded5c59b2325060878b2c6e32e87f431d66631ca4295e7c",
+      "sha256": "ceb2e72d666209f4bded5c59b2325060878b2c6e32e87f431d66631ca4295e7c",
+      "bytes": 92884
+    },
+    {
+      "path": "assets/manuscript-page.svg",
+      "file": "public/assets/manuscript-page.svg",
+      "source": "public/assets/manuscript-page.svg",
+      "sourceSha256": "295b816097f5a1068ab9ac18976bfb1c8892a457e194aad114515ed7c4107ede",
+      "sha256": "295b816097f5a1068ab9ac18976bfb1c8892a457e194aad114515ed7c4107ede",
+      "bytes": 1902
+    },
+    {
+      "path": "assets/page-borders/botanical.avif",
+      "file": "public/assets/page-borders/botanical.webp",
+      "source": "public/assets/page-borders/botanical.avif",
+      "sourceSha256": "82e9ce37393d1b8bf7e0c66b0984cc2aa7ff3c49e16b0cd2cee0e0aeb4707b96",
+      "sha256": "c6cbfa68c484d4398840c8ad91e3a67a81df9b5ab2a8a7d2d9192b1b07efe372",
+      "bytes": 1463376,
+      "rgbaSha256": "2803f5fd9631e7f57db4f7ad8400580cf50be0d7de42d346aacc3082a9cff787",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/engraved.avif",
+      "file": "public/assets/page-borders/engraved.webp",
+      "source": "public/assets/page-borders/engraved.avif",
+      "sourceSha256": "06487920061a0b07f38d6e0199327422e53c07d900fedb2889337f1839152d2d",
+      "sha256": "34d7a82f3c7e70f03de6833e5b5e4dcaab0f63aa6431f20d5021a026575f9b56",
+      "bytes": 1086462,
+      "rgbaSha256": "c92b5b50f14657bd0d6319074dd6a464d9ba7f9989eac28d457fda208fa3c57c",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/illuminated.avif",
+      "file": "public/assets/page-borders/illuminated.webp",
+      "source": "public/assets/page-borders/illuminated.avif",
+      "sourceSha256": "c86e7dd6228c2098c2aa5eb10c79f328338bb0d72d771da68befe1ce58b92ca0",
+      "sha256": "7ec4b3991a7841f4fa74b26057a868f7d6f76d4d6e9044a93ec6635a3cf3caef",
+      "bytes": 1210528,
+      "rgbaSha256": "f8bd81a1080b671b89141b0a89c0e8a3fbb80e9d7fb4c01bc98b18f5c6506f31",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/paper-preview.avif",
+      "file": "public/assets/page-borders/paper-preview.webp",
+      "source": "public/assets/page-borders/paper-preview.avif",
+      "sourceSha256": "0334fd13f7ec688946703ed69f60e8e074d5490ee9503d2ff68067c654db565e",
+      "sha256": "a5d43bf2c2305ca97972eb62ca363226c93855c6047aededd02fbef461b172f3",
+      "bytes": 725480,
+      "rgbaSha256": "21fbc170902acdc24f2eece2dcea167244b4e94608cf2588c84c39e1b8eabb4e",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/botanical-e.avif",
+      "file": "public/assets/page-borders/slices/botanical-e.webp",
+      "source": "public/assets/page-borders/slices/botanical-e.avif",
+      "sourceSha256": "c2491cb01021426080441d3ad045b2dd2ad1c316ec1a0cff0373e61929136ec8",
+      "sha256": "0cb69bf996ea45895a30b2e8d9e4cd4c7c0ab8ba2a0bbc03b61d3da647436ff9",
+      "bytes": 291192,
+      "rgbaSha256": "8bf6332999b7cf6c62ace2f0b4705c72bb384c4b5760541f174d8db51e02c345",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/botanical-n.avif",
+      "file": "public/assets/page-borders/slices/botanical-n.webp",
+      "source": "public/assets/page-borders/slices/botanical-n.avif",
+      "sourceSha256": "e960d173d75d0492c8a2a57c416dd281fba4f1e2dca9b7015683bfe5c1710c98",
+      "sha256": "98ebd6de5a3923ff28d29fa07ee8d1117f736f7cf6d1726a722ba4ac27c7aa44",
+      "bytes": 109190,
+      "rgbaSha256": "13f2fd374a8ae8e9f179e11eba65402782eb757c92265d51b9d93f3a284a9975",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/botanical-ne.avif",
+      "file": "public/assets/page-borders/slices/botanical-ne.webp",
+      "source": "public/assets/page-borders/slices/botanical-ne.avif",
+      "sourceSha256": "7a8dc4c0b1a91093345871b0934d2902784c0e6d447252cdf3c1593b85820331",
+      "sha256": "2f1e0104b8a983879bcfae36a3d75d19b4b135b03d6edaccf0eadd68d4879b37",
+      "bytes": 141718,
+      "rgbaSha256": "d2a5919669937f4f938887fe4914c141a34edcca57e72206c7ab33f95566fbfa",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/botanical-nw.avif",
+      "file": "public/assets/page-borders/slices/botanical-nw.webp",
+      "source": "public/assets/page-borders/slices/botanical-nw.avif",
+      "sourceSha256": "95c99e22b9c4f07ffc2b4c085491f2555ab8c47ee6f3ac88a696090688bc90b3",
+      "sha256": "7bb8421020f557c9ad5427e2cd4b94284dfc377d80da9f62716accd1d517b9c9",
+      "bytes": 140656,
+      "rgbaSha256": "d720b4de84d5d5b10e2e60fda6e2bb2199b9fa4b0ede21a6252146fa0756a65c",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/botanical-s.avif",
+      "file": "public/assets/page-borders/slices/botanical-s.webp",
+      "source": "public/assets/page-borders/slices/botanical-s.avif",
+      "sourceSha256": "7b5139d81a78fac5f35c66e8818280c2c44535b50308beb939228e5a96735164",
+      "sha256": "ef18207463a202f0004c12c26c7882241848b618024bbb2239bba11c9a1bd954",
+      "bytes": 109732,
+      "rgbaSha256": "ce591c0c08f3ee41fc0c84b2ea923fefd8ecc0068b5ec53d2d5c768b89e32b2e",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/botanical-se.avif",
+      "file": "public/assets/page-borders/slices/botanical-se.webp",
+      "source": "public/assets/page-borders/slices/botanical-se.avif",
+      "sourceSha256": "ab403cc2439a44151866ce850bc2f8b34b147b04f821ca28997e89a610248871",
+      "sha256": "0b3a8a2dd8b6e65a88f65a693a989fd70201ef9d7016c482eba13574b9b4804d",
+      "bytes": 141090,
+      "rgbaSha256": "75fa2d57f81f0c8bce34d56678a4416ac5dae212ac2e17c0f4b1df3f10d78d88",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/botanical-sw.avif",
+      "file": "public/assets/page-borders/slices/botanical-sw.webp",
+      "source": "public/assets/page-borders/slices/botanical-sw.avif",
+      "sourceSha256": "2144b2913f206211ae5c67aab47f52643aea61d04674511185d116165933aa55",
+      "sha256": "4fd0938b6b07f32b29361530ca0e15046ed5d45a862fbb8fa8e5e57719afc06f",
+      "bytes": 140864,
+      "rgbaSha256": "ac6017730255a824ffaca0319704ebda2d3dac4f705413de4589caf8916dcd2b",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/botanical-w.avif",
+      "file": "public/assets/page-borders/slices/botanical-w.webp",
+      "source": "public/assets/page-borders/slices/botanical-w.avif",
+      "sourceSha256": "7474f7ece7325b550db457a89f21f686c95ea1fe79371cbeb116dc3a8333a34e",
+      "sha256": "a891cef4ba7d0fd20152e95239f19c2bc16cf71685a785c1c944ce41e5380427",
+      "bytes": 290838,
+      "rgbaSha256": "5e9e93a2955fd2e3cc51c8e8795301d2fa76fb7df23fe42fd4ee0cc8f4c3a587",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/engraved-e.avif",
+      "file": "public/assets/page-borders/slices/engraved-e.webp",
+      "source": "public/assets/page-borders/slices/engraved-e.avif",
+      "sourceSha256": "03dcb4df4d18c27381411c145d523aba5623a10706f8ae064d8136e80a44125b",
+      "sha256": "f15f034fa62ac09fdd70bcb7053dc45c926063d823474c7958b03ed2458975e5",
+      "bytes": 212310,
+      "rgbaSha256": "f1c898e312d3320f8cbe7dc977e807211ee89e2b9f526bd121cb9f834de6971f",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/engraved-n.avif",
+      "file": "public/assets/page-borders/slices/engraved-n.webp",
+      "source": "public/assets/page-borders/slices/engraved-n.avif",
+      "sourceSha256": "c99153c76cf2b415517c9a5d712b617a66ceb9ed4dd8c5f98bab77a33b1ac545",
+      "sha256": "4e052016c0dad20e410aa1dac1566589d54c400c21ff073dcae3805a153e0293",
+      "bytes": 78812,
+      "rgbaSha256": "88c30c01345ec825b690b89836dd8ec68ae9ad8f85c74afeb3538bd7d8511609",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/engraved-ne.avif",
+      "file": "public/assets/page-borders/slices/engraved-ne.webp",
+      "source": "public/assets/page-borders/slices/engraved-ne.avif",
+      "sourceSha256": "5c3491ab3f5b4e84ded1cb4789417f04535961faa771dac6fe47a17795c0c308",
+      "sha256": "597fbfdc8c445c5811c1db98e850531d1a8109702888072e4d5fb77c02378fd4",
+      "bytes": 110168,
+      "rgbaSha256": "edcfc63c2ad37cf26e2743f80c4907a8be47e339c93e1dc598da50d15a606f13",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/engraved-nw.avif",
+      "file": "public/assets/page-borders/slices/engraved-nw.webp",
+      "source": "public/assets/page-borders/slices/engraved-nw.avif",
+      "sourceSha256": "82556e3c9e48402dea8068294e52a45bfcc60836cb2eebaf5fdd1f83d049bd5e",
+      "sha256": "2b7f236a74a6c8d1a9ff763dff496b61dde3e2c1de0fe68b30275b216cfff89d",
+      "bytes": 111598,
+      "rgbaSha256": "a634d1f94eb5a57e34f46fe986af5d1540bddc375026363180bdb745de1495f2",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/engraved-s.avif",
+      "file": "public/assets/page-borders/slices/engraved-s.webp",
+      "source": "public/assets/page-borders/slices/engraved-s.avif",
+      "sourceSha256": "877dfbabc58f6e70b8cb0ad82b217be946f11e5ca5fec2125cd559f6e59e0e62",
+      "sha256": "f9692ee41f2b15aa3eb096b01debaf1b6f646f5953b4c975765b0fafb3adc126",
+      "bytes": 77486,
+      "rgbaSha256": "8a6439ded87d78244f072732e52fda2df50a0fcbd2c38752e66a4fcb90d86a56",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/engraved-se.avif",
+      "file": "public/assets/page-borders/slices/engraved-se.webp",
+      "source": "public/assets/page-borders/slices/engraved-se.avif",
+      "sourceSha256": "2ba96e21759651a30114a43e3f967fbe891fe089a8ce4d5d1d3fbe209e10e983",
+      "sha256": "e36e77c4a033ec2bddf0e3b56dcc0597e2021e32cc6e47d45df3cfd7bf9dc468",
+      "bytes": 113588,
+      "rgbaSha256": "5455efefd64915b200e10fe41c60c4af8d27fb08a353a84113c508c3540a7a76",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/engraved-sw.avif",
+      "file": "public/assets/page-borders/slices/engraved-sw.webp",
+      "source": "public/assets/page-borders/slices/engraved-sw.avif",
+      "sourceSha256": "abf759f03896853e52d6aecde1128328f3e224f5a7861c179df881464b963212",
+      "sha256": "1007b7e4e11891f3f77befeebfe90550d8c33c432756f1aba24b5bcda9557925",
+      "bytes": 110822,
+      "rgbaSha256": "65e658741c9dca1060f77ccaf483cb8c0df05406cb97b4713043f96a7d49bc36",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/engraved-w.avif",
+      "file": "public/assets/page-borders/slices/engraved-w.webp",
+      "source": "public/assets/page-borders/slices/engraved-w.avif",
+      "sourceSha256": "a3e100265103f152f956a3a07d0d22e0ff4c4d72e673172164d313adb99517db",
+      "sha256": "cc21a9c43eca519099e4130336b93254d49ad0c0dbd07991f2446c7c1a97c6ca",
+      "bytes": 217228,
+      "rgbaSha256": "77e55b02da2f7d875761abd34d2d6852a31c472ed74ebd8175fa2e4efe6aa479",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/illuminated-e.avif",
+      "file": "public/assets/page-borders/slices/illuminated-e.webp",
+      "source": "public/assets/page-borders/slices/illuminated-e.avif",
+      "sourceSha256": "14cee0731a5730c433a0a54677ffbc359c03118a7c3316a9f9e3c60b7ddfbdd2",
+      "sha256": "eed069350b6392d80a2e851fccaeb93cce4eda7e8cfd0d19b09c424b32e1677b",
+      "bytes": 214164,
+      "rgbaSha256": "2db49f4afd3a528ae82b22ffaf7aac412f27739ee6973cc280d084a8534b34fd",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/illuminated-n.avif",
+      "file": "public/assets/page-borders/slices/illuminated-n.webp",
+      "source": "public/assets/page-borders/slices/illuminated-n.avif",
+      "sourceSha256": "66303fa04e9a3b10eaa5a181dfa7831a2150344d58a3c152b2820ba20127ea24",
+      "sha256": "36f3493692b8d57f965fc9853a7e657b4251e093f6f95c08684efa7fbc53600a",
+      "bytes": 75228,
+      "rgbaSha256": "06f04041482233cc201abae07ee089e9927a078adf984ee3f0fcf75b6bce9a68",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/illuminated-ne.avif",
+      "file": "public/assets/page-borders/slices/illuminated-ne.webp",
+      "source": "public/assets/page-borders/slices/illuminated-ne.avif",
+      "sourceSha256": "dcba853c4fbc4d10c0490203936130cb53619029740af130c43ab80519012d3c",
+      "sha256": "fcc319e8581e5d2e61a1ecd39d4b7a8a3c53c751970df389261bb283b7efad77",
+      "bytes": 140534,
+      "rgbaSha256": "67d4cec796b9140048f7a5a250215fa0ff1b740df41c52632955b4fef0d9603d",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/illuminated-nw.avif",
+      "file": "public/assets/page-borders/slices/illuminated-nw.webp",
+      "source": "public/assets/page-borders/slices/illuminated-nw.avif",
+      "sourceSha256": "727ba9beba5ca0304b3e0e6773b065156bf65778e7d81fdd88b7a2c451f13c5d",
+      "sha256": "25193b8cc7ca9ffbe00832608aa4c8a9ff544716bda18eab87e5f525d50330f9",
+      "bytes": 140408,
+      "rgbaSha256": "c01cce2a74065e3799242b92f261896c7540d2022b4516134bf0f9ad00242864",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/illuminated-s.avif",
+      "file": "public/assets/page-borders/slices/illuminated-s.webp",
+      "source": "public/assets/page-borders/slices/illuminated-s.avif",
+      "sourceSha256": "85733d7e51cc16d81946b2e2df1d23b0f181cf39d059cb69382843861e6056a5",
+      "sha256": "b8de145167afd4d497e43d2190027166508139093792928a781eb1d84f53b31c",
+      "bytes": 72554,
+      "rgbaSha256": "43a8b60989e1dd43930fd621f6efe4f5e7361ad9cfbee1c116bce3f8cdf3b68a",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/illuminated-se.avif",
+      "file": "public/assets/page-borders/slices/illuminated-se.webp",
+      "source": "public/assets/page-borders/slices/illuminated-se.avif",
+      "sourceSha256": "843b2540d64f6e580eba67b4b510e24c5cba58262a27aa43b170ae396ff051fe",
+      "sha256": "fbfac2d98064072dcdab8352eeb4b7581890b80ad8b0829573c0ad3324cc64a0",
+      "bytes": 134834,
+      "rgbaSha256": "c13a77efafc6b8caef661e9546704eae2db934cf77ad3cca9938954f541b64c3",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/illuminated-sw.avif",
+      "file": "public/assets/page-borders/slices/illuminated-sw.webp",
+      "source": "public/assets/page-borders/slices/illuminated-sw.avif",
+      "sourceSha256": "abcf41ffc4646b0d240f469be061f10752d16527a8c5e06c2424faa0ccdc4738",
+      "sha256": "b0aecd7faafb7be9fb80d9b2411a04149728a74fd8a84c18e6f8964274d94edc",
+      "bytes": 134052,
+      "rgbaSha256": "c138745e27e74f43c423022f1045e791b4d564838db65e60da3500bc3496218a",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/page-borders/slices/illuminated-w.avif",
+      "file": "public/assets/page-borders/slices/illuminated-w.webp",
+      "source": "public/assets/page-borders/slices/illuminated-w.avif",
+      "sourceSha256": "84d1ac6bcd62599bd2c173ca1a3637449c9459dd69bbc43f965bb2f368f2b5fc",
+      "sha256": "74880c1d99a094b3caaf00d31492891bdc4cd377f0e9f25cffe3a2246ff36cf1",
+      "bytes": 215560,
+      "rgbaSha256": "85beb1386d5eedf11fd38583b6379a7fd2454a95e21dcb3c1f5eb8baa7723350",
+      "encoding": "Lossless WebP; decoded 8-bit RGBA matches the source exactly"
+    },
+    {
+      "path": "assets/rubric-grade-stamp.png",
+      "file": "public/assets/rubric-grade-stamp.png",
+      "source": "public/assets/rubric-grade-stamp.png",
+      "sourceSha256": "2fec5424aa1f3a801d898973b3be26e3e90b8f6952ba288db238ac4c6381c120",
+      "sha256": "2fec5424aa1f3a801d898973b3be26e3e90b8f6952ba288db238ac4c6381c120",
+      "bytes": 64789
+    },
+    {
+      "path": "assets/rubric-proof-fibers.png",
+      "file": "public/assets/rubric-proof-fibers.png",
+      "source": "public/assets/rubric-proof-fibers.png",
+      "sourceSha256": "17995e795e88c0c942a61ad0b8bcf8d86d735050d2e604947a047ca54537c58b",
+      "sha256": "17995e795e88c0c942a61ad0b8bcf8d86d735050d2e604947a047ca54537c58b",
+      "bytes": 239566
+    },
+    {
+      "path": "assets/rubric-proof-paper.webp",
+      "file": "public/assets/rubric-proof-paper.webp",
+      "source": "public/assets/rubric-proof-paper.webp",
+      "sourceSha256": "f3d2ba9b7fc5c3bbcbaddb423f558fca1da456a21ad23ca60d3a8f5071e89e5d",
+      "sha256": "f3d2ba9b7fc5c3bbcbaddb423f558fca1da456a21ad23ca60d3a8f5071e89e5d",
+      "bytes": 38380
+    },
+    {
+      "path": "assets/rubric-stamps/a-minus.svg",
+      "file": "public/assets/rubric-stamps/a-minus.svg",
+      "source": "public/assets/rubric-stamps/a-minus.svg",
+      "sourceSha256": "8062b23fa7e62b287a7e604c264e253a4443f5f17ad8f66b714d782ec92ae9d5",
+      "sha256": "8062b23fa7e62b287a7e604c264e253a4443f5f17ad8f66b714d782ec92ae9d5",
+      "bytes": 657
+    },
+    {
+      "path": "assets/rubric-stamps/a-plus.svg",
+      "file": "public/assets/rubric-stamps/a-plus.svg",
+      "source": "public/assets/rubric-stamps/a-plus.svg",
+      "sourceSha256": "6c8a45e37327633edd6aaf5b768f2d0b31945e22b7697495485c3f3cda8be7f9",
+      "sha256": "6c8a45e37327633edd6aaf5b768f2d0b31945e22b7697495485c3f3cda8be7f9",
+      "bytes": 689
+    },
+    {
+      "path": "assets/rubric-stamps/a.svg",
+      "file": "public/assets/rubric-stamps/a.svg",
+      "source": "public/assets/rubric-stamps/a.svg",
+      "sourceSha256": "6f8e1d62d2669772fe637286915ec86bbb42000fea1f5ee7a6196dd60bb8c8d1",
+      "sha256": "6f8e1d62d2669772fe637286915ec86bbb42000fea1f5ee7a6196dd60bb8c8d1",
+      "bytes": 630
+    },
+    {
+      "path": "assets/rubric-stamps/b-minus.svg",
+      "file": "public/assets/rubric-stamps/b-minus.svg",
+      "source": "public/assets/rubric-stamps/b-minus.svg",
+      "sourceSha256": "cfcff8e1d6c10e47a6b1dd01126eb53a37dfd399e4a971e1fff509cbbcd89bb8",
+      "sha256": "cfcff8e1d6c10e47a6b1dd01126eb53a37dfd399e4a971e1fff509cbbcd89bb8",
+      "bytes": 642
+    },
+    {
+      "path": "assets/rubric-stamps/b-plus.svg",
+      "file": "public/assets/rubric-stamps/b-plus.svg",
+      "source": "public/assets/rubric-stamps/b-plus.svg",
+      "sourceSha256": "a1f14a7f18835a836df39f72411bb7b665365c9f9d4ded15fb93643729206a3c",
+      "sha256": "a1f14a7f18835a836df39f72411bb7b665365c9f9d4ded15fb93643729206a3c",
+      "bytes": 645
+    },
+    {
+      "path": "assets/rubric-stamps/b.svg",
+      "file": "public/assets/rubric-stamps/b.svg",
+      "source": "public/assets/rubric-stamps/b.svg",
+      "sourceSha256": "dbbdd5a8e1ae794ff8923aab719798831cb29d1d905755b9c68d25468626778b",
+      "sha256": "dbbdd5a8e1ae794ff8923aab719798831cb29d1d905755b9c68d25468626778b",
+      "bytes": 648
+    },
+    {
+      "path": "assets/rubric-stamps/c-minus.svg",
+      "file": "public/assets/rubric-stamps/c-minus.svg",
+      "source": "public/assets/rubric-stamps/c-minus.svg",
+      "sourceSha256": "7ef761a33f7cc1a798954c904d009cb93ff7ce2cb1707f6865cc7f0684ee036c",
+      "sha256": "7ef761a33f7cc1a798954c904d009cb93ff7ce2cb1707f6865cc7f0684ee036c",
+      "bytes": 599
+    },
+    {
+      "path": "assets/rubric-stamps/c-plus.svg",
+      "file": "public/assets/rubric-stamps/c-plus.svg",
+      "source": "public/assets/rubric-stamps/c-plus.svg",
+      "sourceSha256": "f265bc80614f902d392de89e6cc127ac9b046269f22685445cd4e5907411834d",
+      "sha256": "f265bc80614f902d392de89e6cc127ac9b046269f22685445cd4e5907411834d",
+      "bytes": 648
+    },
+    {
+      "path": "assets/rubric-stamps/c.svg",
+      "file": "public/assets/rubric-stamps/c.svg",
+      "source": "public/assets/rubric-stamps/c.svg",
+      "sourceSha256": "01223b2743b5a250cd43ab489077e5064bb5b08f0d49164817a0aff85151c35a",
+      "sha256": "01223b2743b5a250cd43ab489077e5064bb5b08f0d49164817a0aff85151c35a",
+      "bytes": 664
+    },
+    {
+      "path": "assets/rubric-stamps/d-minus.svg",
+      "file": "public/assets/rubric-stamps/d-minus.svg",
+      "source": "public/assets/rubric-stamps/d-minus.svg",
+      "sourceSha256": "74b03d8f942db48d64acb4c41a4812c690d59f6ad88fd1581910245e7d024f78",
+      "sha256": "74b03d8f942db48d64acb4c41a4812c690d59f6ad88fd1581910245e7d024f78",
+      "bytes": 691
+    },
+    {
+      "path": "assets/rubric-stamps/d-plus.svg",
+      "file": "public/assets/rubric-stamps/d-plus.svg",
+      "source": "public/assets/rubric-stamps/d-plus.svg",
+      "sourceSha256": "447cee3f11ff231ec8f0c6094b4a9ab9dd3a2cd72737698c80b9c165a345a3b8",
+      "sha256": "447cee3f11ff231ec8f0c6094b4a9ab9dd3a2cd72737698c80b9c165a345a3b8",
+      "bytes": 598
+    },
+    {
+      "path": "assets/rubric-stamps/d.svg",
+      "file": "public/assets/rubric-stamps/d.svg",
+      "source": "public/assets/rubric-stamps/d.svg",
+      "sourceSha256": "082ce8c005d332bdfda2f72908df82085309d0260a7e4fa1a1e2b6d4976b9c75",
+      "sha256": "082ce8c005d332bdfda2f72908df82085309d0260a7e4fa1a1e2b6d4976b9c75",
+      "bytes": 609
+    },
+    {
+      "path": "assets/rubric-stamps/f.svg",
+      "file": "public/assets/rubric-stamps/f.svg",
+      "source": "public/assets/rubric-stamps/f.svg",
+      "sourceSha256": "0bb9af7641a07383cb9886117aa1021ceb0f75bc576786cc33bb801cc8409801",
+      "sha256": "0bb9af7641a07383cb9886117aa1021ceb0f75bc576786cc33bb801cc8409801",
+      "bytes": 657
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-a-minus.png",
+      "file": "public/assets/rubric-stamps/sunburst-a-minus.png",
+      "source": "public/assets/rubric-stamps/sunburst-a-minus.png",
+      "sourceSha256": "6071e4536dad996851930c84ad87e4d29bffb2b4f28cbda78aaa902bb52a23e2",
+      "sha256": "6071e4536dad996851930c84ad87e4d29bffb2b4f28cbda78aaa902bb52a23e2",
+      "bytes": 1299138
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-a-plus.png",
+      "file": "public/assets/rubric-stamps/sunburst-a-plus.png",
+      "source": "public/assets/rubric-stamps/sunburst-a-plus.png",
+      "sourceSha256": "5788b752c19065d200110dcd153b4aa4a89796d5b617ac2e00a56625f6733dd6",
+      "sha256": "5788b752c19065d200110dcd153b4aa4a89796d5b617ac2e00a56625f6733dd6",
+      "bytes": 1768690
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-a.png",
+      "file": "public/assets/rubric-stamps/sunburst-a.png",
+      "source": "public/assets/rubric-stamps/sunburst-a.png",
+      "sourceSha256": "4a7c341fb849042b4b0c31c9f3ec4d4087acd0d28ed1e4237241699404e63910",
+      "sha256": "4a7c341fb849042b4b0c31c9f3ec4d4087acd0d28ed1e4237241699404e63910",
+      "bytes": 1283818
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-b-minus.png",
+      "file": "public/assets/rubric-stamps/sunburst-b-minus.png",
+      "source": "public/assets/rubric-stamps/sunburst-b-minus.png",
+      "sourceSha256": "a821f09557024f75634ced204077177e044e4a93fe8fa76401b1286a66f14807",
+      "sha256": "a821f09557024f75634ced204077177e044e4a93fe8fa76401b1286a66f14807",
+      "bytes": 844831
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-b-plus.png",
+      "file": "public/assets/rubric-stamps/sunburst-b-plus.png",
+      "source": "public/assets/rubric-stamps/sunburst-b-plus.png",
+      "sourceSha256": "6c014fce9afd5ebfcb49dab8570f3f98ad8859af0042b2c72ecf19cc4055d3ce",
+      "sha256": "6c014fce9afd5ebfcb49dab8570f3f98ad8859af0042b2c72ecf19cc4055d3ce",
+      "bytes": 816010
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-b.png",
+      "file": "public/assets/rubric-stamps/sunburst-b.png",
+      "source": "public/assets/rubric-stamps/sunburst-b.png",
+      "sourceSha256": "a04030acc56401047e4bf2529cad45d5af457ea0e282493fd254cf7e30170ff5",
+      "sha256": "a04030acc56401047e4bf2529cad45d5af457ea0e282493fd254cf7e30170ff5",
+      "bytes": 690530
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-c-minus.png",
+      "file": "public/assets/rubric-stamps/sunburst-c-minus.png",
+      "source": "public/assets/rubric-stamps/sunburst-c-minus.png",
+      "sourceSha256": "0fb1d623257ffa10088d3da8cd9ffde787652eaa8ad349b15f9ae5df82c9118f",
+      "sha256": "0fb1d623257ffa10088d3da8cd9ffde787652eaa8ad349b15f9ae5df82c9118f",
+      "bytes": 792264
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-c-plus.png",
+      "file": "public/assets/rubric-stamps/sunburst-c-plus.png",
+      "source": "public/assets/rubric-stamps/sunburst-c-plus.png",
+      "sourceSha256": "74ba4f0cd6843626a6b417d0fd55d353df6c8205b323c952bfc79691cfbe12f0",
+      "sha256": "74ba4f0cd6843626a6b417d0fd55d353df6c8205b323c952bfc79691cfbe12f0",
+      "bytes": 812392
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-c.png",
+      "file": "public/assets/rubric-stamps/sunburst-c.png",
+      "source": "public/assets/rubric-stamps/sunburst-c.png",
+      "sourceSha256": "a226ccef9542fbdb0481af1eb7ecfa31e6cc8c1c0a75aba15781bbc5a4ee406c",
+      "sha256": "a226ccef9542fbdb0481af1eb7ecfa31e6cc8c1c0a75aba15781bbc5a4ee406c",
+      "bytes": 886027
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-d-minus.png",
+      "file": "public/assets/rubric-stamps/sunburst-d-minus.png",
+      "source": "public/assets/rubric-stamps/sunburst-d-minus.png",
+      "sourceSha256": "d34b35dcad8decbce48540ab5be4bcfd5819518bff1cffaa86b3f6691a492170",
+      "sha256": "d34b35dcad8decbce48540ab5be4bcfd5819518bff1cffaa86b3f6691a492170",
+      "bytes": 965962
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-d-plus.png",
+      "file": "public/assets/rubric-stamps/sunburst-d-plus.png",
+      "source": "public/assets/rubric-stamps/sunburst-d-plus.png",
+      "sourceSha256": "4e2fbcbd2e582513ee2d3a9ac395ea71a89f10c841f46ce08ed3d1b0c802943b",
+      "sha256": "4e2fbcbd2e582513ee2d3a9ac395ea71a89f10c841f46ce08ed3d1b0c802943b",
+      "bytes": 1092692
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-d.png",
+      "file": "public/assets/rubric-stamps/sunburst-d.png",
+      "source": "public/assets/rubric-stamps/sunburst-d.png",
+      "sourceSha256": "f0e25db579fab1e34db85e3e6a913aaf54b734cba0923f19f502dc47f341f114",
+      "sha256": "f0e25db579fab1e34db85e3e6a913aaf54b734cba0923f19f502dc47f341f114",
+      "bytes": 1013186
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-f.png",
+      "file": "public/assets/rubric-stamps/sunburst-f.png",
+      "source": "public/assets/rubric-stamps/sunburst-f.png",
+      "sourceSha256": "60847511aa4a56d62358468e07f143b2bf2aba00a21c425a6d278109b1bec267",
+      "sha256": "60847511aa4a56d62358468e07f143b2bf2aba00a21c425a6d278109b1bec267",
+      "bytes": 1037701
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-filed.png",
+      "file": "public/assets/rubric-stamps/sunburst-filed.png",
+      "source": "public/assets/rubric-stamps/sunburst-filed.png",
+      "sourceSha256": "03ba0379f9844643356d86922013b4f2e053253c3cf075511d8c97e2ab5cb5c7",
+      "sha256": "03ba0379f9844643356d86922013b4f2e053253c3cf075511d8c97e2ab5cb5c7",
+      "bytes": 526845
+    },
+    {
+      "path": "assets/rubric-stamps/sunburst-revised.png",
+      "file": "public/assets/rubric-stamps/sunburst-revised.png",
+      "source": "public/assets/rubric-stamps/sunburst-revised.png",
+      "sourceSha256": "dceb63a251cc93782f6f78db5a3319a5c21493a29fecee834eb3a9c9c58cf560",
+      "sha256": "dceb63a251cc93782f6f78db5a3319a5c21493a29fecee834eb3a9c9c58cf560",
+      "bytes": 595072
+    },
+    {
+      "path": "assets/stamp-dossier.svg",
+      "file": "public/assets/stamp-dossier.svg",
+      "source": "public/assets/stamp-dossier.svg",
+      "sourceSha256": "060c320f0fb6e811bf33f64aaa389130be537c4d613c01a0fde9ce3ef18c020c",
+      "sha256": "060c320f0fb6e811bf33f64aaa389130be537c4d613c01a0fde9ce3ef18c020c",
+      "bytes": 8889
+    },
+    {
+      "path": "assets/stamp-fact-checked.svg",
+      "file": "public/assets/stamp-fact-checked.svg",
+      "source": "public/assets/stamp-fact-checked.svg",
+      "sourceSha256": "85f1877e142a06deafacba4e92f41dd904a27fb7f760ef967a705a47301da04b",
+      "sha256": "85f1877e142a06deafacba4e92f41dd904a27fb7f760ef967a705a47301da04b",
+      "bytes": 6774
+    },
+    {
+      "path": "assets/starburst-mark.svg",
+      "file": "public/assets/starburst-mark.svg",
+      "source": "public/assets/starburst-mark.svg",
+      "sourceSha256": "056e6aec077cb2e399a837a6ffe0821e407819d7d1543605cea964f6a955183f",
+      "sha256": "056e6aec077cb2e399a837a6ffe0821e407819d7d1543605cea964f6a955183f",
+      "bytes": 1913
+    },
+    {
+      "path": "assets/t-mark.svg",
+      "file": "public/assets/t-mark.svg",
+      "source": "public/assets/t-mark.svg",
+      "sourceSha256": "f485b2b06571f6f082543ba93e60b8c789a3a581fed3c4bfdf70099c798b2109",
+      "sha256": "f485b2b06571f6f082543ba93e60b8c789a3a581fed3c4bfdf70099c798b2109",
+      "bytes": 843
+    },
+    {
+      "path": "assets/twyne-logo.svg",
+      "file": "public/assets/twyne-logo.svg",
+      "source": "public/assets/twyne-logo.svg",
+      "sourceSha256": "f485b2b06571f6f082543ba93e60b8c789a3a581fed3c4bfdf70099c798b2109",
+      "sha256": "f485b2b06571f6f082543ba93e60b8c789a3a581fed3c4bfdf70099c798b2109",
+      "bytes": 843
+    },
+    {
+      "path": "assets/wordmark-serif.svg",
+      "file": "public/assets/wordmark-serif.svg",
+      "source": "public/assets/wordmark-serif.svg",
+      "sourceSha256": "6d910b8a503cd4e35c9e8261c9614a486193a92a57199420b9aa9bbeb6b7eaba",
+      "sha256": "6d910b8a503cd4e35c9e8261c9614a486193a92a57199420b9aa9bbeb6b7eaba",
+      "bytes": 4184
+    },
+    {
+      "path": "button-font-provenance.json",
+      "file": "button-font-provenance.json",
+      "source": "tools/sync-button-font.py#original12px600-button-provenance",
+      "sourceSha256": "9191c40535740138ee6f8badb95310b4b75184e800f05c92083bfda9d00ff685",
+      "sha256": "7fb8786abb269df33d894cd78106ae3ac7502423f43fb8c2ada82cb5b198893d",
+      "bytes": 1684
+    },
+    {
+      "path": "cast-font-provenance.json",
+      "file": "cast-font-provenance.json",
+      "source": "tools/sync-cast-fonts.py#original-Cast-symbol-provenance",
+      "sourceSha256": "30442b90c80ff848c8574b8dc1dee66995d1a4635cd01250bdcf7c8b4ebd5ddc",
+      "sha256": "d8dec2ad941e017ea793e002172ebb843b39e48025447d73347a37794feaece7",
+      "bytes": 10067
+    },
+    {
+      "path": "cast-raw-font-provenance.json",
+      "file": "cast-raw-font-provenance.json",
+      "source": "tools/sync-cast-raw-font.py#original-Manager-raw-glyph-provenance",
+      "sourceSha256": "69a1da67d4f4aaaa9dd0c5880520cb7dc484addda3fe20e6fa051efb51b0aead",
+      "sha256": "b2815af74473260c1886c4d6b3529fd31fdb37d502abf05486eb79ecb85570bd",
+      "bytes": 2792
+    },
+    {
+      "path": "favicon.ico",
+      "file": "public/favicon.ico",
+      "source": "public/favicon.ico",
+      "sourceSha256": "12dc114bd59663268117dcb41d131ecb4d487123fb4ace1c0c8b08ddcc3746c2",
+      "sha256": "12dc114bd59663268117dcb41d131ecb4d487123fb4ace1c0c8b08ddcc3746c2",
+      "bytes": 13294
+    },
+    {
+      "path": "favicon.svg",
+      "file": "public/favicon.svg",
+      "source": "public/favicon.svg",
+      "sourceSha256": "7c2ecc0a99f53dab21d16109e731e64717c34c9021e814f998f38ea996e547fc",
+      "sha256": "7c2ecc0a99f53dab21d16109e731e64717c34c9021e814f998f38ea996e547fc",
+      "bytes": 3536
+    },
+    {
+      "path": "file-arrow-font-provenance.json",
+      "file": "file-arrow-font-provenance.json",
+      "source": "tools/sync-file-arrow-font.py#original-File-glyph-provenance",
+      "sourceSha256": "0996f751fa3dd476cd317f91a56522e2e8284b7244ec9da16408c344002b884b",
+      "sha256": "1ae7486b4e579ec0c988637cc0d92da74d6fd85f4708edd66e31e6f2cd2d4bc7",
+      "bytes": 1310
+    },
+    {
+      "path": "fonts/AdwaitaMono-Regular.ttf",
+      "file": "fonts/AdwaitaMono-Regular.ttf",
+      "source": "/usr/share/fonts/adwaita-mono-fonts/AdwaitaMono-Regular.ttf",
+      "sourceSha256": "4d3185765317b011b959ad2f6a404cd1e5d542ed13f120d1e8d1f5c7b9c99562",
+      "sha256": "4d3185765317b011b959ad2f6a404cd1e5d542ed13f120d1e8d1f5c7b9c99562",
+      "bytes": 1394892,
+      "encoding": "Byte-identical original TTF; no derivation"
+    },
+    {
+      "path": "fonts/DejaVuSansMono-Oblique.ttf",
+      "file": "fonts/DejaVuSansMono-Oblique.ttf",
+      "source": "https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-fonts-ttf-2.37.tar.bz2#ttf/DejaVuSansMono-Oblique.ttf",
+      "sourceSha256": "742097840c541870e8d6dc5c9b37bb1ceeea6c0dedd1d475faf903ef9df734b0",
+      "sha256": "742097840c541870e8d6dc5c9b37bb1ceeea6c0dedd1d475faf903ef9df734b0",
+      "bytes": 251932,
+      "archiveSha256": "fa9ca4d13871dd122f61258a80d01751d603b4d3ee14095d65453b4e846e17d7"
+    },
+    {
+      "path": "fonts/DejaVuSansMono.ttf",
+      "file": "fonts/DejaVuSansMono.ttf",
+      "source": "src/assets/typst/DejaVuSansMono.ttf",
+      "sourceSha256": "b4a6c3e4faab8773f4ff761d56451646409f29abedd68f05d38c2df667d3c582",
+      "sha256": "b4a6c3e4faab8773f4ff761d56451646409f29abedd68f05d38c2df667d3c582",
+      "bytes": 340712
+    },
+    {
+      "path": "fonts/DroidSansFallbackFull.ttf",
+      "file": "fonts/DroidSansFallbackFull.ttf",
+      "source": "Fedora google-droid-sans-fonts-20200215-22.fc42.noarch:fonts/DroidSansFallbackFull.ttf",
+      "sourceSha256": "2392015530438bafc48edfc4aee6d9de2387f627a6134d8ab3dfcc99d21c8240",
+      "sha256": "2392015530438bafc48edfc4aee6d9de2387f627a6134d8ab3dfcc99d21c8240",
+      "bytes": 4033576
+    },
+    {
+      "path": "fonts/Inter-Regular.ttf",
+      "file": "fonts/Inter-Regular.ttf",
+      "source": "/nix/store/92yfgbmc9q083waxxg1nq5dncmjfpwfk-inter-4.1/share/fonts/truetype/Inter.ttc#face0",
+      "sourceSha256": "ea4e3d9970b9b6b566110a1b0e13635fe235280b83dd2443dcb3faca1e2456ef",
+      "sha256": "60bd88b53049e6951bdb056e49ed44b201da650e1f096c10453d961ee378c66d",
+      "bytes": 411640,
+      "encoding": "Original TTC face0 extracted to standalone TTF; every source table byte retained except required head.checkSumAdjustment"
+    },
+    {
+      "path": "fonts/LICENSE",
+      "file": "fonts/LICENSE",
+      "source": "src/assets/typst/LICENSE",
+      "sourceSha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+      "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+      "bytes": 9723
+    },
+    {
+      "path": "fonts/LiberationSans-Regular.ttf",
+      "file": "fonts/LiberationSans-Regular.ttf",
+      "source": "/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf",
+      "sourceSha256": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+      "sha256": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+      "bytes": 410712,
+      "encoding": "Byte-identical original TTF; no derivation"
+    },
+    {
+      "path": "fonts/LiberationSerif-Bold.ttf",
+      "file": "fonts/LiberationSerif-Bold.ttf",
+      "source": "/usr/share/fonts/liberation-serif-fonts/LiberationSerif-Bold.ttf",
+      "sourceSha256": "d754ba427cfe0bca54ae052384baa8f842da5bd6550ad4da024ac441e7a7d5ce",
+      "sha256": "d754ba427cfe0bca54ae052384baa8f842da5bd6550ad4da024ac441e7a7d5ce",
+      "bytes": 370096
+    },
+    {
+      "path": "fonts/LibertinusMath-Regular.otf",
+      "file": "fonts/LibertinusMath-Regular.otf",
+      "source": "src/assets/typst/LibertinusMath-Regular.otf",
+      "sourceSha256": "ded714b0d3808af527438ed7a85f16933133f66a12104c4a83db4cc248888011",
+      "sha256": "ded714b0d3808af527438ed7a85f16933133f66a12104c4a83db4cc248888011",
+      "bytes": 588848
+    },
+    {
+      "path": "fonts/LibertinusSerif-Bold.otf",
+      "file": "fonts/LibertinusSerif-Bold.otf",
+      "source": "src/assets/typst/LibertinusSerif-Bold.otf",
+      "sourceSha256": "0264914210ed51b3231ebc92ce529e9f2e166ba9eebf0cd4a579558690a27b64",
+      "sha256": "0264914210ed51b3231ebc92ce529e9f2e166ba9eebf0cd4a579558690a27b64",
+      "bytes": 293908
+    },
+    {
+      "path": "fonts/LibertinusSerif-BoldItalic.otf",
+      "file": "fonts/LibertinusSerif-BoldItalic.otf",
+      "source": "src/assets/typst/LibertinusSerif-BoldItalic.otf",
+      "sourceSha256": "47a665259f09f554f5d133d7718cdad43ff462c6a6b2328f38023465e62d57ce",
+      "sha256": "47a665259f09f554f5d133d7718cdad43ff462c6a6b2328f38023465e62d57ce",
+      "bytes": 259176
+    },
+    {
+      "path": "fonts/LibertinusSerif-Italic.otf",
+      "file": "fonts/LibertinusSerif-Italic.otf",
+      "source": "src/assets/typst/LibertinusSerif-Italic.otf",
+      "sourceSha256": "9a393d63d6e05f620d3dc0190dfd35a8ede58c0808cf0fc9de7fcb9c723e4c24",
+      "sha256": "9a393d63d6e05f620d3dc0190dfd35a8ede58c0808cf0fc9de7fcb9c723e4c24",
+      "bytes": 332312
+    },
+    {
+      "path": "fonts/LibertinusSerif-Regular.otf",
+      "file": "fonts/LibertinusSerif-Regular.otf",
+      "source": "src/assets/typst/LibertinusSerif-Regular.otf",
+      "sourceSha256": "fcf06307a77367394fcb0ccb241e59eea70dba3d732be309647611224679c733",
+      "sha256": "fcf06307a77367394fcb0ccb241e59eea70dba3d732be309647611224679c733",
+      "bytes": 337132
+    },
+    {
+      "path": "fonts/NOTICE",
+      "file": "fonts/NOTICE",
+      "source": "src/assets/typst/NOTICE",
+      "sourceSha256": "e33cd2ec7ac4730aff2497293c4012cfeb2560099563cc2fafc30ff120433d06",
+      "sha256": "e33cd2ec7ac4730aff2497293c4012cfeb2560099563cc2fafc30ff120433d06",
+      "bytes": 22100
+    },
+    {
+      "path": "fonts/NotoSansMath-Regular.ttf",
+      "file": "fonts/NotoSansMath-Regular.ttf",
+      "source": "Fedora google-noto-sans-math-fonts-20250301-1.fc42.noarch:fonts/NotoSansMath-Regular.ttf",
+      "sourceSha256": "d51afd5739c7ba6c44fcab35a88160e25dfb69a2d4ad0bd99533f8d894af1f96",
+      "sha256": "d51afd5739c7ba6c44fcab35a88160e25dfb69a2d4ad0bd99533f8d894af1f96",
+      "bytes": 990564
+    },
+    {
+      "path": "fonts/TwyneBody-Bold.ttf",
+      "file": "fonts/TwyneBody-Bold.ttf",
+      "source": "src/assets/typst/lora-Lora-wght.ttf#wght=700",
+      "sourceSha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7",
+      "sha256": "281e9c2fa50c8512cc36495c492f47be11979669c995807e03d77dab9ed1c4da",
+      "bytes": 135196,
+      "encoding": "Original Lora 3.008 static instance; derived internal family Twyne Body"
+    },
+    {
+      "path": "fonts/TwyneBody-BoldItalic.ttf",
+      "file": "fonts/TwyneBody-BoldItalic.ttf",
+      "source": "src/assets/typst/lora-Lora-Italic-wght.ttf#wght=700",
+      "sourceSha256": "22d8d8854b53807aa664ca34f2031a9ed57a1d0dea296b8b96cdd3aad937a2b3",
+      "sha256": "1b5768a4698ca163106305f466f14bfb729809ee96a94d2925b3326373d34ec4",
+      "bytes": 141856,
+      "encoding": "Original Lora 3.008 static instance; derived internal family Twyne Body"
+    },
+    {
+      "path": "fonts/TwyneBody-Italic.ttf",
+      "file": "fonts/TwyneBody-Italic.ttf",
+      "source": "src/assets/typst/lora-Lora-Italic-wght.ttf#wght=400",
+      "sourceSha256": "22d8d8854b53807aa664ca34f2031a9ed57a1d0dea296b8b96cdd3aad937a2b3",
+      "sha256": "04d5cf8074062d46056ad2534c7f4df7dc5e3821b2663bd19d7f9fd83c13d346",
+      "bytes": 141144,
+      "encoding": "Original Lora 3.008 static instance; derived internal family Twyne Body"
+    },
+    {
+      "path": "fonts/TwyneBody-Regular.ttf",
+      "file": "fonts/TwyneBody-Regular.ttf",
+      "source": "src/assets/typst/lora-Lora-wght.ttf#wght=400",
+      "sourceSha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7",
+      "sha256": "64eef465428ae32ca4b50df6f812c12ea1d5e5e3575fca74356aa4273128953a",
+      "bytes": 135556,
+      "encoding": "Original Lora 3.008 static instance; derived internal family Twyne Body"
+    },
+    {
+      "path": "fonts/TwyneButtonSans-SemiBold.ttf",
+      "file": "fonts/TwyneButtonSans-SemiBold.ttf",
+      "source": "src/assets/typst/dmsans-DMSans-opsz-wght.ttf#opsz12,wght600",
+      "sourceSha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+      "sha256": "a0af3a7af16a37eb1fbebd7b42d2c4c22e85e9e172183a0ad1277730a1190c29",
+      "bytes": 57068,
+      "encoding": "Original DM Sans4.004 static paper-button instance; explicit internal UI family"
+    },
+    {
+      "path": "fonts/TwyneSource-Oblique.ttf",
+      "file": "fonts/TwyneSource-Oblique.ttf",
+      "source": "fonts/source/NotoSansMono-Regular.ttf#Oblique",
+      "sourceSha256": "65b5e2b2c4a1fba9ae8be1f026cb35b03dcb8886d9b2a4147054fde12f7e767d",
+      "sha256": "3048d0f368b76b58877432e30cb0ada023b71c8af856fc44c922c069b23244df",
+      "bytes": 535908,
+      "encoding": "Source-only Noto Mono2.014 renamed UI adapter; glyph IDs and advances unchanged"
+    },
+    {
+      "path": "fonts/TwyneSource-Regular.ttf",
+      "file": "fonts/TwyneSource-Regular.ttf",
+      "source": "fonts/source/NotoSansMono-Regular.ttf#Regular",
+      "sourceSha256": "65b5e2b2c4a1fba9ae8be1f026cb35b03dcb8886d9b2a4147054fde12f7e767d",
+      "sha256": "43ce77069898a9d0fb65ca33b2885d5ab70c4d4637ac9ead4a33a511093dfff5",
+      "bytes": 591008,
+      "encoding": "Source-only Noto Mono2.014 renamed UI adapter; glyph IDs and advances unchanged"
+    },
+    {
+      "path": "fonts/TwyneSource-SemiBold.ttf",
+      "file": "fonts/TwyneSource-SemiBold.ttf",
+      "source": "fonts/source/NotoSansMono-SemiBold.ttf#SemiBold",
+      "sourceSha256": "82e49094ec3a1a3c8fa0d730016f5f890384f6e164dd2cc84f39b30639bb6e8f",
+      "sha256": "d140e73c234671cf0a4300feffa24d7efdce744eeec8b3cd09e103ca33b19b68",
+      "bytes": 599976,
+      "encoding": "Source-only Noto Mono2.014 renamed UI adapter; glyph IDs and advances unchanged"
+    },
+    {
+      "path": "fonts/TwyneSourceLabel-Regular.ttf",
+      "file": "fonts/TwyneSourceLabel-Regular.ttf",
+      "source": "fonts/dmsans-DMSans-opsz-wght.ttf#opsz11,wght400",
+      "sourceSha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+      "sha256": "7704551b96a022190102da82a304f7b51078eddfb1394111c5018c7381d7c11e",
+      "bytes": 56980,
+      "encoding": "Original DM4.00411px helper-only optical-size instance"
+    },
+    {
+      "path": "fonts/dmsans-DMSans-Bold.ttf",
+      "file": "fonts/dmsans-DMSans-Bold.ttf",
+      "source": "src/assets/typst/dmsans-DMSans-Bold.ttf",
+      "sourceSha256": "6a6924b35d757e32b21d611733d5b9a7bb6234b07b75334b0e2d2359985b26ee",
+      "sha256": "6a6924b35d757e32b21d611733d5b9a7bb6234b07b75334b0e2d2359985b26ee",
+      "bytes": 78356
+    },
+    {
+      "path": "fonts/dmsans-DMSans-BoldItalic.ttf",
+      "file": "fonts/dmsans-DMSans-BoldItalic.ttf",
+      "source": "src/assets/typst/dmsans-DMSans-BoldItalic.ttf",
+      "sourceSha256": "dc2c2fb25a698bd81309f75491cf3ca486875e110024a6c6c4554d07882c439d",
+      "sha256": "dc2c2fb25a698bd81309f75491cf3ca486875e110024a6c6c4554d07882c439d",
+      "bytes": 83304
+    },
+    {
+      "path": "fonts/dmsans-DMSans-Italic-opsz-wght.ttf",
+      "file": "fonts/dmsans-DMSans-Italic-opsz-wght.ttf",
+      "source": "src/assets/typst/dmsans-DMSans-Italic-opsz-wght.ttf",
+      "sourceSha256": "22259c0cc8237221b80f44c76ba8d36e6bce3cda72779f5b2773643d499720ae",
+      "sha256": "22259c0cc8237221b80f44c76ba8d36e6bce3cda72779f5b2773643d499720ae",
+      "bytes": 285040
+    },
+    {
+      "path": "fonts/dmsans-DMSans-Italic.ttf",
+      "file": "fonts/dmsans-DMSans-Italic.ttf",
+      "source": "src/assets/typst/dmsans-DMSans-Italic.ttf",
+      "sourceSha256": "42d8646461572da4dba94e08372b94c4e4b5fd934508ba567f43d29b905fa51f",
+      "sha256": "42d8646461572da4dba94e08372b94c4e4b5fd934508ba567f43d29b905fa51f",
+      "bytes": 82868
+    },
+    {
+      "path": "fonts/dmsans-DMSans-Regular.ttf",
+      "file": "fonts/dmsans-DMSans-Regular.ttf",
+      "source": "src/assets/typst/dmsans-DMSans-Regular.ttf",
+      "sourceSha256": "a95a338942aa357145427be7c963ff691f9fe859c3512d9c0483e1914d57a208",
+      "sha256": "a95a338942aa357145427be7c963ff691f9fe859c3512d9c0483e1914d57a208",
+      "bytes": 78256
+    },
+    {
+      "path": "fonts/dmsans-DMSans-opsz-wght.ttf",
+      "file": "fonts/dmsans-DMSans-opsz-wght.ttf",
+      "source": "src/assets/typst/dmsans-DMSans-opsz-wght.ttf",
+      "sourceSha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+      "sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+      "bytes": 240164
+    },
+    {
+      "path": "fonts/dmsans-OFL.txt",
+      "file": "fonts/dmsans-OFL.txt",
+      "source": "src/assets/typst/dmsans-OFL.txt",
+      "sourceSha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1",
+      "sha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1",
+      "bytes": 4482
+    },
+    {
+      "path": "fonts/dmsans-static-OFL.txt",
+      "file": "fonts/dmsans-static-OFL.txt",
+      "source": "src/assets/typst/dmsans-static-OFL.txt",
+      "sourceSha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1",
+      "sha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1",
+      "bytes": 4482
+    },
+    {
+      "path": "fonts/fraunces-Fraunces-Italic-SOFT-WONK-opsz-wght.ttf",
+      "file": "fonts/fraunces-Fraunces-Italic-SOFT-WONK-opsz-wght.ttf",
+      "source": "src/assets/typst/fraunces-Fraunces-Italic-SOFT-WONK-opsz-wght.ttf",
+      "sourceSha256": "b24448c43702fac4ee856781d461a0dfba8d8e594b6e8e190234b75fed2c0e01",
+      "sha256": "b24448c43702fac4ee856781d461a0dfba8d8e594b6e8e190234b75fed2c0e01",
+      "bytes": 414904
+    },
+    {
+      "path": "fonts/fraunces-Fraunces-SOFT-WONK-opsz-wght.ttf",
+      "file": "fonts/fraunces-Fraunces-SOFT-WONK-opsz-wght.ttf",
+      "source": "src/assets/typst/fraunces-Fraunces-SOFT-WONK-opsz-wght.ttf",
+      "sourceSha256": "177ff6c0f14e5550a3c624247cd1189611d4eb65d000b14944c63d967958abbb",
+      "sha256": "177ff6c0f14e5550a3c624247cd1189611d4eb65d000b14944c63d967958abbb",
+      "bytes": 360440
+    },
+    {
+      "path": "fonts/fraunces-OFL.txt",
+      "file": "fonts/fraunces-OFL.txt",
+      "source": "src/assets/typst/fraunces-OFL.txt",
+      "sourceSha256": "bdf4c22802eaf804f998195871c6b8938aac2ac14b2d78a8bd66a6f1eced833b",
+      "sha256": "bdf4c22802eaf804f998195871c6b8938aac2ac14b2d78a8bd66a6f1eced833b",
+      "bytes": 4391
+    },
+    {
+      "path": "fonts/librebaskerville-LibreBaskerville-Bold.ttf",
+      "file": "fonts/librebaskerville-LibreBaskerville-Bold.ttf",
+      "source": "src/assets/typst/librebaskerville-LibreBaskerville-Bold.ttf",
+      "sourceSha256": "62e23c5e6bf1e68fc0ef4ddeeab894ac21c808027f6cb6730cda2055a159ae03",
+      "sha256": "62e23c5e6bf1e68fc0ef4ddeeab894ac21c808027f6cb6730cda2055a159ae03",
+      "bytes": 154332
+    },
+    {
+      "path": "fonts/librebaskerville-LibreBaskerville-BoldItalic.ttf",
+      "file": "fonts/librebaskerville-LibreBaskerville-BoldItalic.ttf",
+      "source": "src/assets/typst/librebaskerville-LibreBaskerville-BoldItalic.ttf",
+      "sourceSha256": "5b9fcb6c9532a0f27202fc3801f81453d62a5cd0601aaa63c240fd0dea832caf",
+      "sha256": "5b9fcb6c9532a0f27202fc3801f81453d62a5cd0601aaa63c240fd0dea832caf",
+      "bytes": 163664
+    },
+    {
+      "path": "fonts/librebaskerville-LibreBaskerville-Italic-wght.ttf",
+      "file": "fonts/librebaskerville-LibreBaskerville-Italic-wght.ttf",
+      "source": "src/assets/typst/librebaskerville-LibreBaskerville-Italic-wght.ttf",
+      "sourceSha256": "223959683dc73ec4437bd61fabaa4b3f22209e22855ffd3aee36ba61a5116e97",
+      "sha256": "223959683dc73ec4437bd61fabaa4b3f22209e22855ffd3aee36ba61a5116e97",
+      "bytes": 167456
+    },
+    {
+      "path": "fonts/librebaskerville-LibreBaskerville-Italic.ttf",
+      "file": "fonts/librebaskerville-LibreBaskerville-Italic.ttf",
+      "source": "src/assets/typst/librebaskerville-LibreBaskerville-Italic.ttf",
+      "sourceSha256": "82d05fab9a1c07f4eb4bc891fb0043a74fba1bed27ea919f61d94dbc5b54a4f6",
+      "sha256": "82d05fab9a1c07f4eb4bc891fb0043a74fba1bed27ea919f61d94dbc5b54a4f6",
+      "bytes": 162224
+    },
+    {
+      "path": "fonts/librebaskerville-LibreBaskerville-Regular.ttf",
+      "file": "fonts/librebaskerville-LibreBaskerville-Regular.ttf",
+      "source": "src/assets/typst/librebaskerville-LibreBaskerville-Regular.ttf",
+      "sourceSha256": "df9fddf43dbd7de435c316b86a52b3d6b3ad2f6fb2ed3f6fd8bdc1835f30eec1",
+      "sha256": "df9fddf43dbd7de435c316b86a52b3d6b3ad2f6fb2ed3f6fd8bdc1835f30eec1",
+      "bytes": 156008
+    },
+    {
+      "path": "fonts/librebaskerville-LibreBaskerville-wght.ttf",
+      "file": "fonts/librebaskerville-LibreBaskerville-wght.ttf",
+      "source": "src/assets/typst/librebaskerville-LibreBaskerville-wght.ttf",
+      "sourceSha256": "05a95421961341c5b2556285e8415df9db27dab4f4abe22b446b3c6a8b916c5d",
+      "sha256": "05a95421961341c5b2556285e8415df9db27dab4f4abe22b446b3c6a8b916c5d",
+      "bytes": 171900
+    },
+    {
+      "path": "fonts/librebaskerville-OFL.txt",
+      "file": "fonts/librebaskerville-OFL.txt",
+      "source": "src/assets/typst/librebaskerville-OFL.txt",
+      "sourceSha256": "3624eddd4c8f8a908130a417ae7cd089c9da69899c4e0ca1a5217d0a6fae16fd",
+      "sha256": "3624eddd4c8f8a908130a417ae7cd089c9da69899c4e0ca1a5217d0a6fae16fd",
+      "bytes": 4542
+    },
+    {
+      "path": "fonts/librebaskerville-static-OFL.txt",
+      "file": "fonts/librebaskerville-static-OFL.txt",
+      "source": "src/assets/typst/librebaskerville-static-OFL.txt",
+      "sourceSha256": "28f6979946897ff9d8771ce4949e6c51fbfee99c29f31a93ffa575171ac37622",
+      "sha256": "28f6979946897ff9d8771ce4949e6c51fbfee99c29f31a93ffa575171ac37622",
+      "bytes": 4601
+    },
+    {
+      "path": "fonts/lora-Lora-Bold.ttf",
+      "file": "fonts/lora-Lora-Bold.ttf",
+      "source": "src/assets/typst/lora-Lora-Bold.ttf",
+      "sourceSha256": "32baf740eac1bf3f257904a6cf89e4e067ca1566b375bf22f743a26fc88b3791",
+      "sha256": "32baf740eac1bf3f257904a6cf89e4e067ca1566b375bf22f743a26fc88b3791",
+      "bytes": 218640
+    },
+    {
+      "path": "fonts/lora-Lora-BoldItalic.ttf",
+      "file": "fonts/lora-Lora-BoldItalic.ttf",
+      "source": "src/assets/typst/lora-Lora-BoldItalic.ttf",
+      "sourceSha256": "f448e41ab0bf529ec7bd4f8aef843eb4d33b5608c7ed0a53128ead588e6ea9e5",
+      "sha256": "f448e41ab0bf529ec7bd4f8aef843eb4d33b5608c7ed0a53128ead588e6ea9e5",
+      "bytes": 213560
+    },
+    {
+      "path": "fonts/lora-Lora-Italic-wght.ttf",
+      "file": "fonts/lora-Lora-Italic-wght.ttf",
+      "source": "src/assets/typst/lora-Lora-Italic-wght.ttf",
+      "sourceSha256": "22d8d8854b53807aa664ca34f2031a9ed57a1d0dea296b8b96cdd3aad937a2b3",
+      "sha256": "22d8d8854b53807aa664ca34f2031a9ed57a1d0dea296b8b96cdd3aad937a2b3",
+      "bytes": 221232
+    },
+    {
+      "path": "fonts/lora-Lora-Italic.ttf",
+      "file": "fonts/lora-Lora-Italic.ttf",
+      "source": "src/assets/typst/lora-Lora-Italic.ttf",
+      "sourceSha256": "1985f2fa49d675c3d88ca6a0b9161be38f955bec7efb025d2a5b68bc03e471fe",
+      "sha256": "1985f2fa49d675c3d88ca6a0b9161be38f955bec7efb025d2a5b68bc03e471fe",
+      "bytes": 206912
+    },
+    {
+      "path": "fonts/lora-Lora-Regular.ttf",
+      "file": "fonts/lora-Lora-Regular.ttf",
+      "source": "src/assets/typst/lora-Lora-Regular.ttf",
+      "sourceSha256": "c72a925082ba55885e7b4ead25d34a3c91fa44edda72a16a3a2983fc7fa7cef3",
+      "sha256": "c72a925082ba55885e7b4ead25d34a3c91fa44edda72a16a3a2983fc7fa7cef3",
+      "bytes": 198380
+    },
+    {
+      "path": "fonts/lora-Lora-wght.ttf",
+      "file": "fonts/lora-Lora-wght.ttf",
+      "source": "src/assets/typst/lora-Lora-wght.ttf",
+      "sourceSha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7",
+      "sha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7",
+      "bytes": 212196
+    },
+    {
+      "path": "fonts/lora-OFL.txt",
+      "file": "fonts/lora-OFL.txt",
+      "source": "src/assets/typst/lora-OFL.txt",
+      "sourceSha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
+      "sha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
+      "bytes": 4423
+    },
+    {
+      "path": "fonts/lora-static-OFL.txt",
+      "file": "fonts/lora-static-OFL.txt",
+      "source": "src/assets/typst/lora-static-OFL.txt",
+      "sourceSha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
+      "sha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
+      "bytes": 4423
+    },
+    {
+      "path": "fonts/source/NotoSansMono-Regular.ttf",
+      "file": "fonts/source/NotoSansMono-Regular.ttf",
+      "source": "Fedora google-noto-sans-mono-fonts-20250301-1.fc42.noarch:fonts/source/NotoSansMono-Regular.ttf",
+      "sourceSha256": "65b5e2b2c4a1fba9ae8be1f026cb35b03dcb8886d9b2a4147054fde12f7e767d",
+      "sha256": "65b5e2b2c4a1fba9ae8be1f026cb35b03dcb8886d9b2a4147054fde12f7e767d",
+      "bytes": 596428
+    },
+    {
+      "path": "fonts/source/NotoSansMono-SemiBold.ttf",
+      "file": "fonts/source/NotoSansMono-SemiBold.ttf",
+      "source": "Fedora google-noto-sans-mono-fonts-20250301-1.fc42.noarch:fonts/source/NotoSansMono-SemiBold.ttf",
+      "sourceSha256": "82e49094ec3a1a3c8fa0d730016f5f890384f6e164dd2cc84f39b30639bb6e8f",
+      "sha256": "82e49094ec3a1a3c8fa0d730016f5f890384f6e164dd2cc84f39b30639bb6e8f",
+      "bytes": 605436
+    },
+    {
+      "path": "fonts/specialelite-LICENSE.txt",
+      "file": "fonts/specialelite-LICENSE.txt",
+      "source": "src/assets/typst/specialelite-LICENSE.txt",
+      "sourceSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "fonts/specialelite-SpecialElite-Regular.ttf",
+      "file": "fonts/specialelite-SpecialElite-Regular.ttf",
+      "source": "src/assets/typst/specialelite-SpecialElite-Regular.ttf",
+      "sourceSha256": "a776fcb4ceb8bdf03e2967688ebdad42680de5b91a7e62c17e718ae212d14bc4",
+      "sha256": "a776fcb4ceb8bdf03e2967688ebdad42680de5b91a7e62c17e718ae212d14bc4",
+      "bytes": 166180
+    },
+    {
+      "path": "icon-192.png",
+      "file": "public/icon-192.png",
+      "source": "public/icon-192.png",
+      "sourceSha256": "1622efd1cf4c60d07c55e1c47e848e0595323ce0916b1820b85b050a5bb953ef",
+      "sha256": "1622efd1cf4c60d07c55e1c47e848e0595323ce0916b1820b85b050a5bb953ef",
+      "bytes": 2264
+    },
+    {
+      "path": "icon-512-maskable.png",
+      "file": "public/icon-512-maskable.png",
+      "source": "public/icon-512-maskable.png",
+      "sourceSha256": "35cb9e9e3be5b8e2041c42bd85764aa05b122ef7e20cb5820128d0d3165ed861",
+      "sha256": "35cb9e9e3be5b8e2041c42bd85764aa05b122ef7e20cb5820128d0d3165ed861",
+      "bytes": 44775
+    },
+    {
+      "path": "icon-512.png",
+      "file": "public/icon-512.png",
+      "source": "public/icon-512.png",
+      "sourceSha256": "35cb9e9e3be5b8e2041c42bd85764aa05b122ef7e20cb5820128d0d3165ed861",
+      "sha256": "35cb9e9e3be5b8e2041c42bd85764aa05b122ef7e20cb5820128d0d3165ed861",
+      "bytes": 44775
+    },
+    {
+      "path": "licenses/cast-FONTLOG.txt",
+      "file": "licenses/cast-FONTLOG.txt",
+      "source": "tools/sync-cast-fonts.py#original-Cast-symbol-provenance",
+      "sourceSha256": "30442b90c80ff848c8574b8dc1dee66995d1a4635cd01250bdcf7c8b4ebd5ddc",
+      "sha256": "9e97a643d18fb666885ffac36a3132ac5b8775700918fef95892a0aba5014cbf",
+      "bytes": 636
+    },
+    {
+      "path": "licenses/cast-adwaita-mono-OFL.txt",
+      "file": "licenses/cast-adwaita-mono-OFL.txt",
+      "source": "/usr/share/licenses/adwaita-mono-fonts/LICENSE.md",
+      "sourceSha256": "52579dd4ebbda8e5a9d314e395dbfe40de82b4b7b3007ec8458876823af8dddd",
+      "sha256": "52579dd4ebbda8e5a9d314e395dbfe40de82b4b7b3007ec8458876823af8dddd",
+      "bytes": 4493,
+      "encoding": "Original SIL Open Font License/copyright notice"
+    },
+    {
+      "path": "licenses/cast-inter-OFL.txt",
+      "file": "licenses/cast-inter-OFL.txt",
+      "source": "https://raw.githubusercontent.com/rsms/inter/v4.1/LICENSE.txt",
+      "sourceSha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a",
+      "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a",
+      "bytes": 4380,
+      "encoding": "Original SIL Open Font License/copyright notice"
+    },
+    {
+      "path": "licenses/cast-liberation-sans-OFL.txt",
+      "file": "licenses/cast-liberation-sans-OFL.txt",
+      "source": "/usr/share/licenses/liberation-sans-fonts/LICENSE",
+      "sourceSha256": "93fed46019c38bbe566b479d22148e2e8a1e85ada614accb0211c37b2c61c19b",
+      "sha256": "93fed46019c38bbe566b479d22148e2e8a1e85ada614accb0211c37b2c61c19b",
+      "bytes": 4414,
+      "encoding": "Original SIL Open Font License/copyright notice"
+    },
+    {
+      "path": "licenses/cast-raw-FONTLOG.txt",
+      "file": "licenses/cast-raw-FONTLOG.txt",
+      "source": "tools/sync-cast-raw-font.py#original-Manager-raw-glyph-provenance",
+      "sourceSha256": "69a1da67d4f4aaaa9dd0c5880520cb7dc484addda3fe20e6fa051efb51b0aead",
+      "sha256": "1a100fc6ab9ab2c2ee49c45cda60a509900b43caf8f4c08b4d8bd3aa597cad99",
+      "bytes": 461
+    },
+    {
+      "path": "licenses/cast-raw-liberation-serif-OFL.txt",
+      "file": "licenses/cast-raw-liberation-serif-OFL.txt",
+      "source": "/usr/share/licenses/liberation-serif-fonts/LICENSE",
+      "sourceSha256": "93fed46019c38bbe566b479d22148e2e8a1e85ada614accb0211c37b2c61c19b",
+      "sha256": "93fed46019c38bbe566b479d22148e2e8a1e85ada614accb0211c37b2c61c19b",
+      "bytes": 4414
+    },
+    {
+      "path": "licenses/dejavu-LICENSE.txt",
+      "file": "licenses/dejavu-LICENSE.txt",
+      "source": "https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-fonts-ttf-2.37.tar.bz2#LICENSE",
+      "sourceSha256": "7a083b136e64d064794c3419751e5c7dd10d2f64c108fe5ba161eae5e5958a93",
+      "sha256": "7a083b136e64d064794c3419751e5c7dd10d2f64c108fe5ba161eae5e5958a93",
+      "bytes": 8816,
+      "archiveSha256": "fa9ca4d13871dd122f61258a80d01751d603b4d3ee14095d65453b4e846e17d7"
+    },
+    {
+      "path": "licenses/droid-sans-fallback-NOTICE.txt",
+      "file": "licenses/droid-sans-fallback-NOTICE.txt",
+      "source": "Fedora google-droid-sans-fonts-20200215-22.fc42.noarch:licenses/droid-sans-fallback-NOTICE.txt",
+      "sourceSha256": "38751245389e1e23f73e6f5384b5cbe7fa972cc4410c5adc9c04b082a0b9561a",
+      "sha256": "38751245389e1e23f73e6f5384b5cbe7fa972cc4410c5adc9c04b082a0b9561a",
+      "bytes": 10695
+    },
+    {
+      "path": "licenses/file-arrow-FONTLOG.txt",
+      "file": "licenses/file-arrow-FONTLOG.txt",
+      "source": "tools/sync-file-arrow-font.py#original-File-glyph-provenance",
+      "sourceSha256": "0996f751fa3dd476cd317f91a56522e2e8284b7244ec9da16408c344002b884b",
+      "sha256": "ffb0a864c38b473ece6ec4c1edc1d91a967df5929efd2ac14d6e8a84792e4e04",
+      "bytes": 360
+    },
+    {
+      "path": "licenses/noto-sans-math-OFL.txt",
+      "file": "licenses/noto-sans-math-OFL.txt",
+      "source": "Fedora google-noto-sans-math-fonts-20250301-1.fc42.noarch:licenses/noto-sans-math-OFL.txt",
+      "sourceSha256": "403a95275b469061b7d4371c328e0ada3bc7d63328abe2e88aad5cd243b2fe21",
+      "sha256": "403a95275b469061b7d4371c328e0ada3bc7d63328abe2e88aad5cd243b2fe21",
+      "bytes": 4380
+    },
+    {
+      "path": "licenses/reicon-LICENSE.txt",
+      "file": "licenses/reicon-LICENSE.txt",
+      "source": "https://github.com/dqev/reicon/blob/main/LICENSE",
+      "sourceSha256": "c3fb62a9a75902941407987c98982b7793c707729fd7763a7044b7eb02cbfee1",
+      "sha256": "c3fb62a9a75902941407987c98982b7793c707729fd7763a7044b7eb02cbfee1",
+      "bytes": 1062
+    },
+    {
+      "path": "licenses/source-mono-OFL.txt",
+      "file": "licenses/source-mono-OFL.txt",
+      "source": "https://raw.githubusercontent.com/notofonts/latin-greek-cyrillic/main/OFL.txt",
+      "sourceSha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+      "sha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+      "bytes": 4396
+    },
+    {
+      "path": "licenses/twyne-body-FONTLOG.txt",
+      "file": "licenses/twyne-body-FONTLOG.txt",
+      "source": "tools/sync-lora-ui.py#Lora3.008-instance-provenance",
+      "sourceSha256": "6364b4e856f3ac30d7b2b1c9c30cbd79ee31f32f5232ed19d5380b81b1c9779e",
+      "sha256": "53df3b85b637ddddd23b29f78f494953860cd72801c845a8d1859aa4fa88ddf4",
+      "bytes": 547
+    },
+    {
+      "path": "licenses/twyne-body-OFL.txt",
+      "file": "licenses/twyne-body-OFL.txt",
+      "source": "src/assets/typst/lora-OFL.txt",
+      "sourceSha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
+      "sha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
+      "bytes": 4423
+    },
+    {
+      "path": "licenses/twyne-button-sans-FONTLOG.txt",
+      "file": "licenses/twyne-button-sans-FONTLOG.txt",
+      "source": "tools/sync-button-font.py#original12px600-button-provenance",
+      "sourceSha256": "9191c40535740138ee6f8badb95310b4b75184e800f05c92083bfda9d00ff685",
+      "sha256": "d5e2ac9a8ab73251fb1fc5dbf56f37d76c3ed0b39ac5658dde1d5fdfefe981c7",
+      "bytes": 315
+    },
+    {
+      "path": "licenses/twyne-button-sans-OFL.txt",
+      "file": "licenses/twyne-button-sans-OFL.txt",
+      "source": "src/assets/typst/dmsans-OFL.txt",
+      "sourceSha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1",
+      "sha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1",
+      "bytes": 4482
+    },
+    {
+      "path": "licenses/twyne-source-FONTLOG.txt",
+      "file": "licenses/twyne-source-FONTLOG.txt",
+      "source": "tools/sync-source-fonts.py#original-Source-provenance",
+      "sourceSha256": "f5b446c569e603b24e9f1e622182eb17ee2b4695d1b8a5a71cfc3c7db846234a",
+      "sha256": "017b84ac723875687dcf2186fb82d8562f000128cca542912c9f017fa5a01457",
+      "bytes": 742
+    },
+    {
+      "path": "licenses/twyne-source-label-OFL.txt",
+      "file": "licenses/twyne-source-label-OFL.txt",
+      "source": "src/assets/typst/dmsans-OFL.txt",
+      "sourceSha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1",
+      "sha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1",
+      "bytes": 4482
+    },
+    {
+      "path": "licenses/typst-fonts.txt",
+      "file": "licenses/typst-fonts.txt",
+      "source": "public/licenses/typst-fonts.txt",
+      "sourceSha256": "9a63cd37e2cebbc3f66d559973c67291c61d0e87e896402185e7d4009f52e75b",
+      "sha256": "9a63cd37e2cebbc3f66d559973c67291c61d0e87e896402185e7d4009f52e75b",
+      "bytes": 65241
+    },
+    {
+      "path": "lora-ui-provenance.json",
+      "file": "lora-ui-provenance.json",
+      "source": "tools/sync-lora-ui.py#Lora3.008-instance-provenance",
+      "sourceSha256": "6364b4e856f3ac30d7b2b1c9c30cbd79ee31f32f5232ed19d5380b81b1c9779e",
+      "sha256": "522c035e57794e0ee3102de796c57bf71f764ccaa81a587a604a9557c558413a",
+      "bytes": 5247
+    },
+    {
+      "path": "source-font-provenance.json",
+      "file": "source-font-provenance.json",
+      "source": "tools/sync-source-fonts.py#original-Source-provenance",
+      "sourceSha256": "f5b446c569e603b24e9f1e622182eb17ee2b4695d1b8a5a71cfc3c7db846234a",
+      "sha256": "562885cb6432737609d851c523296ed71f1c464c3d7c8b290351492cf0b7f670",
+      "bytes": 10030
+    },
+    {
+      "path": "twyne-wordmark.svg",
+      "file": "public/twyne-wordmark.svg",
+      "source": "public/twyne-wordmark.svg",
+      "sourceSha256": "ac92bc389f3aea6fe56bf8625f3152f546ffba211650e3ed975eae8e608056e8",
+      "sha256": "ac92bc389f3aea6fe56bf8625f3152f546ffba211650e3ed975eae8e608056e8",
+      "bytes": 670
+    },
+    {
+      "path": "twyne/icons/add-filled.svg",
+      "file": "icons/add-filled.svg",
+      "source": "src/utils/icon-system.ts#add:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "475be8631edf14fa45ba094bf9bdbc102ca5e92ea0c5860076e9663693edb731",
+      "bytes": 642
+    },
+    {
+      "path": "twyne/icons/add-outline.svg",
+      "file": "icons/add-outline.svg",
+      "source": "src/utils/icon-system.ts#add:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "e237c66ce40c2ed468538c98c60311bd798024b35630fe242b9ae75570c37ce7",
+      "bytes": 397
+    },
+    {
+      "path": "twyne/icons/alert-triangle-filled.svg",
+      "file": "icons/alert-triangle-filled.svg",
+      "source": "src/utils/icon-system.ts#alert-triangle:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "30ac6c3adf4214ce02b134f3ca8091a5b78c24504eafffa8c37e634b1a0739fb",
+      "bytes": 823
+    },
+    {
+      "path": "twyne/icons/alert-triangle-outline.svg",
+      "file": "icons/alert-triangle-outline.svg",
+      "source": "src/utils/icon-system.ts#alert-triangle:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "220b51b113bf0af852727a29a167ea80be91b015f0d97c848554e878a0d707ae",
+      "bytes": 1805
+    },
+    {
+      "path": "twyne/icons/align-horizontal-spacing-filled.svg",
+      "file": "icons/align-horizontal-spacing-filled.svg",
+      "source": "src/utils/icon-system.ts#align-horizontal-spacing:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "301e2b5a47e094f1874f3235d7393e6fbd4b52fffdda6cd4d1c973d66d6be182",
+      "bytes": 878
+    },
+    {
+      "path": "twyne/icons/align-horizontal-spacing-outline.svg",
+      "file": "icons/align-horizontal-spacing-outline.svg",
+      "source": "src/utils/icon-system.ts#align-horizontal-spacing:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "2de0e4958551728fa782808f4a245346c90e9f15649409110ba3ad9cb131c6be",
+      "bytes": 2086
+    },
+    {
+      "path": "twyne/icons/arrow-down-filled.svg",
+      "file": "icons/arrow-down-filled.svg",
+      "source": "src/utils/icon-system.ts#arrow-down:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "30b836964edc2c96e48e726b94ef8f70a79316b6751e8c5c1bee0246041a7077",
+      "bytes": 618
+    },
+    {
+      "path": "twyne/icons/arrow-down-outline.svg",
+      "file": "icons/arrow-down-outline.svg",
+      "source": "src/utils/icon-system.ts#arrow-down:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "0eb9289e62d180cc9799ea25eb1232d1acc63b4b5d8a449de79ac9195918288c",
+      "bytes": 691
+    },
+    {
+      "path": "twyne/icons/arrow-left-filled.svg",
+      "file": "icons/arrow-left-filled.svg",
+      "source": "src/utils/icon-system.ts#arrow-left:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "1bad49acfa6de181603f20dfda2609a12a9b9f0242291c88e4107f8f83158ce3",
+      "bytes": 623
+    },
+    {
+      "path": "twyne/icons/arrow-left-outline.svg",
+      "file": "icons/arrow-left-outline.svg",
+      "source": "src/utils/icon-system.ts#arrow-left:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "659ba24aa1cbdd1e137498da9995a582a1bd6e1de4ad5d90837f7eca11d5cfc3",
+      "bytes": 657
+    },
+    {
+      "path": "twyne/icons/arrow-right-filled.svg",
+      "file": "icons/arrow-right-filled.svg",
+      "source": "src/utils/icon-system.ts#arrow-right:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "dc9ef889915fa848c4cdd3a81184fccd753c7eed4df45f7d669b56cd58ee8374",
+      "bytes": 606
+    },
+    {
+      "path": "twyne/icons/arrow-right-outline.svg",
+      "file": "icons/arrow-right-outline.svg",
+      "source": "src/utils/icon-system.ts#arrow-right:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "50ed524bbb69dd63040379936c6b844dc6cdae0552aceb126c07f1ab7ab1a123",
+      "bytes": 652
+    },
+    {
+      "path": "twyne/icons/arrow-up-filled.svg",
+      "file": "icons/arrow-up-filled.svg",
+      "source": "src/utils/icon-system.ts#arrow-up:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "205b32137142fa8bc97ae0901ab5bcf6cfe2a74ed079951a4ef420faddd0d311",
+      "bytes": 623
+    },
+    {
+      "path": "twyne/icons/arrow-up-outline.svg",
+      "file": "icons/arrow-up-outline.svg",
+      "source": "src/utils/icon-system.ts#arrow-up:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "c040d22b6349fe30bb9569ce5b4b26de0e206ceb01399f321fd1824402e4d4c4",
+      "bytes": 669
+    },
+    {
+      "path": "twyne/icons/book-open-filled.svg",
+      "file": "icons/book-open-filled.svg",
+      "source": "src/utils/icon-system.ts#book-open:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "acd6b269bab930c467587b9bcf4e0ffc1af161be2ba162811cbfbe39504ae215",
+      "bytes": 1093
+    },
+    {
+      "path": "twyne/icons/book-open-outline.svg",
+      "file": "icons/book-open-outline.svg",
+      "source": "src/utils/icon-system.ts#book-open:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "9fba5c0b84693f627a261f80ce9d06c869e769fba85a2aefe295c98a30bec485",
+      "bytes": 1698
+    },
+    {
+      "path": "twyne/icons/browser-terminal-filled.svg",
+      "file": "icons/browser-terminal-filled.svg",
+      "source": "src/utils/icon-system.ts#browser-terminal:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "1245b3a9f8968ddb8035d4d54797af825316e4a82eabaa1b4c9504198b05e98c",
+      "bytes": 2251
+    },
+    {
+      "path": "twyne/icons/browser-terminal-outline.svg",
+      "file": "icons/browser-terminal-outline.svg",
+      "source": "src/utils/icon-system.ts#browser-terminal:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "734a9eaaadfaee40c5ea06d4e1da6f7dc98dd7c9ff17543ed855597f51c47373",
+      "bytes": 2725
+    },
+    {
+      "path": "twyne/icons/check-filled.svg",
+      "file": "icons/check-filled.svg",
+      "source": "src/utils/icon-system.ts#check:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "66db5ec26eca0f5b34043a93bba4e9b1a59cc341bbe37b0ffe47f82d8f3cf7b7",
+      "bytes": 528
+    },
+    {
+      "path": "twyne/icons/check-outline.svg",
+      "file": "icons/check-outline.svg",
+      "source": "src/utils/icon-system.ts#check:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "07995c1b544c87ae228eb5e80b9af82fff431f9a377a35057ec6bfd37a7e8f65",
+      "bytes": 528
+    },
+    {
+      "path": "twyne/icons/checklist-filled.svg",
+      "file": "icons/checklist-filled.svg",
+      "source": "src/utils/icon-system.ts#checklist:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "ea4b9a396f5544cb34096e8ea4fa9c0c9c514b9b66bfb626611911602a08bd4d",
+      "bytes": 1551
+    },
+    {
+      "path": "twyne/icons/checklist-outline.svg",
+      "file": "icons/checklist-outline.svg",
+      "source": "src/utils/icon-system.ts#checklist:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "7d568cb797e350e639f060f8b05972838d6b18a133fea8488f430d331564be8c",
+      "bytes": 2795
+    },
+    {
+      "path": "twyne/icons/close-circle-filled.svg",
+      "file": "icons/close-circle-filled.svg",
+      "source": "src/utils/icon-system.ts#close-circle:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "c585c00288b840ee03c79567d96e014ace760c0a75644b9a4c4cad1366ec2406",
+      "bytes": 722
+    },
+    {
+      "path": "twyne/icons/close-circle-outline.svg",
+      "file": "icons/close-circle-outline.svg",
+      "source": "src/utils/icon-system.ts#close-circle:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "d3a1c90615b33972db735a0ed707adbbb7336642bf814c1025c5201d8f5d898d",
+      "bytes": 622
+    },
+    {
+      "path": "twyne/icons/code-file-filled.svg",
+      "file": "icons/code-file-filled.svg",
+      "source": "src/utils/icon-system.ts#code-file:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "ac79b0ea87763c618cd9b431ba6a302e77299589494619ea544206366bdd0098",
+      "bytes": 1933
+    },
+    {
+      "path": "twyne/icons/code-file-outline.svg",
+      "file": "icons/code-file-outline.svg",
+      "source": "src/utils/icon-system.ts#code-file:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "a1544b33c7262f595bc30b7aa6c785bcebd0d3dc2f31b9258c9044d2f93ee940",
+      "bytes": 3406
+    },
+    {
+      "path": "twyne/icons/code-filled.svg",
+      "file": "icons/code-filled.svg",
+      "source": "src/utils/icon-system.ts#code:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "c4bfb87781f393a6a2ee66931075a43642afb745e8625ea199624948bd50d281",
+      "bytes": 1813
+    },
+    {
+      "path": "twyne/icons/code-outline.svg",
+      "file": "icons/code-outline.svg",
+      "source": "src/utils/icon-system.ts#code:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "c4bfb87781f393a6a2ee66931075a43642afb745e8625ea199624948bd50d281",
+      "bytes": 1813
+    },
+    {
+      "path": "twyne/icons/command-filled.svg",
+      "file": "icons/command-filled.svg",
+      "source": "src/utils/icon-system.ts#command:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "8df6eeea60d5d3fbfeca2ac90bebe3d84e7556afac37f2b09ac6973dbb9604df",
+      "bytes": 975
+    },
+    {
+      "path": "twyne/icons/command-outline.svg",
+      "file": "icons/command-outline.svg",
+      "source": "src/utils/icon-system.ts#command:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "87105ec6edb394349f149fcb9d715aac82b5e19fa3d1346de0a075ebcd08d759",
+      "bytes": 1780
+    },
+    {
+      "path": "twyne/icons/comment-add-filled.svg",
+      "file": "icons/comment-add-filled.svg",
+      "source": "src/utils/icon-system.ts#comment-add:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "cc8f09c8e06114199d1327d9f434986243dae4998b2a54d896e1922b943e56c6",
+      "bytes": 862
+    },
+    {
+      "path": "twyne/icons/comment-add-outline.svg",
+      "file": "icons/comment-add-outline.svg",
+      "source": "src/utils/icon-system.ts#comment-add:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "b25a5a8c0d87d7695d09b1a4593d6bb457697ed913fc83edc08adf180a36602c",
+      "bytes": 1267
+    },
+    {
+      "path": "twyne/icons/composer-mic.svg",
+      "file": "icons/composer-mic.svg",
+      "source": "src/components/ui/chat-composer.tsx#MicIcon",
+      "sourceSha256": "b2e42c72662a29b7cb947e2275da68e7a2693f8f15903be3da8036caf55dfc1a",
+      "sha256": "58739e7c0d35035f7a7e02b82fd893dcd51c37bdef4ba8346eb23b875e377400",
+      "bytes": 326
+    },
+    {
+      "path": "twyne/icons/composer-send.svg",
+      "file": "icons/composer-send.svg",
+      "source": "src/components/ui/chat-composer.tsx#send",
+      "sourceSha256": "b2e42c72662a29b7cb947e2275da68e7a2693f8f15903be3da8036caf55dfc1a",
+      "sha256": "55ac5e0a7a5c5e67aacb1eb799b87cfa8fcfc9cb96692c0edb77d486168e8f31",
+      "bytes": 257
+    },
+    {
+      "path": "twyne/icons/devices-filled.svg",
+      "file": "icons/devices-filled.svg",
+      "source": "src/utils/icon-system.ts#devices:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "365a21aae01c0520c9e021502152aedb16c06a8096a1a9cc5a8630a6a5a53ef4",
+      "bytes": 1521
+    },
+    {
+      "path": "twyne/icons/devices-outline.svg",
+      "file": "icons/devices-outline.svg",
+      "source": "src/utils/icon-system.ts#devices:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "b55d9e3e44a8b0e2ba89adc07766febcc245f9b01e5c6ee5ce6360b408ab207b",
+      "bytes": 3554
+    },
+    {
+      "path": "twyne/icons/diagram-filled.svg",
+      "file": "icons/diagram-filled.svg",
+      "source": "src/utils/icon-system.ts#diagram:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "b02a433a0234f31f04497a666d22b4d9870cd7f065ca388e7900f17e35bb9df4",
+      "bytes": 1182
+    },
+    {
+      "path": "twyne/icons/diagram-outline.svg",
+      "file": "icons/diagram-outline.svg",
+      "source": "src/utils/icon-system.ts#diagram:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "3fafdb8e24a60d51bc70235d58133e84e0e09037a33e1bed7c80c9a10706061e",
+      "bytes": 559
+    },
+    {
+      "path": "twyne/icons/document-text-filled.svg",
+      "file": "icons/document-text-filled.svg",
+      "source": "src/utils/icon-system.ts#document-text:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "bc65c7a1a6e96435e474656556ba8f539043e5c6a1eed6e4cbd31690538efae4",
+      "bytes": 1023
+    },
+    {
+      "path": "twyne/icons/document-text-outline.svg",
+      "file": "icons/document-text-outline.svg",
+      "source": "src/utils/icon-system.ts#document-text:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "c13c16be3679c7eeebd8ee7385f6b23c225c322b33185738d3f6c9bfaf0d8c9a",
+      "bytes": 818
+    },
+    {
+      "path": "twyne/icons/edit-filled.svg",
+      "file": "icons/edit-filled.svg",
+      "source": "src/utils/icon-system.ts#edit:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "cdfeda75e11f352029bfde17110d1515840ad69cd603939d3187aa1f5aa5cd65",
+      "bytes": 1220
+    },
+    {
+      "path": "twyne/icons/edit-outline.svg",
+      "file": "icons/edit-outline.svg",
+      "source": "src/utils/icon-system.ts#edit:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "77c4cfd0e9105568d26279629613cf7c1c857e6b9529f492e85e3136783e389e",
+      "bytes": 882
+    },
+    {
+      "path": "twyne/icons/editor-drawer.svg",
+      "file": "icons/editor-drawer.svg",
+      "source": "src/routes/editor/index.tsx#Toggle the drawer sidebar",
+      "sourceSha256": "262ffc6cb75f0072e8012d6265504afc663a4c45d21f665766347ae2ea091df6",
+      "sha256": "d2398153506e62f650893caf47a515f79a7cef33d644d167d3b37c07d1e8eec4",
+      "bytes": 181
+    },
+    {
+      "path": "twyne/icons/editorial-board.svg",
+      "file": "icons/editorial-board.svg",
+      "source": "src/routes/editor/index.tsx#Toggle the editorial board panel",
+      "sourceSha256": "262ffc6cb75f0072e8012d6265504afc663a4c45d21f665766347ae2ea091df6",
+      "sha256": "aa83414f495e89818075feacba037ac7310ea3dd58037c876e575987d55d1da2",
+      "bytes": 210
+    },
+    {
+      "path": "twyne/icons/eye-filled.svg",
+      "file": "icons/eye-filled.svg",
+      "source": "src/utils/icon-system.ts#eye:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "2f1261de33a81172989a1c4ad59552a63502394d5d4456e8ba92eddf7564e26a",
+      "bytes": 887
+    },
+    {
+      "path": "twyne/icons/eye-outline.svg",
+      "file": "icons/eye-outline.svg",
+      "source": "src/utils/icon-system.ts#eye:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "4db516724edaae8f2c19a707e1c06000638e2edbc075630e2fd8d1ba832f5852",
+      "bytes": 1757
+    },
+    {
+      "path": "twyne/icons/file-check-filled.svg",
+      "file": "icons/file-check-filled.svg",
+      "source": "src/utils/icon-system.ts#file-check:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "3fc2e926ce767fd9bf8d8d7d5ec86df6e02c83c2aed12f15f3a755c7ac90f6d5",
+      "bytes": 1424
+    },
+    {
+      "path": "twyne/icons/file-check-outline.svg",
+      "file": "icons/file-check-outline.svg",
+      "source": "src/utils/icon-system.ts#file-check:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "26e6b4ee19d2442631a32dd319eb78acb83db34a05beb4d90422d80f0b7b24f1",
+      "bytes": 2903
+    },
+    {
+      "path": "twyne/icons/file-download-filled.svg",
+      "file": "icons/file-download-filled.svg",
+      "source": "src/utils/icon-system.ts#file-download:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "015b0b77409f74af016f20321f919b098a09811c881416669553ea5b65f7b0b6",
+      "bytes": 1469
+    },
+    {
+      "path": "twyne/icons/file-download-outline.svg",
+      "file": "icons/file-download-outline.svg",
+      "source": "src/utils/icon-system.ts#file-download:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "16cd6d92e98ed32eb1e28cf2d6788f9028198f9717f7ed95870f98322c902236",
+      "bytes": 2951
+    },
+    {
+      "path": "twyne/icons/file-filled.svg",
+      "file": "icons/file-filled.svg",
+      "source": "src/utils/icon-system.ts#file:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "eb6cff70476b6c4a7997a48861b67354018d32d510f9ea527c7f2b9c1f6d3136",
+      "bytes": 1062
+    },
+    {
+      "path": "twyne/icons/file-outline.svg",
+      "file": "icons/file-outline.svg",
+      "source": "src/utils/icon-system.ts#file:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "a66b1b7e66fa350a541509266d7cf9bcb93476d86429cd6f24600bf4750732e3",
+      "bytes": 2463
+    },
+    {
+      "path": "twyne/icons/file-pdf-filled.svg",
+      "file": "icons/file-pdf-filled.svg",
+      "source": "src/utils/icon-system.ts#file-pdf:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "a99f324c291f0cedc24ff57b833b7f2e538ba2135d3b36629e35d676926b0416",
+      "bytes": 2953
+    },
+    {
+      "path": "twyne/icons/file-pdf-outline.svg",
+      "file": "icons/file-pdf-outline.svg",
+      "source": "src/utils/icon-system.ts#file-pdf:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "e05aa2b0f42b85c45ce1dbd8c0b8d35b0c35dc6b7bf4a36e14db207b32055354",
+      "bytes": 3118
+    },
+    {
+      "path": "twyne/icons/file-up-filled.svg",
+      "file": "icons/file-up-filled.svg",
+      "source": "src/utils/icon-system.ts#file-up:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "87543144b2d8e088f2ace02355e931320db23e2bdaf55a9b87a8352a4ae103d5",
+      "bytes": 2019
+    },
+    {
+      "path": "twyne/icons/file-up-outline.svg",
+      "file": "icons/file-up-outline.svg",
+      "source": "src/utils/icon-system.ts#file-up:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "3a5f2f820a8b8854173f6e2fe059cc7c929b50fa1e40a5c9b3e19aebb7c4bb12",
+      "bytes": 2838
+    },
+    {
+      "path": "twyne/icons/folder-filled.svg",
+      "file": "icons/folder-filled.svg",
+      "source": "src/utils/icon-system.ts#folder:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "be1e8d841cd87f72d85ede2605dde91de00be83d97dd718b4fdedd47d812fe63",
+      "bytes": 1490
+    },
+    {
+      "path": "twyne/icons/folder-outline.svg",
+      "file": "icons/folder-outline.svg",
+      "source": "src/utils/icon-system.ts#folder:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "cbc0e4f954896ce87ea84d6d596c353d33d15ae77d2ab4ddc7856e5484469f48",
+      "bytes": 3050
+    },
+    {
+      "path": "twyne/icons/fullscreen-filled.svg",
+      "file": "icons/fullscreen-filled.svg",
+      "source": "src/utils/icon-system.ts#fullscreen:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "96ce1d37a399f8af4a7e9da002438bb9381d9f9c5e4f4360bb2dfe045e285cdc",
+      "bytes": 2391
+    },
+    {
+      "path": "twyne/icons/fullscreen-outline.svg",
+      "file": "icons/fullscreen-outline.svg",
+      "source": "src/utils/icon-system.ts#fullscreen:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "96ce1d37a399f8af4a7e9da002438bb9381d9f9c5e4f4360bb2dfe045e285cdc",
+      "bytes": 2391
+    },
+    {
+      "path": "twyne/icons/grid-2-filled.svg",
+      "file": "icons/grid-2-filled.svg",
+      "source": "src/utils/icon-system.ts#grid-2:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "692097b744aaa1bea97ed6ec1f405a8923a6016d964f1730d74ea092425bebb4",
+      "bytes": 861
+    },
+    {
+      "path": "twyne/icons/grid-2-outline.svg",
+      "file": "icons/grid-2-outline.svg",
+      "source": "src/utils/icon-system.ts#grid-2:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "2545c569496889805e62c4bad0352bddf543e638b94d545f5eb0afeffc7e87fe",
+      "bytes": 821
+    },
+    {
+      "path": "twyne/icons/grid-filled.svg",
+      "file": "icons/grid-filled.svg",
+      "source": "src/utils/icon-system.ts#grid:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "79e2191b96a072e6decfa6989adfa798e2d7f4d92e0afdbfabe7ce7386ae4d37",
+      "bytes": 4189
+    },
+    {
+      "path": "twyne/icons/grid-outline.svg",
+      "file": "icons/grid-outline.svg",
+      "source": "src/utils/icon-system.ts#grid:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "c2a5d79ce119065fff0dc24a0061208a6b0176569abd7c0b845df59301c56d69",
+      "bytes": 8153
+    },
+    {
+      "path": "twyne/icons/heading-filled.svg",
+      "file": "icons/heading-filled.svg",
+      "source": "src/utils/icon-system.ts#heading:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "904101a5a40992c8ad6e3e2f79bc340611af55e472053e9c116eb29e6690b053",
+      "bytes": 1265
+    },
+    {
+      "path": "twyne/icons/heading-outline.svg",
+      "file": "icons/heading-outline.svg",
+      "source": "src/utils/icon-system.ts#heading:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "904101a5a40992c8ad6e3e2f79bc340611af55e472053e9c116eb29e6690b053",
+      "bytes": 1265
+    },
+    {
+      "path": "twyne/icons/history-filled.svg",
+      "file": "icons/history-filled.svg",
+      "source": "src/utils/icon-system.ts#history:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "2280d40428f2c4af419ab6eff7644657d3af950ad5dd3ea860976a895f6b7c27",
+      "bytes": 1300
+    },
+    {
+      "path": "twyne/icons/history-outline.svg",
+      "file": "icons/history-outline.svg",
+      "source": "src/utils/icon-system.ts#history:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "2280d40428f2c4af419ab6eff7644657d3af950ad5dd3ea860976a895f6b7c27",
+      "bytes": 1300
+    },
+    {
+      "path": "twyne/icons/house-filled.svg",
+      "file": "icons/house-filled.svg",
+      "source": "src/utils/icon-system.ts#house:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "510a79dc010483d518d556ffe78299d5811bca94c8b47b359cfc34751f95f348",
+      "bytes": 626
+    },
+    {
+      "path": "twyne/icons/house-outline.svg",
+      "file": "icons/house-outline.svg",
+      "source": "src/utils/icon-system.ts#house:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "c65d2a96b0663737e937b47cad10eb68aba666dc6b889173cf3c728d6b7d70ef",
+      "bytes": 735
+    },
+    {
+      "path": "twyne/icons/image-filled.svg",
+      "file": "icons/image-filled.svg",
+      "source": "src/utils/icon-system.ts#image:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "528509c1fbc1b8ae38849a31edd94cb57c7dcbaa3a4ad95ba9e4c2a94e458a48",
+      "bytes": 2126
+    },
+    {
+      "path": "twyne/icons/image-outline.svg",
+      "file": "icons/image-outline.svg",
+      "source": "src/utils/icon-system.ts#image:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "44a66b0ddcfd181dd371012d815dc0eea8f14c6efe5cf10afb21d45f1f670966",
+      "bytes": 3127
+    },
+    {
+      "path": "twyne/icons/iphone-filled.svg",
+      "file": "icons/iphone-filled.svg",
+      "source": "src/utils/icon-system.ts#iphone:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "c534ba05b3c31b737756e84d2460abda5e8e56537f3d2c224fd32b606e70a008",
+      "bytes": 1213
+    },
+    {
+      "path": "twyne/icons/iphone-outline.svg",
+      "file": "icons/iphone-outline.svg",
+      "source": "src/utils/icon-system.ts#iphone:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "364ccace0a2a16c90d569424b11136b61cc43fa6d31d8a719be34f086befcad3",
+      "bytes": 2582
+    },
+    {
+      "path": "twyne/icons/keyboard-filled.svg",
+      "file": "icons/keyboard-filled.svg",
+      "source": "src/utils/icon-system.ts#keyboard:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "d3ad91dd28aa6509d0ada28dd030f547b4ad6cfa1774d61cf32d2822fe573254",
+      "bytes": 1816
+    },
+    {
+      "path": "twyne/icons/keyboard-outline.svg",
+      "file": "icons/keyboard-outline.svg",
+      "source": "src/utils/icon-system.ts#keyboard:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "1583292f7f831d481b20c8875f6325a036222cfcb72bfa55a07b6fb8a174782d",
+      "bytes": 3388
+    },
+    {
+      "path": "twyne/icons/layout-filled.svg",
+      "file": "icons/layout-filled.svg",
+      "source": "src/utils/icon-system.ts#layout:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "c126e08887faaea60a8de062c7a2ceae84c04dd2558e67834a19605bd5b1ccaf",
+      "bytes": 1759
+    },
+    {
+      "path": "twyne/icons/layout-outline.svg",
+      "file": "icons/layout-outline.svg",
+      "source": "src/utils/icon-system.ts#layout:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "897f0e78f0732df79f2db2e81a606379c2fd973a0977c45d52c7701246c10327",
+      "bytes": 2208
+    },
+    {
+      "path": "twyne/icons/link-broken-filled.svg",
+      "file": "icons/link-broken-filled.svg",
+      "source": "src/utils/icon-system.ts#link-broken:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "50899be91d9db5a8b68e1e2cd55116e6248ce40a19cfc70efd332617c4340af4",
+      "bytes": 1699
+    },
+    {
+      "path": "twyne/icons/link-broken-outline.svg",
+      "file": "icons/link-broken-outline.svg",
+      "source": "src/utils/icon-system.ts#link-broken:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "50899be91d9db5a8b68e1e2cd55116e6248ce40a19cfc70efd332617c4340af4",
+      "bytes": 1699
+    },
+    {
+      "path": "twyne/icons/link-filled.svg",
+      "file": "icons/link-filled.svg",
+      "source": "src/utils/icon-system.ts#link:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "151be457a87408fe2932beb35511fa20969e1c8951ef23f05eabc6f010c7f4ee",
+      "bytes": 1363
+    },
+    {
+      "path": "twyne/icons/link-outline.svg",
+      "file": "icons/link-outline.svg",
+      "source": "src/utils/icon-system.ts#link:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "151be457a87408fe2932beb35511fa20969e1c8951ef23f05eabc6f010c7f4ee",
+      "bytes": 1363
+    },
+    {
+      "path": "twyne/icons/list-filled.svg",
+      "file": "icons/list-filled.svg",
+      "source": "src/utils/icon-system.ts#list:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "2c2023b70f241a02b07948ad33c56d9189f80625278852346b7652d15b7317e5",
+      "bytes": 1187
+    },
+    {
+      "path": "twyne/icons/list-outline.svg",
+      "file": "icons/list-outline.svg",
+      "source": "src/utils/icon-system.ts#list:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "ef55798025ee03b351aae927db71bb20781d5f71ece666e720584857b381660d",
+      "bytes": 1214
+    },
+    {
+      "path": "twyne/icons/math-filled.svg",
+      "file": "icons/math-filled.svg",
+      "source": "src/utils/icon-system.ts#math:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "940ff56b307579350bcb6e905b843c0affdff12f2ec1766add8b74390adb6b42",
+      "bytes": 1553
+    },
+    {
+      "path": "twyne/icons/math-outline.svg",
+      "file": "icons/math-outline.svg",
+      "source": "src/utils/icon-system.ts#math:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "e31dc20cb34da943b791c239798a640e64b36e2bd9a5f23e051235c8a9b69090",
+      "bytes": 1042
+    },
+    {
+      "path": "twyne/icons/ordered-list-filled.svg",
+      "file": "icons/ordered-list-filled.svg",
+      "source": "src/utils/icon-system.ts#ordered-list:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "5db842f82ab6f40d5559d899aad4137a501e1197abb198f431225b530d7ade54",
+      "bytes": 1486
+    },
+    {
+      "path": "twyne/icons/ordered-list-outline.svg",
+      "file": "icons/ordered-list-outline.svg",
+      "source": "src/utils/icon-system.ts#ordered-list:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "778b2ca97cf63ca929fc40615008ec69284c183cb6e767c749f158a2cbe8f7fd",
+      "bytes": 959
+    },
+    {
+      "path": "twyne/icons/page-filled.svg",
+      "file": "icons/page-filled.svg",
+      "source": "src/utils/icon-system.ts#page:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "bf70e614f8fa45512d438a1d85852795a2d77f4b4053f66b1880f486310a50ba",
+      "bytes": 2641
+    },
+    {
+      "path": "twyne/icons/page-outline.svg",
+      "file": "icons/page-outline.svg",
+      "source": "src/utils/icon-system.ts#page:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "3ede62a523e5f36ddb0f09e9a41cd0c908dba82d134e13dc36be5c54338e0602",
+      "bytes": 3566
+    },
+    {
+      "path": "twyne/icons/pen-nib-filled.svg",
+      "file": "icons/pen-nib-filled.svg",
+      "source": "src/utils/icon-system.ts#pen-nib:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "ed2f59b1ac821ea21dd2a7d2119f7fb4b95b255d011426cb4f09df0889f374f2",
+      "bytes": 2534
+    },
+    {
+      "path": "twyne/icons/pen-nib-outline.svg",
+      "file": "icons/pen-nib-outline.svg",
+      "source": "src/utils/icon-system.ts#pen-nib:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "ba43fb83dfa5092d18569982fab7b0bffae1cdaa20135702bf2912c253cd79f9",
+      "bytes": 2907
+    },
+    {
+      "path": "twyne/icons/quote-filled.svg",
+      "file": "icons/quote-filled.svg",
+      "source": "src/utils/icon-system.ts#quote:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "0ae231ecb4ea684a0f5aff59847f2ce89890be15667d44583c10e9caa95884f1",
+      "bytes": 934
+    },
+    {
+      "path": "twyne/icons/quote-outline.svg",
+      "file": "icons/quote-outline.svg",
+      "source": "src/utils/icon-system.ts#quote:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "e4ff695e8c4a04f73b35833518ad389f9e398c46c55e7fe153462065b2517c4a",
+      "bytes": 1058
+    },
+    {
+      "path": "twyne/icons/redo-filled.svg",
+      "file": "icons/redo-filled.svg",
+      "source": "src/utils/icon-system.ts#redo:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "6f2ab961cf954d5e5a8c38ffe7eee1d49006457d7fb08e52d8bf2fd2c8b46b5b",
+      "bytes": 1584
+    },
+    {
+      "path": "twyne/icons/redo-outline.svg",
+      "file": "icons/redo-outline.svg",
+      "source": "src/utils/icon-system.ts#redo:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "6f2ab961cf954d5e5a8c38ffe7eee1d49006457d7fb08e52d8bf2fd2c8b46b5b",
+      "bytes": 1584
+    },
+    {
+      "path": "twyne/icons/row-horizontal-filled.svg",
+      "file": "icons/row-horizontal-filled.svg",
+      "source": "src/utils/icon-system.ts#row-horizontal:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "5a19ee153da14902e37b63d21a4dfcb52f3e07c6eb36c24e0f0c2cb5d752a7a5",
+      "bytes": 497
+    },
+    {
+      "path": "twyne/icons/row-horizontal-outline.svg",
+      "file": "icons/row-horizontal-outline.svg",
+      "source": "src/utils/icon-system.ts#row-horizontal:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "69abb18c5f42b59db1b17d17220048429e2a86a165d1ae42dc65c67d589184db",
+      "bytes": 636
+    },
+    {
+      "path": "twyne/icons/row-vertical-filled.svg",
+      "file": "icons/row-vertical-filled.svg",
+      "source": "src/utils/icon-system.ts#row-vertical:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "ce050cd861f91a1266c6502f1f073f8c1fc7b97bb215a57e47cb3c6357075c56",
+      "bytes": 499
+    },
+    {
+      "path": "twyne/icons/row-vertical-outline.svg",
+      "file": "icons/row-vertical-outline.svg",
+      "source": "src/utils/icon-system.ts#row-vertical:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "c02020899287391a1e55421b05706d237e148f3633d3f4f42776201cf02d5d4f",
+      "bytes": 635
+    },
+    {
+      "path": "twyne/icons/save-filled.svg",
+      "file": "icons/save-filled.svg",
+      "source": "src/utils/icon-system.ts#save:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "ada0d801a0efcd1f4ab8a1883ad7d3edf3dba9ec0719fa09ab161f07a9ba9f78",
+      "bytes": 774
+    },
+    {
+      "path": "twyne/icons/save-outline.svg",
+      "file": "icons/save-outline.svg",
+      "source": "src/utils/icon-system.ts#save:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "cc1a7a2de5527ac0dff93eda7a464b31963bc38510bcc786608530c50cb2d92a",
+      "bytes": 1177
+    },
+    {
+      "path": "twyne/icons/search-filled.svg",
+      "file": "icons/search-filled.svg",
+      "source": "src/utils/icon-system.ts#search:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "15171f74d3bfcdd01dab5792ee25850dcd45b7972ba71141f315c4e87f9ca30d",
+      "bytes": 596
+    },
+    {
+      "path": "twyne/icons/search-outline.svg",
+      "file": "icons/search-outline.svg",
+      "source": "src/utils/icon-system.ts#search:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "8817d12c7e5b8793657dc225661d100b96639db156267c1ef859b18c0beda184",
+      "bytes": 751
+    },
+    {
+      "path": "twyne/icons/section-divider-filled.svg",
+      "file": "icons/section-divider-filled.svg",
+      "source": "src/utils/icon-system.ts#section-divider:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "565a1a439f62d675d1a7a29ab1f96955e5aba43f8c32ef12b07da814917229b1",
+      "bytes": 333
+    },
+    {
+      "path": "twyne/icons/section-divider-outline.svg",
+      "file": "icons/section-divider-outline.svg",
+      "source": "src/utils/icon-system.ts#section-divider:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "1e50c445c6e6aa06281861e51ba6280e9fb6513c597f721a174eb536538e1bd1",
+      "bytes": 372
+    },
+    {
+      "path": "twyne/icons/settings-filled.svg",
+      "file": "icons/settings-filled.svg",
+      "source": "src/utils/icon-system.ts#settings:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "8969d2005ec16abd3905e6eedc3331b330453e68a5fbb8aa40086a16035f2bf7",
+      "bytes": 1042
+    },
+    {
+      "path": "twyne/icons/settings-outline.svg",
+      "file": "icons/settings-outline.svg",
+      "source": "src/utils/icon-system.ts#settings:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "05bc53d17e8aec7044665be2fe731b62fdcc109e307be25c266f1a019149cf38",
+      "bytes": 3006
+    },
+    {
+      "path": "twyne/icons/share-filled.svg",
+      "file": "icons/share-filled.svg",
+      "source": "src/utils/icon-system.ts#share:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "039e3242aa480c0fa9de77a679dc4aa3088a333fdec8d20b30ab36fe209edf00",
+      "bytes": 1025
+    },
+    {
+      "path": "twyne/icons/share-outline.svg",
+      "file": "icons/share-outline.svg",
+      "source": "src/utils/icon-system.ts#share:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "2ec60034bcdf5813e73582bb628849b3dfd1c2af4e2d06006cd0140c335d48a2",
+      "bytes": 1533
+    },
+    {
+      "path": "twyne/icons/shield-check-filled.svg",
+      "file": "icons/shield-check-filled.svg",
+      "source": "src/utils/icon-system.ts#shield-check:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "c880326cbae0aaff64db2f9a083e517dcaf393972bce1c74f8861eb76de17afd",
+      "bytes": 1065
+    },
+    {
+      "path": "twyne/icons/shield-check-outline.svg",
+      "file": "icons/shield-check-outline.svg",
+      "source": "src/utils/icon-system.ts#shield-check:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "3b00a256c02443b5a4d06cc02971e5f3914431d856d43e966e5762a4abcd203b",
+      "bytes": 2792
+    },
+    {
+      "path": "twyne/icons/sidebar-right-filled.svg",
+      "file": "icons/sidebar-right-filled.svg",
+      "source": "src/utils/icon-system.ts#sidebar-right:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "aa857bbba5b331931040316937776d6364d96cd9432cecc236e08594be04ba1d",
+      "bytes": 843
+    },
+    {
+      "path": "twyne/icons/sidebar-right-outline.svg",
+      "file": "icons/sidebar-right-outline.svg",
+      "source": "src/utils/icon-system.ts#sidebar-right:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "d88b675a8ae66216fbf731bb4fd27c821594390eb4d27dc511c1f779c831d6de",
+      "bytes": 681
+    },
+    {
+      "path": "twyne/icons/speak-idle.svg",
+      "file": "icons/speak-idle.svg",
+      "source": "src/components/ui/speak-button.tsx#idle",
+      "sourceSha256": "3754ffd3f4fb7e0f493bd8bb857a7d83fac81aa3b11056043838adb0fc80933e",
+      "sha256": "c15177e6611efa17dd68b0baf35f73340940ae43e5d58bdb19fdfaed3d057612",
+      "bytes": 376
+    },
+    {
+      "path": "twyne/icons/text-align-center-filled.svg",
+      "file": "icons/text-align-center-filled.svg",
+      "source": "src/utils/icon-system.ts#text-align-center:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "39cf28082b5d6aec118690d0d5e0cc54d463624e8b744149eb9b5939c6e058e2",
+      "bytes": 971
+    },
+    {
+      "path": "twyne/icons/text-align-center-outline.svg",
+      "file": "icons/text-align-center-outline.svg",
+      "source": "src/utils/icon-system.ts#text-align-center:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "c597fcac1c6e48a26a4bfb3b457e57b7809f77437f5761121b3ac4fcf5d58aad",
+      "bytes": 637
+    },
+    {
+      "path": "twyne/icons/text-align-justify-filled.svg",
+      "file": "icons/text-align-justify-filled.svg",
+      "source": "src/utils/icon-system.ts#text-align-justify:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "a583419607bf0c68ef7a32f3d8f5d40f844add625707f7bdaba9d4ac62fba5de",
+      "bytes": 867
+    },
+    {
+      "path": "twyne/icons/text-align-justify-outline.svg",
+      "file": "icons/text-align-justify-outline.svg",
+      "source": "src/utils/icon-system.ts#text-align-justify:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "a2046d8d573082fe7fca49d37d792aaa0dd12e13958b577d7e4c4d8a5612cd92",
+      "bytes": 619
+    },
+    {
+      "path": "twyne/icons/text-align-left-filled.svg",
+      "file": "icons/text-align-left-filled.svg",
+      "source": "src/utils/icon-system.ts#text-align-left:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "774c454d46d44d93543fab7b75577eb932fe8395ef1f1f0eb9624392dd97a38a",
+      "bytes": 885
+    },
+    {
+      "path": "twyne/icons/text-align-left-outline.svg",
+      "file": "icons/text-align-left-outline.svg",
+      "source": "src/utils/icon-system.ts#text-align-left:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "943b1a57f21ec9b2105652a2e084d85684c01c166f3ab9882980ba8b08b3aa3c",
+      "bytes": 625
+    },
+    {
+      "path": "twyne/icons/text-align-right-filled.svg",
+      "file": "icons/text-align-right-filled.svg",
+      "source": "src/utils/icon-system.ts#text-align-right:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "fc716099d86db4c2b3a2f38407d812e6e5646546fd4648a93957923dd87d8b6e",
+      "bytes": 971
+    },
+    {
+      "path": "twyne/icons/text-align-right-outline.svg",
+      "file": "icons/text-align-right-outline.svg",
+      "source": "src/utils/icon-system.ts#text-align-right:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "b5def45a959780b0839d733d1b246f337d7a1d8f291236d654f3af0e0ad54853",
+      "bytes": 627
+    },
+    {
+      "path": "twyne/icons/text-bold-filled.svg",
+      "file": "icons/text-bold-filled.svg",
+      "source": "src/utils/icon-system.ts#text-bold:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "228bb682e66ffc35a859cff6bd0580b2eb32de723d8fc3697cd392aada07b134",
+      "bytes": 1049
+    },
+    {
+      "path": "twyne/icons/text-bold-outline.svg",
+      "file": "icons/text-bold-outline.svg",
+      "source": "src/utils/icon-system.ts#text-bold:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "6b77df45da179aeadcfe87952c263244e78c4651f1fe892d1740e0e068bab965",
+      "bytes": 675
+    },
+    {
+      "path": "twyne/icons/text-italic-filled.svg",
+      "file": "icons/text-italic-filled.svg",
+      "source": "src/utils/icon-system.ts#text-italic:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "316b907de1b0532cd6604aba146679d6578ae1a9d518592bdee74c3ee20fd545",
+      "bytes": 874
+    },
+    {
+      "path": "twyne/icons/text-italic-outline.svg",
+      "file": "icons/text-italic-outline.svg",
+      "source": "src/utils/icon-system.ts#text-italic:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "0e613eec245244301b79f2e3c98ce8d8c38024a68da94ad2dc1daeea69962f84",
+      "bytes": 534
+    },
+    {
+      "path": "twyne/icons/text-wrap-filled.svg",
+      "file": "icons/text-wrap-filled.svg",
+      "source": "src/utils/icon-system.ts#text-wrap:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "0ee0d88ff76e897a4acc98aadfb5890616f868ffd11e99d547a6c7bd8f206992",
+      "bytes": 674
+    },
+    {
+      "path": "twyne/icons/text-wrap-outline.svg",
+      "file": "icons/text-wrap-outline.svg",
+      "source": "src/utils/icon-system.ts#text-wrap:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "4f47dcfde8ace42372524a2c7a5de0aacd683812e5d48d9031eb385e1debd4a2",
+      "bytes": 621
+    },
+    {
+      "path": "twyne/icons/trash-filled.svg",
+      "file": "icons/trash-filled.svg",
+      "source": "src/utils/icon-system.ts#trash:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "b26b3cf68bfec18645b95385242c9d6f8e69feb654c0d2362751484f60cd98c1",
+      "bytes": 2141
+    },
+    {
+      "path": "twyne/icons/trash-outline.svg",
+      "file": "icons/trash-outline.svg",
+      "source": "src/utils/icon-system.ts#trash:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "2c8b38435c2cc29daf554dd7e68e914af51253fba45c0a1b65595228635e4efb",
+      "bytes": 3090
+    },
+    {
+      "path": "twyne/icons/undo-filled.svg",
+      "file": "icons/undo-filled.svg",
+      "source": "src/utils/icon-system.ts#undo:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "75c0df00f7bcb27f57b18ab145b53800390257cb3e8405813479c8d5bd7ec068",
+      "bytes": 1596
+    },
+    {
+      "path": "twyne/icons/undo-outline.svg",
+      "file": "icons/undo-outline.svg",
+      "source": "src/utils/icon-system.ts#undo:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "75c0df00f7bcb27f57b18ab145b53800390257cb3e8405813479c8d5bd7ec068",
+      "bytes": 1596
+    },
+    {
+      "path": "twyne/icons/unordered-list-filled.svg",
+      "file": "icons/unordered-list-filled.svg",
+      "source": "src/utils/icon-system.ts#unordered-list:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "134e44899e455faf4b20c2b530a15c6726db5d9b57c116f7aeb60c02024d856b",
+      "bytes": 583
+    },
+    {
+      "path": "twyne/icons/unordered-list-outline.svg",
+      "file": "icons/unordered-list-outline.svg",
+      "source": "src/utils/icon-system.ts#unordered-list:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "883701129879a27cb842fda642776fc9a6e8a0fa46c621bde1d351c8a97fdece",
+      "bytes": 774
+    },
+    {
+      "path": "twyne/icons/user-filled.svg",
+      "file": "icons/user-filled.svg",
+      "source": "src/utils/icon-system.ts#user:Filled",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "3ff148b5e7ba7377508ae32672bc84c964b0f00f626f59ed6b8daf133e9da074",
+      "bytes": 374
+    },
+    {
+      "path": "twyne/icons/user-outline.svg",
+      "file": "icons/user-outline.svg",
+      "source": "src/utils/icon-system.ts#user:Outline",
+      "sourceSha256": "ce48c66508b947d1bce632b8faec4f861a9516a7a0a1b3102ffc40ec839d388b",
+      "sha256": "30342fe7ffb18cd6e907b376d91c1754bdcfc29a9a49e5f2af9c799672e06077",
+      "bytes": 1654
+    },
+    {
+      "path": "twyne/paper-grain/dark-middle.svg",
+      "file": "paper-grain/dark-middle.svg",
+      "source": "src/global.css#body-and-grain-tokens:dark:middle",
+      "sourceSha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+      "sha256": "d25aba1f19f7ebb70078c7b1fa86347448da918d7eefa80b0101978ac310aff3",
+      "bytes": 494,
+      "encoding": "Source-derived radial-gradient alpha mask; native tint follows original theme"
+    },
+    {
+      "path": "twyne/paper-grain/dark-outer.svg",
+      "file": "paper-grain/dark-outer.svg",
+      "source": "src/global.css#body-and-grain-tokens:dark:outer",
+      "sourceSha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+      "sha256": "3889ebf088f7f0d4adec5f01fd221fecd4c90dd285d118ed42f47c47b2be758a",
+      "bytes": 918,
+      "encoding": "Source-derived radial-gradient alpha mask; native tint follows original theme"
+    },
+    {
+      "path": "twyne/paper-grain/light-middle.svg",
+      "file": "paper-grain/light-middle.svg",
+      "source": "src/global.css#body-and-grain-tokens:light:middle",
+      "sourceSha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+      "sha256": "92d79f1e93da04c2d67534a0bf7317b23a5716bde1557fb504ce3c094bfad833",
+      "bytes": 494,
+      "encoding": "Source-derived radial-gradient alpha mask; native tint follows original theme"
+    },
+    {
+      "path": "twyne/paper-grain/light-outer.svg",
+      "file": "paper-grain/light-outer.svg",
+      "source": "src/global.css#body-and-grain-tokens:light:outer",
+      "sourceSha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+      "sha256": "67e15292f9d749d963f4a4ec8ea263686beaba860c505615205f501204763399",
+      "bytes": 921,
+      "encoding": "Source-derived radial-gradient alpha mask; native tint follows original theme"
+    }
+  ]
+}

@@ -239,6 +239,32 @@ function findSpeechTarget(id: string): HTMLElement | null {
   );
 }
 
+/**
+ * The face of whoever is reading `root` aloud: the nearest portrait in the
+ * card around it, matched by speaker name when one is known so a neighbour's
+ * face never mouths someone else's note.
+ */
+function findSpeakingPortrait(
+  root: HTMLElement,
+  speaker: string | null,
+): HTMLElement | null {
+  let scope: HTMLElement | null = root;
+  for (let depth = 0; scope && depth < 6; depth++) {
+    const portraits = Array.from(
+      scope.querySelectorAll<HTMLElement>(
+        ".persona-portrait:not([data-speaking='live'])",
+      ),
+    );
+    const match = speaker
+      ? portraits.find((p) => p.dataset.personaName === speaker)
+      : portraits[0];
+    if (match) return match;
+    if (portraits.length) return null;
+    scope = scope.parentElement;
+  }
+  return null;
+}
+
 function scrollRangeIntoView(range: Range, root: HTMLElement): void {
   const rect = range.getBoundingClientRect();
   if (!rect.height) return;
@@ -295,8 +321,18 @@ export const GlobalSpeechPlayer = component$(() => {
       let pointerStart = { x: 0, y: 0 };
       let resumeAfterSeek = false;
       let didSeek = false;
+      let talkingFace: HTMLElement | null = null;
+
+      const setTalkingFace = (face: HTMLElement | null) => {
+        if (face === talkingFace) return;
+        if (talkingFace?.dataset.speaking === "tts")
+          delete talkingFace.dataset.speaking;
+        talkingFace = face;
+        if (face) face.dataset.speaking = "tts";
+      };
 
       const clearActive = () => {
+        setTalkingFace(null);
         textObserver?.disconnect();
         textObserver = null;
         if (activeMap) {
@@ -343,6 +379,11 @@ export const GlobalSpeechPlayer = component$(() => {
         } else {
           activeMap.root.dataset.speechActive = snapshot.status;
         }
+        setTalkingFace(
+          snapshot.status === "playing"
+            ? findSpeakingPortrait(activeMap.root, snapshot.label)
+            : null,
+        );
 
         if (!activeMap) {
           clearSpeechHighlights();

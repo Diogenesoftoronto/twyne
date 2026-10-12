@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "status": "FROZEN_UNAPPLIED_AUTHORED_UNEXECUTED",
+  "ownership": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/raw-fragmentation-adoption",
+  "outputs": [
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/raw-fragmentation-adoption/integration.patch",
+      "bytes": 2529,
+      "sha256": "96d202475cc097c9d41bab7a97a8bd2de39e7b4e8d52495fc1a2ce883d38dfa7"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/raw-fragmentation-adoption/patch-spec.json",
+      "bytes": 2498,
+      "sha256": "6eb647b2b9ed5929e7d4c37f2f6dcd49cb68e728a63b2625b50a909c1a3035ee"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/raw-fragmentation-adoption/emit_candidate.py",
+      "bytes": 971,
+      "sha256": "318043d553fee6e25ed799d556bd97747c5a603e697cc690565828829661289a"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/raw-fragmentation-adoption/test_fragmentation.py",
+      "bytes": 7017,
+      "sha256": "ddd306ce709e5efc9564b854f5f801777c55c48316fc3107090a20f453e3234c"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/raw-fragmentation-adoption/inspection.json",
+      "bytes": 13474,
+      "sha256": "f766bfd2e5ed41f88ff27675be582cf0e08de8aa44320c319a5f2c8f5a995996"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/raw-fragmentation-adoption/input-pins.json",
+      "bytes": 3341,
+      "sha256": "699731b9b093b6b53fdbff626786ced80491e599e4b17fb6e1bc1f65ff1f5c03"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/raw-fragmentation-adoption/README.md",
+      "bytes": 5675,
+      "sha256": "b6b9d177a443bca028a7d019e7256a4d739395a6ddf52218a84725086e04bb2c"
+    }
+  ],
+  "baseSha256": "cceaefd7383e1cfb76ec0a1f26b4fe09d4afa13a448bd05f7c451a7d0fe1ac2d",
+  "proposedCandidateSha256": "a480239c49cc2bd8515e13dc58793f239de2e35bae1dd4489b5047d338f853c9",
+  "newSyntheticTests": 8,
+  "unchangedOriginalTestsReused": 13,
+  "plannedCombinedParentTests": 21,
+  "workerChecks": [
+    "Candidate and two authored Python files compile syntax only",
+    "Exact source/raw input hashes and JSON ownership inventory"
+  ],
+  "candidateExecution": "UNRUN_PARENT_OWNED",
+  "testsExecution": "UNRUN_PARENT_OWNED",
+  "actualAdmission": "NOT_REEVALUATED",
+  "originalFrozenFilesChanged": false,
+  "sharedOrRuntimeChanges": false,
+  "limits": [
+    "Selected duplicate layout owners are refused, even identical rows.",
+    "No selected fragments are chosen or merged; exact UTF-16 coverage remains unchanged.",
+    "No remaining admission/native/pixel/full-app/TeX result is inferred from this parser proposal."
+  ]
+}

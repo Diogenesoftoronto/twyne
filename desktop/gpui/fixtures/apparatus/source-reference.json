@@ -1,0 +1,1643 @@
+{
+  "provenance": "Executed original bibliography.ts functions against isolated in-memory Lix. No provider, formatter, browser or manuscript mutation. Retained entries are synthetic DTO fixtures.",
+  "sourceSha256": "f18a5a76c211c0bdb252ef615dd1a1c368f553c938e0cabc66414f4d1379029c",
+  "scope": "original/path/folio:café",
+  "foreign": "unmounted/foreign",
+  "now": 1770000000000,
+  "scopedIds": [
+    "source-existing",
+    "background-retained",
+    "bad-title"
+  ],
+  "foreignIds": [
+    "source-existing",
+    "foreign-alias"
+  ],
+  "noScopeIds": [],
+  "normalizedUrls": [
+    {
+      "input": "http://www.EXAMPLE.org/report/?new=2#new",
+      "value": "example.org/report"
+    },
+    {
+      "input": "https://EXAMPLE.org/report/?old=1#retained",
+      "value": "example.org/report"
+    },
+    {
+      "input": "https://example.org/report?x=1",
+      "value": "example.org/report"
+    },
+    {
+      "input": "https://example.org/REPORT",
+      "value": "example.org/REPORT"
+    },
+    {
+      "input": "BOOK/PATH///",
+      "value": "book/path"
+    }
+  ],
+  "builder": {
+    "id": "ai-fmt-original-path-folio-caf--url-12",
+    "title": "Exact source builder replacement",
+    "url": "http://www.EXAMPLE.org/report/?new=2#new",
+    "folioId": "original/path/folio:café",
+    "provenance": "writer",
+    "accessedAt": 1770000000000,
+    "createdAt": 1770000000000,
+    "style": "mla",
+    "formattedCitation": "Synthetic cached fixture text."
+  },
+  "cases": [
+    {
+      "name": "same scoped URL spreads before JSON",
+      "before": [
+        {
+          "id": "source-existing",
+          "folioId": "original/path/folio:café",
+          "title": "Retained source title",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "https://EXAMPLE.org/report/?old=1#retained",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        },
+        {
+          "id": "source-existing",
+          "folioId": "unmounted/foreign",
+          "title": "Foreign source with the same ID and URL",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "https://EXAMPLE.org/report/?old=1#retained",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          },
+          "foreignOnly": true
+        },
+        {
+          "id": "background-retained",
+          "folioId": "original/path/folio:café",
+          "title": "Retained background source",
+          "url": "https://example.net/claim",
+          "accessedAt": 1769999999988,
+          "provenance": "background",
+          "accepted": false,
+          "backgroundQuery": "retained query",
+          "date": null,
+          "target": {
+            "kind": "future-kind",
+            "anchor": "Verbatim supporting passage.",
+            "query": "retained query",
+            "reason": null,
+            "futureTarget": true
+          },
+          "futureSource": null
+        }
+      ],
+      "incoming": {
+        "id": "ai-fmt-original-path-folio-caf--url-12",
+        "title": "Exact source builder replacement",
+        "url": "http://www.EXAMPLE.org/report/?new=2#new",
+        "folioId": "original/path/folio:café",
+        "provenance": "writer",
+        "accessedAt": 1770000000000,
+        "createdAt": 1770000000000,
+        "style": "mla",
+        "formattedCitation": "Synthetic cached fixture text."
+      },
+      "mergeTarget": {
+        "index": 0,
+        "expectedRawRow": {
+          "id": "source-existing",
+          "folioId": "original/path/folio:café",
+          "title": "Retained source title",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "https://EXAMPLE.org/report/?old=1#retained",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        }
+      },
+      "candidate": {
+        "id": "source-existing",
+        "folioId": "original/path/folio:café",
+        "title": "Exact source builder replacement",
+        "url": "http://www.EXAMPLE.org/report/?new=2#new",
+        "accessedAt": 1770000000000,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "mla",
+        "formattedCitation": "Synthetic cached fixture text.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1770000000000,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        }
+      },
+      "after": [
+        {
+          "id": "source-existing",
+          "folioId": "original/path/folio:café",
+          "title": "Exact source builder replacement",
+          "url": "http://www.EXAMPLE.org/report/?new=2#new",
+          "accessedAt": 1770000000000,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "mla",
+          "formattedCitation": "Synthetic cached fixture text.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1770000000000,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        },
+        {
+          "id": "source-existing",
+          "folioId": "unmounted/foreign",
+          "title": "Foreign source with the same ID and URL",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "https://EXAMPLE.org/report/?old=1#retained",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          },
+          "foreignOnly": true
+        },
+        {
+          "id": "background-retained",
+          "folioId": "original/path/folio:café",
+          "title": "Retained background source",
+          "url": "https://example.net/claim",
+          "accessedAt": 1769999999988,
+          "provenance": "background",
+          "accepted": false,
+          "backgroundQuery": "retained query",
+          "date": null,
+          "target": {
+            "kind": "future-kind",
+            "anchor": "Verbatim supporting passage.",
+            "query": "retained query",
+            "reason": null,
+            "futureTarget": true
+          },
+          "futureSource": null
+        }
+      ]
+    },
+    {
+      "name": "same foreign URL cannot supply owner",
+      "before": [
+        {
+          "id": "source-existing",
+          "folioId": "unmounted/foreign",
+          "title": "Foreign source with the same ID and URL",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "https://EXAMPLE.org/report/?old=1#retained",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          },
+          "foreignOnly": true
+        }
+      ],
+      "incoming": {
+        "id": "ai-fmt-original-path-folio-caf--url-12",
+        "title": "Exact source builder replacement",
+        "url": "http://www.EXAMPLE.org/report/?new=2#new",
+        "folioId": "original/path/folio:café",
+        "provenance": "writer",
+        "accessedAt": 1770000000000,
+        "createdAt": 1770000000000,
+        "style": "mla",
+        "formattedCitation": "Synthetic cached fixture text."
+      },
+      "mergeTarget": null,
+      "candidate": {
+        "id": "ai-fmt-original-path-folio-caf--url-12",
+        "title": "Exact source builder replacement",
+        "url": "http://www.EXAMPLE.org/report/?new=2#new",
+        "folioId": "original/path/folio:café",
+        "provenance": "writer",
+        "accessedAt": 1770000000000,
+        "createdAt": 1770000000000,
+        "style": "mla",
+        "formattedCitation": "Synthetic cached fixture text."
+      },
+      "after": [
+        {
+          "id": "source-existing",
+          "folioId": "unmounted/foreign",
+          "title": "Foreign source with the same ID and URL",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "https://EXAMPLE.org/report/?old=1#retained",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          },
+          "foreignOnly": true
+        },
+        {
+          "id": "ai-fmt-original-path-folio-caf--url-12",
+          "title": "Exact source builder replacement",
+          "url": "http://www.EXAMPLE.org/report/?new=2#new",
+          "folioId": "original/path/folio:café",
+          "provenance": "writer",
+          "accessedAt": 1770000000000,
+          "createdAt": 1770000000000,
+          "style": "mla",
+          "formattedCitation": "Synthetic cached fixture text."
+        }
+      ]
+    },
+    {
+      "name": "empty URLs never deduplicate",
+      "before": [
+        {
+          "id": "empty-existing",
+          "folioId": "original/path/folio:café",
+          "title": "Retained source title",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        },
+        {
+          "id": "source-existing",
+          "folioId": "unmounted/foreign",
+          "title": "Foreign source with the same ID and URL",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          },
+          "foreignOnly": true
+        }
+      ],
+      "incoming": {
+        "id": "ai-fmt-original-path-folio-caf--empty-12",
+        "title": "No URL fixture",
+        "url": "",
+        "folioId": "original/path/folio:café",
+        "provenance": "writer",
+        "accessedAt": 1770000000000,
+        "createdAt": 1770000000000
+      },
+      "mergeTarget": null,
+      "candidate": {
+        "id": "ai-fmt-original-path-folio-caf--empty-12",
+        "title": "No URL fixture",
+        "url": "",
+        "folioId": "original/path/folio:café",
+        "provenance": "writer",
+        "accessedAt": 1770000000000,
+        "createdAt": 1770000000000
+      },
+      "after": [
+        {
+          "id": "empty-existing",
+          "folioId": "original/path/folio:café",
+          "title": "Retained source title",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        },
+        {
+          "id": "source-existing",
+          "folioId": "unmounted/foreign",
+          "title": "Foreign source with the same ID and URL",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          },
+          "foreignOnly": true
+        },
+        {
+          "id": "ai-fmt-original-path-folio-caf--empty-12",
+          "title": "No URL fixture",
+          "url": "",
+          "folioId": "original/path/folio:café",
+          "provenance": "writer",
+          "accessedAt": 1770000000000,
+          "createdAt": 1770000000000
+        }
+      ]
+    },
+    {
+      "name": "lookup row and first ID replacement differ",
+      "before": [
+        {
+          "id": "duplicate",
+          "folioId": "original/path/folio:café",
+          "title": "First ID match",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "https://other.invalid/path",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        },
+        {
+          "id": "duplicate",
+          "folioId": "original/path/folio:café",
+          "title": "Second row is the URL match",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "https://EXAMPLE.org/report/?old=1#retained",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        },
+        {
+          "id": "source-existing",
+          "folioId": "unmounted/foreign",
+          "title": "Foreign source with the same ID and URL",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "https://EXAMPLE.org/report/?old=1#retained",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          },
+          "foreignOnly": true
+        }
+      ],
+      "incoming": {
+        "id": "ai-fmt-original-path-folio-caf--url-12",
+        "title": "Exact source builder replacement",
+        "url": "http://www.EXAMPLE.org/report/?new=2#new",
+        "folioId": "original/path/folio:café",
+        "provenance": "writer",
+        "accessedAt": 1770000000000,
+        "createdAt": 1770000000000,
+        "style": "mla",
+        "formattedCitation": "Synthetic cached fixture text."
+      },
+      "mergeTarget": {
+        "index": 1,
+        "expectedRawRow": {
+          "id": "duplicate",
+          "folioId": "original/path/folio:café",
+          "title": "Second row is the URL match",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "https://EXAMPLE.org/report/?old=1#retained",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        }
+      },
+      "candidate": {
+        "id": "duplicate",
+        "folioId": "original/path/folio:café",
+        "title": "Exact source builder replacement",
+        "url": "http://www.EXAMPLE.org/report/?new=2#new",
+        "accessedAt": 1770000000000,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "mla",
+        "formattedCitation": "Synthetic cached fixture text.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1770000000000,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        }
+      },
+      "after": [
+        {
+          "id": "duplicate",
+          "folioId": "original/path/folio:café",
+          "title": "Exact source builder replacement",
+          "url": "http://www.EXAMPLE.org/report/?new=2#new",
+          "accessedAt": 1770000000000,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "mla",
+          "formattedCitation": "Synthetic cached fixture text.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1770000000000,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        },
+        {
+          "id": "duplicate",
+          "folioId": "original/path/folio:café",
+          "title": "Second row is the URL match",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "https://EXAMPLE.org/report/?old=1#retained",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        },
+        {
+          "id": "source-existing",
+          "folioId": "unmounted/foreign",
+          "title": "Foreign source with the same ID and URL",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "https://EXAMPLE.org/report/?old=1#retained",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          },
+          "foreignOnly": true
+        }
+      ]
+    },
+    {
+      "name": "original invalid URL fallback remains outside Rust",
+      "before": [
+        {
+          "id": "source-existing",
+          "folioId": "original/path/folio:café",
+          "title": "Retained source title",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "book/path",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        }
+      ],
+      "incoming": {
+        "id": "ai-fmt-original-path-folio-caf--fallback",
+        "title": "Original fallback normalization",
+        "url": "BOOK/PATH///",
+        "folioId": "original/path/folio:café",
+        "provenance": "writer",
+        "accessedAt": 1770000000000,
+        "createdAt": 1770000000000
+      },
+      "mergeTarget": {
+        "index": 0,
+        "expectedRawRow": {
+          "id": "source-existing",
+          "folioId": "original/path/folio:café",
+          "title": "Retained source title",
+          "author": "An older attribution",
+          "publisher": "A retained publisher",
+          "date": "2022",
+          "year": "2022",
+          "doi": "10.1000/retained",
+          "url": "book/path",
+          "accessedAt": 1769999999990,
+          "note": null,
+          "citationKey": "writer-key",
+          "style": "chicago",
+          "formattedCitation": "Cached original fixture citation.",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1769999999980,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        }
+      },
+      "candidate": {
+        "id": "source-existing",
+        "folioId": "original/path/folio:café",
+        "title": "Original fallback normalization",
+        "url": "BOOK/PATH///",
+        "accessedAt": 1770000000000,
+        "note": null,
+        "citationKey": "writer-key",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1770000000000,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        }
+      },
+      "after": [
+        {
+          "id": "source-existing",
+          "folioId": "original/path/folio:café",
+          "title": "Original fallback normalization",
+          "url": "BOOK/PATH///",
+          "accessedAt": 1770000000000,
+          "note": null,
+          "citationKey": "writer-key",
+          "snippet": "Retained snippet",
+          "why": "Retained relevance",
+          "pageHint": "27",
+          "provenance": "writer",
+          "accepted": null,
+          "target": null,
+          "createdAt": 1770000000000,
+          "citationInsertedAt": 1769999999995,
+          "futureSource": {
+            "retained": [
+              null,
+              true,
+              "opaque"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "drop": {
+    "before": [
+      {
+        "id": "source-existing",
+        "folioId": "original/path/folio:café",
+        "title": "Retained source title",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        }
+      },
+      {
+        "id": "source-existing",
+        "folioId": "original/path/folio:café",
+        "title": "Duplicate ID in the same folio",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        }
+      },
+      {
+        "id": "source-existing",
+        "folioId": "unmounted/foreign",
+        "title": "Foreign source with the same ID and URL",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        },
+        "foreignOnly": true
+      },
+      {
+        "id": "unscoped",
+        "folioId": "",
+        "title": "Explicitly unscoped",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        }
+      },
+      {
+        "id": "legacy-missing-scope",
+        "title": "Missing owner",
+        "url": "https://legacy.invalid",
+        "accessedAt": 1770000000000,
+        "legacy": true
+      },
+      {
+        "id": "alias-only",
+        "title": "Missing owner",
+        "url": "https://legacy.invalid",
+        "accessedAt": 1770000000000,
+        "legacy": true,
+        "folio_id": "original/path/folio:café"
+      },
+      {
+        "id": "foreign-alias",
+        "folioId": "unmounted/foreign",
+        "title": "Foreign source with the same ID and URL",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        },
+        "foreignOnly": true,
+        "folio_id": "original/path/folio:café"
+      },
+      {
+        "id": "bad-title",
+        "folioId": "original/path/folio:café",
+        "title": 23,
+        "url": "https://bad.invalid",
+        "accessedAt": 1770000000000,
+        "rawFuture": null
+      }
+    ],
+    "after": [
+      {
+        "id": "source-existing",
+        "folioId": "unmounted/foreign",
+        "title": "Foreign source with the same ID and URL",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        },
+        "foreignOnly": true
+      },
+      {
+        "id": "unscoped",
+        "folioId": "",
+        "title": "Explicitly unscoped",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        }
+      },
+      {
+        "id": "legacy-missing-scope",
+        "title": "Missing owner",
+        "url": "https://legacy.invalid",
+        "accessedAt": 1770000000000,
+        "legacy": true
+      },
+      {
+        "id": "alias-only",
+        "title": "Missing owner",
+        "url": "https://legacy.invalid",
+        "accessedAt": 1770000000000,
+        "legacy": true,
+        "folio_id": "original/path/folio:café"
+      },
+      {
+        "id": "foreign-alias",
+        "folioId": "unmounted/foreign",
+        "title": "Foreign source with the same ID and URL",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        },
+        "foreignOnly": true,
+        "folio_id": "original/path/folio:café"
+      },
+      {
+        "id": "bad-title",
+        "folioId": "original/path/folio:café",
+        "title": 23,
+        "url": "https://bad.invalid",
+        "accessedAt": 1770000000000,
+        "rawFuture": null
+      }
+    ],
+    "id": "source-existing"
+  },
+  "upsert": {
+    "before": [
+      {
+        "id": "source-existing",
+        "folioId": "original/path/folio:café",
+        "title": "Retained source title",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        }
+      },
+      {
+        "id": "source-existing",
+        "folioId": "original/path/folio:café",
+        "title": "Duplicate ID in the same folio",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        }
+      },
+      {
+        "id": "source-existing",
+        "folioId": "unmounted/foreign",
+        "title": "Foreign source with the same ID and URL",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        },
+        "foreignOnly": true
+      },
+      {
+        "id": "unscoped",
+        "folioId": "",
+        "title": "Explicitly unscoped",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        }
+      },
+      {
+        "id": "legacy-missing-scope",
+        "title": "Missing owner",
+        "url": "https://legacy.invalid",
+        "accessedAt": 1770000000000,
+        "legacy": true
+      },
+      {
+        "id": "alias-only",
+        "title": "Missing owner",
+        "url": "https://legacy.invalid",
+        "accessedAt": 1770000000000,
+        "legacy": true,
+        "folio_id": "original/path/folio:café"
+      },
+      {
+        "id": "foreign-alias",
+        "folioId": "unmounted/foreign",
+        "title": "Foreign source with the same ID and URL",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        },
+        "foreignOnly": true,
+        "folio_id": "original/path/folio:café"
+      },
+      {
+        "id": "bad-title",
+        "folioId": "original/path/folio:café",
+        "title": 23,
+        "url": "https://bad.invalid",
+        "accessedAt": 1770000000000,
+        "rawFuture": null
+      }
+    ],
+    "candidate": {
+      "id": "source-existing",
+      "folioId": "original/path/folio:café",
+      "title": "Complete upsert is a replacement",
+      "author": "An older attribution",
+      "publisher": "A retained publisher",
+      "date": "2022",
+      "year": "2022",
+      "doi": "10.1000/retained",
+      "url": "https://EXAMPLE.org/report/?old=1#retained",
+      "accessedAt": 1769999999990,
+      "note": null,
+      "citationKey": "writer-key",
+      "style": "chicago",
+      "formattedCitation": "Cached original fixture citation.",
+      "snippet": "Retained snippet",
+      "why": "Retained relevance",
+      "pageHint": "27",
+      "provenance": "writer",
+      "accepted": null,
+      "target": null,
+      "createdAt": 1769999999980,
+      "citationInsertedAt": 1769999999995,
+      "futureSource": {
+        "changedExplicitly": true
+      }
+    },
+    "after": [
+      {
+        "id": "source-existing",
+        "folioId": "original/path/folio:café",
+        "title": "Complete upsert is a replacement",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "changedExplicitly": true
+        }
+      },
+      {
+        "id": "source-existing",
+        "folioId": "original/path/folio:café",
+        "title": "Duplicate ID in the same folio",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        }
+      },
+      {
+        "id": "source-existing",
+        "folioId": "unmounted/foreign",
+        "title": "Foreign source with the same ID and URL",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        },
+        "foreignOnly": true
+      },
+      {
+        "id": "unscoped",
+        "folioId": "",
+        "title": "Explicitly unscoped",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        }
+      },
+      {
+        "id": "legacy-missing-scope",
+        "title": "Missing owner",
+        "url": "https://legacy.invalid",
+        "accessedAt": 1770000000000,
+        "legacy": true
+      },
+      {
+        "id": "alias-only",
+        "title": "Missing owner",
+        "url": "https://legacy.invalid",
+        "accessedAt": 1770000000000,
+        "legacy": true,
+        "folio_id": "original/path/folio:café"
+      },
+      {
+        "id": "foreign-alias",
+        "folioId": "unmounted/foreign",
+        "title": "Foreign source with the same ID and URL",
+        "author": "An older attribution",
+        "publisher": "A retained publisher",
+        "date": "2022",
+        "year": "2022",
+        "doi": "10.1000/retained",
+        "url": "https://EXAMPLE.org/report/?old=1#retained",
+        "accessedAt": 1769999999990,
+        "note": null,
+        "citationKey": "writer-key",
+        "style": "chicago",
+        "formattedCitation": "Cached original fixture citation.",
+        "snippet": "Retained snippet",
+        "why": "Retained relevance",
+        "pageHint": "27",
+        "provenance": "writer",
+        "accepted": null,
+        "target": null,
+        "createdAt": 1769999999980,
+        "citationInsertedAt": 1769999999995,
+        "futureSource": {
+          "retained": [
+            null,
+            true,
+            "opaque"
+          ]
+        },
+        "foreignOnly": true,
+        "folio_id": "original/path/folio:café"
+      },
+      {
+        "id": "bad-title",
+        "folioId": "original/path/folio:café",
+        "title": 23,
+        "url": "https://bad.invalid",
+        "accessedAt": 1770000000000,
+        "rawFuture": null
+      }
+    ]
+  }
+}

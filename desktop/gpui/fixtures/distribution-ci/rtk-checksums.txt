@@ -1,0 +1,9 @@
+7a71b8ddc091cfe506fceaf1e0b5e0acd4ef56bc29ef7a98d35fea923848305c  rtk-0.36.0-1.x86_64.rpm
+d80041c5773b4a0981d186a87f37b1543cba41cf1d1f53d3b5f2165c8d16f1e2  rtk-aarch64-apple-darwin.tar.gz
+ec0cc96a6e483399943d7c9948196716d04de7ee4a1b07fe7bafe2b183197826  rtk-aarch64-unknown-linux-gnu.tar.gz
+5a874af307fa768ea0e30fbc1f35f26be8108f076da3aea2836bb3a6f99e5dcf  rtk-x86_64-apple-darwin.tar.gz
+0ceee67f66eaa8b4f7bd442746d539794f578ea4420b76953d0a470acb04a77d  rtk-x86_64-pc-windows-msvc.zip
+2d428ce344734df95e0933f01f30a2d694fad470de39d8c5186b89eb707aac26  rtk-x86_64-unknown-linux-musl.tar.gz
+7a71b8ddc091cfe506fceaf1e0b5e0acd4ef56bc29ef7a98d35fea923848305c  rtk.x86_64.rpm
+025e971ca2bb1cd967486cf1114e216b64b5b516cc4fae53c9efd5d3be263ed7  rtk_0.36.0-1_amd64.deb
+025e971ca2bb1cd967486cf1114e216b64b5b516cc4fae53c9efd5d3be263ed7  rtk_amd64.deb

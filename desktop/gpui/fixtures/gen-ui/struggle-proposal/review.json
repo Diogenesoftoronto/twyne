@@ -1,0 +1,20 @@
+{
+  "status": "reviewed and integrated; executed Source oracle passes",
+  "production": "src/gen_ui/struggle.rs",
+  "corrections": [
+    "Emoji with a shared high surrogate changes one UTF16 unit; corrected the two proposal test expectations."
+  ],
+  "provider": "sakana",
+  "model": "fugu-max",
+  "outputSha256": "ac9d413d80f7fa1e86cd7027f93f252b8aecb29198a912d3f062b38c35f9afe7",
+  "limitations": [
+    "Pure paragraph signals only; automatic host tracking and live Jev classification not proven."
+  ],
+  "sourceCases": 63,
+  "sourceFrames": 791,
+  "hedgeStrings": 6,
+  "proofLimit": "Pure paragraph detector only; automatic host tracking and live Jev classification remain pending.",
+  "verificationReceipt": "target/verification/genui-ui-65f5c0d33c83/receipt.json",
+  "productionSha256": "3999a54e1519abe7294a0e8e37805ea6f0029aec91d3f005ee997d9c83b80406",
+  "oracleSha256": "291a5f70e5e4806620f4b96fc1a72e0ac8a2942876938a0960dc129e69da8a11"
+}

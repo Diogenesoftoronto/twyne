@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "scope": "Unapplied Parent responsive-layout rebase, not runtime proof",
+  "target": "desktop/gpui/src/dossier_view.rs",
+  "baseSha256": "b4d8118d95810e47347265955e0989c0e93159977f9c37ada4d964e30c07a27a",
+  "proposedSha256": "d675276396d4f004bc662d8fb276eea757be898e6765c7f401c9e919e3bea447",
+  "proposedWithTestsSha256": "633388ba0b632683834f24cdfff14f0e84224e3848620193d49360131950ddbd",
+  "frozenOriginalArtifacts": {
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/README.md": "7de5cf78ba70cdcca77ad7c60b2303385aa867c72779cd674faa812202d8322b",
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/check_contract.py": "11b441d7e4fe3acaafb5b9bd950efbe1c42cee52bb68cb22b0fdc6ca27d8968e",
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/freeze.json": "363ebd3f771dfc1aa6347a9995060367b6fd9d1d70116e6568dd8e4a419932a8",
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/integration.patch": "777b985b9010c057775e11bf5fbf86fc2bf40c3bc90fd0ed98100f133de78912",
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/mount_helpers.rs": "900355ab4ccc68d0a67937352b8d86d9667700e6ec82ea562cbed6a21cd5083c",
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/mount_types.rs": "dd4af8afc535aa8e6ef9762dfa49e87887f18e7c47aecf4ef364a61f360355d9",
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/probe-contract.json": "ee30914424c6db6a7d7c426a2e2217a13fdcfd62c6ee95e3876c34cf2de14722",
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/product_mount_tests.rs": "fa7e24126580c802757f3b0b63584f6d31800e3dafc519d3145584bdf7c75a8e",
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/source-check-receipt.json": "ff1be00bf35ad6dba094d04218cf5012b848140f47808557ac612d1fc3aa2102",
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/source-contract.json": "e7187d9afaaf6d6a9fe8cc08548aa43973aa0fb65c35ae5de86e5087bb16b5c1",
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/source-layers.css": "394f1a480af886934528209fa63062be604eeafd61c791c930b98f7b809574b6",
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/source-pins.json": "7f96c23320d25d5079bcc46419f0d88d5f22da55dec6d4838727f3049d4ae526",
+    "desktop/gpui/fixtures/dossier-multiply/product-mount/tests.patch": "eb18730c8edc2560c1839f9b8de4bb95291a81529a3ba2611b0a6c8bf01822c6"
+  },
+  "sourceSha256": {
+    "src/global.css": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+    "src/components/onboarding/dossier-folio.tsx": "77c1fb9bce10345add264b57c4389c9b7a90d629ddd652b0ef8ef0a0cbb8a281",
+    "desktop/gpui/src/dossier_multiply.rs": "fee08f1898d6068f91de577d6284fdd2760e827bcab8d1f7f9cc027a7780a439",
+    "desktop/gpui/src/dossier_image_lifecycle.rs": "ec0855df3359b3ac8d0b4da2183f7b0d1a18e5bd164e9e4dc99c6a6b472ba037",
+    "desktop/gpui/src/dossier_paper.rs": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+    "desktop/gpui/src/dossier_stamp.rs": "02e148677556cf5db9a4f0b13aef4373171a93c6e34888e901a510b1a6376ed3",
+    "desktop/gpui/src/theme.rs": "2d04ffd22eb01a4f7f6c45e3dd64424e9a5a4e6c91860f01079923de2722320e",
+    "desktop/gpui/vendor/gpui-pre/src/platform.rs": "afeb3dc3e05f74e8f3abb71b7a9d66a32e26cd45f6b8eb7c571480c41f56e1d4",
+    "desktop/gpui/vendor/gpui-pre/src/platform/test/platform.rs": "3a95163b4974fa09a6ee6b4c3f9dd579698e642afb80a8529d4e17989b23ce22",
+    "desktop/gpui/vendor/gpui-pre/src/app/test_context.rs": "b57dd9f67b1b6a344c9859bb5adf9b4405bcf7e21cf0a0bece3fda93b8afda56",
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": "c92daa1dd3a3bdcb477bed4d9368f7c47851453c6a387d31aa793860abefbc9b",
+    "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_atlas.rs": "d7cb05a221d5ce976fe82a8ecf37f094eb0a65336cadeb5b7f998f5354991ca9",
+    "desktop/gpui/fixtures/dossier-layout-correction/mounted_tests.rs": "8cafaf1153f49573411793d473eabb32b668e74f87ce751a308447314fbdb374"
+  },
+  "noSharedWrites": true,
+  "noSourceOrVendorPatch": true,
+  "productionPolicyChanged": false
+}

@@ -1,0 +1,65 @@
+{
+  "style": "Photograph, 35mm film still. Muted warm tungsten light, shallow depth of field, aged cream paper, dark walnut wood, vermilion red as the only saturated accent, fine film grain, editorial and literary mood, circa 1955. No legible text anywhere (any writing on paper is illegible, soft, or out of focus). No faces. No modern electronics, no screens, no logos, no watermarks.",
+  "images": [
+    {
+      "id": "desk-typewriter",
+      "size": "2048x1152",
+      "prompt": "A writer's desk at night. A 1950s manual typewriter holds one completely blank sheet of cream paper. A single brass desk lamp casts a warm pool of light; the rest of the room falls into deep shadow. A red pencil lies beside the typewriter, a cup of black coffee, a few loose aged pages. Composition leaves generous dark negative space on the left third. Slightly low three-quarter angle."
+    },
+    {
+      "id": "bullpen",
+      "size": "2048x1152",
+      "prompt": "A 1955 magazine editorial bullpen, empty after hours. A long oak table runs toward the back of the room with five empty wooden chairs. At each place sits one telling object: three sharpened red pencils; a pressed flower on a folded letter with a cup of tea; a wooden drawer of handwritten index cards with round spectacles; a blue pencil across galley proofs; a folded evening newspaper. Stacks of galley proofs, green-shaded banker's lamps glowing, dust hanging in warm light from tall windows. One-point perspective down the table."
+    },
+    {
+      "id": "press",
+      "size": "2048x1152",
+      "prompt": "Black and white 1950s newsreel photograph: a huge rotary printing press in a newspaper pressroom, a continuous ribbon of newsprint racing over steel rollers, freshly printed folded newspapers stacking on a conveyor, a pressman's gloved hand in the foreground (no face). High contrast, silver gelatin grain, slight vignette. Monochrome only, no color at all."
+    },
+    {
+      "id": "finished-manuscript",
+      "size": "2048x1152",
+      "prompt": "Early morning. A neat finished manuscript stack of cream typed pages on a walnut desk beside a window, the top page covered in confident vermilion proof marks and marginal notes (illegible). A capped fountain pen lies across it. Pale gold dawn light rakes across the paper, long soft shadows, a sense of completion and calm. Negative space in the upper right."
+    },
+    {
+      "id": "persona-sceptique",
+      "size": "2048x1152",
+      "prompt": "Close-up still life: a woman's hand in a black wool sleeve holds a sharpened red pencil and firmly circles one line on a typed manuscript page. Two more red pencils lie parallel beside the page, and a worn clothbound book with no visible title. Cool, hard side light, strong shadows, precise and adversarial mood. Only the hand and forearm are visible."
+    },
+    {
+      "id": "persona-encourageante",
+      "size": "2048x1152",
+      "prompt": "Close-up still life: two gentle hands in a soft sage cardigan hold a single typed manuscript page up toward a warm lamp as if admiring one line. A pressed wildflower rests on a letter beside a porcelain cup of tea. Soft, glowing, generous warm light, tender mood. Only hands and forearms visible."
+    },
+    {
+      "id": "persona-athenaeum",
+      "size": "2048x1152",
+      "prompt": "Close-up still life: an old man's hand with a fountain pen writing on a handwritten index card; an open oak card-catalogue drawer packed with cards, a stack of offprints tied with string, round wire spectacles folded on a book. Cool blue-grey window light mixed with a small warm lamp. Scholarly, orderly mood. Only the hand is visible."
+    },
+    {
+      "id": "persona-lestylo",
+      "size": "2048x1152",
+      "prompt": "Close-up still life at night on a newspaper copy desk: a man's hand with rolled shirtsleeve drags a blue pencil in a firm straight strike-through across a phrase in a typed column of galley proof. A metal pica ruler, a paste pot, a cup of black coffee. Hard overhead desk lamp, deep shadows, deadpan efficient mood. Only the hand and forearm are visible."
+    },
+    {
+      "id": "persona-lecteur",
+      "size": "2048x1152",
+      "prompt": "Evening commuter train interior, 1955: a folded newspaper balanced on a man's knee in grey flannel trousers, his hand holding the page open. Through the train window beside him, blurred city lights and dusk. Warm carriage light, intimate ordinary mood. No faces; framed from chest down."
+    },
+    {
+      "id": "blank-page-vertical",
+      "size": "1152x2048",
+      "prompt": "Directly top-down overhead view of a single blank sheet of cream paper centered on a dark walnut desk. A sharpened red pencil lies diagonally at the lower right edge of the sheet. Warm tungsten light from the upper left, soft vignette, wood grain visible. The sheet is completely empty."
+    },
+    {
+      "id": "paper-texture",
+      "size": "2048x1152",
+      "prompt": "Seamless flat texture, orthographic scan, macro detail of a single sheet of aged cream laid paper. The paper fills 100% of the frame and extends past every edge: no borders, no edges, no desk, no background, no objects, no shadows, no vignette, no lighting falloff. Even, flat, shadowless light. Only subtle paper fibres, faint laid lines, and a few light foxing specks. Uniform warm cream colour #f1e7cf."
+    },
+    {
+      "id": "paper-on-desk",
+      "size": "2048x1152",
+      "prompt": "Flat scan of a single sheet of aged cream laid paper filling the entire frame edge to edge: subtle fibres, faint foxing spots, very soft uneven tone, gentle warm vignette. Completely empty: no text, no marks, no objects, no shadows, no desk visible. (Model rendered this as a page on a desk; kept as a plate.)"
+    }
+  ]
+}

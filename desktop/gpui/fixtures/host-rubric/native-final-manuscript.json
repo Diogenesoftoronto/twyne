@@ -1,0 +1,51 @@
+{
+  "format": "twyne-gpui",
+  "version": 1,
+  "id": "ab9bda05-b709-45a7-8cf7-2d65b6b4246b",
+  "title": "browser-manuscript",
+  "body": "<h1>The notebook</h1><p>The notebook was <span data-comment-id=\"ee1a4fcc-a91b-4be9-8063-116e211e4496\" data-comment-author=\"You\" data-comment-color=\"var(--color-writer-note)\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, var(--color-writer-note) 18%, transparent); border-bottom: 2px solid var(--color-writer-note); cursor: text;\">small enough to carry in a coat pocket.</span> By November, its corners had softened and the cover had begun to remember the shape of a hand.</p><p>Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.</p><h2>A note for the next draft</h2><p>Keep the opening concrete. <span data-comment-id=\"a2e634dd-4ca5-4963-b145-e787ab4bab0c\" data-comment-author=\"You\" data-comment-color=\"var(--color-writer-note)\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, var(--color-writer-note) 18%, transparent); border-bottom: 2px solid var(--color-writer-note); cursor: text;\">Let the change in the room carry the ending.</span></p>",
+  "notes": "",
+  "created_at": 1791139360904,
+  "updated_at": 1791139360904,
+  "revision": 0,
+  "archived": false,
+  "workspace": {
+    "folio": {
+      "id": "ab9bda05-b709-45a7-8cf7-2d65b6b4246b",
+      "name": "browser-manuscript",
+      "type": "draft",
+      "createdAt": 1791139360904,
+      "updatedAt": 1791139360904,
+      "layout": {
+        "width": "normal",
+        "margin": "normal",
+        "marginX": 2.0,
+        "marginLeft": 2.0,
+        "marginRight": 2.0,
+        "marginTop": 1.0,
+        "marginBottom": 1.0,
+        "runningHeader": false,
+        "pageNumbers": true,
+        "showMarginGuides": false,
+        "paper": "letter",
+        "orientation": "portrait",
+        "marginUnit": "rem",
+        "openingInitial": {
+          "mode": "illuminated",
+          "collection": "botanical",
+          "size": "medium"
+        },
+        "pageBorder": "plain",
+        "columns": 1,
+        "columnGap": 1.5
+      }
+    },
+    "content": {
+      "folioId": "ab9bda05-b709-45a7-8cf7-2d65b6b4246b",
+      "html": "<h1>The notebook</h1><p>The notebook was <span data-comment-id=\"ee1a4fcc-a91b-4be9-8063-116e211e4496\" data-comment-author=\"You\" data-comment-color=\"var(--color-writer-note)\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, var(--color-writer-note) 18%, transparent); border-bottom: 2px solid var(--color-writer-note); cursor: text;\">small enough to carry in a coat pocket.</span> By November, its corners had softened and the cover had begun to remember the shape of a hand.</p><p>Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.</p><h2>A note for the next draft</h2><p>Keep the opening concrete. <span data-comment-id=\"a2e634dd-4ca5-4963-b145-e787ab4bab0c\" data-comment-author=\"You\" data-comment-color=\"var(--color-writer-note)\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, var(--color-writer-note) 18%, transparent); border-bottom: 2px solid var(--color-writer-note); cursor: text;\">Let the change in the room carry the ending.</span></p>",
+      "format": "html",
+      "updatedAt": 1791139360904
+    },
+    "projection": "legacyHtml"
+  }
+}

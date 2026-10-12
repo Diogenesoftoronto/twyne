@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "proofBoundary": "Source-derived geometry and retained original-browser CSS receipt; no new browser/native pixel run",
+  "source": {
+    "selector": ".stamp",
+    "overrides": "stamp shrink-0 !px-2 !py-[0.15rem] !text-[0.55rem]",
+    "css": "src/global.css:606-620",
+    "view": "src/components/brief/dossier-preview.tsx:80-114",
+    "sha256": {
+      "src/global.css": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+      "src/components/brief/dossier-preview.tsx": "8388ee9fd9d16ceed1445eb55a32c2ffb4edf94189988d740c4b252084b5bf0e",
+      "desktop/gpui/assets/fonts/specialelite-SpecialElite-Regular.ttf": "a776fcb4ceb8bdf03e2967688ebdad42680de5b91a7e62c17e718ae212d14bc4",
+      "desktop/gpui/assets/fonts/specialelite-LICENSE.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    }
+  },
+  "css": {
+    "remPx": 16,
+    "fontFamily": "Special Elite",
+    "fontSizePx": 8.8,
+    "fontWeight": 400,
+    "trackingPx": 1.936,
+    "lineHeightPx": 13.2,
+    "borderPx": 2,
+    "paddingXPx": 8,
+    "paddingYPx": 2.4,
+    "radiusPx": 2,
+    "rotationDegrees": -3,
+    "transformOrigin": "center center",
+    "backgroundAlpha": 0.04,
+    "colorToken": "--color-vermilion",
+    "textTransform": "uppercase",
+    "shrink": 0,
+    "inlineBlock": true
+  },
+  "review": {
+    "labels": [
+      "0 / 7 REVIEWED",
+      "1 / 7 REVIEWED",
+      "2 / 7 REVIEWED",
+      "3 / 7 REVIEWED",
+      "4 / 7 REVIEWED",
+      "5 / 7 REVIEWED",
+      "6 / 7 REVIEWED",
+      "7 / 7 REVIEWED"
+    ],
+    "nativeHostCountUnchanged": true,
+    "sourceOrder": "selected edition => 7; else explicit reviewedFieldCount if present; else trimmed nonempty original field count; clamped0..7",
+    "scopedTask": "paint/layout only; do not derive count from labels or alter existing native count semantics"
+  },
+  "retainedBrowserReceipt": {
+    "path": "desktop/gpui/target/verification/source-dossier-boxes.json",
+    "sha256": "d3e93f4d642e697978f981efe1798011b565a048a331cb9b0c1e07893f1a40ed",
+    "labelNotRecorded": true,
+    "row": {
+      "selector": ".stamp",
+      "box": {
+        "border": [
+          499.0028076171875,
+          76.38768768310547,
+          612.2068481445312,
+          70.45491790771484,
+          613.3565673828125,
+          92.39356231689453,
+          500.1525573730469,
+          98.32633209228516
+        ],
+        "content": [
+          509.2188720703125,
+          80.24893951416016,
+          602.4503173828125,
+          75.36288452148438,
+          603.1405029296875,
+          88.53231048583984,
+          509.9090576171875,
+          93.41836547851562
+        ],
+        "height": 22,
+        "margin": [
+          499.0028076171875,
+          76.38768768310547,
+          612.2068481445312,
+          70.45491790771484,
+          613.3565673828125,
+          92.39356231689453,
+          500.1525573730469,
+          98.32633209228516
+        ],
+        "padding": [
+          501.104736328125,
+          78.2802734375,
+          610.314208984375,
+          72.55684661865234,
+          611.254638671875,
+          90.5009765625,
+          502.0451354980469,
+          96.22440338134766
+        ],
+        "width": 113
+      },
+      "styles": {
+        "font-family": "\"Special Elite\", \"Courier New\", monospace",
+        "font-size": "8.8px",
+        "font-weight": "400",
+        "background-color": "color(srgb 0.756863 0.152941 0.176471 / 0.04)",
+        "letter-spacing": "1.936px",
+        "line-height": "13.2px",
+        "margin-bottom": "0px",
+        "margin-top": "0px",
+        "text-transform": "uppercase",
+        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
+      }
+    }
+  },
+  "gpui": {
+    "version": "0.3.7",
+    "fontAndImageTransform": "No public transform argument",
+    "svgTransform": "paint_svg and Svg transformation exist; first new sprite rasterizes inside paint",
+    "adapter": "Original exact font outlines, current platform-shaped positions, prepared rotated raster before Render/paint; all8counts retained",
+    "gap": "Unhinted SVG contours use resvg antialiasing, distinct from Chrome font hinting/raster; GPUI fractional layout snapping/native pixels not yet proven"
+  },
+  "usedVerticalLayout": {
+    "lineHeightPx": 13.1875,
+    "paddingYPx": 2.390625,
+    "borderBoxHeightPx": 21.96875,
+    "source": "Retained original border/content/padding quads, inverted rigid rotation; CSS lengths use1/64px, offsetHeight rounds22",
+    "scope": "Measured original vertical lengths only; no count inferred from quad width; no general CSS length adapter"
+  }
+}

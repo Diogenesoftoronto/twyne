@@ -1,0 +1,57 @@
+{
+  "music": [
+    {
+      "id": "m-room",
+      "prompt": "Instrumental film score, no vocals. A 70-second cue for a literary film about a writer's room at night. Solo felt piano and a small string quartet, warm and intimate, 1950s chamber-film feel, slow tempo around 72 BPM. [0:00-0:12] Intro: lone felt piano, sparse notes, room tone, hesitation. [0:12-0:30] Low cello enters under the piano, a gentle rising motif. [0:30-0:52] Full quartet swells warmly, pizzicato pulse, sense of company and momentum. [0:52-1:05] Resolves to a confident, hopeful major chord, piano and strings together. [1:05-1:10] Final held chord fading out cleanly."
+    },
+    {
+      "id": "m-newsreel",
+      "prompt": "Instrumental, no vocals. A 35-second 1950s newsreel theme: bright brass fanfare, snare drum rolls, marching tempo around 116 BPM, timpani hits, heroic and slightly comic, recorded as if on vintage mono optical film sound with light hiss. [0:00-0:05] Fanfare opening with snare roll. [0:05-0:28] Brisk march under narration, brass stabs. [0:28-0:35] Big fanfare finish with a final timpani and cymbal hit, then silence."
+    },
+    {
+      "id": "m-rollcall",
+      "prompt": "Instrumental, no vocals. A 40-second cool jazz cue, 1955 New York: walking upright bass, brushed snare, muted trumpet phrases, soft vibraphone, relaxed tempo around 96 BPM, smoky magazine-office mood, leaves space for spoken voices. Ends with a clean button: a short trumpet and vibraphone final chord at 0:38 then silence."
+    },
+    {
+      "id": "m-edited",
+      "prompt": "Instrumental, no vocals. A 35-second light comedic chamber cue: playful pizzicato strings, bassoon, a clarinet, occasional woodblock ticks, tempo around 100 BPM, understated and dry-witted, like an old editorial cartoon. Quiet enough to sit under spoken dialogue. [0:28-0:35] Warm resolving ending on a tidy final pizzicato chord."
+    },
+    {
+      "id": "m-strike",
+      "prompt": "Instrumental, no vocals. An 18-second minimal jazz groove built around the rhythm of a manual typewriter: upright bass, brushed snare, finger snaps, a few muted piano chords, tempo 104 BPM, crisp and confident. Ends on a clean final piano chord at 0:16 and then silence."
+    },
+    {
+      "id": "m-sting",
+      "prompt": "Instrumental, no vocals. A 7-second audio logo: a single elegant felt-piano flourish rising over a soft string swell, landing on one warm, resonant major chord that rings out and decays naturally. Literary, confident, calm."
+    }
+  ],
+  "voices": [
+    { "id": "hero-01", "voice": "Gacrux", "style": "Warm, unhurried, literary documentary narrator. Quiet and intimate, like reading aloud at night. Leave natural pauses.", "text": "Every writer knows this page." },
+    { "id": "hero-02", "voice": "Gacrux", "style": "Warm, unhurried, literary documentary narrator. Quiet and intimate.", "text": "The blank one. The one that waits." },
+    { "id": "hero-03", "voice": "Gacrux", "style": "Warm literary narrator, gaining a little momentum, a hint of a smile.", "text": "Twyne doesn't start you here. It starts you from a brief: a ten-minute interview that every tool in the room reads." },
+    { "id": "hero-04", "voice": "Gacrux", "style": "Warm literary narrator, a reveal, a small smile.", "text": "And the room is full." },
+    { "id": "hero-05", "voice": "Gacrux", "style": "Warm literary narrator, brisk and clear, introducing each person with affection.", "text": "Five editors read every draft against your brief. A sceptic for your argument. A patron for what's already working. A scholar for your evidence. A copy chief for every sentence. And the reader you're actually writing for." },
+    { "id": "hero-06", "voice": "Gacrux", "style": "Warm literary narrator, precise, dry.", "text": "A rubric grades you on the target. Not on how fluent you sound." },
+    { "id": "hero-07", "voice": "Gacrux", "style": "Warm literary narrator, reassuring and plain.", "text": "Your draft stays on your desk, until you decide it goes anywhere else." },
+    { "id": "hero-08", "voice": "Gacrux", "style": "Warm literary narrator, confident, settled, final.", "text": "Twyne. Draft with a room full of editors." },
+
+    { "id": "rc-sceptique", "voice": "Kore", "style": "A cold, precise Parisian woman editor with a light French accent. Prosecutor's cadence, short declaratives, no warmth.", "text": "This sentence assumes the reader already agrees. They do not. Earn it." },
+    { "id": "rc-encourageante", "voice": "Sulafat", "style": "A warm, gentle older French woman with a soft accent, delighted, lyrical, as if holding the page up to the light.", "text": "Here. This line. This is the one with a pulse. Everything else should be jealous of it." },
+    { "id": "rc-athenaeum", "voice": "Sadaltager", "style": "An elderly Central European professor with a light German accent. Measured, exact, faintly pedantic.", "text": "This is asserted, not demonstrated. What is the evidence, and where does it come from?" },
+    { "id": "rc-lestylo", "voice": "Algenib", "style": "A gravelly veteran newspaper copy chief. Terse, deadpan, bored, impatient with waste.", "text": "In order to. Cut it. To. Again, twice more below." },
+    { "id": "rc-lecteur", "voice": "Achird", "style": "An ordinary, friendly commuter reading on an evening train. Plainspoken, honest, a little tired.", "text": "I followed you for two paragraphs. Then, right here, I lost the thread." },
+    { "id": "rc-end", "voice": "Gacrux", "style": "Warm literary narrator, confident and brief.", "text": "Five editors. One desk. Twyne." },
+
+    { "id": "ed-sceptique", "voice": "Kore", "style": "A cold, precise Parisian woman editor with a light French accent, interrupting, unimpressed.", "text": "Ultimate? Strike the qualifier. Either you can defend the claim, or you cannot." },
+    { "id": "ed-lestylo", "voice": "Algenib", "style": "A gravelly veteran newspaper copy chief. Terse, deadpan, bored.", "text": "AI-powered. Revolutionary. Seamless. Three words doing the work of none. Cut." },
+    { "id": "ed-athenaeum", "voice": "Sadaltager", "style": "An elderly Central European professor with a light German accent, dry and exacting.", "text": "Ten times your productivity. A rate, a denominator, and a date are still owed." },
+    { "id": "ed-encourageante", "voice": "Sulafat", "style": "A warm, gentle older French woman with a soft accent, tender and pleased.", "text": "But this word. Writing. Keep that one. That one is true." },
+    { "id": "ed-lecteur", "voice": "Achird", "style": "An ordinary, friendly commuter, pleasantly surprised.", "text": "Oh. Now I'd keep reading." },
+
+    { "id": "nr-01", "voice": "Fenrir", "style": "A 1950s transatlantic newsreel announcer. Fast, punchy, booming, theatrical, every sentence an exclamation.", "text": "Extra! Extra! Stop the presses!" },
+    { "id": "nr-02", "voice": "Fenrir", "style": "A 1950s transatlantic newsreel announcer. Fast, punchy, booming, theatrical.", "text": "From the desks of a great magazine comes a writing room for the modern writer!" },
+    { "id": "nr-03", "voice": "Fenrir", "style": "A 1950s transatlantic newsreel announcer. Fast, punchy, booming, theatrical, listing with relish.", "text": "Five editors on call at every hour! The sceptic! The patron! The scholar! The copy chief! And the reader!" },
+    { "id": "nr-04", "voice": "Fenrir", "style": "A 1950s transatlantic newsreel announcer. Fast, punchy, booming, theatrical.", "text": "The blank page? Abolished! Every draft starts from a brief!" },
+    { "id": "nr-05", "voice": "Fenrir", "style": "A 1950s transatlantic newsreel announcer, grand finish, booming.", "text": "Twyne! The editorial room! Now open at twyne dot love!" }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "src/utils/editor-commands.ts": {
+    "sha256": "fcccc50c83aa93137ee9bc89881e98dea6cf14b405599ced42700bb6a2121daf"
+  },
+  "src/components/editor/extensions/slash-command.ts": {
+    "sha256": "e98b6f0de76de0161c1c9f43a0284f72fc1ee29f01dea9b0d559172a49f5240e"
+  },
+  "src/utils/slash-command-filter.ts": {
+    "sha256": "c02842fae4df81f8aa8a09ad5f11d1944a5fb35ee3bc190d1acdddbabe97dc8a"
+  },
+  "src/components/editor/slash-command-menu.tsx": {
+    "sha256": "300fbafe1b6b94ee0ae629a3e939b991b9fb832fdf049149ba9d2c4745c5a434"
+  }
+}

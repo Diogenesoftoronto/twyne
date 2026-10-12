@@ -1,0 +1,2230 @@
+{
+  "version": 1,
+  "sourceHashes": {
+    "src/components/onboarding/conversational-interview.tsx": "c26260023189e056008a1720cf7a1f6cc2e226863617dc58cbe8c43336aa2c84",
+    "src/utils/anti-tabula-rasa.ts": "2233c6cb013ab4671dbdc49394da2475feb6cb91e3781acc7c3426b861e634a9",
+    "src/utils/dossier-probes.ts": "1cfb966e70406f155fd584a39bb576bdd6e622e8bb3350d862644bd84a409942",
+    "src/routes/dossier/create/index.tsx": "a87f81b992f801155c5f26cbd70f0abcd8639c48548daf5ad71be81d8c908b49",
+    "src/routes/dossier/refine/index.tsx": "e59dcdc071c2204855455caf7ba5348be06a46582fcbfe71d52a552ac053dae3",
+    "src/utils/dossier-filing.ts": "a25831fa21e01686092fc94407d88ba2a87fa23b17a5990fb98c6a0c746e4d85",
+    "src/utils/brief-history.ts": "78e98709e23077f9df3168db330b95090be9ea4918bbb951d02c0ff4ab51836c"
+  },
+  "proof": "Original selected Source callbacks/helpers; fake Qwik, provider replies, IDB/mirrors and clock. No real provider/account/storage/display.",
+  "cases": [
+    {
+      "name": "opening-first-run",
+      "observed": {
+        "state": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": null,
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 0,
+          "filing": false,
+          "error": null
+        },
+        "providerCalls": 0
+      }
+    },
+    {
+      "name": "opening-refine",
+      "observed": {
+        "state": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Reading your current brief back to you, what feels off, or what has the draft outgrown?"
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": null,
+          "liveDraft": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {}
+          },
+          "answeredProbes": [
+            {
+              "id": "probe-prior",
+              "kind": "choice",
+              "prompt": "Which reader?",
+              "options": [
+                "General",
+                "Specialist"
+              ],
+              "answer": "Specialist",
+              "unknown": {
+                "keep": true
+              }
+            }
+          ],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 0,
+          "filing": false,
+          "error": null
+        },
+        "providerCalls": 0
+      }
+    },
+    {
+      "name": "refine-probe-context",
+      "observed": {
+        "questionState": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Reading your current brief back to you, what feels off, or what has the draft outgrown?"
+            },
+            {
+              "author": "writer",
+              "text": "The draft changed"
+            },
+            {
+              "author": "interviewer",
+              "text": "What changed?",
+              "reasoning": "Synthetic reasoning"
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": null,
+          "liveDraft": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "A new goal",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {
+              "goal": "high"
+            }
+          },
+          "answeredProbes": [
+            {
+              "id": "probe-prior",
+              "kind": "choice",
+              "prompt": "Which reader?",
+              "options": [
+                "General",
+                "Specialist"
+              ],
+              "answer": "Specialist",
+              "unknown": {
+                "keep": true
+              }
+            }
+          ],
+          "activeProbe": {
+            "id": "probe-new",
+            "kind": "choice",
+            "prompt": "Which reader?",
+            "options": [
+              "General",
+              "Specialist"
+            ],
+            "answer": "General",
+            "unknown": {
+              "keep": true
+            }
+          },
+          "draft": "",
+          "requestVersion": 1,
+          "filing": false,
+          "error": null
+        },
+        "answered": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Reading your current brief back to you, what feels off, or what has the draft outgrown?"
+            },
+            {
+              "author": "writer",
+              "text": "The draft changed"
+            },
+            {
+              "author": "interviewer",
+              "text": "What changed?",
+              "reasoning": "Synthetic reasoning"
+            },
+            {
+              "author": "writer",
+              "text": "General"
+            },
+            {
+              "author": "interviewer",
+              "text": "What changed?",
+              "reasoning": "Synthetic reasoning"
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": null,
+          "liveDraft": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "A new goal",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {
+              "goal": "high"
+            }
+          },
+          "answeredProbes": [
+            {
+              "id": "probe-prior",
+              "kind": "choice",
+              "prompt": "Which reader?",
+              "options": [
+                "General",
+                "Specialist"
+              ],
+              "answer": "Specialist",
+              "unknown": {
+                "keep": true
+              }
+            },
+            {
+              "id": "probe-new",
+              "kind": "choice",
+              "prompt": "Which reader?",
+              "options": [
+                "General",
+                "Specialist"
+              ],
+              "answer": "General",
+              "unknown": {
+                "keep": true
+              }
+            }
+          ],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 2,
+          "filing": false,
+          "error": null
+        },
+        "requests": [
+          {
+            "messages": [
+              {
+                "author": "interviewer",
+                "text": "Reading your current brief back to you, what feels off, or what has the draft outgrown?"
+              },
+              {
+                "author": "writer",
+                "text": "The draft changed"
+              }
+            ],
+            "mode": "refine",
+            "currentBrief": {
+              "answers": {
+                "workingTitle": "The notebook",
+                "format": "Essay",
+                "audience": "A reader",
+                "goal": "Make the claim clear",
+                "tone": "Exact",
+                "constraints": "Evidence",
+                "successSignal": "A useful question"
+              },
+              "attachments": [
+                {
+                  "id": "attachment-prior",
+                  "kind": "link",
+                  "title": "Reference",
+                  "why": "Prior evidence",
+                  "url": "https://example.invalid/reference",
+                  "addedAt": 50,
+                  "unknownAttachment": {
+                    "keep": true
+                  }
+                }
+              ],
+              "probes": [
+                {
+                  "id": "probe-prior",
+                  "kind": "choice",
+                  "prompt": "Which reader?",
+                  "options": [
+                    "General",
+                    "Specialist"
+                  ],
+                  "answer": "Specialist",
+                  "unknown": {
+                    "keep": true
+                  }
+                }
+              ],
+              "completedAt": 100,
+              "updatedAt": 200,
+              "unknown": {
+                "keep": true
+              }
+            },
+            "startingMaterial": "Carried manuscript"
+          },
+          {
+            "messages": [
+              {
+                "author": "interviewer",
+                "text": "Reading your current brief back to you, what feels off, or what has the draft outgrown?"
+              },
+              {
+                "author": "writer",
+                "text": "The draft changed"
+              },
+              {
+                "author": "interviewer",
+                "text": "What changed?",
+                "reasoning": "Synthetic reasoning"
+              },
+              {
+                "author": "writer",
+                "text": "General"
+              }
+            ],
+            "mode": "refine",
+            "currentBrief": {
+              "answers": {
+                "workingTitle": "The notebook",
+                "format": "Essay",
+                "audience": "A reader",
+                "goal": "Make the claim clear",
+                "tone": "Exact",
+                "constraints": "Evidence",
+                "successSignal": "A useful question"
+              },
+              "attachments": [
+                {
+                  "id": "attachment-prior",
+                  "kind": "link",
+                  "title": "Reference",
+                  "why": "Prior evidence",
+                  "url": "https://example.invalid/reference",
+                  "addedAt": 50,
+                  "unknownAttachment": {
+                    "keep": true
+                  }
+                }
+              ],
+              "probes": [
+                {
+                  "id": "probe-prior",
+                  "kind": "choice",
+                  "prompt": "Which reader?",
+                  "options": [
+                    "General",
+                    "Specialist"
+                  ],
+                  "answer": "Specialist",
+                  "unknown": {
+                    "keep": true
+                  }
+                }
+              ],
+              "completedAt": 100,
+              "updatedAt": 200,
+              "unknown": {
+                "keep": true
+              }
+            },
+            "startingMaterial": "Carried manuscript"
+          }
+        ]
+      }
+    },
+    {
+      "name": "failure-retry-no-duplicate-writer",
+      "observed": {
+        "failed": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            },
+            {
+              "author": "writer",
+              "text": "Writer's retained sentence"
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": "Writer's retained sentence",
+          "synthesis": null,
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "  Writer's retained sentence  ",
+          "requestVersion": 1,
+          "filing": false,
+          "error": {
+            "code": "PROVIDER_ERROR",
+            "recovery": {
+              "action": "retry",
+              "canRetry": true
+            },
+            "source": "application"
+          }
+        },
+        "retried": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            },
+            {
+              "author": "writer",
+              "text": "Writer's retained sentence"
+            },
+            {
+              "author": "interviewer",
+              "text": "What changed?",
+              "reasoning": "Synthetic reasoning"
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": null,
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "  Writer's retained sentence  ",
+          "requestVersion": 2,
+          "filing": false,
+          "error": null
+        },
+        "requests": [
+          {
+            "messages": [
+              {
+                "author": "interviewer",
+                "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+              },
+              {
+                "author": "writer",
+                "text": "Writer's retained sentence"
+              }
+            ],
+            "mode": "first-run",
+            "currentBrief": null,
+            "startingMaterial": "Carried manuscript"
+          },
+          {
+            "messages": [
+              {
+                "author": "interviewer",
+                "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+              },
+              {
+                "author": "writer",
+                "text": "Writer's retained sentence"
+              }
+            ],
+            "mode": "first-run",
+            "currentBrief": null,
+            "startingMaterial": "Carried manuscript"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unconfigured-use-form",
+      "observed": {
+        "failed": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            },
+            {
+              "author": "writer",
+              "text": "Offline answer"
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": "Offline answer",
+          "synthesis": null,
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "Offline answer",
+          "requestVersion": 1,
+          "filing": false,
+          "error": {
+            "code": "CONFIGURATION_ERROR",
+            "recovery": {
+              "action": "choose-provider",
+              "canRetry": false
+            },
+            "source": "application"
+          }
+        },
+        "formPayload": [
+          {
+            "answers": {},
+            "attachments": []
+          }
+        ],
+        "providerCalls": 0
+      }
+    },
+    {
+      "name": "late-success-after-form",
+      "observed": {
+        "before": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            },
+            {
+              "author": "writer",
+              "text": "In flight"
+            }
+          ],
+          "loading": true,
+          "pendingWriterText": "In flight",
+          "synthesis": null,
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 2,
+          "filing": false,
+          "error": null
+        },
+        "after": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            },
+            {
+              "author": "writer",
+              "text": "In flight"
+            }
+          ],
+          "loading": true,
+          "pendingWriterText": "In flight",
+          "synthesis": null,
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 2,
+          "filing": false,
+          "error": null
+        },
+        "formPayload": [
+          {
+            "answers": {},
+            "attachments": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "source-late-error-before-version-guard",
+      "observed": {
+        "before": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            },
+            {
+              "author": "writer",
+              "text": "In flight"
+            }
+          ],
+          "loading": true,
+          "pendingWriterText": "In flight",
+          "synthesis": null,
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 2,
+          "filing": false,
+          "error": null
+        },
+        "after": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            },
+            {
+              "author": "writer",
+              "text": "In flight"
+            }
+          ],
+          "loading": true,
+          "pendingWriterText": "In flight",
+          "synthesis": null,
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 2,
+          "filing": false,
+          "error": {
+            "code": "PROVIDER_ERROR",
+            "recovery": {
+              "action": "retry",
+              "canRetry": true
+            },
+            "source": "application"
+          }
+        }
+      }
+    },
+    {
+      "name": "refine-synthesis-and-filing",
+      "observed": {
+        "synthesized": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Reading your current brief back to you, what feels off, or what has the draft outgrown?"
+            },
+            {
+              "author": "writer",
+              "text": "A book instead"
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Book",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {
+              "format": "high"
+            }
+          },
+          "liveDraft": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Book",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {
+              "format": "high"
+            }
+          },
+          "answeredProbes": [
+            {
+              "id": "probe-prior",
+              "kind": "choice",
+              "prompt": "Which reader?",
+              "options": [
+                "General",
+                "Specialist"
+              ],
+              "answer": "Specialist",
+              "unknown": {
+                "keep": true
+              }
+            }
+          ],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 1,
+          "filing": false,
+          "error": null
+        },
+        "edited": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Reading your current brief back to you, what feels off, or what has the draft outgrown?"
+            },
+            {
+              "author": "writer",
+              "text": "A book instead"
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Book",
+              "audience": "A reader",
+              "goal": "Writer's explicit goal",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {
+              "format": "high",
+              "goal": "high"
+            }
+          },
+          "liveDraft": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Book",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {
+              "format": "high"
+            }
+          },
+          "answeredProbes": [
+            {
+              "id": "probe-prior",
+              "kind": "choice",
+              "prompt": "Which reader?",
+              "options": [
+                "General",
+                "Specialist"
+              ],
+              "answer": "Specialist",
+              "unknown": {
+                "keep": true
+              }
+            }
+          ],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 1,
+          "filing": true,
+          "error": null
+        },
+        "submission": [
+          {
+            "answers": {
+              "workingTitle": "The notebook",
+              "format": "Book",
+              "audience": "A reader",
+              "goal": "Writer's explicit goal",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "attachments": [
+              {
+                "id": "attachment-prior",
+                "kind": "link",
+                "title": "Reference",
+                "why": "Prior evidence",
+                "url": "https://example.invalid/reference",
+                "addedAt": 50,
+                "unknownAttachment": {
+                  "keep": true
+                }
+              }
+            ],
+            "probes": [
+              {
+                "id": "probe-prior",
+                "kind": "choice",
+                "prompt": "Which reader?",
+                "options": [
+                  "General",
+                  "Specialist"
+                ],
+                "answer": "Specialist",
+                "unknown": {
+                  "keep": true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "synthesis-nudge-does-not-append-transcript",
+      "observed": {
+        "state": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            },
+            {
+              "author": "interviewer",
+              "text": "What changed?",
+              "reasoning": "Synthetic reasoning"
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": null,
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 1,
+          "filing": false,
+          "error": null
+        },
+        "requests": [
+          {
+            "messages": [
+              {
+                "author": "interviewer",
+                "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+              }
+            ],
+            "mode": "first-run",
+            "currentBrief": null,
+            "startingMaterial": "Carried manuscript"
+          }
+        ]
+      }
+    },
+    {
+      "name": "synthesis-nudge-retains-active-probe",
+      "observed": {
+        "state": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            }
+          ],
+          "loading": true,
+          "pendingWriterText": "(the writer is ready to see the dossier — please synthesise now)",
+          "synthesis": null,
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": {
+            "id": "probe-prior",
+            "kind": "choice",
+            "prompt": "Which reader?",
+            "options": [
+              "General",
+              "Specialist"
+            ],
+            "answer": "Specialist",
+            "unknown": {
+              "keep": true
+            }
+          },
+          "draft": "",
+          "requestVersion": 1,
+          "filing": false,
+          "error": null
+        },
+        "after": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            },
+            {
+              "author": "interviewer",
+              "text": "What changed?",
+              "reasoning": "Synthetic reasoning"
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": null,
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 1,
+          "filing": false,
+          "error": null
+        },
+        "requests": [
+          {
+            "messages": [
+              {
+                "author": "interviewer",
+                "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+              }
+            ],
+            "mode": "first-run",
+            "currentBrief": null,
+            "startingMaterial": "Carried manuscript"
+          }
+        ]
+      }
+    },
+    {
+      "name": "synthesis-uses-string-truthiness",
+      "observed": {
+        "state": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Reading your current brief back to you, what feels off, or what has the draft outgrown?"
+            },
+            {
+              "author": "writer",
+              "text": "Reconsider tone"
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "   ",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {}
+          },
+          "liveDraft": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "   ",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {}
+          },
+          "answeredProbes": [
+            {
+              "id": "probe-prior",
+              "kind": "choice",
+              "prompt": "Which reader?",
+              "options": [
+                "General",
+                "Specialist"
+              ],
+              "answer": "Specialist",
+              "unknown": {
+                "keep": true
+              }
+            }
+          ],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 1,
+          "filing": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "name": "blank-review-edit-is-neutral",
+      "observed": {
+        "state": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Reading your current brief back to you, what feels off, or what has the draft outgrown?"
+            },
+            {
+              "author": "writer",
+              "text": "Reconsider tone"
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "   ",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {}
+          },
+          "liveDraft": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "   ",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {}
+          },
+          "answeredProbes": [
+            {
+              "id": "probe-prior",
+              "kind": "choice",
+              "prompt": "Which reader?",
+              "options": [
+                "General",
+                "Specialist"
+              ],
+              "answer": "Specialist",
+              "unknown": {
+                "keep": true
+              }
+            }
+          ],
+          "activeProbe": null,
+          "draft": "﻿   ",
+          "requestVersion": 1,
+          "filing": false,
+          "error": null
+        },
+        "editingField": "tone"
+      }
+    },
+    {
+      "name": "source-send-js-trim",
+      "observed": {
+        "rows": [
+          {
+            "input": "﻿   Writer 東京   ﻿",
+            "state": {
+              "messages": [
+                {
+                  "author": "interviewer",
+                  "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+                },
+                {
+                  "author": "writer",
+                  "text": "Writer 東京"
+                },
+                {
+                  "author": "interviewer",
+                  "text": "What changed?",
+                  "reasoning": "Synthetic reasoning"
+                }
+              ],
+              "loading": false,
+              "pendingWriterText": null,
+              "synthesis": null,
+              "liveDraft": null,
+              "answeredProbes": [],
+              "activeProbe": null,
+              "draft": "",
+              "requestVersion": 1,
+              "filing": false,
+              "error": null
+            },
+            "requests": [
+              {
+                "messages": [
+                  {
+                    "author": "interviewer",
+                    "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+                  },
+                  {
+                    "author": "writer",
+                    "text": "Writer 東京"
+                  }
+                ],
+                "mode": "first-run",
+                "currentBrief": null,
+                "startingMaterial": "Carried manuscript"
+              }
+            ]
+          },
+          {
+            "input": "",
+            "state": {
+              "messages": [
+                {
+                  "author": "interviewer",
+                  "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+                },
+                {
+                  "author": "writer",
+                  "text": ""
+                },
+                {
+                  "author": "interviewer",
+                  "text": "What changed?",
+                  "reasoning": "Synthetic reasoning"
+                }
+              ],
+              "loading": false,
+              "pendingWriterText": null,
+              "synthesis": null,
+              "liveDraft": null,
+              "answeredProbes": [],
+              "activeProbe": null,
+              "draft": "",
+              "requestVersion": 1,
+              "filing": false,
+              "error": null
+            },
+            "requests": [
+              {
+                "messages": [
+                  {
+                    "author": "interviewer",
+                    "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+                  },
+                  {
+                    "author": "writer",
+                    "text": ""
+                  }
+                ],
+                "mode": "first-run",
+                "currentBrief": null,
+                "startingMaterial": "Carried manuscript"
+              }
+            ]
+          },
+          {
+            "input": "﻿   ",
+            "state": {
+              "messages": [
+                {
+                  "author": "interviewer",
+                  "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+                }
+              ],
+              "loading": false,
+              "pendingWriterText": null,
+              "synthesis": null,
+              "liveDraft": null,
+              "answeredProbes": [],
+              "activeProbe": null,
+              "draft": "﻿   ",
+              "requestVersion": 0,
+              "filing": false,
+              "error": null
+            },
+            "requests": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "history-compares-entire-brief",
+      "observed": {
+        "duplicate": [
+          {
+            "id": "200-synthetic-1",
+            "savedAt": 200,
+            "brief": {
+              "answers": {
+                "workingTitle": "The notebook",
+                "format": "Essay",
+                "audience": "A reader",
+                "goal": "Make the claim clear",
+                "tone": "Exact",
+                "constraints": "Evidence",
+                "successSignal": "A useful question"
+              },
+              "attachments": [
+                {
+                  "id": "attachment-prior",
+                  "kind": "link",
+                  "title": "Reference",
+                  "why": "Prior evidence",
+                  "url": "https://example.invalid/reference",
+                  "addedAt": 50,
+                  "unknownAttachment": {
+                    "keep": true
+                  }
+                }
+              ],
+              "probes": [
+                {
+                  "id": "probe-prior",
+                  "kind": "choice",
+                  "prompt": "Which reader?",
+                  "options": [
+                    "General",
+                    "Specialist"
+                  ],
+                  "answer": "Specialist",
+                  "unknown": {
+                    "keep": true
+                  }
+                }
+              ],
+              "completedAt": 100,
+              "updatedAt": 200,
+              "unknown": {
+                "keep": true
+              }
+            },
+            "source": "refine"
+          }
+        ],
+        "changed": [
+          {
+            "id": "200-synthetic-2",
+            "savedAt": 200,
+            "brief": {
+              "answers": {
+                "workingTitle": "The notebook",
+                "format": "Essay",
+                "audience": "A reader",
+                "goal": "Make the claim clear",
+                "tone": "Exact",
+                "constraints": "Evidence",
+                "successSignal": "A useful question"
+              },
+              "attachments": [
+                {
+                  "id": "attachment-prior",
+                  "kind": "link",
+                  "title": "Reference",
+                  "why": "Prior evidence",
+                  "url": "https://example.invalid/reference",
+                  "addedAt": 50,
+                  "unknownAttachment": {
+                    "keep": true
+                  }
+                }
+              ],
+              "probes": [
+                {
+                  "id": "probe-prior",
+                  "kind": "choice",
+                  "prompt": "Which reader?",
+                  "options": [
+                    "General",
+                    "Specialist"
+                  ],
+                  "answer": "Specialist",
+                  "unknown": {
+                    "keep": true
+                  }
+                }
+              ],
+              "completedAt": 100,
+              "updatedAt": 200,
+              "unknown": {
+                "keep": true,
+                "edition": "updated metadata"
+              }
+            },
+            "source": "refine"
+          },
+          {
+            "id": "200-synthetic-1",
+            "savedAt": 200,
+            "brief": {
+              "answers": {
+                "workingTitle": "The notebook",
+                "format": "Essay",
+                "audience": "A reader",
+                "goal": "Make the claim clear",
+                "tone": "Exact",
+                "constraints": "Evidence",
+                "successSignal": "A useful question"
+              },
+              "attachments": [
+                {
+                  "id": "attachment-prior",
+                  "kind": "link",
+                  "title": "Reference",
+                  "why": "Prior evidence",
+                  "url": "https://example.invalid/reference",
+                  "addedAt": 50,
+                  "unknownAttachment": {
+                    "keep": true
+                  }
+                }
+              ],
+              "probes": [
+                {
+                  "id": "probe-prior",
+                  "kind": "choice",
+                  "prompt": "Which reader?",
+                  "options": [
+                    "General",
+                    "Specialist"
+                  ],
+                  "answer": "Specialist",
+                  "unknown": {
+                    "keep": true
+                  }
+                }
+              ],
+              "completedAt": 100,
+              "updatedAt": 200,
+              "unknown": {
+                "keep": true
+              }
+            },
+            "source": "refine"
+          }
+        ],
+        "calls": [
+          {
+            "kind": "read",
+            "key": "brief-editions:folio-a"
+          },
+          {
+            "kind": "write",
+            "key": "brief-editions:folio-a"
+          },
+          {
+            "kind": "read",
+            "key": "brief-editions:folio-a"
+          },
+          {
+            "kind": "read",
+            "key": "brief-editions:folio-a"
+          },
+          {
+            "kind": "write",
+            "key": "brief-editions:folio-a"
+          }
+        ]
+      }
+    },
+    {
+      "name": "source-function-double-submit-relies-on-disabled-button",
+      "observed": {
+        "pending": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {}
+          },
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 0,
+          "filing": true,
+          "error": null
+        },
+        "completionCalls": 2,
+        "after": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {}
+          },
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 0,
+          "filing": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "name": "failed-filing-retains-synthesis",
+      "observed": {
+        "after": {
+          "messages": [
+            {
+              "author": "interviewer",
+              "text": "Tell me the piece in one sentence — the way you'd describe it to a friend at lunch."
+            }
+          ],
+          "loading": false,
+          "pendingWriterText": null,
+          "synthesis": {
+            "brief": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "confidence": {}
+          },
+          "liveDraft": null,
+          "answeredProbes": [],
+          "activeProbe": null,
+          "draft": "",
+          "requestVersion": 0,
+          "filing": false,
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "recovery": {
+              "action": "retry",
+              "canRetry": true
+            },
+            "source": "unknown"
+          }
+        },
+        "submission": [
+          {
+            "answers": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "attachments": [],
+            "probes": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "probe-upsert-only-id",
+      "observed": {
+        "result": [
+          {
+            "id": "probe-prior",
+            "kind": "choice",
+            "prompt": "Which reader?",
+            "options": [
+              "General",
+              "Specialist"
+            ],
+            "answer": "Specialist",
+            "unknown": {
+              "keep": true
+            }
+          },
+          {
+            "id": "probe-new",
+            "kind": "choice",
+            "prompt": "Which reader?",
+            "options": [
+              "General",
+              "Specialist"
+            ],
+            "answer": "General",
+            "unknown": {
+              "keep": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "route-create-held-feedback",
+      "observed": {
+        "before": {
+          "filing": "filed",
+          "briefDone": false,
+          "calls": [
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "archive",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "legacy-mirror"
+            },
+            {
+              "kind": "file-mirror",
+              "path": "/folios/folio-a/brief.json"
+            },
+            {
+              "kind": "mark-sync"
+            },
+            {
+              "kind": "read-content",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-content",
+              "id": "folio-a",
+              "html": "<h1>The notebook</h1>\n    <p><strong>Anti-tabula rasa brief</strong>: this draft starts with context, not emptiness.</p>\n    <h2>Working context</h2>\n    <ul>\n      <li><strong>Format:</strong> Essay</li>\n      <li><strong>Audience:</strong> A reader</li>\n      <li><strong>Goal:</strong> Make the claim clear</li>\n      <li><strong>Tone:</strong> Exact</li>\n      <li><strong>Constraints:</strong> Evidence</li>\n      <li><strong>Success signal:</strong> A useful question</li>\n    </ul>\n    <h2>Starter prompt</h2>\n    <blockquote>\n      <p>Make the claim clear</p>\n    </blockquote>\n    <p>Begin the draft here. The room will use the brief above as the anchor.</p>"
+            },
+            {
+              "kind": "active-folio",
+              "id": "folio-a"
+            },
+            {
+              "kind": "mark-dirty"
+            },
+            {
+              "kind": "feedback",
+              "ms": 780
+            }
+          ]
+        },
+        "result": {
+          "resolved": true
+        },
+        "after": {
+          "filing": "filed",
+          "briefDone": true,
+          "calls": [
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "archive",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "legacy-mirror"
+            },
+            {
+              "kind": "file-mirror",
+              "path": "/folios/folio-a/brief.json"
+            },
+            {
+              "kind": "mark-sync"
+            },
+            {
+              "kind": "read-content",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-content",
+              "id": "folio-a",
+              "html": "<h1>The notebook</h1>\n    <p><strong>Anti-tabula rasa brief</strong>: this draft starts with context, not emptiness.</p>\n    <h2>Working context</h2>\n    <ul>\n      <li><strong>Format:</strong> Essay</li>\n      <li><strong>Audience:</strong> A reader</li>\n      <li><strong>Goal:</strong> Make the claim clear</li>\n      <li><strong>Tone:</strong> Exact</li>\n      <li><strong>Constraints:</strong> Evidence</li>\n      <li><strong>Success signal:</strong> A useful question</li>\n    </ul>\n    <h2>Starter prompt</h2>\n    <blockquote>\n      <p>Make the claim clear</p>\n    </blockquote>\n    <p>Begin the draft here. The room will use the brief above as the anchor.</p>"
+            },
+            {
+              "kind": "active-folio",
+              "id": "folio-a"
+            },
+            {
+              "kind": "mark-dirty"
+            },
+            {
+              "kind": "feedback",
+              "ms": 780
+            },
+            {
+              "kind": "clear-recovery",
+              "scope": "create:folio-a",
+              "owner": null
+            }
+          ],
+          "savedBrief": {
+            "answers": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "attachments": [
+              {
+                "id": "attachment-prior",
+                "kind": "link",
+                "title": "Reference",
+                "why": "Prior evidence",
+                "url": "https://example.invalid/reference",
+                "addedAt": 50,
+                "unknownAttachment": {
+                  "keep": true
+                }
+              }
+            ],
+            "probes": [
+              {
+                "id": "probe-prior",
+                "kind": "choice",
+                "prompt": "Which reader?",
+                "options": [
+                  "General",
+                  "Specialist"
+                ],
+                "answer": "Specialist",
+                "unknown": {
+                  "keep": true
+                }
+              }
+            ],
+            "completedAt": 1000,
+            "updatedAt": 1000
+          }
+        }
+      }
+    },
+    {
+      "name": "route-create-readback",
+      "observed": {
+        "before": {
+          "filing": "idle",
+          "briefDone": false,
+          "calls": [
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "archive",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            }
+          ]
+        },
+        "result": {
+          "resolved": false
+        },
+        "after": {
+          "filing": "idle",
+          "briefDone": false,
+          "calls": [
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "archive",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            }
+          ],
+          "savedBrief": {
+            "answers": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "attachments": [
+              {
+                "id": "attachment-prior",
+                "kind": "link",
+                "title": "Reference",
+                "why": "Prior evidence",
+                "url": "https://example.invalid/reference",
+                "addedAt": 50,
+                "unknownAttachment": {
+                  "keep": true
+                }
+              }
+            ],
+            "probes": [
+              {
+                "id": "probe-prior",
+                "kind": "choice",
+                "prompt": "Which reader?",
+                "options": [
+                  "General",
+                  "Specialist"
+                ],
+                "answer": "Specialist",
+                "unknown": {
+                  "keep": true
+                }
+              }
+            ],
+            "completedAt": 100,
+            "updatedAt": 200,
+            "unknown": {
+              "keep": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "route-create-mirror",
+      "observed": {
+        "before": {
+          "filing": "idle",
+          "briefDone": false,
+          "calls": [
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "archive",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "legacy-mirror"
+            },
+            {
+              "kind": "file-mirror",
+              "path": "/folios/folio-a/brief.json"
+            }
+          ]
+        },
+        "result": {
+          "resolved": false
+        },
+        "after": {
+          "filing": "idle",
+          "briefDone": false,
+          "calls": [
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "archive",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "legacy-mirror"
+            },
+            {
+              "kind": "file-mirror",
+              "path": "/folios/folio-a/brief.json"
+            }
+          ],
+          "savedBrief": {
+            "answers": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "attachments": [
+              {
+                "id": "attachment-prior",
+                "kind": "link",
+                "title": "Reference",
+                "why": "Prior evidence",
+                "url": "https://example.invalid/reference",
+                "addedAt": 50,
+                "unknownAttachment": {
+                  "keep": true
+                }
+              }
+            ],
+            "probes": [
+              {
+                "id": "probe-prior",
+                "kind": "choice",
+                "prompt": "Which reader?",
+                "options": [
+                  "General",
+                  "Specialist"
+                ],
+                "answer": "Specialist",
+                "unknown": {
+                  "keep": true
+                }
+              }
+            ],
+            "completedAt": 1000,
+            "updatedAt": 1000
+          }
+        }
+      }
+    },
+    {
+      "name": "route-refine-held-feedback",
+      "observed": {
+        "before": {
+          "filing": "filed",
+          "briefDone": false,
+          "calls": [
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "archive",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "legacy-mirror"
+            },
+            {
+              "kind": "file-mirror",
+              "path": "/folios/folio-a/brief.json"
+            },
+            {
+              "kind": "mark-sync"
+            },
+            {
+              "kind": "load-editions",
+              "id": "folio-a"
+            },
+            {
+              "kind": "feedback",
+              "ms": 780
+            }
+          ]
+        },
+        "result": {
+          "resolved": true
+        },
+        "after": {
+          "filing": "filed",
+          "briefDone": false,
+          "calls": [
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "archive",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "legacy-mirror"
+            },
+            {
+              "kind": "file-mirror",
+              "path": "/folios/folio-a/brief.json"
+            },
+            {
+              "kind": "mark-sync"
+            },
+            {
+              "kind": "load-editions",
+              "id": "folio-a"
+            },
+            {
+              "kind": "feedback",
+              "ms": 780
+            },
+            {
+              "kind": "navigate",
+              "path": "/editor/"
+            }
+          ],
+          "savedBrief": {
+            "answers": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "attachments": [
+              {
+                "id": "attachment-prior",
+                "kind": "link",
+                "title": "Reference",
+                "why": "Prior evidence",
+                "url": "https://example.invalid/reference",
+                "addedAt": 50,
+                "unknownAttachment": {
+                  "keep": true
+                }
+              }
+            ],
+            "probes": [
+              {
+                "id": "probe-prior",
+                "kind": "choice",
+                "prompt": "Which reader?",
+                "options": [
+                  "General",
+                  "Specialist"
+                ],
+                "answer": "Specialist",
+                "unknown": {
+                  "keep": true
+                }
+              }
+            ],
+            "completedAt": 100,
+            "updatedAt": 1000
+          }
+        }
+      }
+    },
+    {
+      "name": "route-refine-readback",
+      "observed": {
+        "before": {
+          "filing": "idle",
+          "briefDone": false,
+          "calls": [
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "archive",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            }
+          ]
+        },
+        "result": {
+          "resolved": false
+        },
+        "after": {
+          "filing": "idle",
+          "briefDone": false,
+          "calls": [
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "archive",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            }
+          ],
+          "savedBrief": {
+            "answers": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "attachments": [
+              {
+                "id": "attachment-prior",
+                "kind": "link",
+                "title": "Reference",
+                "why": "Prior evidence",
+                "url": "https://example.invalid/reference",
+                "addedAt": 50,
+                "unknownAttachment": {
+                  "keep": true
+                }
+              }
+            ],
+            "probes": [
+              {
+                "id": "probe-prior",
+                "kind": "choice",
+                "prompt": "Which reader?",
+                "options": [
+                  "General",
+                  "Specialist"
+                ],
+                "answer": "Specialist",
+                "unknown": {
+                  "keep": true
+                }
+              }
+            ],
+            "completedAt": 100,
+            "updatedAt": 200,
+            "unknown": {
+              "keep": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "route-refine-mirror",
+      "observed": {
+        "before": {
+          "filing": "idle",
+          "briefDone": false,
+          "calls": [
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "archive",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "legacy-mirror"
+            },
+            {
+              "kind": "file-mirror",
+              "path": "/folios/folio-a/brief.json"
+            }
+          ]
+        },
+        "result": {
+          "resolved": false
+        },
+        "after": {
+          "filing": "idle",
+          "briefDone": false,
+          "calls": [
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "archive",
+              "id": "folio-a"
+            },
+            {
+              "kind": "write-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "read-brief",
+              "id": "folio-a"
+            },
+            {
+              "kind": "legacy-mirror"
+            },
+            {
+              "kind": "file-mirror",
+              "path": "/folios/folio-a/brief.json"
+            }
+          ],
+          "savedBrief": {
+            "answers": {
+              "workingTitle": "The notebook",
+              "format": "Essay",
+              "audience": "A reader",
+              "goal": "Make the claim clear",
+              "tone": "Exact",
+              "constraints": "Evidence",
+              "successSignal": "A useful question"
+            },
+            "attachments": [
+              {
+                "id": "attachment-prior",
+                "kind": "link",
+                "title": "Reference",
+                "why": "Prior evidence",
+                "url": "https://example.invalid/reference",
+                "addedAt": 50,
+                "unknownAttachment": {
+                  "keep": true
+                }
+              }
+            ],
+            "probes": [
+              {
+                "id": "probe-prior",
+                "kind": "choice",
+                "prompt": "Which reader?",
+                "options": [
+                  "General",
+                  "Specialist"
+                ],
+                "answer": "Specialist",
+                "unknown": {
+                  "keep": true
+                }
+              }
+            ],
+            "completedAt": 100,
+            "updatedAt": 1000
+          }
+        }
+      }
+    },
+    {
+      "name": "create-keeps-existing-manuscript",
+      "observed": {
+        "calls": [
+          {
+            "kind": "read-brief",
+            "id": "folio-a"
+          },
+          {
+            "kind": "archive",
+            "id": "folio-a"
+          },
+          {
+            "kind": "write-brief",
+            "id": "folio-a"
+          },
+          {
+            "kind": "read-brief",
+            "id": "folio-a"
+          },
+          {
+            "kind": "legacy-mirror"
+          },
+          {
+            "kind": "file-mirror",
+            "path": "/folios/folio-a/brief.json"
+          },
+          {
+            "kind": "mark-sync"
+          },
+          {
+            "kind": "read-content",
+            "id": "folio-a"
+          },
+          {
+            "kind": "active-folio",
+            "id": "folio-a"
+          },
+          {
+            "kind": "mark-dirty"
+          },
+          {
+            "kind": "feedback",
+            "ms": 780
+          },
+          {
+            "kind": "clear-recovery",
+            "scope": "create:folio-a",
+            "owner": null
+          }
+        ],
+        "contentWrites": 0
+      }
+    },
+    {
+      "name": "source-refine-missing-scope-returns-without-ack",
+      "observed": {
+        "calls": [],
+        "filing": "idle"
+      }
+    }
+  ]
+}

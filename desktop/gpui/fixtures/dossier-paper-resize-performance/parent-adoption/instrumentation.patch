@@ -1,0 +1,283 @@
+--- a/desktop/gpui/src/dossier_paper.rs
++++ b/desktop/gpui/src/dossier_paper.rs
+@@ -30,6 +30,15 @@
+     fmt::Write,
+     sync::{Arc, Mutex, OnceLock},
+ };
++
++#[cfg(feature = "ui-tests")]
++#[path = "../fixtures/dossier-paper-resize-performance/parent-adoption/diagnostics.rs"]
++pub(crate) mod resize_diagnostics;
++
++#[cfg(feature = "ui-tests")]
++pub fn resize_diagnostic_snapshot() -> serde_json::Value {
++    resize_diagnostics::snapshot()
++}
+ 
+ /// The exact Source selectors extracted in the owned source-contract fixture.
+ pub const SOURCE_SELECTORS: [&str; 2] = [".paper-sheet", ".paper-foxed::after"];
+@@ -270,19 +279,37 @@
+     /// May be scheduled on a host background executor. This method is the
+     /// sole rasterization path and never runs from `background` or paint.
+     pub fn prepare(palette: Palette, metrics: DossierPaperMetrics) -> Result<Arc<Self>> {
++        #[cfg(feature = "ui-tests")]
++        let mut diagnostic = resize_diagnostics::Operation::for_metrics(resize_diagnostics::Kind::Paper, metrics);
+         let colors = PaperColors::from_palette(palette)?;
+         let key = PaperKey::new(colors, metrics);
++        #[cfg(feature = "ui-tests")]
++        diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::Validation);
+         let mut cache = cache()
+             .lock()
+             .map_err(|_| anyhow::anyhow!("Dossier paper cache lock is poisoned"))?;
++        #[cfg(feature = "ui-tests")]
++        diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::CacheWait);
++        #[cfg(feature = "ui-tests")]
++        diagnostic.cache_before(cache.ready.len());
+         if let Some(index) = cache.ready.iter().position(|paper| paper.key == key) {
+             let paper = cache.ready.remove(index).unwrap();
+             cache.ready.push_front(paper.clone());
++            #[cfg(feature = "ui-tests")]
++            diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::CacheLookup);
++            #[cfg(feature = "ui-tests")]
++            diagnostic.outcome("cacheHit");
+             return Ok(paper);
+         }
++        #[cfg(feature = "ui-tests")]
++        diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::CacheLookup);
+         let svg: Arc<str> = background_svg(colors, metrics).into();
++        #[cfg(feature = "ui-tests")]
++        diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::SvgBuild);
+         let renderer = SvgRenderer::new(Arc::new(TwyneAssets));
+         let parsed = renderer.parse_svg(svg.as_bytes())?;
++        #[cfg(feature = "ui-tests")]
++        diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::RendererAndParse);
+         let image = renderer.render_parsed(
+             &parsed,
+             SvgSize::ExactSize(size(
+@@ -290,6 +317,8 @@
+                 DevicePixels(metrics.raster_height as i32),
+             )),
+         )?;
++        #[cfg(feature = "ui-tests")]
++        diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::RasterAndBgraConversion);
+         let paper = Arc::new(Self {
+             key,
+             metrics,
+@@ -298,7 +327,13 @@
+             shadows: inset_shadows(colors),
+         });
+         cache.ready.push_front(paper.clone());
++        #[cfg(feature = "ui-tests")]
++        diagnostic.evictions(cache.ready.len().saturating_sub(CACHE_ENTRIES));
+         cache.ready.truncate(CACHE_ENTRIES);
++        #[cfg(feature = "ui-tests")]
++        diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::InstallAndEviction);
++        #[cfg(feature = "ui-tests")]
++        diagnostic.outcome("cacheMissPrepared");
+         Ok(paper)
+     }
+ 
+--- a/desktop/gpui/src/dossier_multiply.rs
++++ b/desktop/gpui/src/dossier_multiply.rs
+@@ -106,21 +106,39 @@
+ 
+ impl DossierMultiply {
+     pub fn prepare(palette: Palette, metrics: DossierPaperMetrics) -> Result<Arc<Self>> {
++        #[cfg(feature = "ui-tests")]
++        let mut diagnostic = crate::dossier_paper::resize_diagnostics::Operation::for_metrics(crate::dossier_paper::resize_diagnostics::Kind::Multiply, metrics);
+         let key = MultiplyKey::new(palette, metrics)?;
++        #[cfg(feature = "ui-tests")]
++        diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::Validation);
+         let mut cache = preparations()
+             .lock()
+             .map_err(|_| anyhow::anyhow!("Dossier multiply cache lock is poisoned"))?;
++        #[cfg(feature = "ui-tests")]
++        diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::CacheWait);
++        #[cfg(feature = "ui-tests")]
++        diagnostic.cache_before(cache.len());
+         if let Some(index) = cache.iter().position(|ready| ready.key == key) {
+             let ready = cache.remove(index).unwrap();
+             cache.push_front(ready.clone());
++            #[cfg(feature = "ui-tests")]
++            diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::CacheLookup);
++            #[cfg(feature = "ui-tests")]
++            diagnostic.outcome("cacheHit");
+             return Ok(ready);
+         }
++        #[cfg(feature = "ui-tests")]
++        diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::CacheLookup);
+         let svg: Arc<str> = foxing_group_svg(palette, metrics)?.into();
++        #[cfg(feature = "ui-tests")]
++        diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::SvgBuild);
+         let premultiplied_group = if palette.foxing_alpha == 0. {
+             None
+         } else {
+             let renderer = SvgRenderer::new(Arc::new(TwyneAssets));
+             let parsed = renderer.parse_svg(svg.as_bytes())?;
++            #[cfg(feature = "ui-tests")]
++            diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::RendererAndParse);
+             let (width, height) = metrics.raster_size();
+             // The proposed core API exports resvg's original premultiplied
+             // bytes without the normal SvgRenderer unpremultiply/round-trip.
+@@ -128,7 +146,11 @@
+                 &parsed,
+                 size(DevicePixels(width as i32), DevicePixels(height as i32)),
+             )?;
++            #[cfg(feature = "ui-tests")]
++            diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::RasterAndBgraConversion);
+             validate_premultiplied_bgra(premultiplied.as_bytes(0).unwrap())?;
++            #[cfg(feature = "ui-tests")]
++            diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::PremultipliedValidation);
+             Some(premultiplied)
+         };
+         let prepared = Arc::new(Self {
+@@ -138,7 +160,13 @@
+             premultiplied_group,
+         });
+         cache.push_front(prepared.clone());
++        #[cfg(feature = "ui-tests")]
++        diagnostic.evictions(cache.len().saturating_sub(MULTIPLY_CACHE_ENTRIES));
+         cache.truncate(MULTIPLY_CACHE_ENTRIES);
++        #[cfg(feature = "ui-tests")]
++        diagnostic.mark(crate::dossier_paper::resize_diagnostics::Phase::InstallAndEviction);
++        #[cfg(feature = "ui-tests")]
++        diagnostic.outcome("cacheMissPrepared");
+         Ok(prepared)
+     }
+ 
+--- a/desktop/gpui/src/dossier_view.rs
++++ b/desktop/gpui/src/dossier_view.rs
+@@ -318,12 +318,20 @@
+             async {}
+         }));
+         subscriptions.push(cx.observe_window_bounds(window, |this, window, cx| {
++            #[cfg(feature = "ui-tests")]
++            let mut diagnostic = crate::dossier_paper::resize_diagnostics::Operation::for_window(crate::dossier_paper::resize_diagnostics::Kind::BoundsObserver, window);
+             this.prepare_paper(window, cx);
++            #[cfg(feature = "ui-tests")]
++            diagnostic.outcome("returned");
+         }));
+         subscriptions.push(cx.observe_global_in::<theme::NativePalette>(
+             window,
+             |this, window, cx| {
++                #[cfg(feature = "ui-tests")]
++                let mut diagnostic = crate::dossier_paper::resize_diagnostics::Operation::for_window(crate::dossier_paper::resize_diagnostics::Kind::PaletteObserver, window);
+                 this.prepare_paper(window, cx);
++                #[cfg(feature = "ui-tests")]
++                diagnostic.outcome("returned");
+             },
+         ));
+         let material_word_count = dossier::material_word_count(&session.draft.prior_material.text);
+@@ -586,12 +594,16 @@
+     }
+ 
+     pub fn prepare_paper(&mut self, window: &Window, cx: &mut Context<Self>) {
++        #[cfg(feature = "ui-tests")]
++        let mut diagnostic = crate::dossier_paper::resize_diagnostics::Operation::for_window(crate::dossier_paper::resize_diagnostics::Kind::HostPreparation, window);
+         // A retained unmounted form is not a new consumer on a theme event.
+         if self
+             .image_lease
+             .as_ref()
+             .is_some_and(|lease| !lease.is_current())
+         {
++            #[cfg(feature = "ui-tests")]
++            diagnostic.outcome("retiredLeaseSkipped");
+             return;
+         }
+         let previous_paper = self.paper.clone();
+@@ -600,7 +612,15 @@
+         let previous_foxing_paint = self.foxing_paint.get();
+         self.prepare_paper_candidate(window, cx);
+         if let Some(lease) = &self.image_lease {
+-            if let Err(error) = lease.replace(&self.prepared_images(), window, cx) {
++            #[cfg(feature = "ui-tests")]
++            let lease_start = std::time::Instant::now();
++            let replacement = lease.replace(&self.prepared_images(), window, cx);
++            #[cfg(feature = "ui-tests")]
++            diagnostic.measure_since(
++                crate::dossier_paper::resize_diagnostics::Phase::LeaseReplacement,
++                lease_start,
++            );
++            if let Err(error) = replacement {
+                 // Candidate preparation cannot upload. Preserve the accepted
+                 // pointers/lease on refusal, rather than paint untracked data.
+                 // Existing paint guards refuse a now-stale palette/DPR.
+@@ -611,15 +631,21 @@
+                 self.error = Some(
+                     "The Dossier paper could not be prepared. Your answers remain here.".into(),
+                 );
++                #[cfg(feature = "ui-tests")]
++                diagnostic.outcome("leaseRefused");
+                 eprintln!("Could not track Dossier prepared images: {error:#}");
+                 cx.notify();
+                 return;
+             }
+         }
+         self.commit_foxing_receipt(window);
++        #[cfg(feature = "ui-tests")]
++        diagnostic.outcome("returned");
+     }
+ 
+     fn prepare_paper_candidate(&mut self, window: &Window, cx: &mut Context<Self>) {
++        #[cfg(feature = "ui-tests")]
++        let mut diagnostic = crate::dossier_paper::resize_diagnostics::Operation::for_window(crate::dossier_paper::resize_diagnostics::Kind::CandidatePreparation, window);
+         self.prepare_reviewed_stamps(window, cx);
+         let viewport = window.viewport_size();
+         let colors = *theme::palette(cx);
+@@ -634,6 +660,8 @@
+                 .as_ref()
+                 .is_some_and(|paper| paper.matches(colors, *metrics))
+         }) {
++            #[cfg(feature = "ui-tests")]
++            diagnostic.outcome("paperKeyMatched");
+             return;
+         }
+         match metrics.and_then(|metrics| DossierPaper::prepare(colors, metrics)) {
+@@ -643,12 +671,16 @@
+                 eprintln!("Could not prepare Dossier paper: {error:#}");
+             }
+         }
++        #[cfg(feature = "ui-tests")]
++        diagnostic.outcome("returned");
+         cx.notify();
+     }
+ 
+     // All eight count variants are retained at the existing constructor,
+     // theme and DPR boundaries. Count changes never shape/rasterize in Render.
+     fn prepare_reviewed_stamps(&mut self, window: &Window, cx: &mut Context<Self>) {
++        #[cfg(feature = "ui-tests")]
++        let mut diagnostic = crate::dossier_paper::resize_diagnostics::Operation::for_window(crate::dossier_paper::resize_diagnostics::Kind::StampBoundary, window);
+         let color = theme::palette(cx).vermilion;
+         let scale = window.scale_factor();
+         if self
+@@ -656,11 +688,19 @@
+             .as_ref()
+             .is_some_and(|set| set.matches(color, scale))
+         {
++            #[cfg(feature = "ui-tests")]
++            diagnostic.outcome("retainedKeyMatched");
+             return;
+         }
+         match DossierStampSet::prepare(color, scale, window.text_system(), cx) {
+-            Ok(set) => self.reviewed_stamps = Some(set),
++            Ok(set) => {
++                #[cfg(feature = "ui-tests")]
++                diagnostic.outcome("prepareReturnedSet");
++                self.reviewed_stamps = Some(set);
++            }
+             Err(error) => {
++                #[cfg(feature = "ui-tests")]
++                diagnostic.outcome("failed");
+                 self.reviewed_stamps = None;
+                 eprintln!("Could not prepare reviewed stamp: {error:#}");
+             }
+--- a/desktop/gpui/src/capture_geometry.rs
++++ b/desktop/gpui/src/capture_geometry.rs
+@@ -76,6 +76,7 @@
+         "captureSequence": sequence.to_string(),
+         "windowId": window.window_handle().window_id().as_u64().to_string(),
+         "scaleFactor": window.scale_factor(),
++        "dossierPreparationCpu": twyne_desktop::dossier_paper::resize_diagnostic_snapshot(),
+         "dossierImageLifecycle": room.upgrade().and_then(|room| room.read(cx).capture_dossier_image_lifecycle(window, cx)),
+         "viewport": {"width": f32::from(viewport.width), "height": f32::from(viewport.height)},
+         "windowOrigin": {"x": f32::from(window.bounds().left()), "y": f32::from(window.bounds().top())},

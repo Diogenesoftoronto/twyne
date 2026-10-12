@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "status": "authoring_input_drift_before_freeze",
+  "changes": [
+    {
+      "path": "desktop/gpui/vendor/gpui-pre/src/window.rs",
+      "previous_sha256": "802a2ef83a5cca1efa95eee62556f9f38a98afc1f500e10b19dbec3eeeac23fc",
+      "current_sha256": "1df348e63d51dd87331540a9d6494eda5fab34328373c4f5a0691bf2349e9635",
+      "patch_targets_changed": false,
+      "note": "Parent changed shared Window code during authoring. Public ordinary layout methods were reinspected; no vendor patch is proposed and no scene-retirement proof is claimed."
+    }
+  ]
+}

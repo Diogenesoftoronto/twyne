@@ -1,0 +1,627 @@
+{
+  "viewport": {
+    "width": 1280.0,
+    "height": 860.0
+  },
+  "windowOrigin": {
+    "x": 2.0,
+    "y": 2.0
+  },
+  "elements": [
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "View(EntityId(35v1))",
+        "Name(\"margin-rail-surface\")"
+      ],
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1280.0,
+        "height": 860.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-bibliography\")",
+        "Name(\"apparatus-style\")"
+      ],
+      "rect": {
+        "x": 903.0,
+        "y": 240.0,
+        "width": 160.0,
+        "height": 25.0
+      },
+      "visible": true,
+      "label": "Citation style",
+      "role": "Group",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-bibliography\")"
+      ],
+      "rect": {
+        "x": 573.0,
+        "y": 240.0,
+        "width": 555.0,
+        "height": 281.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-signal\")",
+        "Name(\"apparatus-signal-head\")"
+      ],
+      "rect": {
+        "x": 153.0,
+        "y": 142.0,
+        "width": 974.0,
+        "height": 73.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-page-back\")"
+      ],
+      "rect": {
+        "x": 1008.0,
+        "y": 58.0,
+        "width": 120.0,
+        "height": 33.0
+      },
+      "visible": true,
+      "label": "← Back to desk",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")"
+      ],
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1280.0,
+        "height": 860.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-bibliography\")",
+        "Name(\"apparatus-style\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-style-apa\")"
+      ],
+      "rect": {
+        "x": 948.0,
+        "y": 241.0,
+        "width": 41.0,
+        "height": 23.0
+      },
+      "visible": true,
+      "label": "APA",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-agents\")",
+        "Name(\"apparatus-page-source-1\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-page-drop-1\")"
+      ],
+      "rect": {
+        "x": 219.0,
+        "y": 417.0,
+        "width": 41.0,
+        "height": 14.0
+      },
+      "visible": true,
+      "label": "✕ drop",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-agents\")",
+        "Name(\"apparatus-page-source-1\")"
+      ],
+      "rect": {
+        "x": 153.0,
+        "y": 273.0,
+        "width": 395.0,
+        "height": 172.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-signal\")"
+      ],
+      "rect": {
+        "x": 152.0,
+        "y": 141.0,
+        "width": 976.0,
+        "height": 75.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")"
+      ],
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1280.0,
+        "height": 860.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": true
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")"
+      ],
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1280.0,
+        "height": 860.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-account-section\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-account-sources\")"
+      ],
+      "rect": {
+        "x": 152.0,
+        "y": 630.0,
+        "width": 146.0,
+        "height": 20.0
+      },
+      "visible": true,
+      "label": "Open account settings",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": true,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-bibliography\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-copy-all\")"
+      ],
+      "rect": {
+        "x": 1075.0,
+        "y": 245.0,
+        "width": 53.0,
+        "height": 14.0
+      },
+      "visible": true,
+      "label": "Copy all",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-bibliography\")",
+        "Name(\"apparatus-page-source-0\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-page-drop-0\")"
+      ],
+      "rect": {
+        "x": 590.0,
+        "y": 360.0,
+        "width": 41.0,
+        "height": 14.0
+      },
+      "visible": true,
+      "label": "✕ drop",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-bibliography\")",
+        "Name(\"apparatus-style\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-style-mla\")"
+      ],
+      "rect": {
+        "x": 904.0,
+        "y": 241.0,
+        "width": 44.0,
+        "height": 23.0
+      },
+      "visible": true,
+      "label": "MLA",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-bibliography\")",
+        "Name(\"apparatus-style\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-style-chicago\")"
+      ],
+      "rect": {
+        "x": 989.0,
+        "y": 241.0,
+        "width": 73.0,
+        "height": 23.0
+      },
+      "visible": true,
+      "label": "Chicago",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-agents\")",
+        "Name(\"apparatus-page-source-1\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-page-open-1\")"
+      ],
+      "rect": {
+        "x": 169.0,
+        "y": 417.0,
+        "width": 42.0,
+        "height": 14.0
+      },
+      "visible": true,
+      "label": "⌖ open",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": true,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-agents\")"
+      ],
+      "rect": {
+        "x": 152.0,
+        "y": 240.0,
+        "width": 397.0,
+        "height": 206.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-bibliography\")",
+        "Name(\"apparatus-page-source-0\")"
+      ],
+      "rect": {
+        "x": 574.0,
+        "y": 274.0,
+        "width": 553.0,
+        "height": 114.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-page-bibliography\")",
+        "Name(\"apparatus-page-detection-state\")"
+      ],
+      "rect": {
+        "x": 574.0,
+        "y": 438.0,
+        "width": 553.0,
+        "height": 82.0
+      },
+      "visible": true,
+      "label": "No DOI / URL / ISBN / author-year citations detected yet — keep writing.",
+      "role": "Status",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"native-apparatus\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-page-scroll\")",
+        "Name(\"apparatus-account-section\")"
+      ],
+      "rect": {
+        "x": 152.0,
+        "y": 545.0,
+        "width": 976.0,
+        "height": 105.0
+      },
+      "visible": true,
+      "label": "Account knowledge sources",
+      "role": "Region",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    }
+  ],
+  "keyboardInput": false,
+  "windowActive": false,
+  "captureReady": true
+}

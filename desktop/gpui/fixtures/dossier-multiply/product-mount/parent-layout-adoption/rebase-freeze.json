@@ -1,0 +1,22 @@
+{
+  "status": "Frozen unapplied responsive-layout rebase; only source/context/Python syntax checked",
+  "baseSha256": "b4d8118d95810e47347265955e0989c0e93159977f9c37ada4d964e30c07a27a",
+  "proposedSha256": "d675276396d4f004bc662d8fb276eea757be898e6765c7f401c9e919e3bea447",
+  "proposedWithTestsSha256": "633388ba0b632683834f24cdfff14f0e84224e3848620193d49360131950ddbd",
+  "artifactsSha256": {
+    "integration.patch": "9426c171972b0f8d6489406bbd5e7a06ae4f39eced067dd805097ca368532a41",
+    "tests.patch": "2ad6e584520b0ad81dfef24d5d229277cb8f3cc23ddc5e65ec38e5f3050d4587",
+    "product_mount_tests.rs": "d216b11dd492328ce48ab8e91a6d793d5c5787d0fcd190dd90a75005a212c693",
+    "build_rebase.py": "d8a0cbee972e16bc93cf28fbaab4a1d387baf8247050183fb5b78ac8e3c5547f",
+    "check_rebase.py": "48107040653e85dbdbedf42897f665789f51a0804d1f8550b19d56379566e4f1",
+    "base-pins.json": "08ba709f5d2f08a557946225d91b737d15bf9ee9df0b54789ebbd59580e64117",
+    "rebase-check-receipt.json": "ea31f8ccfb6f56319e8092068332518fb1ab611b298a7034e6d61546e4701d9d",
+    "README.md": "53fa1a0ae52b636efe31bc0f40066dbaf8aeded06763542cea9eca2a0d97fc2e"
+  },
+  "gitApplyCheckProduction": 0,
+  "gitApplyCheckTestsOnOwnedProposedTree": 0,
+  "authoredMountedTests": 6,
+  "mountedTestsExecuted": false,
+  "sharedFilesEditedOrPatchApplied": false,
+  "nativeDriverAdaptation": "separate next artifact; not part of this rebase freeze"
+}

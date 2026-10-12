@@ -95,3 +95,8 @@ stryker.log
 
 # Local Popmelt annotations, screenshots, threads, and project memory
 .popmelt/
+
+# Local visual review captures and composition history.
+.house-shots/
+**/.hyperframes/
+/launch-videos/renders/work-*/

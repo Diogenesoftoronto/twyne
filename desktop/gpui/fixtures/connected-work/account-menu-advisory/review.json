@@ -1,0 +1,6 @@
+{
+  "status": "invalid_json_advisory_only",
+  "reviewer": "Root",
+  "adoptedProductCode": false,
+  "details": "The response contains an object key without a value. Root used current Source AccountMenu/AuthPanel/CSS directly; no worker JSON or implementation was imported."
+}

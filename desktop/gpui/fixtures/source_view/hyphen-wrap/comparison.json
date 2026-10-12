@@ -1,0 +1,57 @@
+{
+  "browser": "154.0.8037.57",
+  "networkRequests": 0,
+  "sourceUntouched": true,
+  "nativeSourceUntouched": true,
+  "nativeHistoryEmpty": true,
+  "cases": [
+    {
+      "width": 1280,
+      "matchCount": 20,
+      "count": 20,
+      "contentWidthBrowser": 1217.1875,
+      "contentWidthNative": 1217.199951171875,
+      "matchesPlainCss": true
+    },
+    {
+      "width": 640,
+      "matchCount": 20,
+      "count": 20,
+      "contentWidthBrowser": 577.1875,
+      "contentWidthNative": 577.2000122070312,
+      "matchesPlainCss": true
+    },
+    {
+      "width": 320,
+      "matchCount": 12,
+      "count": 20,
+      "contentWidthBrowser": 257.1875,
+      "contentWidthNative": 257.20001220703125,
+      "matchesPlainCss": true
+    },
+    {
+      "width": 200,
+      "matchCount": 5,
+      "count": 20,
+      "contentWidthBrowser": 137.1875,
+      "contentWidthNative": 137.1999969482422,
+      "matchesPlainCss": true
+    },
+    {
+      "width": 160,
+      "matchCount": 3,
+      "count": 20,
+      "contentWidthBrowser": 97.1875,
+      "contentWidthNative": 97.19999694824219,
+      "matchesPlainCss": true
+    },
+    {
+      "width": 130,
+      "matchCount": 2,
+      "count": 20,
+      "contentWidthBrowser": 67.1875,
+      "contentWidthNative": 67.19999694824219,
+      "matchesPlainCss": true
+    }
+  ]
+}

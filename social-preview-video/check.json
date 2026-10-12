@@ -1,0 +1,126 @@
+{
+  "ok": true,
+  "strict": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 2,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"photograph\"> is a timeline element that contains nested <img id=\"desk-photo\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#photograph",
+        "dataAttributes": {},
+        "sourceFile": "/home/diogenes/Projects/twyne/social-preview-video/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"photograph\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"branding\"> is a timeline element that contains nested <svg>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#branding",
+        "dataAttributes": {},
+        "sourceFile": "/home/diogenes/Projects/twyne/social-preview-video/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"branding\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 6,
+    "samples": [
+      0,
+      1.5,
+      3,
+      4.5,
+      5.9
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "specPath": "/home/diogenes/Projects/twyne/social-preview-video/index.motion.json",
+    "samples": 121
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0,
+      1.5,
+      3,
+      4.5,
+      5.9
+    ],
+    "checked": 20,
+    "passed": 20
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": true,
+    "files": [
+      "snapshots/frame-00-at-0.0s.png",
+      "snapshots/frame-01-at-1.5s.png",
+      "snapshots/frame-02-at-3.0s.png",
+      "snapshots/frame-03-at-4.5s.png",
+      "snapshots/frame-04-at-5.9s.png"
+    ],
+    "times": [
+      0,
+      1.5,
+      3,
+      4.5,
+      5.9
+    ],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.93",
+    "latestVersion": "0.8.92",
+    "updateAvailable": false
+  }
+}

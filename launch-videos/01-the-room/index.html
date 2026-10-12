@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Twyne — The Room</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/twyne-base.css" />
+    <style>
+      /* ── Brief scene ── */
+      .brief-head {
+        position: absolute; left: 150px; top: 250px; width: 900px; margin: 0;
+        font-family: var(--display); font-weight: 700; font-size: 104px; line-height: 1.12;
+        letter-spacing: -0.01em; color: var(--ink);
+      }
+      .brief-head .line { display: block; }
+      .brief-head .repl { color: var(--vermilion); font-style: italic; font-weight: 400; }
+      .card {
+        position: absolute; right: 150px; top: 205px; width: 700px; padding: 40px 48px 44px;
+        background: var(--paper-soft); border-top: 10px solid var(--vermilion);
+        box-shadow: 0 30px 60px rgba(60, 40, 20, 0.22), 0 2px 0 rgba(60, 40, 20, 0.08);
+        transform-origin: 50% 100%;
+      }
+      .card-head { display: flex; justify-content: space-between; align-items: baseline; color: var(--ink-light); padding-bottom: 18px; border-bottom: 2px solid #e2d6b8; }
+      .field { padding: 20px 0 16px; border-bottom: 1px solid #e8dec4; }
+      .field .k { font-family: var(--type); font-size: 20px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-muted); }
+      .field .v { margin-top: 6px; min-height: 44px; font-family: var(--serif); font-size: 34px; color: var(--ink); }
+      .card-foot { margin-top: 20px; font-family: var(--type); font-size: 20px; letter-spacing: 0.12em; color: var(--vermilion); text-transform: uppercase; }
+
+      /* ── Room + editors ── */
+      .scrim-top { position: absolute; left: 0; right: 0; top: 0; height: 40%; background: linear-gradient(to bottom, rgba(12, 9, 6, 0.8), rgba(12, 9, 6, 0)); }
+      .room-label { position: absolute; left: 128px; top: 104px; color: var(--cream); }
+      .suits { position: absolute; left: 128px; top: 158px; display: flex; gap: 40px; font-family: var(--sans); font-size: 64px; line-height: 1; }
+      .suits span { display: block; width: 64px; text-align: center; }
+      .pcard { position: absolute; left: 128px; bottom: 250px; width: 1100px; color: var(--cream); }
+      .picon { font-family: var(--sans); font-size: 60px; line-height: 1; color: var(--pc); }
+      .prole { margin-top: 22px; color: var(--pc); }
+      .pname { margin-top: 10px; font-family: var(--display); font-style: italic; font-size: 92px; line-height: 1.05; }
+      .prule { margin-top: 22px; width: 280px; height: 3px; background: var(--pc); transform-origin: left center; }
+
+      /* ── Rubric ── */
+      .rub-head { position: absolute; left: 150px; top: 300px; width: 760px; margin: 0; font-family: var(--display); font-weight: 700; font-size: 110px; line-height: 1.1; color: var(--ink); }
+      .rub-head .line { display: block; }
+      .rub-head .accent { color: var(--vermilion); font-style: italic; font-weight: 400; }
+      .rubric { position: absolute; right: 150px; top: 170px; width: 780px; padding: 40px 52px 36px; background: var(--paper-soft); box-shadow: 0 30px 60px rgba(60, 40, 20, 0.22); }
+      .rub-title { display: flex; justify-content: space-between; color: var(--ink-light); padding-bottom: 14px; border-bottom: 2px solid #e2d6b8; }
+      .row { display: flex; align-items: center; gap: 28px; padding: 15px 0; border-bottom: 1px dashed #dccfae; }
+      .row .rl { width: 250px; font-family: var(--serif); font-size: 32px; color: var(--ink); }
+      .bar { position: relative; flex: 1; height: 16px; background: #ebe1c7; border-radius: 8px; overflow: hidden; }
+      .bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: var(--ink-light); transform-origin: left center; transform: scaleX(0); border-radius: 8px; }
+      .row.fluent .bar i { background: var(--struck); }
+      .row.fluent { position: relative; }
+      .row.fluent .tk-strike { top: 50%; left: -10px; right: -10px; height: 6px; margin-top: -3px; }
+      .row.fluent { margin-top: 36px; }
+      .not-graded { position: absolute; right: 0; top: 50%; margin-top: -40px; padding: 2px 8px; background: var(--paper-soft); font-family: var(--type); font-size: 22px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--vermilion); }
+      .stamp {
+        position: absolute; right: 90px; top: 110px; width: 190px; height: 190px; border-radius: 50%;
+        border: 7px double var(--vermilion); color: var(--vermilion); display: flex; align-items: center; justify-content: center;
+        font-family: var(--display); font-weight: 700; font-size: 96px; line-height: 1; transform: rotate(-12deg);
+        background: rgba(250, 243, 223, 0.55);
+      }
+
+      /* ── Desk / privacy ── */
+      .chips { position: absolute; left: 128px; top: 104px; display: flex; gap: 22px; }
+      .chip { display: flex; align-items: center; gap: 14px; padding: 12px 22px 10px; border: 2px solid rgba(247, 240, 221, 0.6); border-radius: 999px; color: var(--cream); background: rgba(15, 12, 9, 0.55); }
+      .chip .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--cream); }
+      .chip.on { border-color: var(--vermilion); }
+      .chip.on .dot { background: var(--vermilion); border-color: var(--vermilion); }
+      .chip .label { font-size: 22px; }
+
+      /* ── End card ── */
+      .endstack { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 20px; }
+      .griffin { width: 190px; height: 190px; }
+      .wordmark { margin-top: 26px; font-family: var(--display); font-weight: 700; font-size: 168px; line-height: 1; letter-spacing: 0.08em; color: var(--ink); padding-left: 0.08em; }
+      .wordmark .tk-ch { display: inline-block; }
+      .endrule { margin-top: 34px; width: 420px; height: 3px; background: var(--vermilion); transform-origin: center; }
+      .tagline { margin-top: 34px; min-height: 64px; font-family: var(--serif); font-style: italic; font-size: 54px; color: var(--ink-light); }
+      .url { margin-top: 26px; font-family: var(--sans); font-weight: 500; font-size: 36px; letter-spacing: 0.06em; color: var(--vermilion); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="60" data-width="1920" data-height="1080" data-fps="30">
+      <!-- ═════ Picture: footage (bottom of the stack) ═════ -->
+      <div class="layer" id="w-desk" data-layout-allow-overflow>
+        <video id="v-desk" class="fill" src="assets/video/v-desk.mp4" data-start="0" data-duration="8" data-track-index="0" muted playsinline></video>
+      </div>
+      <div class="layer" id="w-bullpen" data-layout-allow-overflow>
+        <video id="v-bullpen" class="fill" src="assets/video/v-bullpen.mp4" data-start="15.8" data-duration="7.5" data-track-index="0" muted playsinline></video>
+      </div>
+      <div class="layer" id="w-sceptique" data-layout-allow-overflow>
+        <video id="v-sceptique" class="fill" src="assets/video/v-sceptique.mp4" data-start="23.3" data-duration="2" data-media-start="0.3" data-track-index="0" muted playsinline></video>
+      </div>
+      <div class="layer" id="w-encourageante" data-layout-allow-overflow>
+        <video id="v-encourageante" class="fill" src="assets/video/v-encourageante.mp4" data-start="25.3" data-duration="2.2" data-media-start="0.5" data-track-index="0" muted playsinline></video>
+      </div>
+      <div class="layer" id="w-athenaeum" data-layout-allow-overflow>
+        <video id="v-athenaeum" class="fill" src="assets/video/v-athenaeum.mp4" data-start="27.5" data-duration="2.15" data-media-start="0.3" data-track-index="0" muted playsinline></video>
+      </div>
+      <div class="layer" id="w-lestylo" data-layout-allow-overflow>
+        <video id="v-lestylo" class="fill" src="assets/video/v-lestylo.mp4" data-start="29.65" data-duration="2.65" data-media-start="0.4" data-track-index="0" muted playsinline></video>
+      </div>
+      <div class="layer" id="w-lecteur" data-layout-allow-overflow>
+        <video id="v-lecteur" class="fill" src="assets/video/v-lecteur.mp4" data-start="32.3" data-duration="2.9" data-media-start="0.5" data-track-index="0" muted playsinline></video>
+      </div>
+      <div class="layer" id="w-manuscript" data-layout-allow-overflow>
+        <video id="v-manuscript" class="fill" src="assets/video/v-manuscript.mp4" data-start="42.6" data-duration="6" data-track-index="0" muted playsinline></video>
+      </div>
+
+      <!-- ═════ Scene overlays ═════ -->
+      <section id="s-desk" class="clip" data-start="0" data-duration="8" data-track-index="1">
+        <div class="scrim-bottom"></div>
+      </section>
+
+      <section id="s-brief" class="clip" data-start="7.6" data-duration="8.2" data-track-index="1">
+        <div class="layer" id="brief-inner">
+          <div class="paper-bg"></div>
+          <h1 class="brief-head">
+            <span class="line" id="bh-1">Start from</span>
+            <span class="line"><span class="strikeable" id="bh-2"><span class="t" id="bh-2t">a blank page</span><span class="tk-strike"></span></span></span>
+            <span class="line repl"><span id="bh-3">a brief.</span><span class="caret" id="bh-caret"></span></span>
+          </h1>
+          <div class="card" id="card">
+            <div class="card-head"><span class="label">Brief</span><span class="label">No. 0417</span></div>
+            <div class="field"><div class="k">Working title</div><div class="v" id="f1">The Case for Slow Letters</div></div>
+            <div class="field"><div class="k">Reader</div><div class="v" id="f2">Editors who still answer their mail</div></div>
+            <div class="field"><div class="k">Argument</div><div class="v" id="f3">A handwritten reply earns trust email can't</div></div>
+            <div class="field"><div class="k">Length</div><div class="v" id="f4">1,800 words</div></div>
+            <div class="card-foot" id="card-foot">From a ten-minute interview</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s-room" class="clip" data-start="15.8" data-duration="7.5" data-track-index="1">
+        <div class="scrim-top"></div>
+        <div class="scrim-bottom"></div>
+        <div class="label room-label" id="room-label">The Editorial Room</div>
+        <div class="suits" id="suits">
+          <span style="color: var(--devil)">♠</span><span style="color: var(--angel)">♥</span><span style="color: var(--scholar)">♦</span><span style="color: var(--editor)">✦</span><span style="color: var(--reader)">♣</span>
+        </div>
+      </section>
+
+      <section id="p-sceptique" class="clip" data-start="23.3" data-duration="2" data-track-index="1">
+        <div class="scrim-left"></div><div class="scrim-bottom"></div>
+        <div class="pcard" style="--pc: var(--devil)"><div class="picon">♠</div><div class="label prole">The Devil's Advocate</div><div class="pname">Mlle. Sceptique</div><div class="prule"></div></div>
+      </section>
+      <section id="p-encourageante" class="clip" data-start="25.3" data-duration="2.2" data-track-index="1">
+        <div class="scrim-left"></div><div class="scrim-bottom"></div>
+        <div class="pcard" style="--pc: var(--angel)"><div class="picon">♥</div><div class="label prole">The Patron of Strengths</div><div class="pname">Sœur Encourageante</div><div class="prule"></div></div>
+      </section>
+      <section id="p-athenaeum" class="clip" data-start="27.5" data-duration="2.15" data-track-index="1">
+        <div class="scrim-left"></div><div class="scrim-bottom"></div>
+        <div class="pcard" style="--pc: var(--scholar)"><div class="picon">♦</div><div class="label prole">The Scholar</div><div class="pname">Professeur Athenæum</div><div class="prule"></div></div>
+      </section>
+      <section id="p-lestylo" class="clip" data-start="29.65" data-duration="2.65" data-track-index="1">
+        <div class="scrim-left"></div><div class="scrim-bottom"></div>
+        <div class="pcard" style="--pc: var(--editor)"><div class="picon">✦</div><div class="label prole">The Copy Chief</div><div class="pname">M. Le Stylo</div><div class="prule"></div></div>
+      </section>
+      <section id="p-lecteur" class="clip" data-start="32.3" data-duration="2.9" data-track-index="1">
+        <div class="scrim-left"></div><div class="scrim-bottom"></div>
+        <div class="pcard" style="--pc: var(--reader)"><div class="picon">♣</div><div class="label prole">The Target Reader</div><div class="pname">Le Lecteur</div><div class="prule"></div></div>
+      </section>
+
+      <section id="s-rubric" class="clip" data-start="35.2" data-duration="7.9" data-track-index="1">
+        <div class="layer" id="rubric-inner">
+          <div class="paper-bg"></div>
+          <h1 class="rub-head"><span class="line" id="rh-1">Graded on</span><span class="line accent" id="rh-2">the target.</span></h1>
+          <div class="rubric" id="rubric">
+            <div class="rub-title"><span class="label">Rubric</span><span class="label">Draft 3</span></div>
+            <div class="row"><span class="rl">On brief</span><span class="bar"><i data-v="0.9"></i></span></div>
+            <div class="row"><span class="rl">Argument</span><span class="bar"><i data-v="0.78"></i></span></div>
+            <div class="row"><span class="rl">Evidence</span><span class="bar"><i data-v="0.58"></i></span></div>
+            <div class="row"><span class="rl">Structure</span><span class="bar"><i data-v="0.8"></i></span></div>
+            <div class="row"><span class="rl">Rhythm</span><span class="bar"><i data-v="0.7"></i></span></div>
+            <div class="row"><span class="rl">Voice</span><span class="bar"><i data-v="0.84"></i></span></div>
+            <div class="row fluent" id="fluent"><span class="rl">Sounds fluent</span><span class="bar"><i data-v="1"></i></span><span class="tk-strike"></span><span class="not-graded" id="not-graded">Not graded</span></div>
+            <div class="stamp" id="stamp">B+</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s-desk2" class="clip" data-start="42.6" data-duration="6" data-track-index="1">
+        <div class="scrim-top"></div><div class="scrim-bottom"></div>
+        <div class="chips">
+          <div class="chip on" id="chip-local"><span class="dot"></span><span class="label">Local</span></div>
+          <div class="chip" id="chip-synced"><span class="dot"></span><span class="label">Synced</span></div>
+          <div class="chip" id="chip-published"><span class="dot"></span><span class="label">Published</span></div>
+        </div>
+      </section>
+
+      <section id="s-end" class="clip" data-start="48.3" data-duration="11.7" data-track-index="1">
+        <div class="layer" id="end-inner">
+          <div class="paper-bg"></div>
+          <div class="endstack">
+            <img class="griffin" id="griffin" src="assets/img/griffin-red.svg" alt="" />
+            <div class="wordmark" id="wordmark">TWYNE</div>
+            <div class="endrule" id="endrule"></div>
+            <div class="tagline" id="tagline">Draft with a room full of editors.</div>
+            <div class="url" id="url">twyne.love</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════ Captions: one track ═════ -->
+      <section id="cap-track" class="clip" data-start="0" data-duration="48.4" data-track-index="2" style="z-index: 50">
+        <div class="captions" id="captions"></div>
+      </section>
+
+      <!-- ═════ Sound ═════ -->
+      <audio id="music" src="assets/audio/m-room.wav" data-start="0" data-media-start="10" data-duration="60" data-track-index="10" data-volume="1"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0.85},{"t":1.0,"v":0.5},{"t":18.3,"v":0.5},{"t":18.7,"v":0.8},{"t":19.5,"v":0.8},{"t":19.8,"v":0.5},{"t":40.8,"v":0.5},{"t":41.6,"v":0.95},{"t":43.2,"v":0.95},{"t":43.6,"v":0.5},{"t":48.1,"v":0.5},{"t":48.7,"v":0.9},{"t":49.5,"v":0.9},{"t":49.8,"v":0.55},{"t":53.3,"v":0.55},{"t":54.0,"v":1.0},{"t":58.0,"v":1.0},{"t":59.9,"v":0.0}]}]}'></audio>
+
+      <audio id="vo-01" src="assets/audio/hero-01.wav" data-duration="3.22" data-start="0.7" data-track-index="11"></audio>
+      <audio id="vo-02" src="assets/audio/hero-02.wav" data-duration="4.02" data-start="4.0" data-track-index="11"></audio>
+      <audio id="vo-03" src="assets/audio/hero-03.wav" data-duration="7.82" data-start="8.1" data-track-index="11"></audio>
+      <audio id="vo-04" src="assets/audio/hero-04.wav" data-duration="2.62" data-start="16.0" data-track-index="11"></audio>
+      <audio id="vo-05" src="assets/audio/hero-05.wav" data-duration="15.54" data-start="19.3" data-track-index="11"></audio>
+      <audio id="vo-06" src="assets/audio/hero-06.wav" data-duration="5.38" data-start="35.6" data-track-index="11"></audio>
+      <audio id="vo-07" src="assets/audio/hero-07.wav" data-duration="5.14" data-start="43.2" data-track-index="11"></audio>
+      <audio id="vo-08" src="assets/audio/hero-08.wav" data-duration="4.3" data-start="49.3" data-track-index="11"></audio>
+
+      <!-- Foley: each generated clip's own sound, under the voice -->
+      <audio id="fx-desk" src="assets/video/v-desk.mp4" data-start="0" data-duration="8" data-track-index="12" data-volume="0.9"></audio>
+      <audio id="fx-bullpen" src="assets/video/v-bullpen.mp4" data-start="15.8" data-duration="7.5" data-track-index="12" data-volume="0.7"></audio>
+      <audio id="fx-sceptique" src="assets/video/v-sceptique.mp4" data-start="23.3" data-duration="2" data-media-start="0.3" data-track-index="12" data-volume="0.8"></audio>
+      <audio id="fx-encourageante" src="assets/video/v-encourageante.mp4" data-start="25.3" data-duration="2.2" data-media-start="0.5" data-track-index="12" data-volume="0.7"></audio>
+      <audio id="fx-athenaeum" src="assets/video/v-athenaeum.mp4" data-start="27.5" data-duration="2.15" data-media-start="0.3" data-track-index="12" data-volume="0.8"></audio>
+      <audio id="fx-lestylo" src="assets/video/v-lestylo.mp4" data-start="29.65" data-duration="2.65" data-media-start="0.4" data-track-index="12" data-volume="0.8"></audio>
+      <audio id="fx-lecteur" src="assets/video/v-lecteur.mp4" data-start="32.3" data-duration="2.9" data-media-start="0.5" data-track-index="12" data-volume="0.6"></audio>
+      <audio id="fx-manuscript" src="assets/video/v-manuscript.mp4" data-start="42.6" data-duration="6" data-track-index="12" data-volume="0.9"></audio>
+
+      <!-- Paper sounds -->
+      <audio id="sfx-type-1" src="assets/sfx/typing.mp3" data-start="8.3" data-duration="1.4" data-track-index="13" data-volume="0.28"></audio>
+      <audio id="sfx-type-2" src="assets/sfx/typing.mp3" data-start="11.3" data-duration="0.55" data-track-index="13" data-volume="0.28"></audio>
+      <audio id="sfx-type-3" src="assets/sfx/typing.mp3" data-start="12.55" data-duration="1.5" data-track-index="13" data-volume="0.22"></audio>
+      <audio id="sfx-type-4" src="assets/sfx/typing.mp3" data-start="14.05" data-duration="1.3" data-track-index="13" data-volume="0.22"></audio>
+      <audio id="sfx-strike-1" src="assets/sfx/whoosh-short.mp3" data-duration="0.55" data-start="9.8" data-track-index="14" data-volume="0.3"></audio>
+      <audio id="sfx-stamp" src="assets/sfx/impact-bass-1.mp3" data-start="38.05" data-duration="1.2" data-track-index="14" data-volume="0.3"></audio>
+      <audio id="sfx-stamp-click" src="assets/sfx/click.mp3" data-duration="0.35" data-start="38.05" data-track-index="13" data-volume="0.5"></audio>
+      <audio id="sfx-strike-2" src="assets/sfx/whoosh-short.mp3" data-duration="0.55" data-start="40.0" data-track-index="14" data-volume="0.3"></audio>
+    </div>
+
+    <script src="assets/js/twyne-kit.js"></script>
+    <script src="assets/js/words.js"></script>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const $ = (s) => document.querySelector(s);
+
+      // ── 1 · The blank page (0–8) ──
+      tl.fromTo("#w-desk", { scale: 1 }, { scale: 1.06, duration: 7.2, ease: "none" }, 0);
+      tl.to("#w-desk", { scale: 1.3, yPercent: 6, duration: 0.8, ease: "power2.in" }, 7.2);
+
+      // ── 2 · The brief (7.6–15.8): the page fills the frame ──
+      tl.fromTo("#brief-inner", { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1, duration: 0.55, ease: "power2.out" }, 7.6);
+      TK.type(tl, $("#bh-1"), 8.3, { cps: 16 });
+      TK.type(tl, $("#bh-2t"), 8.95, { cps: 18 });
+      TK.strike(tl, $("#bh-2"), 9.85, { dur: 0.32 });
+      TK.type(tl, $("#bh-3"), 11.3, { cps: 16 });
+      tl.set("#bh-caret", { opacity: 0 }, 0);
+      tl.set("#bh-caret", { opacity: 1 }, 11.3);
+      TK.blink(tl, $("#bh-caret"), 11.9, 15.8);
+      tl.fromTo("#card", { opacity: 0, y: 70, rotation: 2.5 }, { opacity: 1, y: 0, rotation: 0.6, duration: 0.6, ease: "power3.out" }, 12.2);
+      let t = 12.55;
+      ["#f1", "#f2", "#f3", "#f4"].forEach((id) => { t = TK.type(tl, $(id), t, { cps: 60, jitter: 0.2 }) + 0.06; });
+      tl.fromTo("#card-foot", { opacity: 0 }, { opacity: 1, duration: 0.4 }, t);
+
+      // ── 3 · The room is full (15.8–23.3) ──
+      tl.fromTo("#w-bullpen", { scale: 1.02 }, { scale: 1.1, duration: 7.5, ease: "none" }, 15.8);
+      tl.fromTo("#room-label", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 16.3);
+      tl.fromTo("#suits span", { opacity: 0, y: 18, scale: 0.6 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(2)", stagger: 0.32 }, 19.7);
+
+      // ── 4 · Five editors (hard cuts, name cards) ──
+      const people = [
+        ["sceptique", 23.3, 2], ["encourageante", 25.3, 2.2], ["athenaeum", 27.5, 2.15],
+        ["lestylo", 29.65, 2.65], ["lecteur", 32.3, 2.9],
+      ];
+      people.forEach(([id, at, dur]) => {
+        const card = `#p-${id} .pcard`;
+        tl.fromTo(`#w-${id}`, { scale: 1.08 }, { scale: 1.0, duration: dur, ease: "power1.out" }, at);
+        tl.fromTo(`${card} .picon`, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.2)" }, at + 0.05);
+        tl.fromTo(`${card} .prole`, { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.35, ease: "power3.out" }, at + 0.12);
+        tl.fromTo(`${card} .pname`, { opacity: 0, x: -36 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, at + 0.18);
+        tl.fromTo(`${card} .prule`, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, at + 0.3);
+      });
+
+      // ── 5 · The rubric (35.2–43.1) ──
+      tl.fromTo("#rubric-inner", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 35.2);
+      TK.type(tl, $("#rh-1"), 35.9, { cps: 18 });
+      TK.type(tl, $("#rh-2"), 37.5, { cps: 18 });
+      tl.fromTo("#rubric", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 35.5);
+      document.querySelectorAll("#rubric .row:not(.fluent) .bar i").forEach((bar, i) => {
+        tl.to(bar, { scaleX: +bar.dataset.v, duration: 0.7, ease: "power2.out" }, 36.1 + i * 0.2);
+      });
+      tl.fromTo("#stamp", { opacity: 0, scale: 1.9 }, { opacity: 0.94, scale: 1, duration: 0.2, ease: "power4.in" }, 37.85);
+      tl.fromTo("#fluent", { opacity: 0 }, { opacity: 1, duration: 0.35 }, 38.8);
+      tl.to("#fluent .bar i", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 38.9);
+      tl.fromTo("#fluent .tk-strike", { scaleX: 0 }, { scaleX: 1, duration: 0.32, ease: "power2.out" }, 40.0);
+      tl.to("#fluent .rl", { color: "#8a7e6c", duration: 0.3 }, 40.0);
+      tl.fromTo("#not-graded", { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.3 }, 40.3);
+      tl.to("#rubric-inner", { opacity: 0, duration: 0.5, ease: "power1.in" }, 42.6);
+
+      // ── 6 · Your desk (42.6–48.6) ──
+      tl.fromTo("#w-manuscript", { scale: 1.0 }, { scale: 1.06, duration: 6, ease: "none" }, 42.6);
+      tl.fromTo("#chip-local", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 43.7);
+      tl.fromTo(["#chip-synced", "#chip-published"], { opacity: 0, y: 10 }, { opacity: 0.75, y: 0, duration: 0.45, ease: "power2.out", stagger: 0.25 }, 46.0);
+
+      // ── 7 · End card (48.3–60) ──
+      tl.fromTo("#end-inner", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power1.out" }, 48.3);
+      tl.fromTo("#griffin", { opacity: 0, y: 20, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "power3.out" }, 48.9);
+      const wm = TK.chars($("#wordmark"));
+      tl.fromTo(wm, { opacity: 0, y: 46 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.06 }, 49.6);
+      tl.fromTo("#endrule", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power2.inOut" }, 50.4);
+      TK.type(tl, $("#tagline"), 51.1, { cps: 17, jitter: 0.2 });
+      tl.fromTo("#url", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 53.9);
+      tl.to("#end-inner", { opacity: 0.0, duration: 1.0, ease: "power1.in" }, 58.9);
+
+      // ── Captions ──
+      const W = window.WORDS;
+      TK.captions(tl, $("#captions"), [
+        { at: 0.7, words: W["hero-01"], tone: "light" },
+        { at: 4.0, words: W["hero-02"], tone: "light" },
+        { at: 8.1, words: W["hero-03"], tone: "dark" },
+        { at: 16.0, words: W["hero-04"], tone: "light" },
+        { at: 19.3, words: W["hero-05"], tone: "light" },
+        { at: 35.6, words: W["hero-06"], tone: "dark" },
+        { at: 43.2, words: W["hero-07"], tone: "light" },
+      ]);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "date": "2026-10-05",
+  "status": "authored-read-only-audit-unexecuted",
+  "sourceFiles": [
+    {
+      "path": "src/components/editor/extensions/math.ts",
+      "sha256": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2"
+    },
+    {
+      "path": "src/components/editor/math/math-source-editor.ts",
+      "sha256": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb"
+    },
+    {
+      "path": "src/components/editor/twyne-editor.tsx",
+      "sha256": "f6ba675eedac4056a55c030d9e248a1f0b61435585c45cd4b429b777401f3921"
+    },
+    {
+      "path": "src/utils/keybindings.ts",
+      "sha256": "4706407b0319b22dfea2aff644417c376c1a561f328d5209f5dcdaf02468baa7"
+    },
+    {
+      "path": "node_modules/prosemirror-view/src/input.ts",
+      "sha256": "c9bfa291ee0c5f83fdc305c8dc66de530d26ad2192d1c70daba23e3171611d95"
+    },
+    {
+      "path": "desktop/gpui/src/editor/view.rs",
+      "sha256": "48eef9ca2991bc8466c2710c681b71d1f07b34d2489db8c4f1cbe6aa5df79b5e"
+    },
+    {
+      "path": "desktop/gpui/src/editor/math_source_editor.rs",
+      "sha256": "056d908569c78f7a6846c1cc2b50c57edad34262bd44385c1124949338a95ec5"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre/src/keymap/context.rs",
+      "sha256": "dd3cf2e883caed26e201a8aed39fbc51de782e7f806ecc22fde617929ca223cf"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-pre/src/window.rs",
+      "sha256": "802a2ef83a5cca1efa95eee62556f9f38a98afc1f500e10b19dbec3eeeac23fc"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-base/src/input/base/state.rs",
+      "sha256": "5d120dfc5af48721eccc318797cebcf01dca7ad3be1c6734930d5b448ef20678"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-base/src/input/editor/indent.rs",
+      "sha256": "71b2eba9465fc106dd122f66b2db73d754762a90b414748ec176650ecc6c39b0"
+    },
+    {
+      "path": "desktop/gpui/vendor/gpui-base/src/root.rs",
+      "sha256": "e738745e5a72cb4016fcf5aa2f240b33156140a966d2905c9b7f70ad1bb7987f"
+    }
+  ],
+  "versions": {
+    "gpuiKit": "0.7.0",
+    "gpuiPre": "0.3.7",
+    "prosemirrorView": "1.41.8"
+  },
+  "findings": [
+    {
+      "id": "textarea-tab",
+      "evidence": "Actual Kit PlainText multiline indent action edits the rope; original field keydown has no Tab handler and PM stopEvent excludes PM indentation.",
+      "nativeExecution": false,
+      "browserDefaultTraversalObserved": false
+    },
+    {
+      "id": "explicit-rich-action-bypass",
+      "evidence": "Movement/SelectAll/copy/cut/paste and deletion preparation bypass command-only dispatch guard; public Window action dispatch can reach ancestor handlers.",
+      "stockShortcutLeakClaimed": false,
+      "nativeExecution": false
+    },
+    {
+      "id": "button-global-exceptions",
+      "evidence": "Original document Mod-A and window catalogue distinguish textarea from buttons; global Source commands from buttons must not be silently blocked.",
+      "patched": false
+    },
+    {
+      "id": "button-escape",
+      "evidence": "Source cancel keydown is installed only on textarea; current native DismissMathSource binding covers entire form.",
+      "patched": false
+    }
+  ],
+  "proposal": {
+    "applied": false,
+    "changedExistingFiles": false,
+    "richActionTypes": [
+      "Backspace",
+      "Delete",
+      "Left",
+      "Right",
+      "Up",
+      "Down",
+      "SelectLeft",
+      "SelectRight",
+      "SelectUp",
+      "SelectDown",
+      "WordLeft",
+      "WordRight",
+      "SelectWordLeft",
+      "SelectWordRight",
+      "DeleteWordBackward",
+      "DeleteWordForward",
+      "Home",
+      "End",
+      "SelectHome",
+      "SelectEnd",
+      "DocumentStart",
+      "DocumentEnd",
+      "SelectAll",
+      "Enter",
+      "HardBreak",
+      "Copy",
+      "Cut",
+      "Paste",
+      "Undo",
+      "Redo",
+      "Bold",
+      "Italic",
+      "Underline",
+      "Indent",
+      "Outdent"
+    ],
+    "focusPredicate": "exact retained textarea FocusHandle::is_focused",
+    "tabActions": [
+      "gpui_kit::base::input::IndentInline",
+      "gpui_kit::base::input::OutdentInline"
+    ],
+    "tabNavigation": [
+      "Window::focus_next",
+      "Window::focus_prev"
+    ],
+    "sharedFilePatchTargets": [
+      "desktop/gpui/src/editor/math_source_editor.rs",
+      "desktop/gpui/fixtures/math-write/source-host/host_tests.rs"
+    ],
+    "newDependencies": [],
+    "newAppApis": []
+  },
+  "checks": {
+    "sourceCallbackTests": {
+      "authored": 4,
+      "executed": false
+    },
+    "nativeMountedTests": {
+      "authored": 3,
+      "compiled": false,
+      "executed": false
+    },
+    "nativeRichActions": 35,
+    "validationOnly": [
+      "Bun.Transpiler TypeScript syntax",
+      "rustfmt owned Rust fixture with skip_children=true",
+      "git apply --check unapplied integration.patch"
+    ],
+    "cargo": false,
+    "devenv": false,
+    "native": false,
+    "browser": false,
+    "network": false,
+    "server": false,
+    "provider": false
+  },
+  "limits": [
+    "No whole-form/button isolation or global shortcut redesign.",
+    "No Source browser Tab/default-editing receipt.",
+    "No native compiled/OS keyboard/clipboard/IME/a11y receipt.",
+    "Source callback spies execute only when Parent runs the authored test.",
+    "Public direct editor commands and host canonical commit remain allowed.",
+    "No equation form geometry/baseline/renderer parity claim."
+  ]
+}

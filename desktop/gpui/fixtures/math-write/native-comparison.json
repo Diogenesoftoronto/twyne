@@ -1,0 +1,740 @@
+{
+  "provenance": {
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b"
+  },
+  "engineVersion": "0.18.1",
+  "sourceCssVersion": "0.16.47",
+  "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+  "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+  "comparison": "Native resvg replay of self-contained engine-derived vectors and measured matching-CSS Chrome natural content widths. NOT current Source parity, full line-box/GPUI/GPU/pixel equality proof.",
+  "rows": [
+    {
+      "id": "ordinary",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 90.4715064,
+        "heightPx": 18.2708064,
+        "baselinePx": 14.035903200000002,
+        "paintWidthPx": 90.4715064,
+        "paintHeightPx": 18.97038,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": -0.4695767999999987,
+        "paintBaselinePx": 14.50548
+      },
+      "browserNaturalWidthPx": 90.4219,
+      "naturalWidthDeltaPx": 0.04960640000000183,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "e7402d44006b4bfa24d486e28f1b920185c695f27171a2ffb4d9524adf8d1729",
+        "ink": {
+          "left": 16,
+          "top": 16,
+          "right": 104,
+          "bottom": 34,
+          "pixels": 329,
+          "width": 122,
+          "height": 51
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "fraction",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 31.694256000000003,
+        "heightPx": 27.953301420000003,
+        "baselinePx": 19.16875224,
+        "paintWidthPx": 31.694256000000003,
+        "paintHeightPx": 27.953301420000003,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": 0,
+        "paintBaselinePx": 19.16875224
+      },
+      "browserNaturalWidthPx": 31.6875,
+      "naturalWidthDeltaPx": 0.006756000000002871,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "8004d77627d5484432e432af7177804e21b13621adec15fe49ecdbb6c6635604",
+        "ink": {
+          "left": 18,
+          "top": 16,
+          "right": 45,
+          "bottom": 42,
+          "pixels": 243,
+          "width": 64,
+          "height": 60
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "nested-fractions",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 56.688984000000005,
+        "heightPx": 52.30571544,
+        "baselinePx": 28.7809632,
+        "paintWidthPx": 56.688984000000005,
+        "paintHeightPx": 52.942824,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": -0.46957679999999513,
+        "paintBaselinePx": 29.250539999999994
+      },
+      "browserNaturalWidthPx": 56.6406,
+      "naturalWidthDeltaPx": 0.048384000000005756,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "fad98dc67207f8950916190d4d180136ee875f817569bcc6e230030060409e8d",
+        "ink": {
+          "left": 18,
+          "top": 16,
+          "right": 70,
+          "bottom": 68,
+          "pixels": 365,
+          "width": 89,
+          "height": 85
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "radical",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 76.826772,
+        "heightPx": 22.651200000000003,
+        "baselinePx": 19.89361242,
+        "paintWidthPx": 76.826772,
+        "paintHeightPx": 23.52263958000001,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": -0.8714395800000077,
+        "paintBaselinePx": 20.765052000000008
+      },
+      "browserNaturalWidthPx": 76.7812,
+      "naturalWidthDeltaPx": 0.04557200000000705,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "72c07a9e37f5f925f3728ea23dc6e3968dbba5ca9616246aeca100cfb3eaf257",
+        "ink": {
+          "left": 17,
+          "top": 18,
+          "right": 92,
+          "bottom": 39,
+          "pixels": 340,
+          "width": 109,
+          "height": 56
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "indexed-radical",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 65.02685199951601,
+        "heightPx": 22.651200000000003,
+        "baselinePx": 19.3962879,
+        "paintWidthPx": 65.63185200000001,
+        "paintHeightPx": 23.523380100000004,
+        "paintOffsetXPx": -0.605000000483999,
+        "paintOffsetYPx": -0.8721801000000013,
+        "paintBaselinePx": 20.268468000000002
+      },
+      "browserNaturalWidthPx": 64.9844,
+      "naturalWidthDeltaPx": 0.04245199951601819,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "7e939d13f79246f8ac1b5d071af5b2995af876e299db0eb6bbd034499f9b210c",
+        "ink": {
+          "left": 17,
+          "top": 18,
+          "right": 81,
+          "bottom": 39,
+          "pixels": 337,
+          "width": 98,
+          "height": 56
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "scripts",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 100.62360000000001,
+        "heightPx": 24.63542334,
+        "baselinePx": 18.60532542,
+        "paintWidthPx": 100.62360000000001,
+        "paintHeightPx": 25.131942000000006,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": -0.32802858000000157,
+        "paintBaselinePx": 18.933354
+      },
+      "browserNaturalWidthPx": 100.5781,
+      "naturalWidthDeltaPx": 0.04550000000000409,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "b00392fb99325145b75eb36baf2f62569db3531df5e24cde5b9398410b3b9dbf",
+        "ink": {
+          "left": 16,
+          "top": 16,
+          "right": 114,
+          "bottom": 40,
+          "pixels": 335,
+          "width": 133,
+          "height": 57
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "sum-limits",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 51.307146,
+        "heightPx": 63.79505748000001,
+        "baselinePx": 35.96742666000001,
+        "paintWidthPx": 51.307146,
+        "paintHeightPx": 63.79505748000001,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": 0,
+        "paintBaselinePx": 35.96742666000001
+      },
+      "browserNaturalWidthPx": 51.2812,
+      "naturalWidthDeltaPx": 0.025946000000004688,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "738106343d256e015073891a305df8a63808fa8a1bcd10bf1b1154d300f2035d",
+        "ink": {
+          "left": 17,
+          "top": 18,
+          "right": 65,
+          "bottom": 77,
+          "pixels": 474,
+          "width": 83,
+          "height": 96
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "integral",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 82.717173,
+        "heightPx": 53.92636524000001,
+        "baselinePx": 34.06409424000001,
+        "paintWidthPx": 82.717173,
+        "paintHeightPx": 54.58939199999999,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": -0.328703759999982,
+        "paintBaselinePx": 34.39279799999999
+      },
+      "browserNaturalWidthPx": 82.6719,
+      "naturalWidthDeltaPx": 0.04527300000000878,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "3d59ee32195cf24b0998dd4abf0112e27a2e5259c368bda151ad725d2cbf0ff3",
+        "ink": {
+          "left": 17,
+          "top": 16,
+          "right": 97,
+          "bottom": 70,
+          "pixels": 506,
+          "width": 115,
+          "height": 87
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "delimiters",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 33.242814,
+        "heightPx": 26.1362178,
+        "baselinePx": 18.513,
+        "paintWidthPx": 33.242814,
+        "paintHeightPx": 26.194806000000007,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": 0,
+        "paintBaselinePx": 18.513
+      },
+      "browserNaturalWidthPx": 33.2188,
+      "naturalWidthDeltaPx": 0.02401400000000109,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "3c34377590525c29f00e146e35fa22f6fe3ea165483e2d0441268eef538199a4",
+        "ink": {
+          "left": 19,
+          "top": 16,
+          "right": 45,
+          "bottom": 41,
+          "pixels": 220,
+          "width": 65,
+          "height": 58
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "large-delimiters",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 51.189534,
+        "heightPx": 54.03618,
+        "baselinePx": 31.581,
+        "paintWidthPx": 51.189534,
+        "paintHeightPx": 54.203886000000004,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": 0,
+        "paintBaselinePx": 31.581
+      },
+      "browserNaturalWidthPx": 51.1562,
+      "naturalWidthDeltaPx": 0.03333400000000353,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "2c5b1e6fabe0e2e4745c6e86c875df5b2b015cf9cd72d4a6759710ec6b5730ae",
+        "ink": {
+          "left": 18,
+          "top": 16,
+          "right": 64,
+          "bottom": 69,
+          "pixels": 502,
+          "width": 83,
+          "height": 86
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "matrix",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 75.62016,
+        "heightPx": 52.2726534,
+        "baselinePx": 31.581,
+        "paintWidthPx": 75.62016,
+        "paintHeightPx": 52.2726534,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": 0,
+        "paintBaselinePx": 31.581
+      },
+      "browserNaturalWidthPx": 75.5938,
+      "naturalWidthDeltaPx": 0.02635999999999683,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "5ecda8a1ac46b1d881367fafc797e9f8d03cfd284624b28f5fd1e73937ae1273",
+        "ink": {
+          "left": 20,
+          "top": 16,
+          "right": 87,
+          "bottom": 67,
+          "pixels": 583,
+          "width": 108,
+          "height": 84
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "array-alignment",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 114.50312280000001,
+        "heightPx": 52.272000000000006,
+        "baselinePx": 31.581,
+        "paintWidthPx": 114.50312280000001,
+        "paintHeightPx": 52.272000000000006,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": 0,
+        "paintBaselinePx": 31.581
+      },
+      "browserNaturalWidthPx": 114.406,
+      "naturalWidthDeltaPx": 0.09712280000000817,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "45f73e5c0dfecbd4aee3f4b68fd09b3c9d8def463a99720adc3acbb3e5e921bf",
+        "ink": {
+          "left": 27,
+          "top": 19,
+          "right": 119,
+          "bottom": 64,
+          "pixels": 475,
+          "width": 147,
+          "height": 84
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "text",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 227.30479200000002,
+        "heightPx": 19.3598064,
+        "baselinePx": 15.1249032,
+        "paintWidthPx": 227.30479200000002,
+        "paintHeightPx": 19.829383200000002,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": -0.46957680000000046,
+        "paintBaselinePx": 15.59448
+      },
+      "browserNaturalWidthPx": 227.1561,
+      "naturalWidthDeltaPx": 0.14869200000001115,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "aa7fe4334d9d0872fad2e57daa5f3be3956334c5815114e5a8d62fe028261a2d",
+        "ink": {
+          "left": 16,
+          "top": 16,
+          "right": 241,
+          "bottom": 35,
+          "pixels": 1217,
+          "width": 259,
+          "height": 52
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "unicode-accent",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 125.94285000000004,
+        "heightPx": 16.9398306,
+        "baselinePx": 15.1249032,
+        "paintWidthPx": 125.94285000000004,
+        "paintHeightPx": 17.169827400000003,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": -0.22999680000000033,
+        "paintBaselinePx": 15.3549
+      },
+      "browserNaturalWidthPx": 125.85940000000001,
+      "naturalWidthDeltaPx": 0.08345000000002756,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "65f08836e05f3805d5de2615e568009405c68cabba7eb9e202fbe477dae80253",
+        "ink": {
+          "left": 17,
+          "top": 16,
+          "right": 140,
+          "bottom": 32,
+          "pixels": 592,
+          "width": 158,
+          "height": 49
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "font-roster",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 176.98231980000003,
+        "heightPx": 19.242630000000002,
+        "baselinePx": 15.1249032,
+        "paintWidthPx": 176.98231980000003,
+        "paintHeightPx": 19.6769232,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": 0,
+        "paintBaselinePx": 15.1249032
+      },
+      "browserNaturalWidthPx": 176.8592,
+      "naturalWidthDeltaPx": 0.12311980000004041,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "d8703f2befdc03ac242d998eed3e6105ed326f83e50ed8d9b88c718a051adcb1",
+        "ink": {
+          "left": 16,
+          "top": 16,
+          "right": 191,
+          "bottom": 35,
+          "pixels": 684,
+          "width": 209,
+          "height": 52
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "text-ligature",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 131.28984,
+        "heightPx": 15.1249032,
+        "baselinePx": 15.1249032,
+        "paintWidthPx": 131.28984,
+        "paintHeightPx": 15.59448,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": -0.22999680000000033,
+        "paintBaselinePx": 15.3549
+      },
+      "browserNaturalWidthPx": 131.219,
+      "naturalWidthDeltaPx": 0.07084000000000401,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "5173ab94f3646d596e4ebb1886c3dc4100281928ccc2e96f124ac3d6f8c63472",
+        "ink": {
+          "left": 16,
+          "top": 16,
+          "right": 144,
+          "bottom": 31,
+          "pixels": 646,
+          "width": 163,
+          "height": 48
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "overline",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 50.5356984,
+        "heightPx": 21.295830600000006,
+        "baselinePx": 17.060927400000004,
+        "paintWidthPx": 50.5356984,
+        "paintHeightPx": 21.525827400000004,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": 0,
+        "paintBaselinePx": 17.060927400000004
+      },
+      "browserNaturalWidthPx": 50.5,
+      "naturalWidthDeltaPx": 0.03569840000000113,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "7a5432514b9e5addda5951138e88a1b79cf2429e8414e91137497307dc81744e",
+        "ink": {
+          "left": 16,
+          "top": 17,
+          "right": 66,
+          "bottom": 37,
+          "pixels": 256,
+          "width": 83,
+          "height": 54
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "accent",
+      "fidelity": "refused",
+      "issues": [
+        {
+          "kind": "unsupported-structure",
+          "message": "Unimplemented KaTeX class: katex-overlay",
+          "path": "root/0/1/1/0/vlist/1/0"
+        }
+      ]
+    },
+    {
+      "id": "spacing",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 63.40158,
+        "heightPx": 15.1249032,
+        "baselinePx": 15.1249032,
+        "paintWidthPx": 63.46692,
+        "paintHeightPx": 15.3644832,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": 0,
+        "paintBaselinePx": 15.1249032
+      },
+      "browserNaturalWidthPx": 63.3906,
+      "naturalWidthDeltaPx": 0.010980000000003542,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "0ad6ba386728712a9a4db0bdeb1146c5186160bf11e3c2bb9b05c923282200fc",
+        "ink": {
+          "left": 16,
+          "top": 16,
+          "right": 78,
+          "bottom": 30,
+          "pixels": 250,
+          "width": 95,
+          "height": 47
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "color",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 50.5356984,
+        "heightPx": 16.9398306,
+        "baselinePx": 12.7049274,
+        "paintWidthPx": 50.5356984,
+        "paintHeightPx": 17.169827400000003,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": 0,
+        "paintBaselinePx": 12.7049274
+      },
+      "browserNaturalWidthPx": 50.5,
+      "naturalWidthDeltaPx": 0.03569840000000113,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "5bd4c04db1d7fb030f8c95dea38bf3cc3f4979eea3a2bc136adbb1c6c4e7c0d8",
+        "ink": {
+          "left": 17,
+          "top": 16,
+          "right": 66,
+          "bottom": 32,
+          "pixels": 204,
+          "width": 83,
+          "height": 49
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "unsupported-lap",
+      "fidelity": "refused",
+      "issues": [
+        {
+          "kind": "unsupported-structure",
+          "message": "Unimplemented KaTeX class: katex-vbox",
+          "path": "root/0/0/1"
+        }
+      ]
+    },
+    {
+      "id": "unsupported-tag",
+      "fidelity": "refused",
+      "issues": [
+        {
+          "kind": "unsupported-structure",
+          "message": "Unimplemented KaTeX class: katex-tag",
+          "path": "root/0/0/2"
+        }
+      ]
+    },
+    {
+      "id": "unsupported-unicode-fallback",
+      "fidelity": "refused",
+      "issues": [
+        {
+          "kind": "unsupported-structure",
+          "message": "Unimplemented KaTeX class: cjk_fallback",
+          "path": "root/0/0/1/0"
+        }
+      ]
+    },
+    {
+      "id": "untrusted-link",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 47.87244000000001,
+        "heightPx": 21.78,
+        "baselinePx": 16.335,
+        "paintWidthPx": 49.309920000000005,
+        "paintHeightPx": 21.78,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": 0,
+        "paintBaselinePx": 16.335
+      },
+      "browserNaturalWidthPx": 47.8438,
+      "naturalWidthDeltaPx": 0.02864000000000999,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "e60fa587f0b962db04cb92c54c81aea3d01a40773a86385dca9d6ca19c079073",
+        "ink": {
+          "left": 17,
+          "top": 16,
+          "right": 64,
+          "bottom": 37,
+          "pixels": 276,
+          "width": 81,
+          "height": 54
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "untrusted-image",
+      "fidelity": "engineDerivedDiagnostic",
+      "geometry": {
+        "widthPx": 157.51296000000002,
+        "heightPx": 21.78,
+        "baselinePx": 16.335,
+        "paintWidthPx": 157.51296000000002,
+        "paintHeightPx": 21.78,
+        "paintOffsetXPx": 0,
+        "paintOffsetYPx": 0,
+        "paintBaselinePx": 16.335
+      },
+      "browserNaturalWidthPx": 157.422,
+      "naturalWidthDeltaPx": 0.09096000000002391,
+      "nativeReplay": {
+        "backend": "@resvg/resvg-js 2.6.2, actual native binding; no font database",
+        "pngSha256": "c413cb7eb058ee4704d87db9c1399fdb8c693a2078f16fb8c840ed5310372918",
+        "ink": {
+          "left": 17,
+          "top": 16,
+          "right": 173,
+          "bottom": 37,
+          "pixels": 989,
+          "width": 190,
+          "height": 54
+        },
+        "padding": 16,
+        "outsidePaintFrame": false
+      }
+    },
+    {
+      "id": "unknown-command",
+      "fidelity": "refused",
+      "issues": [
+        {
+          "kind": "source",
+          "message": "Undefined control sequence: \\notARealCommand at position 1: \\̲n̲o̲t̲A̲R̲e̲a̲l̲C̲o̲m̲m̲a̲n̲d̲{x}"
+        }
+      ]
+    },
+    {
+      "id": "broken-group",
+      "fidelity": "refused",
+      "issues": [
+        {
+          "kind": "source",
+          "message": "Unexpected end of input in a macro argument, expected '}' at end of input: \\frac{a}{"
+        }
+      ]
+    },
+    {
+      "id": "empty",
+      "fidelity": "refused",
+      "issues": [
+        {
+          "kind": "source",
+          "message": "Enter LaTeX to render this equation."
+        }
+      ]
+    }
+  ]
+}

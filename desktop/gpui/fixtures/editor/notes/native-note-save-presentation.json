@@ -1,0 +1,13 @@
+{
+  "kind": "Actual X11 pixels compared to the same window's pre-edit saved footer",
+  "savedFooterRect": {
+    "x": 247.0,
+    "y": 836.0,
+    "width": 67.0,
+    "height": 16.0
+  },
+  "savedFooterRgbaSha256": "21d2c4f0d06c55247be9c4e0ef58e74a66e3de79a66864c220129719e48b453d",
+  "savedFooterMatches": true,
+  "captures": 2,
+  "elapsedSeconds": 0.49324358098965604
+}

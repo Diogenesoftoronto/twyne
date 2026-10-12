@@ -1,0 +1,551 @@
+{
+  "context": "writing",
+  "viewport": {
+    "width": 1280,
+    "height": 860
+  },
+  "folioId": "twyne-gpui-parity",
+  "exactSavedHtmlMatchesFixture": true,
+  "savedHtmlBytes": 1077,
+  "header": {
+    "x": 2,
+    "y": 0,
+    "width": 1278,
+    "height": 112
+  },
+  "editor": {
+    "rect": {
+      "x": 289,
+      "y": 190.59375,
+      "width": 704,
+      "height": 516
+    },
+    "styles": "Element: div.tiptap\nBox: x=289 y=191 w=704 h=516\nChildren: 7  Text length: 412\nScroll Y: size=516 client=516 overflowing=false top=0\nScroll X: size=704 client=704 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=18px font-weight=400 line-height=32.4px letter-spacing=normal padding=0px margin=0px text-align=start"
+  },
+  "heading": {
+    "rect": {
+      "x": 289,
+      "y": 238.59375,
+      "width": 704,
+      "height": 66.390625
+    },
+    "styles": "Element: h1\nBox: x=289 y=239 w=704 h=66\nChildren: 0  Text length: 12\nScroll Y: size=67 client=66 overflowing=true top=0\nScroll X: size=704 client=704 overflowing=false left=0\nStyles: font-family=\"Libre Baskerville\", \"Playfair Display\", Georgia, serif font-size=40px font-weight=700 line-height=44px letter-spacing=-0.4px padding=0px margin=48px 0px 18px text-align=center"
+  },
+  "paragraph": {
+    "rect": {
+      "x": 289,
+      "y": 322.984375,
+      "width": 704,
+      "height": 97.171875
+    },
+    "styles": "Element: p.twyne-illuminated-paragraph\nBox: x=289 y=323 w=704 h=97\nChildren: 3  Text length: 151\nScroll Y: size=97 client=97 overflowing=false top=0\nScroll X: size=704 client=704 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=18px font-weight=400 line-height=32.4px letter-spacing=normal padding=0px margin=0px 0px 8.1px text-align=justify"
+  },
+  "headingHtml": "<h1>The notebook</h1>",
+  "platformFonts": {
+    "heading": [
+      {
+        "familyName": "Libre Baskerville",
+        "postScriptName": "LibreBaskerville-Regular",
+        "isCustomFont": true,
+        "glyphCount": 12
+      },
+      {
+        "familyName": "Adwaita Mono",
+        "postScriptName": "Adwaita-Mono",
+        "isCustomFont": false,
+        "glyphCount": 1
+      }
+    ],
+    "paragraph": [
+      {
+        "familyName": "Lora",
+        "postScriptName": "Lora-Regular",
+        "isCustomFont": true,
+        "glyphCount": 113
+      }
+    ]
+  },
+  "fontFaces": [
+    {
+      "family": "DM Sans",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "DM Sans",
+      "weight": "400",
+      "style": "normal",
+      "status": "loaded"
+    },
+    {
+      "family": "DM Sans",
+      "weight": "500",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "DM Sans",
+      "weight": "500",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "DM Sans",
+      "weight": "600",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "DM Sans",
+      "weight": "600",
+      "style": "normal",
+      "status": "loaded"
+    },
+    {
+      "family": "DM Sans",
+      "weight": "700",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "DM Sans",
+      "weight": "700",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Fraunces",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Fraunces",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Fraunces",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Fraunces",
+      "weight": "600",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Fraunces",
+      "weight": "600",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Fraunces",
+      "weight": "600",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Fraunces",
+      "weight": "700",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Fraunces",
+      "weight": "700",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Fraunces",
+      "weight": "700",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Libre Baskerville",
+      "weight": "400",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Libre Baskerville",
+      "weight": "400",
+      "style": "italic",
+      "status": "loaded"
+    },
+    {
+      "family": "Libre Baskerville",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Libre Baskerville",
+      "weight": "400",
+      "style": "normal",
+      "status": "loaded"
+    },
+    {
+      "family": "Libre Baskerville",
+      "weight": "700",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Libre Baskerville",
+      "weight": "700",
+      "style": "normal",
+      "status": "loaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "italic",
+      "status": "loaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "normal",
+      "status": "loaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "400",
+      "style": "normal",
+      "status": "loaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "normal",
+      "status": "loaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "500",
+      "style": "normal",
+      "status": "loaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "600",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "600",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "600",
+      "style": "normal",
+      "status": "loaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "600",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "600",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "600",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Lora",
+      "weight": "600",
+      "style": "normal",
+      "status": "loaded"
+    },
+    {
+      "family": "Special Elite",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Special Elite",
+      "weight": "400",
+      "style": "normal",
+      "status": "loaded"
+    },
+    {
+      "family": "KaTeX_AMS",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Caligraphic",
+      "weight": "700",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Caligraphic",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Fraktur",
+      "weight": "700",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Fraktur",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Main",
+      "weight": "700",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Main",
+      "weight": "700",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Main",
+      "weight": "400",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Main",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Math",
+      "weight": "700",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Math",
+      "weight": "400",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_SansSerif",
+      "weight": "700",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_SansSerif",
+      "weight": "400",
+      "style": "italic",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_SansSerif",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Script",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Size1",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Size2",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Size3",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Size4",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KaTeX_Typewriter",
+      "weight": "400",
+      "style": "normal",
+      "status": "unloaded"
+    }
+  ],
+  "sourceFontVersions": "browser-font-proof.json"
+}

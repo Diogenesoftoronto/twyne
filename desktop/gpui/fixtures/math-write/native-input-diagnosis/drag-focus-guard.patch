@@ -1,0 +1,52 @@
+--- a/desktop/gpui/src/editor/view_drag.rs
++++ b/desktop/gpui/src/editor/view_drag.rs
+@@ -645,8 +645,9 @@
+     let drag_view = renderer.entity.downgrade();
+     let key_view = renderer.entity.clone();
+     let key_info = info.clone();
+     let pointer_focus = focus.clone();
++    let key_focus = focus.clone();
+     div()
+         .id(SharedString::from(format!(
+             "twyne-section-drag-{}",
+             path[0]
+@@ -675,9 +676,13 @@
+             window.focus(&pointer_focus, cx);
+             window.prevent_default();
+         })
+         .on_key_down(move |event, window, cx| {
+-            key_view.update(cx, |this, cx| this.handle_key(&key_info, event, window, cx))
++            // A descendant textarea owns its own keys. Drag commands apply
++            // only while this actual handle owns focus, not its descendants.
++            if key_focus.is_focused(window) {
++                key_view.update(cx, |this, cx| this.handle_key(&key_info, event, window, cx));
++            }
+         })
+         .when(
+             !renderer.state.is_read_only() && renderer.state.marked_range.is_none(),
+             |this| {
+@@ -714,8 +719,9 @@
+         let key_info = info.clone();
+         let select_view = renderer.entity.clone();
+         let selection_info = info.clone();
+         let pointer_focus = focus.clone();
++        let key_focus = focus.clone();
+         div()
+             .id(SharedString::from(format!(
+                 "twyne-atom-drag-{}",
+                 path.iter()
+@@ -740,9 +746,13 @@
+                 window.focus(&pointer_focus, cx);
+                 window.prevent_default();
+             })
+             .on_key_down(move |event, window, cx| {
+-                key_view.update(cx, |this, cx| this.handle_key(&key_info, event, window, cx))
++                // A descendant textarea owns its own keys. Drag commands apply
++                // only while this actual handle owns focus, not its descendants.
++                if key_focus.is_focused(window) {
++                    key_view.update(cx, |this, cx| this.handle_key(&key_info, event, window, cx));
++                }
+             })
+             .on_click(move |_, window, cx| {
+                 select_view.update(cx, |this, cx| {
+                     if this.drag.is_active() {

@@ -1,0 +1,211 @@
+{
+  "schema": 1,
+  "status": "Frozen owned module and fixtures; integration unapplied; Parent owns native/Cargo/pixel proof",
+  "api": "DossierPaperMetrics::new; DossierPaper::prepare -> Arc; matches; background; paint_background; metrics; svg; raster_image; foxing_status; paper_sheet_svg; foxing_svg",
+  "gates": {
+    "bunSourceContract": "5/5PASS44 assertions",
+    "standaloneRasters": "8/8created; PNG+SVG bytes stable after temporary-state reset",
+    "rustfmt": "PASS",
+    "prettier": "PASS",
+    "unappliedPatchDryRun": "PASS latest Root Dossier",
+    "nativeTests": "5 authored, not executed here",
+    "CargoDevenvRustcBrowser": "not invoked by this slice"
+  },
+  "limits": [
+    "descendant multiply unsupported; no normal-alpha substitute",
+    "GPUI vs Chromium gradient/blur/raster pixels unverified",
+    "test-only DPR override requires explicit prepare_paper; real Wayland same-size DPR covered by bounds subscription inspection"
+  ],
+  "stableRasters": [
+    {
+      "preset": "editorial",
+      "width": 1280,
+      "svgStable": true,
+      "pngStable": true
+    },
+    {
+      "preset": "foolscap",
+      "width": 1280,
+      "svgStable": true,
+      "pngStable": true
+    },
+    {
+      "preset": "broadsheet",
+      "width": 1280,
+      "svgStable": true,
+      "pngStable": true
+    },
+    {
+      "preset": "nightpress",
+      "width": 1280,
+      "svgStable": true,
+      "pngStable": true
+    },
+    {
+      "preset": "editorial",
+      "width": 620,
+      "svgStable": true,
+      "pngStable": true
+    },
+    {
+      "preset": "foolscap",
+      "width": 620,
+      "svgStable": true,
+      "pngStable": true
+    },
+    {
+      "preset": "broadsheet",
+      "width": 620,
+      "svgStable": true,
+      "pngStable": true
+    },
+    {
+      "preset": "nightpress",
+      "width": 620,
+      "svgStable": true,
+      "pngStable": true
+    }
+  ],
+  "files": [
+    {
+      "path": "desktop/gpui/src/dossier_paper.rs",
+      "sha256": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+      "bytes": 23626
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/README.md",
+      "sha256": "b8cfcfddf736a011698b1d203a8de87932cff6ec0f5f0edc7048db9a7dbd2f60",
+      "bytes": 8483
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/broadsheet-1280.svg",
+      "sha256": "a61b416f217a8f42f7f09b16203290fc1e8932d4b49e31a1f02ccf43b0ce31fb",
+      "bytes": 2957
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/broadsheet-620.svg",
+      "sha256": "3c00977c728797e523b295f812d8a0c86da6c69ec70e7191ad90a08f696783e6",
+      "bytes": 2936
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/contract.test.ts",
+      "sha256": "740b21f8769eb7f3fbb0efc15bb37217e3c1ac022306c3835653eca563cb41c3",
+      "bytes": 3932
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/editorial-1280.svg",
+      "sha256": "303dc2e79083934a5fded7d54f7c78e226f4244509ceb97d1e3fc174a393a351",
+      "bytes": 2969
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/editorial-620.svg",
+      "sha256": "dada2cc43aaa15c70f31603795dc7760e49f6fca3484fe49f0694fea62f9aab9",
+      "bytes": 2948
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/external-worker.json",
+      "sha256": "ef4ac47e8b1ef47238c86e649854e510830cdbc3c693059460e9b135dc7ab4b0",
+      "bytes": 707
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/foolscap-1280.svg",
+      "sha256": "85b01733a39c931e968707cba0f271f006c4e8041bfbd84049007232a55edccf",
+      "bytes": 2969
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/foolscap-620.svg",
+      "sha256": "e2d03957cc7795b7fc1a03a9e9840f8f2d9204e6d7063c6ae11e75ae2026ae44",
+      "bytes": 2948
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/integration-receipt.json",
+      "sha256": "6dc6f509c00255977da4c059a071de6d0383c019a0b14517736b50763e44e28c",
+      "bytes": 1370
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/integration.patch",
+      "sha256": "26d20a7b80ece3a36504a8e5f033227347a6ba8e4df73edb12a9035e13b97f42",
+      "bytes": 4321
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/nightpress-1280.svg",
+      "sha256": "9d9b8d49ca55ef18e753b4104ecbd1785405c487948227a279c2fe47fcf71e5a",
+      "bytes": 2969
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/nightpress-620.svg",
+      "sha256": "fbe24a5b9d0502b7e8ebcf3ce66753fc36b44d56ab344a664e0e4f82dfa61503",
+      "bytes": 2948
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/raster/broadsheet-1280.png",
+      "sha256": "074d45096fe4b40a68c22c24ea9331ada5135f0317f4cf9459461511005f6cdc",
+      "bytes": 567349
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/raster/broadsheet-620.png",
+      "sha256": "1a676f9d6c94fe363e84d1ca6affb83e4ac9d119da368e70377fd551207dcbb0",
+      "bytes": 272703
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/raster/editorial-1280.png",
+      "sha256": "4dbcebccfd72ac65b9bba3e0224429bd8862a0a79ea5ad55f252e752c82761f4",
+      "bytes": 1088417
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/raster/editorial-620.png",
+      "sha256": "8e967d9bc848a1a24ade05c07c32de56c308c991304665ef775647a495280449",
+      "bytes": 541748
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/raster/foolscap-1280.png",
+      "sha256": "bf41b31bd0305813e39bc810e750605ffca16f66b60aa4352a81a2c9bca275ca",
+      "bytes": 1038416
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/raster/foolscap-620.png",
+      "sha256": "8138e06e01fb5a97331459c1d3ed180ff7945bc7b57e78302ff59010a59221c7",
+      "bytes": 508231
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/raster/nightpress-1280.png",
+      "sha256": "2b4abdf829fd0886563ae5248fed4b883174b0501c0c2bd4b0ac69292fb8dbfe",
+      "bytes": 916835
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/raster/nightpress-620.png",
+      "sha256": "e5787a05c30ea64d0403f66d35f2dce17b252bb3bdf167d54e19e7ef6e1714a8",
+      "bytes": 458536
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/raster/receipt-historical.json",
+      "sha256": "2f2711bacffb8c58be0a22cd7ed00432e9cdab6237538813f80bb05fa1aef47d",
+      "bytes": 3951
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/raster/receipt.json",
+      "sha256": "b3cf3f5b3d32c18744d283faf9da3f51ef40c51d0115ff4dfc6705c8f71e08af",
+      "bytes": 4036
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/raster.ts",
+      "sha256": "2bbb077c3738ee338c6e0a129de9a2e5052304d79a59d7cd4c336f239458672e",
+      "bytes": 3487
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/reference.ts",
+      "sha256": "1cdd8b17a43dc9744598c99c9198760deab5d1083c72845965ffdad01ed90c91",
+      "bytes": 8735
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/source.json",
+      "sha256": "9e3709a99f4b62b455b6baf55331efebc6d4e0f47235e59b80e2e973dc2927bc",
+      "bytes": 13577
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-paper/subscription-contract.json",
+      "sha256": "32243fbbc7377e357783732b27dbbf52f8adb3153d5b2a90e2c3a0593e716200",
+      "bytes": 3893
+    }
+  ]
+}

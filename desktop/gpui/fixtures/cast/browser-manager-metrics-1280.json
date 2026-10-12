@@ -1,0 +1,1126 @@
+{
+  "url": "http://localhost:5180/personas/",
+  "viewport": {
+    "width": 1280,
+    "height": 860
+  },
+  "scope": "anonymous offline original app, unedited default roster, provider/account/sync traffic blocked",
+  "header": {
+    "tag": "DIV",
+    "text": "TwyneRoom of EditorsHire, edit, and tune the editorial board. Each editor's voice drives the notes they file.+ New editorReset defaults← Back to desk",
+    "rect": {
+      "x": 216,
+      "y": 32,
+      "width": 848,
+      "height": 105
+    },
+    "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "24px",
+    "flex": "0 1 auto",
+    "minWidth": "0px",
+    "whiteSpace": "normal",
+    "padding": "0px",
+    "gap": "normal",
+    "color": "rgb(31, 27, 22)",
+    "background": "rgba(0, 0, 0, 0)",
+    "border": "0px solid rgb(31, 27, 22)"
+  },
+  "headerChildren": [
+    {
+      "tag": "DIV",
+      "text": "TwyneRoom of EditorsHire, edit, and tune the editorial board. Each editor's voice drives the notes they file.",
+      "rect": {
+        "x": 216,
+        "y": 32,
+        "width": 480.3125,
+        "height": 105
+      },
+      "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "letterSpacing": "normal",
+      "lineHeight": "24px",
+      "flex": "0 1 auto",
+      "minWidth": "auto",
+      "whiteSpace": "normal",
+      "padding": "0px",
+      "gap": "normal",
+      "color": "rgb(31, 27, 22)",
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "0px solid rgb(31, 27, 22)"
+    },
+    {
+      "tag": "DIV",
+      "text": "+ New editorReset defaults← Back to desk",
+      "rect": {
+        "x": 696.3125,
+        "y": 58.703125,
+        "width": 367.6875,
+        "height": 51.59375
+      },
+      "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "letterSpacing": "normal",
+      "lineHeight": "24px",
+      "flex": "0 1 auto",
+      "minWidth": "auto",
+      "whiteSpace": "normal",
+      "padding": "0px",
+      "gap": "12px",
+      "color": "rgb(31, 27, 22)",
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "0px solid rgb(31, 27, 22)"
+    }
+  ],
+  "headerActions": [
+    {
+      "tag": "BUTTON",
+      "text": "+ New editor",
+      "rect": {
+        "x": 696.3125,
+        "y": 58.703125,
+        "width": 131.890625,
+        "height": 51.59375
+      },
+      "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+      "fontSize": "11.2px",
+      "fontWeight": "400",
+      "letterSpacing": "2.016px",
+      "lineHeight": "16px",
+      "flex": "0 1 auto",
+      "minWidth": "auto",
+      "whiteSpace": "normal",
+      "padding": "8.8px 16px",
+      "gap": "normal",
+      "color": "rgb(244, 236, 216)",
+      "background": "rgb(31, 27, 22)",
+      "border": "1px solid rgb(31, 27, 22)"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Reset defaults",
+      "rect": {
+        "x": 840.203125,
+        "y": 59.171875,
+        "width": 103.265625,
+        "height": 50.65625
+      },
+      "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+      "fontSize": "12px",
+      "fontWeight": "600",
+      "letterSpacing": "normal",
+      "lineHeight": "17.1429px",
+      "flex": "0 1 auto",
+      "minWidth": "auto",
+      "whiteSpace": "normal",
+      "padding": "7.2px 14.4px",
+      "gap": "normal",
+      "color": "rgb(31, 27, 22)",
+      "background": "rgb(250, 243, 223)",
+      "border": "1px solid rgb(221, 208, 177)"
+    },
+    {
+      "tag": "A",
+      "text": "← Back to desk",
+      "rect": {
+        "x": 955.46875,
+        "y": 59.171875,
+        "width": 108.53125,
+        "height": 50.65625
+      },
+      "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+      "fontSize": "12px",
+      "fontWeight": "600",
+      "letterSpacing": "normal",
+      "lineHeight": "17.1429px",
+      "flex": "0 1 auto",
+      "minWidth": "auto",
+      "whiteSpace": "normal",
+      "padding": "7.2px 14.4px",
+      "gap": "normal",
+      "color": "rgb(31, 27, 22)",
+      "background": "rgb(250, 243, 223)",
+      "border": "1px solid rgb(221, 208, 177)"
+    }
+  ],
+  "assistance": {
+    "tag": "SECTION",
+    "text": "Tunable AssistanceHow much each editor editsThe room-wide ceiling lives in the right-rail Cast panel. Here you can override individual editors — useful if you want one editor filing notes only while another rewrites freely.♠Mlle. Sceptiquecommentssentenceparagraphmay propose♥Sœur Encourageantecommentssentenceparagraphmay propose♦Professeur Athenæumcommentssentenceparagraphmay propose✦M. Le Stylocommentssentenceparagraphmay propose♣Le Lecteurcommentssentenceparagraphmay propose",
+    "rect": {
+      "x": 216,
+      "y": 161,
+      "width": 848,
+      "height": 359
+    },
+    "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "24px",
+    "flex": "0 1 auto",
+    "minWidth": "0px",
+    "whiteSpace": "normal",
+    "padding": "16px",
+    "gap": "normal",
+    "color": "rgb(31, 27, 22)",
+    "background": "rgb(244, 236, 216)",
+    "border": "1px solid rgb(221, 208, 177)"
+  },
+  "rows": [
+    {
+      "row": {
+        "tag": "DIV",
+        "text": "♠Mlle. Sceptiquecommentssentenceparagraphmay propose",
+        "rect": {
+          "x": 233,
+          "y": 271,
+          "width": 814,
+          "height": 37
+        },
+        "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "letterSpacing": "normal",
+        "lineHeight": "24px",
+        "flex": "0 1 auto",
+        "minWidth": "0px",
+        "whiteSpace": "normal",
+        "padding": "6px 0px",
+        "gap": "12px",
+        "color": "rgb(31, 27, 22)",
+        "background": "rgba(0, 0, 0, 0)",
+        "border": ""
+      },
+      "children": [
+        {
+          "tag": "SPAN",
+          "text": "♠Mlle. Sceptique",
+          "rect": {
+            "x": 233,
+            "y": 277,
+            "width": 160,
+            "height": 24
+          },
+          "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+          "fontSize": "16px",
+          "fontWeight": "600",
+          "letterSpacing": "normal",
+          "lineHeight": "24px",
+          "flex": "0 1 auto",
+          "minWidth": "160px",
+          "whiteSpace": "normal",
+          "padding": "0px",
+          "gap": "6px",
+          "color": "rgb(31, 27, 22)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(31, 27, 22)"
+        },
+        {
+          "tag": "DIV",
+          "text": "commentssentenceparagraph",
+          "rect": {
+            "x": 405,
+            "y": 277.796875,
+            "width": 255.140625,
+            "height": 22.390625
+          },
+          "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "letterSpacing": "normal",
+          "lineHeight": "24px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "0px",
+          "gap": "6px",
+          "color": "rgb(31, 27, 22)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(31, 27, 22)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "may propose",
+          "rect": {
+            "x": 950.4375,
+            "y": 277.796875,
+            "width": 96.5625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(91, 122, 58)",
+          "border": "1px solid rgb(91, 122, 58)"
+        }
+      ],
+      "pills": [
+        {
+          "tag": "BUTTON",
+          "text": "comments",
+          "rect": {
+            "x": 405,
+            "y": 277.796875,
+            "width": 80.296875,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(74, 63, 51)",
+          "background": "rgb(250, 243, 223)",
+          "border": "1px solid rgb(221, 208, 177)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "sentence",
+          "rect": {
+            "x": 491.296875,
+            "y": 277.796875,
+            "width": 79.1875,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(193, 39, 45)",
+          "border": "1px solid rgb(193, 39, 45)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "paragraph",
+          "rect": {
+            "x": 576.484375,
+            "y": 277.796875,
+            "width": 83.65625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(74, 63, 51)",
+          "background": "rgb(250, 243, 223)",
+          "border": "1px solid rgb(221, 208, 177)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "may propose",
+          "rect": {
+            "x": 950.4375,
+            "y": 277.796875,
+            "width": 96.5625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(91, 122, 58)",
+          "border": "1px solid rgb(91, 122, 58)"
+        }
+      ]
+    },
+    {
+      "row": {
+        "tag": "DIV",
+        "text": "♥Sœur Encourageantecommentssentenceparagraphmay propose",
+        "rect": {
+          "x": 233,
+          "y": 320,
+          "width": 814,
+          "height": 37
+        },
+        "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "letterSpacing": "normal",
+        "lineHeight": "24px",
+        "flex": "0 1 auto",
+        "minWidth": "0px",
+        "whiteSpace": "normal",
+        "padding": "6px 0px",
+        "gap": "12px",
+        "color": "rgb(31, 27, 22)",
+        "background": "rgba(0, 0, 0, 0)",
+        "border": ""
+      },
+      "children": [
+        {
+          "tag": "SPAN",
+          "text": "♥Sœur Encourageante",
+          "rect": {
+            "x": 233,
+            "y": 326,
+            "width": 192.9375,
+            "height": 24
+          },
+          "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+          "fontSize": "16px",
+          "fontWeight": "600",
+          "letterSpacing": "normal",
+          "lineHeight": "24px",
+          "flex": "0 1 auto",
+          "minWidth": "160px",
+          "whiteSpace": "normal",
+          "padding": "0px",
+          "gap": "6px",
+          "color": "rgb(31, 27, 22)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(31, 27, 22)"
+        },
+        {
+          "tag": "DIV",
+          "text": "commentssentenceparagraph",
+          "rect": {
+            "x": 437.9375,
+            "y": 326.796875,
+            "width": 255.140625,
+            "height": 22.390625
+          },
+          "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "letterSpacing": "normal",
+          "lineHeight": "24px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "0px",
+          "gap": "6px",
+          "color": "rgb(31, 27, 22)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(31, 27, 22)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "may propose",
+          "rect": {
+            "x": 950.4375,
+            "y": 326.796875,
+            "width": 96.5625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(91, 122, 58)",
+          "border": "1px solid rgb(91, 122, 58)"
+        }
+      ],
+      "pills": [
+        {
+          "tag": "BUTTON",
+          "text": "comments",
+          "rect": {
+            "x": 437.9375,
+            "y": 326.796875,
+            "width": 80.296875,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(74, 63, 51)",
+          "background": "rgb(250, 243, 223)",
+          "border": "1px solid rgb(221, 208, 177)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "sentence",
+          "rect": {
+            "x": 524.234375,
+            "y": 326.796875,
+            "width": 79.1875,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(138, 154, 91)",
+          "border": "1px solid rgb(138, 154, 91)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "paragraph",
+          "rect": {
+            "x": 609.421875,
+            "y": 326.796875,
+            "width": 83.65625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(74, 63, 51)",
+          "background": "rgb(250, 243, 223)",
+          "border": "1px solid rgb(221, 208, 177)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "may propose",
+          "rect": {
+            "x": 950.4375,
+            "y": 326.796875,
+            "width": 96.5625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(91, 122, 58)",
+          "border": "1px solid rgb(91, 122, 58)"
+        }
+      ]
+    },
+    {
+      "row": {
+        "tag": "DIV",
+        "text": "♦Professeur Athenæumcommentssentenceparagraphmay propose",
+        "rect": {
+          "x": 233,
+          "y": 369,
+          "width": 814,
+          "height": 37
+        },
+        "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "letterSpacing": "normal",
+        "lineHeight": "24px",
+        "flex": "0 1 auto",
+        "minWidth": "0px",
+        "whiteSpace": "normal",
+        "padding": "6px 0px",
+        "gap": "12px",
+        "color": "rgb(31, 27, 22)",
+        "background": "rgba(0, 0, 0, 0)",
+        "border": ""
+      },
+      "children": [
+        {
+          "tag": "SPAN",
+          "text": "♦Professeur Athenæum",
+          "rect": {
+            "x": 233,
+            "y": 375,
+            "width": 201.84375,
+            "height": 24
+          },
+          "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+          "fontSize": "16px",
+          "fontWeight": "600",
+          "letterSpacing": "normal",
+          "lineHeight": "24px",
+          "flex": "0 1 auto",
+          "minWidth": "160px",
+          "whiteSpace": "normal",
+          "padding": "0px",
+          "gap": "6px",
+          "color": "rgb(31, 27, 22)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(31, 27, 22)"
+        },
+        {
+          "tag": "DIV",
+          "text": "commentssentenceparagraph",
+          "rect": {
+            "x": 446.84375,
+            "y": 375.796875,
+            "width": 255.140625,
+            "height": 22.390625
+          },
+          "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "letterSpacing": "normal",
+          "lineHeight": "24px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "0px",
+          "gap": "6px",
+          "color": "rgb(31, 27, 22)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(31, 27, 22)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "may propose",
+          "rect": {
+            "x": 950.4375,
+            "y": 375.796875,
+            "width": 96.5625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(91, 122, 58)",
+          "border": "1px solid rgb(91, 122, 58)"
+        }
+      ],
+      "pills": [
+        {
+          "tag": "BUTTON",
+          "text": "comments",
+          "rect": {
+            "x": 446.84375,
+            "y": 375.796875,
+            "width": 80.296875,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(74, 63, 51)",
+          "background": "rgb(250, 243, 223)",
+          "border": "1px solid rgb(221, 208, 177)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "sentence",
+          "rect": {
+            "x": 533.140625,
+            "y": 375.796875,
+            "width": 79.1875,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(92, 107, 192)",
+          "border": "1px solid rgb(92, 107, 192)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "paragraph",
+          "rect": {
+            "x": 618.328125,
+            "y": 375.796875,
+            "width": 83.65625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(74, 63, 51)",
+          "background": "rgb(250, 243, 223)",
+          "border": "1px solid rgb(221, 208, 177)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "may propose",
+          "rect": {
+            "x": 950.4375,
+            "y": 375.796875,
+            "width": 96.5625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(91, 122, 58)",
+          "border": "1px solid rgb(91, 122, 58)"
+        }
+      ]
+    },
+    {
+      "row": {
+        "tag": "DIV",
+        "text": "✦M. Le Stylocommentssentenceparagraphmay propose",
+        "rect": {
+          "x": 233,
+          "y": 418,
+          "width": 814,
+          "height": 37
+        },
+        "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "letterSpacing": "normal",
+        "lineHeight": "24px",
+        "flex": "0 1 auto",
+        "minWidth": "0px",
+        "whiteSpace": "normal",
+        "padding": "6px 0px",
+        "gap": "12px",
+        "color": "rgb(31, 27, 22)",
+        "background": "rgba(0, 0, 0, 0)",
+        "border": ""
+      },
+      "children": [
+        {
+          "tag": "SPAN",
+          "text": "✦M. Le Stylo",
+          "rect": {
+            "x": 233,
+            "y": 424,
+            "width": 160,
+            "height": 24
+          },
+          "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+          "fontSize": "16px",
+          "fontWeight": "600",
+          "letterSpacing": "normal",
+          "lineHeight": "24px",
+          "flex": "0 1 auto",
+          "minWidth": "160px",
+          "whiteSpace": "normal",
+          "padding": "0px",
+          "gap": "6px",
+          "color": "rgb(31, 27, 22)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(31, 27, 22)"
+        },
+        {
+          "tag": "DIV",
+          "text": "commentssentenceparagraph",
+          "rect": {
+            "x": 405,
+            "y": 424.796875,
+            "width": 255.140625,
+            "height": 22.390625
+          },
+          "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "letterSpacing": "normal",
+          "lineHeight": "24px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "0px",
+          "gap": "6px",
+          "color": "rgb(31, 27, 22)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(31, 27, 22)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "may propose",
+          "rect": {
+            "x": 950.4375,
+            "y": 424.796875,
+            "width": 96.5625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(91, 122, 58)",
+          "border": "1px solid rgb(91, 122, 58)"
+        }
+      ],
+      "pills": [
+        {
+          "tag": "BUTTON",
+          "text": "comments",
+          "rect": {
+            "x": 405,
+            "y": 424.796875,
+            "width": 80.296875,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(74, 63, 51)",
+          "background": "rgb(250, 243, 223)",
+          "border": "1px solid rgb(221, 208, 177)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "sentence",
+          "rect": {
+            "x": 491.296875,
+            "y": 424.796875,
+            "width": 79.1875,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(212, 160, 23)",
+          "border": "1px solid rgb(212, 160, 23)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "paragraph",
+          "rect": {
+            "x": 576.484375,
+            "y": 424.796875,
+            "width": 83.65625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(74, 63, 51)",
+          "background": "rgb(250, 243, 223)",
+          "border": "1px solid rgb(221, 208, 177)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "may propose",
+          "rect": {
+            "x": 950.4375,
+            "y": 424.796875,
+            "width": 96.5625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(91, 122, 58)",
+          "border": "1px solid rgb(91, 122, 58)"
+        }
+      ]
+    },
+    {
+      "row": {
+        "tag": "DIV",
+        "text": "♣Le Lecteurcommentssentenceparagraphmay propose",
+        "rect": {
+          "x": 233,
+          "y": 467,
+          "width": 814,
+          "height": 36
+        },
+        "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "letterSpacing": "normal",
+        "lineHeight": "24px",
+        "flex": "0 1 auto",
+        "minWidth": "0px",
+        "whiteSpace": "normal",
+        "padding": "6px 0px",
+        "gap": "12px",
+        "color": "rgb(31, 27, 22)",
+        "background": "rgba(0, 0, 0, 0)",
+        "border": "0px dashed rgb(221, 208, 177)"
+      },
+      "children": [
+        {
+          "tag": "SPAN",
+          "text": "♣Le Lecteur",
+          "rect": {
+            "x": 233,
+            "y": 473,
+            "width": 160,
+            "height": 24
+          },
+          "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+          "fontSize": "16px",
+          "fontWeight": "600",
+          "letterSpacing": "normal",
+          "lineHeight": "24px",
+          "flex": "0 1 auto",
+          "minWidth": "160px",
+          "whiteSpace": "normal",
+          "padding": "0px",
+          "gap": "6px",
+          "color": "rgb(31, 27, 22)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(31, 27, 22)"
+        },
+        {
+          "tag": "DIV",
+          "text": "commentssentenceparagraph",
+          "rect": {
+            "x": 405,
+            "y": 473.796875,
+            "width": 255.140625,
+            "height": 22.390625
+          },
+          "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "letterSpacing": "normal",
+          "lineHeight": "24px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "0px",
+          "gap": "6px",
+          "color": "rgb(31, 27, 22)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(31, 27, 22)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "may propose",
+          "rect": {
+            "x": 950.4375,
+            "y": 473.796875,
+            "width": 96.5625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(91, 122, 58)",
+          "border": "1px solid rgb(91, 122, 58)"
+        }
+      ],
+      "pills": [
+        {
+          "tag": "BUTTON",
+          "text": "comments",
+          "rect": {
+            "x": 405,
+            "y": 473.796875,
+            "width": 80.296875,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(74, 63, 51)",
+          "background": "rgb(250, 243, 223)",
+          "border": "1px solid rgb(221, 208, 177)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "sentence",
+          "rect": {
+            "x": 491.296875,
+            "y": 473.796875,
+            "width": 79.1875,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(44, 74, 124)",
+          "border": "1px solid rgb(44, 74, 124)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "paragraph",
+          "rect": {
+            "x": 576.484375,
+            "y": 473.796875,
+            "width": 83.65625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(74, 63, 51)",
+          "background": "rgb(250, 243, 223)",
+          "border": "1px solid rgb(221, 208, 177)"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "may propose",
+          "rect": {
+            "x": 950.4375,
+            "y": 473.796875,
+            "width": 96.5625,
+            "height": 22.390625
+          },
+          "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+          "fontSize": "10.4px",
+          "fontWeight": "400",
+          "letterSpacing": "1.04px",
+          "lineHeight": "15.6px",
+          "flex": "0 1 auto",
+          "minWidth": "auto",
+          "whiteSpace": "normal",
+          "padding": "2.4px 8.8px",
+          "gap": "5.6px",
+          "color": "rgb(244, 236, 216)",
+          "background": "rgb(91, 122, 58)",
+          "border": "1px solid rgb(91, 122, 58)"
+        }
+      ]
+    }
+  ],
+  "fontStatus": "loaded"
+}

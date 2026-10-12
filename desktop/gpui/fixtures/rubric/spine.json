@@ -1,0 +1,57 @@
+[
+  {
+    "id": "targetFit",
+    "label": "On brief",
+    "description": "Is the draft about what the brief asks, for the reader it names? Judged apart from how well it's written."
+  },
+  {
+    "id": "thesis",
+    "label": "Argument",
+    "description": "Is the main point clear, and does the draft make the case for it?"
+  },
+  {
+    "id": "evidence",
+    "label": "Evidence",
+    "description": "Are the claims backed by sources, examples or figures that actually fit them?"
+  },
+  {
+    "id": "sufficiency",
+    "label": "Development",
+    "description": "Is there enough on-topic material to earn the main point?"
+  },
+  {
+    "id": "integrity",
+    "label": "Straight talk",
+    "description": "Free of padding, vague words, repetition and claims stated more strongly than shown."
+  },
+  {
+    "id": "structure",
+    "label": "Structure",
+    "description": "Does each part follow from the last, with clear turns between them?"
+  },
+  {
+    "id": "pacing",
+    "label": "Rhythm",
+    "description": "Do sentence lengths vary enough to keep the reader moving?"
+  },
+  {
+    "id": "voice",
+    "label": "Voice",
+    "description": "Does it sound like one writer, pitched at the reader the brief names?"
+  },
+  {
+    "id": "vocabulary",
+    "label": "Word choice",
+    "description": "Precise, varied words rather than repeats, abstractions and jargon."
+  },
+  {
+    "id": "paragraph",
+    "label": "Paragraphs",
+    "description": "A readable mix of short and long paragraphs, each doing one job."
+  },
+  {
+    "id": "engagement",
+    "label": "Reader pull",
+    "description": "Would the reader stay to the end? Follows the overall grade rather than being marked on its own."
+  }
+]

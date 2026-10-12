@@ -1,0 +1,43 @@
+{
+  "scope": "NEW fixtures/math-write/current-adoption only; Source/runtime/old goldens untouched",
+  "status": "authored-unexecuted-review-checkpoint",
+  "files": {
+    "CONTRACT.md": {
+      "sha256": "725f9ffab70aa42980a5784f5a96bd622fa7f1764f25348a5e518122542a9850",
+      "bytes": 9564
+    },
+    "README.md": {
+      "sha256": "0f9eedc1cfd26ac9e1dbb868c133009f1266d5a17710266065c29b0248109fc2",
+      "bytes": 7761
+    },
+    "contract.test.ts": {
+      "sha256": "55b49a932d627da7590f47f971e87e1bdcf0d52550ce1c286d704de89dfb5ada",
+      "bytes": 7419
+    },
+    "contract.ts": {
+      "sha256": "b86cd6af2eb8c77ecda1a02272d39b80e07603462b36e277796f61261486a930",
+      "bytes": 5241
+    },
+    "integration.patch": {
+      "sha256": "edd4bb54deb83e60d0c1791c901d3ba7ab740f5733c1a0cf1d86b2a910f79585",
+      "bytes": 8302
+    },
+    "pins.json": {
+      "sha256": "045bfce5ab2e3b3eb1a987df53eb0772e8e0f6b343db644c3fe635c1abe951cd",
+      "bytes": 13739
+    },
+    "proposed-api.rs": {
+      "sha256": "ae521e444df8a58d558174eb20a70dd840c6758107dd4a1c434de02d026f0560",
+      "bytes": 8086
+    }
+  },
+  "execution": {
+    "bun": false,
+    "rust": false,
+    "cargo": false,
+    "devenv": false,
+    "browser": false,
+    "gpu": false,
+    "gitApply": false
+  }
+}

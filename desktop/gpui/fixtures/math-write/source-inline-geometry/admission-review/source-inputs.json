@@ -1,0 +1,85 @@
+{
+  "originalCss": {
+    "retained": "desktop/gpui/fixtures/math-write/nodeview/original.css",
+    "published": "dist/assets/CxHd3gM_-style.css",
+    "sha256": "71ddc6c68996dc01fed4c53b636dac92d573440504478b8cda76a4778ae701b7",
+    "candidateOverlay": false
+  },
+  "versions": {
+    "tiptap": "3.22.4",
+    "katex": "0.18.1"
+  },
+  "bodyFontReplay": {
+    "provenance": "Byte-exact prior authorized Source Chrome font responses; reused locally, no network calls. Source root.tsx Google CSS retained. Only previously captured faces needed by this ASCII/Café/math fixture are replayed; unused unavailable ranges/families are omitted.",
+    "originalCssUrl": "https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Special+Elite&display=swap",
+    "originalCssSha256": "b5c5990a16e7103cc145f332a58b3e4fb0e34b19ff0a2e3f0c7d8b69062b78d5",
+    "localCssSha256": "5c246196d8cbfd3f37845f4539c07d5dc0d9a763c6097e441ec398df18b0de56",
+    "keptFaces": 16,
+    "files": [
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/librebaskerville/v24/kmKWZrc3Hgbbcjq75U4uslyuy4kn0qNccR04_RUJeby2OU36SjNNluc.woff2",
+        "file": "kmKWZrc3Hgbbcjq75U4uslyuy4kn0qNccR04_RUJeby2OU36SjNNluc.woff2",
+        "sha256": "efb7e5f4376a557314f5bb9f5197ef837d86c0ab38e1a50a0ff5c60c3400c629",
+        "bytes": 21564
+      },
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/specialelite/v20/XLYgIZbkc4JPUL5CVArUVL0ntnAOSA.woff2",
+        "file": "XLYgIZbkc4JPUL5CVArUVL0ntnAOSA.woff2",
+        "sha256": "770493d84cbb753cd0573d0f014550583138f40469d137e310d239593a1949d8",
+        "bytes": 53296
+      },
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/dmsans/v17/rP2Hp2ywxg089UriCZOIHQ.woff2",
+        "file": "rP2Hp2ywxg089UriCZOIHQ.woff2",
+        "sha256": "ca72d2bcea8f4daa783dbdfa2d9b46068c3ce38168e05918fb867aa453b4f890",
+        "bytes": 62724
+      },
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/librebaskerville/v24/kmKnZrc3Hgbbcjq75U4uslyuy4kn0qNZaxM.woff2",
+        "file": "kmKnZrc3Hgbbcjq75U4uslyuy4kn0qNZaxM.woff2",
+        "sha256": "22219fb90e3b9bd28debd1825fe8d9a0154a0e31f8b3fa601ac1a0a5aa5e6d1b",
+        "bytes": 33872
+      },
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/lora/v37/0QIhMX1D_JOuMw_LIftL.woff2",
+        "file": "0QIhMX1D_JOuMw_LIftL.woff2",
+        "sha256": "d824d807d4d832d12c87932d0b8ec1314dcfd502157a56dee6bb04cf8a3768ae",
+        "bytes": 40772
+      },
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/lora/v37/0QIvMX1D_JOuMwr7Iw.woff2",
+        "file": "0QIvMX1D_JOuMwr7Iw.woff2",
+        "sha256": "ddb8c66035104e233fc024669183aad3738b6daa16deee2ebb1241bd0f98ace1",
+        "bytes": 37788
+      },
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/lora/v37/0QIvMX1D_JOuM3b7I-NP.woff2",
+        "file": "0QIvMX1D_JOuM3b7I-NP.woff2",
+        "sha256": "a8c4cb778ab6202d22bdea2ccc8d7e7caf802cfe0a7ce37df7b212f82341468f",
+        "bytes": 29240
+      }
+    ]
+  },
+  "sourceHashes": {
+    "src/root.tsx": "782141e806ce60765944cfbe70a9d8c497e8b37b1b09c5e8a46e971c4a99839b",
+    "src/global.css": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+    "src/components/editor/extensions/math.ts": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2",
+    "src/components/editor/math/math-source-editor.ts": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb",
+    "src/components/editor/math/math-renderer.ts": "0babc59d53aaf2ae9d3e23cf7dc7b2a98243e9d6682fecf622eda1eaddb02472",
+    "src/components/editor/math/math.css": "f29bbdea2806650b758422416d2a8e08a5a985f908feeddc8442362c412308b0",
+    "src/components/editor/math/katex.min.css": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "node_modules/@tiptap/core/package.json": "33458eb2a6d085c60d13b3a467a3549521a3ec0c70163a851f47f2e963f2e842",
+    "node_modules/@tiptap/starter-kit/package.json": "731f367feb38431200df4de2c657e6afa26a747446221cc3c1c5a0a860a51cdb",
+    "node_modules/katex/package.json": "866b2c9be9067df41e016cd8e59722c21a282040b4fee39964f07a6c66969a9a",
+    "desktop/gpui/target/verification/source-nodeview-server.ts": "badf2923774eed24303a6d234fe6883e045398c21ba4f1ede696568d5ddc793e",
+    "desktop/gpui/fixtures/math-write/nodeview/original.css": "71ddc6c68996dc01fed4c53b636dac92d573440504478b8cda76a4778ae701b7",
+    "desktop/gpui/fixtures/math-write/nodeview/original-fonts.css": "5c246196d8cbfd3f37845f4539c07d5dc0d9a763c6097e441ec398df18b0de56",
+    "desktop/gpui/fixtures/math-write/nodeview/font-replay.json": "b55044a7548613480247c1bb7e36fa740b7a94efe02548035ce1ea4601c8b4fb",
+    "desktop/gpui/fixtures/math-write/source-inline-geometry/cases.json": "4d3334dc4c37922db8750d83a20fcca195bd7c587d7886669f2f8d9dcaf14079",
+    "desktop/gpui/fixtures/math-write/source-inline-geometry/client.ts": "a8c61d83b5dcb6a33f583624914e448a4ae08259d32def0458aa089e940b2beb",
+    "desktop/gpui/fixtures/math-write/source-inline-geometry/fixture-server.ts": "e997a23fc2eb325ba22d6248556321560eb645b3ba5a972df6695a58edb0cdec"
+  },
+  "casesSha256": "4d3334dc4c37922db8750d83a20fcca195bd7c587d7886669f2f8d9dcaf14079",
+  "scope": "Frozen original Source and authored scaffold input claims from the inspected Parent provenance; not proof of execution or JSON authenticity.",
+  "bundlePolicy": "Require recorded bundle digests, without claiming a supplied digest authenticates execution. Parent must retain the actual server/collector provenance."
+}

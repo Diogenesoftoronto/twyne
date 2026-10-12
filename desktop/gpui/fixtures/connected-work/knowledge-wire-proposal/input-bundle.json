@@ -1,0 +1,11 @@
+{
+  "convex/knowledge.ts": {
+    "sha256": "499fb2220f2f0d6e10de2b185ad58542b70ea486d667736133bd02c52e3ca2a4"
+  },
+  "src/utils/account-knowledge.ts": {
+    "sha256": "a4d7c4b864f26f5c6eeded32cb4cef9b74b2abbcc1eb186e3e22819d7780c517"
+  },
+  "src/utils/mcp-client.ts": {
+    "sha256": "ce38a806f8242fb285dbf48c9509032eace9f3662d346812e821c0c7181c0ad7"
+  }
+}

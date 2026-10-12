@@ -1,0 +1,23 @@
+diff --git a/desktop/gpui/Cargo.toml b/desktop/gpui/Cargo.toml
+--- a/desktop/gpui/Cargo.toml
++++ b/desktop/gpui/Cargo.toml
+@@ -10,6 +10,7 @@
+ default = ["desktop"]
+ desktop = ["dep:gpui-kit", "dep:image", "dep:roxmltree", "dep:base64", "dep:hypher", "dep:unicode-linebreak", "dep:x11rb", "dep:gpui-linux", "native-typst"]
+ native-typst = ["dep:typst", "dep:typst-pdf", "dep:typst-svg", "dep:sha2", "dep:image"]
++native-audio = ["dep:sha2"]
+ ui-tests = ["desktop", "gpui-kit/test-support"]
+ 
+ [dependencies]
+diff --git a/desktop/gpui/src/lib.rs b/desktop/gpui/src/lib.rs
+--- a/desktop/gpui/src/lib.rs
++++ b/desktop/gpui/src/lib.rs
+@@ -39,6 +39,8 @@
+ #[cfg(feature = "desktop")]
+ pub mod native_accounts;
+ pub mod native_collaboration;
++#[cfg(feature = "native-audio")]
++pub mod native_audio;
+ #[cfg(feature = "native-typst")]
+ pub mod native_typst;
+ #[cfg(feature = "desktop")]

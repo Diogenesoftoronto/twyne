@@ -1,0 +1,42 @@
+--- a/desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/analyze.py
++++ b/desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/analyze.py
+@@ -191,10 +191,18 @@
+         require(layout_count <= 200_000 and all(len(self.layout[key]) == layout_count for key in
+                 ("bounds", "text", "styles")), "SNAPSHOT_LAYOUT_TABLE", "Raw layout columns are inconsistent.")
+         self.by_node = {}
++        self.fragmented_nodes = set()
+         for i, node in enumerate(self.layout["nodeIndex"]):
+-            require(integer(node) and 0 <= node < count and node not in self.by_node,
+-                    "SNAPSHOT_LAYOUT_OWNER", "Duplicate/invalid layout owner; unsupported fragmentation.")
+-            self.by_node[node] = i
++            require(integer(node) and 0 <= node < count,
++                    "SNAPSHOT_LAYOUT_OWNER", "Invalid raw layout owner.")
++            if node in self.fragmented_nodes:
++                continue
++            if node in self.by_node:
++                # Keep no chosen row for a fragmented owner, even identical rows.
++                self.fragmented_nodes.add(node)
++                del self.by_node[node]
++            else:
++                self.by_node[node] = i
+         box_count = len(self.text_boxes["layoutIndex"])
+         require(box_count <= 200_000 and all(len(self.text_boxes[key]) == box_count for key in
+                 ("start", "length", "bounds")), "SNAPSHOT_TEXT_TABLE", "Raw text-box columns are inconsistent.")
+@@ -215,6 +223,8 @@
+ 
+     def node_bounds(self, node):
+         index = self.index(node)
++        require(index not in self.fragmented_nodes, "SNAPSHOT_SELECTED_FRAGMENTATION",
++                "Selected node has multiple raw layout rows; none is chosen or merged.")
+         require(index in self.by_node, "SNAPSHOT_LAYOUT_MISSING", "Observed node has no raw layout.")
+         return bounds(self.layout["bounds"][self.by_node[index]])
+ 
+@@ -231,6 +241,8 @@
+         for index in self.children.get(self.index(owner), []):
+             if self.nodes["nodeType"][index] != 3:
+                 continue
++            require(index not in self.fragmented_nodes, "SNAPSHOT_SELECTED_FRAGMENTATION",
++                    "Selected direct text has multiple raw layout rows; none is chosen or merged.")
+             require(index in self.by_node, "MISSING_TEXT_LAYOUT", "Direct text node has no raw layout.")
+             layout_index = self.by_node[index]
+             text = self.string(self.layout["text"][layout_index])

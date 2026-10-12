@@ -85,6 +85,7 @@ beforeEach(async () => {
     play: () => {
       plays++;
     },
+    outputLevel: () => 0.4,
   };
 });
 afterEach(() => {
@@ -155,6 +156,12 @@ test("microphone stays live during output and transcripts grow independently", a
     userTranscript: "Please revise this.",
     assistantTranscript: "I'm listening.",
   });
+  expect(live.liveVoiceState().turns).toEqual([
+    { role: "user", text: "Please " },
+    { role: "assistant", text: "I'm listening." },
+    { role: "user", text: "revise this." },
+  ]);
+  expect(live.liveVoiceLevels()).toEqual({ input: 0.5, output: 0.4 });
   live.muteLiveVoice();
   expect(muted).toBe(true);
   const before = socket.sent.length;

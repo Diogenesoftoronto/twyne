@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "status": "filesystem hashes only; no renderer or test execution",
+  "versions": {
+    "gpui-kit": "0.7.0",
+    "gpui-pre": "0.3.7",
+    "wgpu": "29.0.4"
+  },
+  "workspace_inputs_at_authoring": {
+    "desktop/gpui/Cargo.toml": {
+      "bytes": 2797,
+      "sha256": "ae5e5227ee9e51256757a9f7c13b4868b314f3bd70fe2066147417d02a02230e"
+    },
+    "desktop/gpui/Cargo.lock": {
+      "bytes": 255948,
+      "sha256": "acc32d30b588d0fd3ca3b4658661f1be9eb9051da3ab59fa641ce6e573cb5119"
+    },
+    "desktop/gpui/src/assets.rs": {
+      "bytes": 7917,
+      "sha256": "4c50e8fa9968b4e27292bb749f267bffc67482886c8053546acb85d92c2fdc92"
+    },
+    "desktop/gpui/src/theme.rs": {
+      "bytes": 66732,
+      "sha256": "2d04ffd22eb01a4f7f6c45e3dd64424e9a5a4e6c91860f01079923de2722320e"
+    },
+    "desktop/gpui/assets/fonts/dmsans-DMSans-Regular.ttf": {
+      "bytes": 78256,
+      "sha256": "a95a338942aa357145427be7c963ff691f9fe859c3512d9c0483e1914d57a208"
+    },
+    "desktop/gpui/assets/fonts/dmsans-DMSans-Bold.ttf": {
+      "bytes": 78356,
+      "sha256": "6a6924b35d757e32b21d611733d5b9a7bb6234b07b75334b0e2d2359985b26ee"
+    },
+    "src/global.css": {
+      "bytes": 205797,
+      "sha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2"
+    },
+    "desktop/gpui/fixtures/dossier-multiply/editorial-4-group.svg": {
+      "bytes": 1770,
+      "sha256": "3add895f34f4f485485752b93407bf91cc903ead62271f3046e8b14b4c746c06"
+    },
+    "desktop/gpui/fixtures/dossier-multiply/nightpress-4-group.svg": {
+      "bytes": 1770,
+      "sha256": "41e30f7c32b959ba1cf04b3492fac93b2a617ed7a7f4fb6fbcd9cadb473e2bf9"
+    },
+    "desktop/gpui/fixtures/dossier-multiply/source-vectors.json": {
+      "bytes": 172448,
+      "sha256": "ef17cafdd6ec62febeb3152835b4cd3737e6374a27efc8ebe5f2be574e18aa4f"
+    },
+    "desktop/gpui/fixtures/dossier-multiply/integration.patch": {
+      "bytes": 23456,
+      "sha256": "f2d1ae7ef0d3ddca91c1cf56675473180de4d61c73db3eaaa952df2107e02404"
+    },
+    "desktop/gpui/fixtures/dossier-multiply/patch-receipt.json": {
+      "bytes": 2167,
+      "sha256": "68fad9c0525e06a512d67de88d4371a30d471eb8d9f07e4b4c8183b67ff5f219"
+    },
+    "desktop/gpui/vendor/gpui-base/src/input/base/state.rs": {
+      "bytes": 415316,
+      "sha256": "5d120dfc5af48721eccc318797cebcf01dca7ad3be1c6734930d5b448ef20678"
+    },
+    "desktop/gpui/vendor/gpui-pre/src/assets.rs": {
+      "bytes": 3813,
+      "sha256": "44e116678b8b351ecb7fb45a3163b58288d551fbc72049ddc7a8d255d589bcff"
+    },
+    "desktop/gpui/vendor/gpui-pre/src/elements/canvas.rs": {
+      "bytes": 2752,
+      "sha256": "3e09646e725d31c10a88be290c146d6a6e829e0be173e6bc82c138461668e646"
+    },
+    "desktop/gpui/vendor/gpui-pre/src/app/context.rs": {
+      "bytes": 32448,
+      "sha256": "af9c74ba63623cf4f107861e041cddb72cca5b5c65695ab6531bb44fbf7b3573"
+    },
+    "desktop/gpui/vendor/gpui-pre/src/scene.rs": {
+      "bytes": 36811,
+      "sha256": "bec00dd28b02b70238483b20ed7766abc8c361a765ede2281076a888892beac4"
+    },
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": {
+      "bytes": 364621,
+      "sha256": "802a2ef83a5cca1efa95eee62556f9f38a98afc1f500e10b19dbec3eeeac23fc"
+    },
+    "desktop/gpui/vendor/gpui-pre/src/svg_renderer.rs": {
+      "bytes": 19562,
+      "sha256": "a8f6c099eef7df4d5bb858ed098d2fdd59b142f083af75c5fd2546f5dd81398a"
+    },
+    "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs": {
+      "bytes": 111245,
+      "sha256": "8902431999319e8d9fa7688a0bd54113836344f6e01226c35ee61878b0d55c02"
+    },
+    "desktop/gpui/vendor/gpui-pre-wgpu/src/shaders.wgsl": {
+      "bytes": 53079,
+      "sha256": "a7cb934c806b86a999992b82153c4b81e880d17e9cd992627841c2ca5eaf21bd"
+    }
+  },
+  "immutable_cached_public_api_inputs": {
+    "gpui-pre-0.3.7/src/assets.rs": {
+      "bytes": 3813,
+      "sha256": "44e116678b8b351ecb7fb45a3163b58288d551fbc72049ddc7a8d255d589bcff"
+    },
+    "gpui-pre-0.3.7/src/elements/canvas.rs": {
+      "bytes": 2752,
+      "sha256": "3e09646e725d31c10a88be290c146d6a6e829e0be173e6bc82c138461668e646"
+    },
+    "gpui-pre-0.3.7/src/scene.rs": {
+      "bytes": 31085,
+      "sha256": "2162c7da284ca995e5a84a3c9b66fbd65abb63d96858c0cc76c25efd4ba1d66e"
+    },
+    "gpui-pre-0.3.7/src/window.rs": {
+      "bytes": 360620,
+      "sha256": "f8b04c37c6c18cc78b3ddd80844e5aa225e7ebafa689df5d04d1493fd45e61dc"
+    },
+    "gpui-pre-0.3.7/src/svg_renderer.rs": {
+      "bytes": 18565,
+      "sha256": "fb12dae87c0cd4c5f5a1fbbd2f9548d52fde9440c21e3d576dfeb0233eda88a6"
+    },
+    "gpui-pre-0.3.7/src/app/context.rs": {
+      "bytes": 32448,
+      "sha256": "af9c74ba63623cf4f107861e041cddb72cca5b5c65695ab6531bb44fbf7b3573"
+    },
+    "gpui-kit-0.7.0/src/lib.rs": {
+      "bytes": 6258,
+      "sha256": "b862a2f60ae2263647e4caea12dd6e38f50c735a83de5aebb42b0c7010fc568b"
+    },
+    "gpui-component-0.7.0/src/input/input.rs": {
+      "bytes": 53483,
+      "sha256": "d80d9d53e847e55bf632ad5f6d0a9de37561a7d951b9660b2f2f368d8aa71e73"
+    }
+  },
+  "frozen_parent_inputs_match": {
+    "desktop/gpui/fixtures/dossier-multiply/editorial-4-group.svg": true,
+    "desktop/gpui/fixtures/dossier-multiply/nightpress-4-group.svg": true,
+    "desktop/gpui/fixtures/dossier-multiply/integration.patch": true
+  },
+  "parent_vendoring_note": "Parent applied proposal APIs while this fixture was authored; current vendored files are pinned separately from unmodified cached GPUI. This fixture did not edit them.",
+  "manifest_before_sha256": "ae5e5227ee9e51256757a9f7c13b4868b314f3bd70fe2066147417d02a02230e",
+  "manifest_proposed_sha256": "636da6736969cd1a16878750c328ce28ab7b9bf7ee34b1093aaa4ed04f9bd986",
+  "example_registration": "UNAPPLIED; git apply --check not executed in this lane"
+}

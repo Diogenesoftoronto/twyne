@@ -21,7 +21,9 @@ const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
 const files: { path: string; data: Uint8Array }[] = [];
 let pendingRead: Promise<void> | null = null;
 
+const originalLix = { ...(await import("./lix")) };
 mock.module("./lix", () => ({
+  ...originalLix,
   readFileAsJson: async <T>(path: string): Promise<T | null> => {
     if (pendingRead) await pendingRead;
     const row = files.find((r) => r.path === path);
@@ -51,6 +53,7 @@ afterEach(() => {
 });
 
 afterAll(() => {
+  mock.module("./lix", () => originalLix);
   releaseBrowserGlobalsLock();
 });
 
@@ -282,6 +285,83 @@ describe("user-comments persistence", () => {
 
     const remaining = await deleteUserComments(["c-1", "c-2"]);
     expect(remaining.map((comment) => comment.id)).toEqual(["c-3"]);
+  });
+
+  test("an anchor restored during the deletion read keeps its saved thread and replies", async () => {
+    await upsertUserComment({
+      id: "restored-anchor",
+      folioId: "f-1",
+      text: "A saved invitation",
+      author: "You",
+      resolved: false,
+      createdAt: 1,
+      updatedAt: 1,
+      replies: [
+        {
+          id: "editor-reply",
+          author: "Editor",
+          authorKind: "persona",
+          text: "A contribution that must survive undo.",
+          createdAt: 2,
+        },
+      ],
+    });
+    const marks = new Set<string>();
+    let resume!: () => void;
+    pendingRead = new Promise<void>((resolve) => {
+      resume = resolve;
+    });
+    const pruning = deleteUserComments(
+      ["restored-anchor"],
+      (comment) => comment.folioId === "f-1" && !marks.has(comment.id),
+    );
+    marks.add("restored-anchor");
+    pendingRead = null;
+    resume();
+    await pruning;
+    const saved = await loadUserComments();
+    expect(saved[0].text).toBe("A saved invitation");
+    expect(saved[0].replies[0].text).toBe(
+      "A contribution that must survive undo.",
+    );
+  });
+
+  test("pruning stops when account or folio changes during its storage read", async () => {
+    for (const change of ["account", "folio"] as const) {
+      await upsertUserComment({
+        id: `scope-${change}`,
+        folioId: "f-1",
+        text: "Captured account's comment",
+        author: "You",
+        resolved: false,
+        createdAt: 1,
+        updatedAt: 1,
+        replies: [],
+      });
+      let account = "account-a",
+        folioId = "f-1";
+      let resume!: () => void;
+      pendingRead = new Promise<void>((resolve) => {
+        resume = resolve;
+      });
+      const pruning = deleteUserComments(
+        [`scope-${change}`],
+        (comment) =>
+          account === "account-a" &&
+          folioId === "f-1" &&
+          comment.folioId === folioId,
+      );
+      if (change === "account") account = "account-b";
+      else folioId = "f-2";
+      pendingRead = null;
+      resume();
+      await pruning;
+      expect(
+        (await loadUserComments()).some(
+          (comment) => comment.id === `scope-${change}`,
+        ),
+      ).toBe(true);
+    }
   });
 
   test("upsert preserves replies filed before the parent body lands", async () => {

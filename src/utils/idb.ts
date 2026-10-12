@@ -49,6 +49,7 @@ import {
   reconcileTypstSource,
 } from "./typst/document";
 import { clearCrashMirror, readCrashMirror } from "./crash-mirror";
+import { withResidentHallmarks } from "./personas";
 
 const DB_NAME = "twyne";
 /**
@@ -847,8 +848,10 @@ export async function loadPersonasFromIdb(): Promise<Persona[]> {
   if (!isBrowser()) return [];
   try {
     const db = await openDb();
-    return reqAsPromise<Persona[]>(
-      db.transaction("personas").objectStore("personas").getAll(),
+    return withResidentHallmarks(
+      await reqAsPromise<Persona[]>(
+        db.transaction("personas").objectStore("personas").getAll(),
+      ),
     );
   } catch {
     return [];

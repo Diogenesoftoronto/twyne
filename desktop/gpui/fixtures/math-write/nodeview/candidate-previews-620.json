@@ -1,0 +1,2927 @@
+{
+  "profile": "candidate",
+  "viewport": {
+    "width": 620,
+    "height": 860
+  },
+  "rows": [
+    {
+      "id": "ordinary",
+      "value": "x+1",
+      "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"x+1\" data-math-display=\"inline\" aria-label=\"Inline equation: x+1\" class=\"twyne-math twyne-math-inline\">x+1</span> after.</p>",
+      "snapshot": "URL: http://127.0.0.1:5196/?profile=candidate\n- heading \"ordinary / inline\"\n  - role=textbox:\n    - paragraph:\n      - text: \"Before\"\n      - generic \"Inline equation: x+1\":\n        - form:\n          - labeltext:\n            - text: \"Inline LaTeX source\"\n            - role=textbox[name=\"Inline LaTeX source\"i]\n          - generic \"Inline equation preview\":\n              - mathmlmath:\n                - mathmlrow:\n                  - mathmlrow:\n                    - mathmlidentifier:\n                      - text: \"𝑥\"\n            - role=button[name=\"Render equation\"i]\n            - role=button[name=\"Cancel\"i]\n      - text: \"after.\"\n\nuse refToLocator({ ref: 'e3', page: state.page }) to get locators for ref strings.",
+      "geometry": [
+        {
+          "selector": "[data-case=\"ordinary\"] .twyne-math-source-editor",
+          "box": {
+            "x": 100.640625,
+            "y": 201,
+            "width": 352,
+            "height": 203.546875,
+            "quad": [
+              100.640625,
+              201,
+              452.640625,
+              201,
+              452.640625,
+              404.546875,
+              100.640625,
+              404.546875
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "flex",
+            "height": "203.547px",
+            "line-height": "32.4px",
+            "vertical-align": "middle",
+            "width": "352px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"ordinary\"] .twyne-math-source-input",
+          "box": {
+            "x": 112.03125,
+            "y": 240.21875,
+            "width": 329.21875,
+            "height": 57.1875,
+            "quad": [
+              112.03125,
+              240.21875,
+              441.25,
+              240.21875,
+              441.25,
+              297.40625,
+              112.03125,
+              297.40625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            "font-size": "14px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "57.1875px",
+            "line-height": "19.6px",
+            "vertical-align": "baseline",
+            "width": "329.219px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"ordinary\"] .twyne-math-source-preview",
+          "box": {
+            "x": 112.03125,
+            "y": 305.40625,
+            "width": 329.21875,
+            "height": 45.359375,
+            "quad": [
+              112.03125,
+              305.40625,
+              441.25,
+              305.40625,
+              441.25,
+              350.765625,
+              112.03125,
+              350.765625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "45.3594px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "329.219px"
+          },
+          "fonts": {
+            "fonts": []
+          },
+          "html": "<div class=\"twyne-math-source-preview\" aria-live=\"polite\" aria-label=\"Inline equation preview\"><span class=\"twyne-math-source-preview-output\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">x+1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">1</span></span></span></span></span></div>"
+        },
+        {
+          "selector": "[data-case=\"ordinary\"] .twyne-math-source-preview-output",
+          "box": {
+            "x": 255.5625,
+            "y": 314.40625,
+            "width": 42.15625,
+            "height": 27.359375,
+            "quad": [
+              255.5625,
+              314.40625,
+              297.71875,
+              314.40625,
+              297.71875,
+              341.765625,
+              255.5625,
+              341.765625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "27.3594px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "42.1562px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"ordinary\"] .twyne-math-source-preview .katex",
+          "box": {
+            "x": 255.5625,
+            "y": 316.40625,
+            "width": 42.15625,
+            "height": 22,
+            "quad": [
+              255.5625,
+              316.40625,
+              297.71875,
+              316.40625,
+              297.71875,
+              338.40625,
+              255.5625,
+              338.40625
+            ]
+          },
+          "styles": {
+            "position": "relative",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "18.392px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline",
+            "height": "auto",
+            "line-height": "22.0704px",
+            "vertical-align": "baseline",
+            "width": "auto"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"ordinary\"] .twyne-math-source-preview .katex-strut",
+          "box": {
+            "x": 255.5625,
+            "y": 322.6875,
+            "width": 0,
+            "height": 12.25,
+            "quad": [
+              255.5625,
+              322.6875,
+              255.5625,
+              322.6875,
+              255.5625,
+              334.9375,
+              255.5625,
+              334.9375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "18.392px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "12.25px",
+            "line-height": "22.0704px",
+            "vertical-align": "-1.53205px",
+            "width": "0px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"ordinary\"] .twyne-math-source-preview .katex-sizing",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"ordinary\"] .twyne-math-source-preview .mord.mathnormal",
+          "box": {
+            "x": 255.5625,
+            "y": 320.40625,
+            "width": 10.515625,
+            "height": 17,
+            "quad": [
+              255.5625,
+              320.40625,
+              266.078125,
+              320.40625,
+              266.078125,
+              337.40625,
+              255.5625,
+              337.40625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Math",
+            "font-size": "18.392px",
+            "font-style": "italic",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline",
+            "height": "auto",
+            "line-height": "22.0704px",
+            "vertical-align": "baseline",
+            "width": "auto"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "KaTeX_Math",
+                "postScriptName": "KaTeX_Math-Italic",
+                "isCustomFont": true,
+                "glyphCount": 1
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"ordinary\"] .twyne-math-source-save",
+          "box": {
+            "x": 194.015625,
+            "y": 358.765625,
+            "width": 161.125,
+            "height": 34.390625,
+            "quad": [
+              194.015625,
+              358.765625,
+              355.140625,
+              358.765625,
+              355.140625,
+              393.15625,
+              194.015625,
+              393.15625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "161.125px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 15
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"ordinary\"] .twyne-math-source-cancel",
+          "box": {
+            "x": 361.53125,
+            "y": 358.765625,
+            "width": 79.71875,
+            "height": 34.390625,
+            "quad": [
+              361.53125,
+              358.765625,
+              441.25,
+              358.765625,
+              441.25,
+              393.15625,
+              361.53125,
+              393.15625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "79.7188px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 6
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fraction",
+      "value": "\\frac{1}{1+x^2}",
+      "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"\\frac{1}{1+x^2}\" data-math-display=\"inline\" aria-label=\"Inline equation: \\frac{1}{1+x^2}\" class=\"twyne-math twyne-math-inline\">\\frac{1}{1+x^2}</span> after.</p>",
+      "snapshot": "URL: http://127.0.0.1:5196/?profile=candidate\n- heading \"fraction / inline\"\n  - role=textbox:\n    - paragraph:\n      - text: \"Before\"\n      - generic \"Inline equation: \\frac{1}{1+x^2}\":\n        - form:\n          - labeltext:\n            - text: \"Inline LaTeX source\"\n            - role=textbox[name=\"Inline LaTeX source\"i]\n          - generic \"Inline equation preview\":\n              - mathmlmath:\n                - mathmlrow:\n                  - mathmlrow:\n                    - mathmlfraction:\n                      - mathmlrow:\n                        - mathmlsup:\n                          - mathmlidentifier:\n                            - text: \"𝑥\"\n            - role=button[name=\"Render equation\"i]\n            - role=button[name=\"Cancel\"i]\n      - text: \"after.\"\n\nuse refToLocator({ ref: 'e3', page: state.page }) to get locators for ref strings.",
+      "geometry": [
+        {
+          "selector": "[data-case=\"fraction\"] .twyne-math-source-editor",
+          "box": {
+            "x": 100.640625,
+            "y": 319.484375,
+            "width": 352,
+            "height": 203.546875,
+            "quad": [
+              100.640625,
+              319.484375,
+              452.640625,
+              319.484375,
+              452.640625,
+              523.03125,
+              100.640625,
+              523.03125
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "flex",
+            "height": "203.547px",
+            "line-height": "32.4px",
+            "vertical-align": "middle",
+            "width": "352px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"fraction\"] .twyne-math-source-input",
+          "box": {
+            "x": 112.03125,
+            "y": 358.703125,
+            "width": 329.21875,
+            "height": 57.1875,
+            "quad": [
+              112.03125,
+              358.703125,
+              441.25,
+              358.703125,
+              441.25,
+              415.890625,
+              112.03125,
+              415.890625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            "font-size": "14px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "57.1875px",
+            "line-height": "19.6px",
+            "vertical-align": "baseline",
+            "width": "329.219px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"fraction\"] .twyne-math-source-preview",
+          "box": {
+            "x": 112.03125,
+            "y": 423.890625,
+            "width": 329.21875,
+            "height": 45.359375,
+            "quad": [
+              112.03125,
+              423.890625,
+              441.25,
+              423.890625,
+              441.25,
+              469.25,
+              112.03125,
+              469.25
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "45.3594px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "329.219px"
+          },
+          "fonts": {
+            "fonts": []
+          },
+          "html": "<div class=\"twyne-math-source-preview\" aria-live=\"polite\" aria-label=\"Inline equation preview\"><span class=\"twyne-math-source-preview-output\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><msup><mi>x</mi><mn>2</mn></msup></mrow></mfrac></mrow><annotation encoding=\"application/x-tex\">\\frac{1}{1+x^2}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2484em;vertical-align:-0.4033em;\"></span><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8451em;\"><span style=\"top:-2.655em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">1</span><span class=\"mbin mtight\">+</span><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">x</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7463em;\"><span style=\"top:-2.786em;margin-right:0.0714em;\"><span class=\"pstrut\" style=\"height:2.5em;\"></span><span class=\"katex-sizing reset-size3 size1 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.394em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">1</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.4033em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span></span></span></div>"
+        },
+        {
+          "selector": "[data-case=\"fraction\"] .twyne-math-source-preview-output",
+          "box": {
+            "x": 259.78125,
+            "y": 432.890625,
+            "width": 33.71875,
+            "height": 27.359375,
+            "quad": [
+              259.78125,
+              432.890625,
+              293.5,
+              432.890625,
+              293.5,
+              460.25,
+              259.78125,
+              460.25
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "27.3594px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "33.7188px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"fraction\"] .twyne-math-source-preview .katex",
+          "box": {
+            "x": 259.78125,
+            "y": 434.890625,
+            "width": 33.71875,
+            "height": 22,
+            "quad": [
+              259.78125,
+              434.890625,
+              293.5,
+              434.890625,
+              293.5,
+              456.890625,
+              259.78125,
+              456.890625
+            ]
+          },
+          "styles": {
+            "position": "relative",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "18.392px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline",
+            "height": "auto",
+            "line-height": "22.0704px",
+            "vertical-align": "baseline",
+            "width": "auto"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"fraction\"] .twyne-math-source-preview .katex-strut",
+          "box": {
+            "x": 259.78125,
+            "y": 436.34375,
+            "width": 0,
+            "height": 22.953125,
+            "quad": [
+              259.78125,
+              436.34375,
+              259.78125,
+              436.34375,
+              259.78125,
+              459.296875,
+              259.78125,
+              459.296875
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "18.392px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "22.9531px",
+            "line-height": "22.0704px",
+            "vertical-align": "-7.41749px",
+            "width": "0px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"fraction\"] .twyne-math-source-preview .katex-sizing",
+          "box": {
+            "x": 261.984375,
+            "y": 447.234375,
+            "width": 29.3125,
+            "height": 16.4375,
+            "quad": [
+              261.984375,
+              447.234375,
+              291.296875,
+              447.234375,
+              291.296875,
+              463.671875,
+              261.984375,
+              463.671875
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "12.8744px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "16.4375px",
+            "line-height": "15.4493px",
+            "vertical-align": "baseline",
+            "width": "29.3125px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"fraction\"] .twyne-math-source-preview .mord.mathnormal",
+          "box": {
+            "x": 278.4375,
+            "y": 449.234375,
+            "width": 7.359375,
+            "height": 12,
+            "quad": [
+              278.4375,
+              449.234375,
+              285.796875,
+              449.234375,
+              285.796875,
+              461.234375,
+              278.4375,
+              461.234375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Math",
+            "font-size": "12.8744px",
+            "font-style": "italic",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline",
+            "height": "auto",
+            "line-height": "15.4493px",
+            "vertical-align": "baseline",
+            "width": "auto"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "KaTeX_Math",
+                "postScriptName": "KaTeX_Math-Italic",
+                "isCustomFont": true,
+                "glyphCount": 1
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"fraction\"] .twyne-math-source-save",
+          "box": {
+            "x": 194.015625,
+            "y": 477.25,
+            "width": 161.125,
+            "height": 34.390625,
+            "quad": [
+              194.015625,
+              477.25,
+              355.140625,
+              477.25,
+              355.140625,
+              511.640625,
+              194.015625,
+              511.640625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "161.125px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 15
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"fraction\"] .twyne-math-source-cancel",
+          "box": {
+            "x": 361.53125,
+            "y": 477.25,
+            "width": 79.71875,
+            "height": 34.390625,
+            "quad": [
+              361.53125,
+              477.25,
+              441.25,
+              477.25,
+              441.25,
+              511.640625,
+              361.53125,
+              511.640625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "79.7188px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 6
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "radical",
+      "value": "\\sqrt{x^2+y^2}",
+      "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"\\sqrt{x^2+y^2}\" data-math-display=\"inline\" aria-label=\"Inline equation: \\sqrt{x^2+y^2}\" class=\"twyne-math twyne-math-inline\">\\sqrt{x^2+y^2}</span> after.</p>",
+      "snapshot": "URL: http://127.0.0.1:5196/?profile=candidate\n- heading \"radical / inline\"\n  - role=textbox:\n    - paragraph:\n      - text: \"Before\"\n      - generic \"Inline equation: \\sqrt{x^2+y^2}\":\n        - form:\n          - labeltext:\n            - text: \"Inline LaTeX source\"\n            - role=textbox[name=\"Inline LaTeX source\"i]\n          - generic \"Inline equation preview\":\n              - mathmlmath:\n                - mathmlrow:\n                  - mathmlrow:\n                    - mathmlsquareroot:\n                      - mathmlrow:\n                        - mathmlsup:\n                          - mathmlidentifier:\n                            - text: \"𝑥\"\n                        - mathmlsup:\n                          - mathmlidentifier:\n                            - text: \"𝑦\"\n            - role=button[name=\"Render equation\"i]\n            - role=button[name=\"Cancel\"i]\n      - text: \"after.\"\n\nuse refToLocator({ ref: 'e3', page: state.page }) to get locators for ref strings.",
+      "geometry": [
+        {
+          "selector": "[data-case=\"radical\"] .twyne-math-source-editor",
+          "box": {
+            "x": 100.640625,
+            "y": 437.96875,
+            "width": 352,
+            "height": 203.546875,
+            "quad": [
+              100.640625,
+              437.96875,
+              452.640625,
+              437.96875,
+              452.640625,
+              641.515625,
+              100.640625,
+              641.515625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "flex",
+            "height": "203.547px",
+            "line-height": "32.4px",
+            "vertical-align": "middle",
+            "width": "352px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"radical\"] .twyne-math-source-input",
+          "box": {
+            "x": 112.03125,
+            "y": 477.1875,
+            "width": 329.21875,
+            "height": 57.1875,
+            "quad": [
+              112.03125,
+              477.1875,
+              441.25,
+              477.1875,
+              441.25,
+              534.375,
+              112.03125,
+              534.375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            "font-size": "14px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "57.1875px",
+            "line-height": "19.6px",
+            "vertical-align": "baseline",
+            "width": "329.219px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"radical\"] .twyne-math-source-preview",
+          "box": {
+            "x": 112.03125,
+            "y": 542.375,
+            "width": 329.21875,
+            "height": 45.359375,
+            "quad": [
+              112.03125,
+              542.375,
+              441.25,
+              542.375,
+              441.25,
+              587.734375,
+              112.03125,
+              587.734375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "45.3594px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "329.219px"
+          },
+          "fonts": {
+            "fonts": []
+          },
+          "html": "<div class=\"twyne-math-source-preview\" aria-live=\"polite\" aria-label=\"Inline equation preview\"><span class=\"twyne-math-source-preview-output\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup></mrow></msqrt></mrow><annotation encoding=\"application/x-tex\">\\sqrt{x^2+y^2}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.24em;vertical-align:-0.2822em;\"></span><span class=\"mord sqrt\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.9578em;\"><span class=\"svg-align\" style=\"top:-3.2em;\"><span class=\"pstrut\" style=\"height:3.2em;\"></span><span class=\"mord\" style=\"padding-left:1em;\"><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7401em;\"><span style=\"top:-2.989em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7401em;\"><span style=\"top:-2.989em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span><span style=\"top:-2.9178em;\"><span class=\"pstrut\" style=\"height:3.2em;\"></span><span class=\"hide-tail\" style=\"min-width:1.02em;height:1.28em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"1.28em\" viewBox=\"0 0 400000 1296\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M263,681c0.7,0,18,39.7,52,119\nc34,79.3,68.167,158.7,102.5,238c34.3,79.3,51.8,119.3,52.5,120\nc340,-704.7,510.7,-1060.3,512,-1067\nl0 -0\nc4.7,-7.3,11,-11,19,-11\nH40000v40H1012.3\ns-271.3,567,-271.3,567c-38.7,80.7,-84,175,-136,283c-52,108,-89.167,185.3,-111.5,232\nc-22.3,46.7,-33.8,70.3,-34.5,71c-4.7,4.7,-12.3,7,-23,7s-12,-1,-12,-1\ns-109,-253,-109,-253c-72.7,-168,-109.3,-252,-110,-252c-10.7,8,-22,16.7,-34,26\nc-22,17.3,-33.3,26,-34,26s-26,-26,-26,-26s76,-59,76,-59s76,-60,76,-60z\nM1001 80h400000v40h-400000z\"></path></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.2822em;\"><span></span></span></span></span></span></span></span></span></span></div>"
+        },
+        {
+          "selector": "[data-case=\"radical\"] .twyne-math-source-preview-output",
+          "box": {
+            "x": 238.78125,
+            "y": 551.375,
+            "width": 75.71875,
+            "height": 27.359375,
+            "quad": [
+              238.78125,
+              551.375,
+              314.5,
+              551.375,
+              314.5,
+              578.734375,
+              238.78125,
+              578.734375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "27.3594px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "75.7188px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"radical\"] .twyne-math-source-preview .katex",
+          "box": {
+            "x": 238.78125,
+            "y": 553.375,
+            "width": 75.71875,
+            "height": 22,
+            "quad": [
+              238.78125,
+              553.375,
+              314.5,
+              553.375,
+              314.5,
+              575.375,
+              238.78125,
+              575.375
+            ]
+          },
+          "styles": {
+            "position": "relative",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "18.392px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline",
+            "height": "auto",
+            "line-height": "22.0704px",
+            "vertical-align": "baseline",
+            "width": "auto"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"radical\"] .twyne-math-source-preview .katex-strut",
+          "box": {
+            "x": 238.78125,
+            "y": 552.765625,
+            "width": 0,
+            "height": 22.796875,
+            "quad": [
+              238.78125,
+              552.765625,
+              238.78125,
+              552.765625,
+              238.78125,
+              575.5625,
+              238.78125,
+              575.5625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "18.392px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "22.7969px",
+            "line-height": "22.0704px",
+            "vertical-align": "-5.19022px",
+            "width": "0px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"radical\"] .twyne-math-source-preview .katex-sizing",
+          "box": {
+            "x": 267.6875,
+            "y": 554.0625,
+            "width": 6.4375,
+            "height": 15.4375,
+            "quad": [
+              267.6875,
+              554.0625,
+              274.125,
+              554.0625,
+              274.125,
+              569.5,
+              267.6875,
+              569.5
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "12.8744px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "15.4375px",
+            "line-height": "15.4493px",
+            "vertical-align": "baseline",
+            "width": "6.4375px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "KaTeX_Main",
+                "postScriptName": "KaTeX_Main-Regular",
+                "isCustomFont": true,
+                "glyphCount": 1
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"radical\"] .twyne-math-source-preview .mord.mathnormal",
+          "box": {
+            "x": 257.171875,
+            "y": 557.375,
+            "width": 10.515625,
+            "height": 17,
+            "quad": [
+              257.171875,
+              557.375,
+              267.6875,
+              557.375,
+              267.6875,
+              574.375,
+              257.171875,
+              574.375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Math",
+            "font-size": "18.392px",
+            "font-style": "italic",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline",
+            "height": "auto",
+            "line-height": "22.0704px",
+            "vertical-align": "baseline",
+            "width": "auto"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "KaTeX_Math",
+                "postScriptName": "KaTeX_Math-Italic",
+                "isCustomFont": true,
+                "glyphCount": 1
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"radical\"] .twyne-math-source-save",
+          "box": {
+            "x": 194.015625,
+            "y": 595.734375,
+            "width": 161.125,
+            "height": 34.390625,
+            "quad": [
+              194.015625,
+              595.734375,
+              355.140625,
+              595.734375,
+              355.140625,
+              630.125,
+              194.015625,
+              630.125
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "161.125px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 15
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"radical\"] .twyne-math-source-cancel",
+          "box": {
+            "x": 361.53125,
+            "y": 595.734375,
+            "width": 79.71875,
+            "height": 34.390625,
+            "quad": [
+              361.53125,
+              595.734375,
+              441.25,
+              595.734375,
+              441.25,
+              630.125,
+              361.53125,
+              630.125
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "79.7188px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 6
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "scripts",
+      "value": "x^{n+1}_{i}",
+      "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"x^{n+1}_{i}\" data-math-display=\"inline\" aria-label=\"Inline equation: x^{n+1}_{i}\" class=\"twyne-math twyne-math-inline\">x^{n+1}_{i}</span> after.</p>",
+      "snapshot": "URL: http://127.0.0.1:5196/?profile=candidate\n- heading \"scripts / inline\"\n  - role=textbox:\n    - paragraph:\n      - text: \"Before\"\n      - generic \"Inline equation: x^{n+1}_{i}\":\n        - form:\n          - labeltext:\n            - text: \"Inline LaTeX source\"\n            - role=textbox[name=\"Inline LaTeX source\"i]\n          - generic \"Inline equation preview\":\n              - mathmlmath:\n                - mathmlrow:\n                  - mathmlrow:\n                    - mathmlsubsup:\n                      - mathmlidentifier:\n                        - text: \"𝑥\"\n                      - mathmlidentifier:\n                        - text: \"𝑖\"\n                      - mathmlrow:\n                        - mathmlidentifier:\n                          - text: \"𝑛\"\n            - role=button[name=\"Render equation\"i]\n            - role=button[name=\"Cancel\"i]\n      - text: \"after.\"\n\nuse refToLocator({ ref: 'e3', page: state.page }) to get locators for ref strings.",
+      "geometry": [
+        {
+          "selector": "[data-case=\"scripts\"] .twyne-math-source-editor",
+          "box": {
+            "x": 100.640625,
+            "y": 556.453125,
+            "width": 352,
+            "height": 203.546875,
+            "quad": [
+              100.640625,
+              556.453125,
+              452.640625,
+              556.453125,
+              452.640625,
+              760,
+              100.640625,
+              760
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "flex",
+            "height": "203.547px",
+            "line-height": "32.4px",
+            "vertical-align": "middle",
+            "width": "352px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"scripts\"] .twyne-math-source-input",
+          "box": {
+            "x": 112.03125,
+            "y": 595.671875,
+            "width": 329.21875,
+            "height": 57.1875,
+            "quad": [
+              112.03125,
+              595.671875,
+              441.25,
+              595.671875,
+              441.25,
+              652.859375,
+              112.03125,
+              652.859375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            "font-size": "14px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "57.1875px",
+            "line-height": "19.6px",
+            "vertical-align": "baseline",
+            "width": "329.219px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"scripts\"] .twyne-math-source-preview",
+          "box": {
+            "x": 112.03125,
+            "y": 660.859375,
+            "width": 329.21875,
+            "height": 45.359375,
+            "quad": [
+              112.03125,
+              660.859375,
+              441.25,
+              660.859375,
+              441.25,
+              706.21875,
+              112.03125,
+              706.21875
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "45.3594px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "329.219px"
+          },
+          "fonts": {
+            "fonts": []
+          },
+          "html": "<div class=\"twyne-math-source-preview\" aria-live=\"polite\" aria-label=\"Inline equation preview\"><span class=\"twyne-math-source-preview-output\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msubsup><mi>x</mi><mi>i</mi><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow></msubsup></mrow><annotation encoding=\"application/x-tex\">x^{n+1}_{i}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.1311em;vertical-align:-0.2769em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8542em;\"><span style=\"top:-2.4231em;margin-left:0em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">i</span></span></span></span><span style=\"top:-3.1031em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">n</span><span class=\"mbin mtight\">+</span><span class=\"mord mtight\">1</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.2769em;\"><span></span></span></span></span></span></span></span></span></span></span></div>"
+        },
+        {
+          "selector": "[data-case=\"scripts\"] .twyne-math-source-preview-output",
+          "box": {
+            "x": 258.84375,
+            "y": 669.859375,
+            "width": 35.59375,
+            "height": 27.359375,
+            "quad": [
+              258.84375,
+              669.859375,
+              294.4375,
+              669.859375,
+              294.4375,
+              697.21875,
+              258.84375,
+              697.21875
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "27.3594px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "35.5938px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"scripts\"] .twyne-math-source-preview .katex",
+          "box": {
+            "x": 258.84375,
+            "y": 671.859375,
+            "width": 35.59375,
+            "height": 22,
+            "quad": [
+              258.84375,
+              671.859375,
+              294.4375,
+              671.859375,
+              294.4375,
+              693.859375,
+              258.84375,
+              693.859375
+            ]
+          },
+          "styles": {
+            "position": "relative",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "18.392px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline",
+            "height": "auto",
+            "line-height": "22.0704px",
+            "vertical-align": "baseline",
+            "width": "auto"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"scripts\"] .twyne-math-source-preview .katex-strut",
+          "box": {
+            "x": 258.84375,
+            "y": 673.140625,
+            "width": 0,
+            "height": 20.796875,
+            "quad": [
+              258.84375,
+              673.140625,
+              258.84375,
+              673.140625,
+              258.84375,
+              693.9375,
+              258.84375,
+              693.9375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "18.392px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "20.7969px",
+            "line-height": "22.0704px",
+            "vertical-align": "-5.09274px",
+            "width": "0px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"scripts\"] .twyne-math-source-preview .katex-sizing",
+          "box": {
+            "x": 269.359375,
+            "y": 682.953125,
+            "width": 4.4375,
+            "height": 16.4375,
+            "quad": [
+              269.359375,
+              682.953125,
+              273.796875,
+              682.953125,
+              273.796875,
+              699.390625,
+              269.359375,
+              699.390625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "12.8744px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "16.4375px",
+            "line-height": "15.4493px",
+            "vertical-align": "baseline",
+            "width": "4.4375px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"scripts\"] .twyne-math-source-preview .mord.mathnormal",
+          "box": {
+            "x": 258.84375,
+            "y": 675.859375,
+            "width": 10.515625,
+            "height": 17,
+            "quad": [
+              258.84375,
+              675.859375,
+              269.359375,
+              675.859375,
+              269.359375,
+              692.859375,
+              258.84375,
+              692.859375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Math",
+            "font-size": "18.392px",
+            "font-style": "italic",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline",
+            "height": "auto",
+            "line-height": "22.0704px",
+            "vertical-align": "baseline",
+            "width": "auto"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "KaTeX_Math",
+                "postScriptName": "KaTeX_Math-Italic",
+                "isCustomFont": true,
+                "glyphCount": 1
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"scripts\"] .twyne-math-source-save",
+          "box": {
+            "x": 194.015625,
+            "y": 714.21875,
+            "width": 161.125,
+            "height": 34.390625,
+            "quad": [
+              194.015625,
+              714.21875,
+              355.140625,
+              714.21875,
+              355.140625,
+              748.609375,
+              194.015625,
+              748.609375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "161.125px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 15
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"scripts\"] .twyne-math-source-cancel",
+          "box": {
+            "x": 361.53125,
+            "y": 714.21875,
+            "width": 79.71875,
+            "height": 34.390625,
+            "quad": [
+              361.53125,
+              714.21875,
+              441.25,
+              714.21875,
+              441.25,
+              748.609375,
+              361.53125,
+              748.609375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "79.7188px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 6
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "block",
+      "value": "\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}",
+      "html": "<p>Before block.</p><div data-type=\"block-math\" data-latex=\"\\begin{pmatrix}a&amp;b\\\\c&amp;d\\end{pmatrix}\" data-math-display=\"block\" aria-label=\"Block equation: \\begin{pmatrix}a&amp;b\\\\c&amp;d\\end{pmatrix}\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid;\">\\begin{pmatrix}a&amp;b\\\\c&amp;d\\end{pmatrix}</div><p>After block.</p>",
+      "snapshot": "URL: http://127.0.0.1:5196/?profile=candidate\n- heading \"block / block\"\n  - role=textbox:\n    - paragraph:\n      - text: \"Before block.\"\n    - group \"Block equation: \\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}\":\n      - form:\n        - labeltext:\n          - text: \"Block LaTeX source\"\n          - role=textbox[name=\"Block LaTeX source\"i]\n        - generic \"Block equation preview\":\n                - mathmlmath:\n                  - mathmlrow:\n                    - mathmlrow:\n                      - mathmloperator:\n                        - text: \"(\"\n                      - mathmltable:\n                        - mathmltablerow:\n                          - mathmltablecell:\n                            - mathmlrow:\n                              - mathmlidentifier:\n                                - text: \"𝑎\"\n                          - mathmltablecell:\n                            - mathmlrow:\n                              - mathmlidentifier:\n                                - text: \"𝑏\"\n                        - mathmltablerow:\n                          - mathmltablecell:\n                            - mathmlrow:\n                              - mathmlidentifier:\n                                - text: \"𝑐\"\n                          - mathmltablecell:\n                            - mathmlrow:\n                              - mathmlidentifier:\n                                - text: \"𝑑\"\n                      - mathmloperator:\n                        - text: \")\"\n          - role=button[name=\"Render equation\"i]\n          - role=button[name=\"Cancel\"i]\n    - paragraph:\n      - text: \"After block.\"\n\nuse refToLocator({ ref: 'e3', page: state.page }) to get locators for ref strings.",
+      "geometry": [
+        {
+          "selector": "[data-case=\"block\"] .twyne-math-source-editor",
+          "box": {
+            "x": 57,
+            "y": 735.328125,
+            "width": 506,
+            "height": 270.296875,
+            "quad": [
+              57,
+              735.328125,
+              563,
+              735.328125,
+              563,
+              1005.625,
+              57,
+              1005.625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "flex",
+            "height": "270.297px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "506px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"block\"] .twyne-math-source-input",
+          "box": {
+            "x": 68.390625,
+            "y": 774.546875,
+            "width": 483.21875,
+            "height": 76.78125,
+            "quad": [
+              68.390625,
+              774.546875,
+              551.609375,
+              774.546875,
+              551.609375,
+              851.328125,
+              68.390625,
+              851.328125
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            "font-size": "14px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "76.7812px",
+            "line-height": "19.6px",
+            "vertical-align": "baseline",
+            "width": "483.219px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"block\"] .twyne-math-source-preview",
+          "box": {
+            "x": 68.390625,
+            "y": 859.328125,
+            "width": 483.21875,
+            "height": 92.515625,
+            "quad": [
+              68.390625,
+              859.328125,
+              551.609375,
+              859.328125,
+              551.609375,
+              951.84375,
+              68.390625,
+              951.84375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "92.5156px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "483.219px"
+          },
+          "fonts": {
+            "fonts": []
+          },
+          "html": "<div class=\"twyne-math-source-preview\" aria-live=\"polite\" aria-label=\"Block equation preview\"><span class=\"twyne-math-source-preview-output\"><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mo fence=\"true\">(</mo><mtable rowspacing=\"0.16em\" columnalign=\"center center\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>a</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>b</mi></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>c</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>d</mi></mstyle></mtd></mtr></mtable><mo fence=\"true\">)</mo></mrow><annotation encoding=\"application/x-tex\">\\begin{pmatrix}a&amp;b\\\\c&amp;d\\end{pmatrix}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.4em;vertical-align:-0.95em;\"></span><span class=\"minner\"><span class=\"mopen delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">(</span></span><span class=\"mord\"><span class=\"mtable\"><span class=\"col-align-c\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.45em;\"><span style=\"top:-3.61em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span></span></span><span style=\"top:-2.41em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">c</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.95em;\"><span></span></span></span></span></span><span class=\"arraycolsep\" style=\"width:0.5em;\"></span><span class=\"arraycolsep\" style=\"width:0.5em;\"></span><span class=\"col-align-c\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.45em;\"><span style=\"top:-3.61em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">b</span></span></span><span style=\"top:-2.41em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">d</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.95em;\"><span></span></span></span></span></span></span></span><span class=\"mclose delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">)</span></span></span></span></span></span></span></span></div>"
+        },
+        {
+          "selector": "[data-case=\"block\"] .twyne-math-source-preview-output",
+          "box": {
+            "x": 277.625,
+            "y": 868.328125,
+            "width": 64.734375,
+            "height": 74.515625,
+            "quad": [
+              277.625,
+              868.328125,
+              342.359375,
+              868.328125,
+              342.359375,
+              942.84375,
+              277.625,
+              942.84375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "74.5156px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "64.7344px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"block\"] .twyne-math-source-preview .katex",
+          "box": {
+            "x": 277.625,
+            "y": 883.515625,
+            "width": 64.734375,
+            "height": 44.140625,
+            "quad": [
+              277.625,
+              883.515625,
+              342.359375,
+              883.515625,
+              342.359375,
+              927.65625,
+              277.625,
+              927.65625
+            ]
+          },
+          "styles": {
+            "position": "relative",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "18.392px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "44.1406px",
+            "line-height": "22.0704px",
+            "vertical-align": "baseline",
+            "width": "64.7344px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"block\"] .twyne-math-source-preview .katex-strut",
+          "box": {
+            "x": 277.625,
+            "y": 883.515625,
+            "width": 0,
+            "height": 44.140625,
+            "quad": [
+              277.625,
+              883.515625,
+              277.625,
+              883.515625,
+              277.625,
+              927.65625,
+              277.625,
+              927.65625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "18.392px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "44.1406px",
+            "line-height": "22.0704px",
+            "vertical-align": "-17.4724px",
+            "width": "0px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"block\"] .twyne-math-source-preview .katex-sizing",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"block\"] .twyne-math-source-preview .mord.mathnormal",
+          "box": {
+            "x": 291.15625,
+            "y": 885.96875,
+            "width": 9.734375,
+            "height": 17,
+            "quad": [
+              291.15625,
+              885.96875,
+              300.890625,
+              885.96875,
+              300.890625,
+              902.96875,
+              291.15625,
+              902.96875
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Math",
+            "font-size": "18.392px",
+            "font-style": "italic",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline",
+            "height": "auto",
+            "line-height": "22.0704px",
+            "vertical-align": "baseline",
+            "width": "auto"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "KaTeX_Math",
+                "postScriptName": "KaTeX_Math-Italic",
+                "isCustomFont": true,
+                "glyphCount": 1
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"block\"] .twyne-math-source-save",
+          "box": {
+            "x": 304.375,
+            "y": 959.84375,
+            "width": 161.125,
+            "height": 34.390625,
+            "quad": [
+              304.375,
+              959.84375,
+              465.5,
+              959.84375,
+              465.5,
+              994.234375,
+              304.375,
+              994.234375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "161.125px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 15
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"block\"] .twyne-math-source-cancel",
+          "box": {
+            "x": 471.890625,
+            "y": 959.84375,
+            "width": 79.71875,
+            "height": 34.390625,
+            "quad": [
+              471.890625,
+              959.84375,
+              551.609375,
+              959.84375,
+              551.609375,
+              994.234375,
+              471.890625,
+              994.234375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "79.7188px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 6
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "unicode",
+      "value": "\\text{Café}\\quad\\alpha",
+      "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"\\text{Café}\\quad\\alpha\" data-math-display=\"inline\" aria-label=\"Inline equation: \\text{Café}\\quad\\alpha\" class=\"twyne-math twyne-math-inline\">\\text{Café}\\quad\\alpha</span> after.</p>",
+      "snapshot": "URL: http://127.0.0.1:5196/?profile=candidate\n- heading \"unicode / inline\"\n  - role=textbox:\n    - paragraph:\n      - text: \"Before\"\n      - generic \"Inline equation: \\text{Café}\\quad\\alpha\":\n        - form:\n          - labeltext:\n            - text: \"Inline LaTeX source\"\n            - role=textbox[name=\"Inline LaTeX source\"i]\n          - generic \"Inline equation preview\":\n              - mathmlmath:\n                - mathmlrow:\n                  - mathmlrow:\n                    - mathmlrow:\n                      - mathmlover:\n                        - mathmloperator:\n                          - text: \"ˊ\"\n                    - mathmlidentifier:\n                      - text: \"𝛼\"\n            - role=button[name=\"Render equation\"i]\n            - role=button[name=\"Cancel\"i]\n      - text: \"after.\"\n\nuse refToLocator({ ref: 'e3', page: state.page }) to get locators for ref strings.",
+      "geometry": [
+        {
+          "selector": "[data-case=\"unicode\"] .twyne-math-source-editor",
+          "box": {
+            "x": 100.640625,
+            "y": 739.078125,
+            "width": 352,
+            "height": 203.546875,
+            "quad": [
+              100.640625,
+              739.078125,
+              452.640625,
+              739.078125,
+              452.640625,
+              942.625,
+              100.640625,
+              942.625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "flex",
+            "height": "203.547px",
+            "line-height": "32.4px",
+            "vertical-align": "middle",
+            "width": "352px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"unicode\"] .twyne-math-source-input",
+          "box": {
+            "x": 112.03125,
+            "y": 778.296875,
+            "width": 329.21875,
+            "height": 57.1875,
+            "quad": [
+              112.03125,
+              778.296875,
+              441.25,
+              778.296875,
+              441.25,
+              835.484375,
+              112.03125,
+              835.484375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            "font-size": "14px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "57.1875px",
+            "line-height": "19.6px",
+            "vertical-align": "baseline",
+            "width": "329.219px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"unicode\"] .twyne-math-source-preview",
+          "box": {
+            "x": 112.03125,
+            "y": 843.484375,
+            "width": 329.21875,
+            "height": 45.359375,
+            "quad": [
+              112.03125,
+              843.484375,
+              441.25,
+              843.484375,
+              441.25,
+              888.84375,
+              112.03125,
+              888.84375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "45.3594px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "329.219px"
+          },
+          "fonts": {
+            "fonts": []
+          },
+          "html": "<div class=\"twyne-math-source-preview\" aria-live=\"polite\" aria-label=\"Inline equation preview\"><span class=\"twyne-math-source-preview-output\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mrow><mtext>Caf</mtext><mover accent=\"true\"><mtext>e</mtext><mo>ˊ</mo></mover></mrow><mspace width=\"1em\"></mspace><mi>α</mi></mrow><annotation encoding=\"application/x-tex\">\\text{Café}\\quad\\alpha</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6944em;\"></span><span class=\"mord text\"><span class=\"mord\">Caf</span><span class=\"mord katex-accent\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6944em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\">e</span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"accent-body\" style=\"left:-0.25em;\"><span class=\"mord\">ˊ</span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:1em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0037em;\">α</span></span></span></span></span></div>"
+        },
+        {
+          "selector": "[data-case=\"unicode\"] .twyne-math-source-preview-output",
+          "box": {
+            "x": 243.40625,
+            "y": 852.484375,
+            "width": 66.46875,
+            "height": 27.359375,
+            "quad": [
+              243.40625,
+              852.484375,
+              309.875,
+              852.484375,
+              309.875,
+              879.84375,
+              243.40625,
+              879.84375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "27.3594px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "66.4688px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"unicode\"] .twyne-math-source-preview .katex",
+          "box": {
+            "x": 243.40625,
+            "y": 854.484375,
+            "width": 66.46875,
+            "height": 22,
+            "quad": [
+              243.40625,
+              854.484375,
+              309.875,
+              854.484375,
+              309.875,
+              876.484375,
+              243.40625,
+              876.484375
+            ]
+          },
+          "styles": {
+            "position": "relative",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "18.392px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline",
+            "height": "auto",
+            "line-height": "22.0704px",
+            "vertical-align": "baseline",
+            "width": "auto"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"unicode\"] .twyne-math-source-preview .katex-strut",
+          "box": {
+            "x": 243.40625,
+            "y": 858.71875,
+            "width": 0,
+            "height": 12.765625,
+            "quad": [
+              243.40625,
+              858.71875,
+              243.40625,
+              858.71875,
+              243.40625,
+              871.484375,
+              243.40625,
+              871.484375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Main, \"Times New Roman\", serif",
+            "font-size": "18.392px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline-block",
+            "height": "12.7656px",
+            "line-height": "22.0704px",
+            "vertical-align": "baseline",
+            "width": "0px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"unicode\"] .twyne-math-source-preview .katex-sizing",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"unicode\"] .twyne-math-source-preview .mord.mathnormal",
+          "box": {
+            "x": 298.046875,
+            "y": 858.484375,
+            "width": 11.765625,
+            "height": 17,
+            "quad": [
+              298.046875,
+              858.484375,
+              309.8125,
+              858.484375,
+              309.8125,
+              875.484375,
+              298.046875,
+              875.484375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "KaTeX_Math",
+            "font-size": "18.392px",
+            "font-style": "italic",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "inline",
+            "height": "auto",
+            "line-height": "22.0704px",
+            "vertical-align": "baseline",
+            "width": "auto"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "KaTeX_Math",
+                "postScriptName": "KaTeX_Math-Italic",
+                "isCustomFont": true,
+                "glyphCount": 1
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"unicode\"] .twyne-math-source-save",
+          "box": {
+            "x": 194.015625,
+            "y": 896.84375,
+            "width": 161.125,
+            "height": 34.390625,
+            "quad": [
+              194.015625,
+              896.84375,
+              355.140625,
+              896.84375,
+              355.140625,
+              931.234375,
+              194.015625,
+              931.234375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "161.125px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 15
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"unicode\"] .twyne-math-source-cancel",
+          "box": {
+            "x": 361.53125,
+            "y": 896.84375,
+            "width": 79.71875,
+            "height": 34.390625,
+            "quad": [
+              361.53125,
+              896.84375,
+              441.25,
+              896.84375,
+              441.25,
+              931.234375,
+              361.53125,
+              931.234375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "79.7188px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 6
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "invalid",
+      "value": "\\frac{",
+      "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"\\frac{\" data-math-display=\"inline\" aria-label=\"Inline equation: \\frac{\" class=\"twyne-math twyne-math-inline\">\\frac{</span> after.</p>",
+      "snapshot": "URL: http://127.0.0.1:5196/?profile=candidate\n- heading \"invalid / inline\"\n  - role=textbox:\n    - paragraph:\n      - text: \"Before\"\n      - generic \"Inline equation: \\frac{\":\n        - form:\n          - labeltext:\n            - text: \"Inline LaTeX source\"\n            - role=textbox[name=\"Inline LaTeX source\"i]\n          - generic \"Inline equation preview\":\n            - strong:\n              - text: \"Invalid LaTeX\"\n              - text: \"Unexpected end of input in a macro argument, expected '}' at end of input: \\frac{\"\n            - role=button[name=\"Render equation\"i]\n            - role=button[name=\"Cancel\"i]\n      - text: \"after.\"\n\nuse refToLocator({ ref: 'e3', page: state.page }) to get locators for ref strings.",
+      "geometry": [
+        {
+          "selector": "[data-case=\"invalid\"] .twyne-math-source-editor",
+          "box": {
+            "x": 41,
+            "y": 781.953125,
+            "width": 538,
+            "height": 256,
+            "quad": [
+              41,
+              781.953125,
+              579,
+              781.953125,
+              579,
+              1037.953125,
+              41,
+              1037.953125
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "flex",
+            "height": "256px",
+            "line-height": "32.4px",
+            "vertical-align": "middle",
+            "width": "538px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"invalid\"] .twyne-math-source-input",
+          "box": {
+            "x": 52.390625,
+            "y": 821.171875,
+            "width": 515.21875,
+            "height": 57.1875,
+            "quad": [
+              52.390625,
+              821.171875,
+              567.609375,
+              821.171875,
+              567.609375,
+              878.359375,
+              52.390625,
+              878.359375
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            "font-size": "14px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "57.1875px",
+            "line-height": "19.6px",
+            "vertical-align": "baseline",
+            "width": "515.219px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"invalid\"] .twyne-math-source-preview",
+          "box": {
+            "x": 52.390625,
+            "y": 886.359375,
+            "width": 515.21875,
+            "height": 97.8125,
+            "quad": [
+              52.390625,
+              886.359375,
+              567.609375,
+              886.359375,
+              567.609375,
+              984.171875,
+              52.390625,
+              984.171875
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "baseline",
+            "display": "flex",
+            "height": "97.8125px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "515.219px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Noto Sans Mono",
+                "postScriptName": "NotoSansMono-Regular",
+                "isCustomFont": false,
+                "glyphCount": 80
+              },
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 13
+              }
+            ]
+          },
+          "html": "<div class=\"twyne-math-source-preview twyne-math-source-preview-error\" aria-live=\"polite\" aria-label=\"Inline equation preview\"><strong>Invalid LaTeX</strong><span class=\"twyne-math-source-preview-message\">Unexpected end of input in a macro argument, expected '}' at end of input: \\frac{</span></div>"
+        },
+        {
+          "selector": "[data-case=\"invalid\"] .twyne-math-source-preview-output",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"invalid\"] .twyne-math-source-preview .katex",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"invalid\"] .twyne-math-source-preview .katex-strut",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"invalid\"] .twyne-math-source-preview .katex-sizing",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"invalid\"] .twyne-math-source-preview .mord.mathnormal",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"invalid\"] .twyne-math-source-save",
+          "box": {
+            "x": 320.375,
+            "y": 992.171875,
+            "width": 161.125,
+            "height": 34.390625,
+            "quad": [
+              320.375,
+              992.171875,
+              481.5,
+              992.171875,
+              481.5,
+              1026.5625,
+              320.375,
+              1026.5625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "161.125px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 15
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"invalid\"] .twyne-math-source-cancel",
+          "box": {
+            "x": 487.890625,
+            "y": 992.171875,
+            "width": 79.71875,
+            "height": 34.390625,
+            "quad": [
+              487.890625,
+              992.171875,
+              567.609375,
+              992.171875,
+              567.609375,
+              1026.5625,
+              487.890625,
+              1026.5625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "79.7188px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 6
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "empty",
+      "value": "",
+      "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"\" data-math-display=\"inline\" aria-label=\"Inline equation: empty\" class=\"twyne-math twyne-math-inline\"></span> after.</p>",
+      "snapshot": "URL: http://127.0.0.1:5196/?profile=candidate\n- heading \"empty / inline\"\n  - role=textbox:\n    - paragraph:\n      - text: \"Before\"\n      - generic \"Inline equation: empty\":\n        - form:\n          - labeltext:\n            - text: \"Inline LaTeX source\"\n            - role=textbox[name=\"Inline LaTeX source\"i]\n          - generic \"Inline equation preview\":\n            - text: \"A live preview of the equation appears here.\"\n            - role=button[name=\"Render equation\"i]\n            - role=button[name=\"Cancel\"i]\n      - text: \"after.\"\n\nuse refToLocator({ ref: 'e3', page: state.page }) to get locators for ref strings.",
+      "geometry": [
+        {
+          "selector": "[data-case=\"empty\"] .twyne-math-source-editor",
+          "box": {
+            "x": 100.640625,
+            "y": 761.125,
+            "width": 383.40625,
+            "height": 203.546875,
+            "quad": [
+              100.640625,
+              761.125,
+              484.046875,
+              761.125,
+              484.046875,
+              964.671875,
+              100.640625,
+              964.671875
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "flex",
+            "height": "203.547px",
+            "line-height": "32.4px",
+            "vertical-align": "middle",
+            "width": "383.406px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"empty\"] .twyne-math-source-input",
+          "box": {
+            "x": 112.03125,
+            "y": 800.34375,
+            "width": 360.625,
+            "height": 57.1875,
+            "quad": [
+              112.03125,
+              800.34375,
+              472.65625,
+              800.34375,
+              472.65625,
+              857.53125,
+              112.03125,
+              857.53125
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            "font-size": "14px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "57.1875px",
+            "line-height": "19.6px",
+            "vertical-align": "baseline",
+            "width": "360.625px"
+          },
+          "fonts": {
+            "fonts": []
+          }
+        },
+        {
+          "selector": "[data-case=\"empty\"] .twyne-math-source-preview",
+          "box": {
+            "x": 112.03125,
+            "y": 865.53125,
+            "width": 360.625,
+            "height": 45.359375,
+            "quad": [
+              112.03125,
+              865.53125,
+              472.65625,
+              865.53125,
+              472.65625,
+              910.890625,
+              112.03125,
+              910.890625
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "15.2px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "45.3594px",
+            "line-height": "27.36px",
+            "vertical-align": "baseline",
+            "width": "360.625px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Noto Sans Mono",
+                "postScriptName": "NotoSansMono-Regular",
+                "isCustomFont": false,
+                "glyphCount": 44
+              }
+            ]
+          },
+          "html": "<div class=\"twyne-math-source-preview\" aria-live=\"polite\" aria-label=\"Inline equation preview\"><span class=\"twyne-math-source-preview-hint\">A live preview of the equation appears here.</span></div>"
+        },
+        {
+          "selector": "[data-case=\"empty\"] .twyne-math-source-preview-output",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"empty\"] .twyne-math-source-preview .katex",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"empty\"] .twyne-math-source-preview .katex-strut",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"empty\"] .twyne-math-source-preview .katex-sizing",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"empty\"] .twyne-math-source-preview .mord.mathnormal",
+          "missing": true
+        },
+        {
+          "selector": "[data-case=\"empty\"] .twyne-math-source-save",
+          "box": {
+            "x": 225.421875,
+            "y": 918.890625,
+            "width": 161.125,
+            "height": 34.390625,
+            "quad": [
+              225.421875,
+              918.890625,
+              386.546875,
+              918.890625,
+              386.546875,
+              953.28125,
+              225.421875,
+              953.28125
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "161.125px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 15
+              }
+            ]
+          }
+        },
+        {
+          "selector": "[data-case=\"empty\"] .twyne-math-source-cancel",
+          "box": {
+            "x": 392.9375,
+            "y": 918.890625,
+            "width": 79.71875,
+            "height": 34.390625,
+            "quad": [
+              392.9375,
+              918.890625,
+              472.65625,
+              918.890625,
+              472.65625,
+              953.28125,
+              392.9375,
+              953.28125
+            ]
+          },
+          "styles": {
+            "position": "static",
+            "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+            "font-size": "18px",
+            "font-style": "normal",
+            "font-weight": "400",
+            "align-items": "normal",
+            "display": "block",
+            "height": "34.3906px",
+            "line-height": "32.4px",
+            "vertical-align": "baseline",
+            "width": "79.7188px"
+          },
+          "fonts": {
+            "fonts": [
+              {
+                "familyName": "Lora",
+                "postScriptName": "Lora-Regular",
+                "isCustomFont": true,
+                "glyphCount": 6
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "final": {
+    "profile": "candidate",
+    "active": "empty",
+    "rows": [
+      {
+        "id": "ordinary",
+        "display": "inline",
+        "source": "x+1",
+        "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"x+1\" data-math-display=\"inline\" aria-label=\"Inline equation: x+1\" class=\"twyne-math twyne-math-inline\">x+1</span> after.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "x+1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after."
+                }
+              ]
+            }
+          ]
+        },
+        "canUndo": false,
+        "canRedo": false
+      },
+      {
+        "id": "fraction",
+        "display": "inline",
+        "source": "\\frac{1}{1+x^2}",
+        "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"\\frac{1}{1+x^2}\" data-math-display=\"inline\" aria-label=\"Inline equation: \\frac{1}{1+x^2}\" class=\"twyne-math twyne-math-inline\">\\frac{1}{1+x^2}</span> after.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "\\frac{1}{1+x^2}"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after."
+                }
+              ]
+            }
+          ]
+        },
+        "canUndo": false,
+        "canRedo": false
+      },
+      {
+        "id": "radical",
+        "display": "inline",
+        "source": "\\sqrt{x^2+y^2}",
+        "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"\\sqrt{x^2+y^2}\" data-math-display=\"inline\" aria-label=\"Inline equation: \\sqrt{x^2+y^2}\" class=\"twyne-math twyne-math-inline\">\\sqrt{x^2+y^2}</span> after.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "\\sqrt{x^2+y^2}"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after."
+                }
+              ]
+            }
+          ]
+        },
+        "canUndo": false,
+        "canRedo": false
+      },
+      {
+        "id": "scripts",
+        "display": "inline",
+        "source": "x^{n+1}_{i}",
+        "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"x^{n+1}_{i}\" data-math-display=\"inline\" aria-label=\"Inline equation: x^{n+1}_{i}\" class=\"twyne-math twyne-math-inline\">x^{n+1}_{i}</span> after.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "x^{n+1}_{i}"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after."
+                }
+              ]
+            }
+          ]
+        },
+        "canUndo": false,
+        "canRedo": false
+      },
+      {
+        "id": "block",
+        "display": "block",
+        "source": "\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}",
+        "html": "<p>Before block.</p><div data-type=\"block-math\" data-latex=\"\\begin{pmatrix}a&amp;b\\\\c&amp;d\\end{pmatrix}\" data-math-display=\"block\" aria-label=\"Block equation: \\begin{pmatrix}a&amp;b\\\\c&amp;d\\end{pmatrix}\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid;\">\\begin{pmatrix}a&amp;b\\\\c&amp;d\\end{pmatrix}</div><p>After block.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before block."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}"
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After block."
+                }
+              ]
+            }
+          ]
+        },
+        "canUndo": false,
+        "canRedo": false
+      },
+      {
+        "id": "unicode",
+        "display": "inline",
+        "source": "\\text{Café}\\quad\\alpha",
+        "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"\\text{Café}\\quad\\alpha\" data-math-display=\"inline\" aria-label=\"Inline equation: \\text{Café}\\quad\\alpha\" class=\"twyne-math twyne-math-inline\">\\text{Café}\\quad\\alpha</span> after.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "\\text{Café}\\quad\\alpha"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after."
+                }
+              ]
+            }
+          ]
+        },
+        "canUndo": false,
+        "canRedo": false
+      },
+      {
+        "id": "invalid",
+        "display": "inline",
+        "source": "\\frac{",
+        "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"\\frac{\" data-math-display=\"inline\" aria-label=\"Inline equation: \\frac{\" class=\"twyne-math twyne-math-inline\">\\frac{</span> after.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "\\frac{"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after."
+                }
+              ]
+            }
+          ]
+        },
+        "canUndo": false,
+        "canRedo": false
+      },
+      {
+        "id": "empty",
+        "display": "inline",
+        "source": "",
+        "html": "<p>Before <span data-type=\"inline-math\" data-latex=\"\" data-math-display=\"inline\" aria-label=\"Inline equation: empty\" class=\"twyne-math twyne-math-inline\"></span> after.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": ""
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after."
+                }
+              ]
+            }
+          ]
+        },
+        "canUndo": false,
+        "canRedo": false
+      }
+    ]
+  },
+  "logs": []
+}

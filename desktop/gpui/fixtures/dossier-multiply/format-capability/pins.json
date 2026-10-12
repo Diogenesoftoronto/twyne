@@ -1,0 +1,50 @@
+{
+  "baselineFiles": {
+    "desktop/gpui/vendor/gpui-pre/src/platform.rs": "9de7e0b0f29c51b149263b9bc9b4061bfbe41849e296b75df9cf259d9bbbdc4c",
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": "802a2ef83a5cca1efa95eee62556f9f38a98afc1f500e10b19dbec3eeeac23fc",
+    "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_atlas.rs": "a83974f0d64bf87bd5d763e1031dfb2ec845e3f100dc0efcafa8aca9129fe8c8",
+    "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs": "8902431999319e8d9fa7688a0bd54113836344f6e01226c35ee61878b0d55c02",
+    "desktop/gpui/vendor/gpui-pre-linux/src/linux/x11/window.rs": "ceab15df2c676ef586491e67aee1e22b70616789e456f66606102dfccd4b4fb8",
+    "desktop/gpui/vendor/gpui-pre-linux/src/linux/wayland/window.rs": "ca16191b42f35c4776d427a858491723ab144de6d4acfbbb323992d20841b897"
+  },
+  "proposedFiles": {
+    "desktop/gpui/vendor/gpui-pre/src/platform.rs": "afeb3dc3e05f74e8f3abb71b7a9d66a32e26cd45f6b8eb7c571480c41f56e1d4",
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": "d4172942e6cb0d6a074ddfc0ad749b07a66f3763d60c775fce245370cb91f938",
+    "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_atlas.rs": "ea2e7360af0803d846ce571a2be0bb2725f72161d3aee891de98958d29abc438",
+    "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs": "9292bc8692725f7e7aaaaa58132b40a895e25c5833f8d8cccdb61dd8ebda53fd",
+    "desktop/gpui/vendor/gpui-pre-linux/src/linux/x11/window.rs": "ae28c8efe233f4d2b31d6a804745d3560784338cbcbdf981bc8a25ac0c2796b8",
+    "desktop/gpui/vendor/gpui-pre-linux/src/linux/wayland/window.rs": "c357e00fcd55f677d2cf1ee911f5665e9346031b54c6f794b9d1472786fccc33"
+  },
+  "staticChecks": {
+    "exactReplacementContextsUnique": true,
+    "windowCapabilityBeforeAtlasAndScene": true,
+    "cachedContextBooleanRetired": true,
+    "testPatchSnippetsExact": true,
+    "sixFilePatchReconstructedInMemoryWithoutSharedWrites": true,
+    "rootAtlasContainsOverridePreserved": true,
+    "sharedFilesystemGitApplyCheck": "not executed; Root owns apply/check/compile"
+  },
+  "status": "unapplied/uncompiled/unexecuted production proposal",
+  "proposedWithTestsFiles": {
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": "1df348e63d51dd87331540a9d6494eda5fab34328373c4f5a0691bf2349e9635",
+    "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs": "94841779bad31dd1dba8ce38cc7c6e00b43c84d59b8e83e89b410eb1992e4161"
+  },
+  "testPatchBase": "Apply integration.patch first; tests.patch targets that proposed source",
+  "testFilters": [
+    "test_destination_multiply_default_backend_refusal_preserves_scene_and_atlas",
+    "destination_multiply_formats_are_exact_byte_channel_pairs",
+    "destination_multiply_rejects_srgb_hdr_integer_and_mono_atlases"
+  ],
+  "atlasOverlap": {
+    "note": "Historical baselineFiles/proposedFiles atlas hashes predate Root contains override. The capability hunk is separate and retains that override.",
+    "rootObservedContainsOverride": "fn contains(&self, key: &AtlasKey) -> bool {\n        self.0.lock().contains(key)\n    }",
+    "rootContainsOverridePresent": true,
+    "currentAtlasWithRootContainsSha256": "b85936eb838df536b8c6a90b44714fc75560f92f1acbe4eea7574c3d304d86b4",
+    "proposedAtlasWithRootContainsSha256": "d7cb05a221d5ce976fe82a8ecf37f094eb0a65336cadeb5b7f998f5354991ca9",
+    "overridePreservedInMemory": true,
+    "unappliedHunkContextStillExact": true
+  },
+  "formatVectorCount": 64,
+  "testCountAuthored": 3,
+  "testsCompiledOrExecuted": false
+}

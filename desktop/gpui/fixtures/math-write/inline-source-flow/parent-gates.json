@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests,native-audio --lib editor::view::math_source_flow::tests",
+  "result": {
+    "passed": 6,
+    "failed": 0,
+    "ignored": 0
+  },
+  "log": "desktop/gpui/target/verification/math-inline-flow-tests-reviewed.log",
+  "hashes": {
+    "desktop/gpui/src/editor/view.rs": "aef8332e5b2915a479a7c7ffad2624897f38186f91e62cdeee5ced35eabf5b14",
+    "desktop/gpui/src/editor/math_source_flow.rs": "dd9c351c85922a703aee9d2648a8b18d6e3d66beb37631d705a2fb60902ab373",
+    "desktop/gpui/src/editor/paragraph_flow.rs": "7c9ad7eae6e70970c7110949c59e8757dcbddf1d8e96ab51f53c4435526ec7e9",
+    "desktop/gpui/src/editor/view_comments.rs": "5f761d277fb68776b0d15afbc1a2e554a925fbb5b56edc1bf46212e4e0ccc911",
+    "desktop/gpui/src/editor/view_notes.rs": "c602ab7c392e7b3cf5b9fe03e779df52e51176ae30fe67245a196d7ed738208b",
+    "desktop/gpui/src/editor/view_pagination.rs": "0ad825e9b686f6ae1cdd99d41d950e2cad60cd0cb977814251800dc92487ab0f",
+    "desktop/gpui/fixtures/math-write/inline-source-flow/view_tests.rs": "d40b3d2b540cfaf52a4517f300eeafd782360ad75816ac3e9b5eeb8519e7cbfd"
+  },
+  "reviewedRepairs": [
+    "Compare Arc reservation values through as_ref, matching the filter closure type.",
+    "Measure the retained AnyElement inside the actual manuscript element namespace, preserving GPUI global identity at prepaint/paint."
+  ],
+  "boundaries": [
+    "Real retained native child and paragraph/input/cache geometry in mounted GPUI windows",
+    "No renderer, canonical callback, OS input, actual browser baseline or pixel parity proof",
+    "Application inline admission remains independently controlled"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "status": "authored_unexecuted",
+  "ownership": "Parent executes on new isolated owned displays/browser fixtures; never inherited user displays, account/provider data or personal browser sessions",
+  "receipt_rules": [
+    "Preserve previous dossier-layout-audit checkpoints and failed/intermediate captures",
+    "Record actual binary/source hashes, viewport, scale, active step, geometry, PNG and raw field/recovery/canonical bytes",
+    "Declared CSS expectations are not observed Source rows or pixels",
+    "Do not replace a first-frame failure with a settling-loop capture or re-golden its expectation",
+    "Do not call a test-platform mounted result X11, Wayland, browser, actual IME or all-OS proof"
+  ],
+  "cases": [
+    {
+      "id": "cap1600-paper-remains-full-window", "patch": "local", "viewport": [1600, 860], "step": 0, "theme": "editorial", "dpr": 1,
+      "actions": ["Open the actual form over a nonempty authored owned folio", "Capture full-window root, wrapper, frame, both leaves and actual paper pixels"],
+      "checks": ["Wrapper x64 width1472, frame x84 width1432/y16 height828", "Paper remains full1600×860 and its original full-window phase; outside-wrapper pixels are retained", "Input selection/focus/typing and source/recovery remain correct", "Image lease/resource ledger has no new consumer from wrapping"],
+      "scope": "Cap/gutters/paper owner, not all title/input/font pixels"
+    },
+    {
+      "id": "small-breakpoint-both-directions", "patch": "local", "viewports": [[620,860],[639,860],[640,860],[641,860],[620,860]], "step": 2,
+      "actions": ["Use actual platform resize notifications", "Inspect first two card boxes and Surface group", "Type a final unblurred character before resize, then navigate and reopen recovery"],
+      "checks": ["12px gutters/one preview column/no Surface caption below640", "20×16 gutters/two columns/caption at640", "Form/Conversation controls retain honest capability gate", "Exact typed value and canonical source/HTML survive; neither resize nor texture work is a submission"],
+      "pending": "Record actual Source implicit stacked auto rows separately; local native220px remains unfinished"
+    },
+    {
+      "id": "narrow-roman-actual-scroll-mask", "patch": "local", "viewport": [320,860], "step": 0,
+      "actions": ["Focus/type title with actual input", "Wheel horizontally inside Roman rail to reveal a clipped numeral", "Click its real in-mask center", "Wheel vertically at rail and outside it", "Navigate back and inspect raw/recovered title"],
+      "checks": ["Actual horizontal scroll changes numeral positions while glyph widths stay fixed", "Back/Next do not shrink; no clipped control steals an outside-rail click", "Vertical wheel is not silently remapped into the rail", "Real go_to flushes unblurred value and retains source/recovery"],
+      "pending": "Compare Source negative-space centered-overflow reachability; do not invent universal first/last accessibility"
+    },
+    {
+      "id": "short-height-and-long-content-mask", "patch": "local", "viewport": [1280,240], "step": 9,
+      "actions": ["Open reference/prior-material/Particulars content requiring scroll", "Inspect root/frame/leaf clip boundaries and visible controls", "Use real leaf/input scrolling and click points"],
+      "checks": ["Root/frame remain viewport-locked at CSS gutter boxes", "Overflow outside masks does not paint or receive pointer hits", "Header/rail stays in its flow allocation and no extra whole-page scroll appears", "Retained input selection/values/recovery and focus are not modified by clipping"],
+      "scope": "Masks; Source unmeasured content-specific short row sizing remains separately unproved"
+    },
+    {
+      "id": "optional-first-audience-frame", "patch": "local_plus_optional", "viewport": [1280,860], "step": 2,
+      "actions": ["Open title then jump by real Roman gesture to Audience", "Capture the first completed frame before any subsequent user event", "Capture the next completed frame independently"],
+      "checks": ["Question free-space formula uses actual current natural question/ghost boxes in the first frame", "Second frame does not move the question due to height-learning notification", "Old audit intermediate y435 and settled y323 captures remain unchanged evidence, not new goldens", "Actually focused Audience field uses painted bounds for pointer/caret/IME"],
+      "required": "Do not adopt optional proposal on declaration/static checks alone"
+    },
+    {
+      "id": "optional-wrap-resize-first-frame", "patch": "local_plus_optional", "viewports": [[1280,860],[1024,500],[620,860],[1600,860],[1280,860]], "steps": [0,1,2,6],
+      "actions": ["Retain an unblurred field across real width/height notifications", "Inspect first frame after every bounds/step change", "Use actual caret/selection and undo/redo in the field"],
+      "checks": ["Actual natural child is laid out at current width, no previous-step/width height is reused", "Two spacers share only positive free space", "No draw recursion or measured-callback child layout", "Text/history/focus and expected source/HTML/recovery remain unchanged except authored edits"]
+    },
+    {
+      "id": "optional-natural-tall-sheet", "patch": "local_plus_optional", "viewport": [1280,360], "steps": [7,8,9],
+      "actions": ["Open actual tall controls", "Capture sheet vs leaf height", "Wheel leaf to top and bottom and edit a partly clipped input at an in-mask point", "Navigate/reopen recovery"],
+      "checks": ["Sheet grows to actual children+ghost margins+32px padding when this exceeds the leaf", "No negative spacers, crushed controls, incomplete content scroll extent or cropped bottom ghost", "Caret/IME/input hitboxes move with the same retained subtree", "Leaf scroll and nested textarea scroll stay distinct"]
+    },
+    {
+      "id": "theme-scale-lifecycle-preserved", "patch": "each reviewed stage separately", "viewport": [1280,860], "themes": ["editorial","nightpress","broadsheet"], "dprs": [1,2,3],
+      "actions": ["Use actual palette/platform scale notifications", "Keep an authored field focused", "Close/unmount and reopen the same scope", "Capture active paper/stamp key, lease marker and pixels"],
+      "checks": ["Geometry is the same CSS allocation across palettes", "Full-window preparation key/phase remains authoritative after cap", "Broadsheet skips foxing as existing implementation; no invented new artwork", "Unsupported raster budget retains honest fallback rather than stretching stale texture", "Per-window ledger/retirement and owner/focus/recovery hooks remain current"],
+      "boundary": "Existing metrics may refuse1280×860@3; this patch does not change that budget or claim DPR3 texture parity"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Twyne
+GenericName=Writing Room
+Comment=Offline-first writing desk with a native Typst proof
+Exec=twyne-desktop %F
+TryExec=twyne-desktop
+Icon=love.twyne.gpui
+Terminal=false
+Categories=Office;WordProcessor;TextEditor;
+MimeType=application/x-typst;application/json;text/html;text/markdown;text/plain;
+StartupNotify=true
+StartupWMClass=love.twyne.gpui
+Keywords=writing;editor;manuscript;typst;markdown;
+Actions=NewDraft;
+
+[Desktop Action NewDraft]
+Name=New draft
+Exec=twyne-desktop

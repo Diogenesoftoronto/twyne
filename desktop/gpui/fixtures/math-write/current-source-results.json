@@ -1,0 +1,646 @@
+[
+  {
+    "id": "ordinary",
+    "schema": 1,
+    "source": "  x + y = 2  ",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>x</mi><mo>+</mo><mi>y</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding=\"application/x-tex\">x + y = 2</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.625em;vertical-align:-0.1944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">2</span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "fraction",
+    "schema": 1,
+    "source": "\\frac{a+b}{c-d}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mfrac><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow><mrow><mi>c</mi><mo>−</mo><mi>d</mi></mrow></mfrac></mrow><annotation encoding=\"application/x-tex\">\\frac{a+b}{c-d}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2834em;vertical-align:-0.4033em;\"></span><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8801em;\"><span style=\"top:-2.655em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">c</span><span class=\"mbin mtight\">−</span><span class=\"mord mathnormal mtight\">d</span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.394em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">a</span><span class=\"mbin mtight\">+</span><span class=\"mord mathnormal mtight\">b</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.4033em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "nested-fractions",
+    "schema": 1,
+    "source": "\\frac{1}{1+\\frac{1}{x}}",
+    "display": "block",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><mfrac><mn>1</mn><mi>x</mi></mfrac></mrow></mfrac></mrow><annotation encoding=\"application/x-tex\">\\frac{1}{1+\\frac{1}{x}}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.4015em;vertical-align:-1.0801em;\"></span><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.3214em;\"><span style=\"top:-2.2649em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8451em;\"><span style=\"top:-2.655em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">x</span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.394em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">1</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.345em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.677em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.0801em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "radical",
+    "schema": 1,
+    "source": "\\sqrt{x^2+1}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mn>1</mn></mrow></msqrt></mrow><annotation encoding=\"application/x-tex\">\\sqrt{x^2+1}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.04em;vertical-align:-0.1266em;\"></span><span class=\"mord sqrt\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.9134em;\"><span class=\"svg-align\" style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\" style=\"padding-left:0.833em;\"><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7401em;\"><span style=\"top:-2.989em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord\">1</span></span></span><span style=\"top:-2.8734em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"hide-tail\" style=\"min-width:0.853em;height:1.08em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"1.08em\" viewBox=\"0 0 400000 1080\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M95,702\nc-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14\nc0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54\nc44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10\ns173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429\nc69,-144,104.5,-217.7,106.5,-221\nl0 -0\nc5.3,-9.3,12,-14,20,-14\nH400000v40H845.2724\ns-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7\nc-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z\nM834 80h400000v40h-400000z\"/></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.1266em;\"><span></span></span></span></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "indexed-radical",
+    "schema": 1,
+    "source": "\\sqrt[3]{a+b}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mroot><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow><mn>3</mn></mroot></mrow><annotation encoding=\"application/x-tex\">\\sqrt[3]{a+b}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.04em;vertical-align:-0.1494em;\"></span><span class=\"mord sqrt\"><span class=\"katex-root\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7669em;\"><span style=\"top:-2.9447em;\"><span class=\"pstrut\" style=\"height:2.5em;\"></span><span class=\"katex-sizing reset-size6 size1 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">3</span></span></span></span></span></span></span></span><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8906em;\"><span class=\"svg-align\" style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\" style=\"padding-left:0.833em;\"><span class=\"mord mathnormal\">a</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord mathnormal\">b</span></span></span><span style=\"top:-2.8506em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"hide-tail\" style=\"min-width:0.853em;height:1.08em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"1.08em\" viewBox=\"0 0 400000 1080\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M95,702\nc-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14\nc0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54\nc44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10\ns173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429\nc69,-144,104.5,-217.7,106.5,-221\nl0 -0\nc5.3,-9.3,12,-14,20,-14\nH400000v40H845.2724\ns-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7\nc-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z\nM834 80h400000v40h-400000z\"/></svg></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.1494em;\"><span></span></span></span></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "scripts",
+    "schema": 1,
+    "source": "x_i^{n+1}+e^{-x}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msubsup><mi>x</mi><mi>i</mi><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow></msubsup><mo>+</mo><msup><mi>e</mi><mrow><mo>−</mo><mi>x</mi></mrow></msup></mrow><annotation encoding=\"application/x-tex\">x_i^{n+1}+e^{-x}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.1311em;vertical-align:-0.2769em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8542em;\"><span style=\"top:-2.4231em;margin-left:0em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mathnormal mtight\">i</span></span></span><span style=\"top:-3.1031em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">n</span><span class=\"mbin mtight\">+</span><span class=\"mord mtight\">1</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.2769em;\"><span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.7713em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">e</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7713em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">−</span><span class=\"mord mathnormal mtight\">x</span></span></span></span></span></span></span></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "sum-limits",
+    "schema": 1,
+    "source": "\\sum_{i=1}^{n} i^2",
+    "display": "block",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msup><mi>i</mi><mn>2</mn></msup></mrow><annotation encoding=\"application/x-tex\">\\sum_{i=1}^{n} i^2</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.9291em;vertical-align:-1.2777em;\"></span><span class=\"mop op-limits\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.6514em;\"><span style=\"top:-1.8723em;margin-left:0em;\"><span class=\"pstrut\" style=\"height:3.05em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">i</span><span class=\"mrel mtight\">=</span><span class=\"mord mtight\">1</span></span></span></span><span style=\"top:-3.05em;\"><span class=\"pstrut\" style=\"height:3.05em;\"></span><span><span class=\"mop op-symbol large-op\">∑</span></span></span><span style=\"top:-4.3em;margin-left:0em;\"><span class=\"pstrut\" style=\"height:3.05em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">n</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.2777em;\"><span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">i</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8641em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "integral",
+    "schema": 1,
+    "source": "\\int_0^1 x^2\\,dx",
+    "display": "block",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><msubsup><mo>∫</mo><mn>0</mn><mn>1</mn></msubsup><msup><mi>x</mi><mn>2</mn></msup><mtext> </mtext><mi>d</mi><mi>x</mi></mrow><annotation encoding=\"application/x-tex\">\\int_0^1 x^2\\,dx</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.476em;vertical-align:-0.9119em;\"></span><span class=\"mop\"><span class=\"mop op-symbol large-op\" style=\"margin-right:0.4445em;position:relative;top:-0.0011em;\">∫</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.564em;\"><span style=\"top:-1.7881em;margin-left:-0.4445em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">0</span></span></span><span style=\"top:-3.8129em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.9119em;\"><span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8641em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord mathnormal\">d</span><span class=\"mord mathnormal\">x</span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "delimiters",
+    "schema": 1,
+    "source": "\\left(\\frac{a}{b}\\right)",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo fence=\"true\">(</mo><mfrac><mi>a</mi><mi>b</mi></mfrac><mo fence=\"true\">)</mo></mrow><annotation encoding=\"application/x-tex\">\\left(\\frac{a}{b}\\right)</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1.2em;vertical-align:-0.35em;\"></span><span class=\"minner\"><span class=\"mopen delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size1\">(</span></span><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6954em;\"><span style=\"top:-2.655em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">b</span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.394em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">a</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.345em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span><span class=\"mclose delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size1\">)</span></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "large-delimiters",
+    "schema": 1,
+    "source": "\\left\\{\\frac{1}{\\frac{a}{b}}\\right\\}",
+    "display": "block",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mo fence=\"true\">{</mo><mfrac><mn>1</mn><mfrac><mi>a</mi><mi>b</mi></mfrac></mfrac><mo fence=\"true\">}</mo></mrow><annotation encoding=\"application/x-tex\">\\left\\{\\frac{1}{\\frac{a}{b}}\\right\\}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.481em;vertical-align:-1.031em;\"></span><span class=\"minner\"><span class=\"mopen delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">{</span></span><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.3214em;\"><span style=\"top:-2.314em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6954em;\"><span style=\"top:-2.655em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">b</span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.394em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"katex-sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">a</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.345em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.677em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.031em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span><span class=\"mclose delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">}</span></span></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "matrix",
+    "schema": 1,
+    "source": "\\begin{pmatrix}1&2\\\\3&4\\end{pmatrix}",
+    "display": "block",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mo fence=\"true\">(</mo><mtable rowspacing=\"0.16em\" columnalign=\"center center\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>1</mn></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>2</mn></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>3</mn></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>4</mn></mstyle></mtd></mtr></mtable><mo fence=\"true\">)</mo></mrow><annotation encoding=\"application/x-tex\">\\begin{pmatrix}1&amp;2\\\\3&amp;4\\end{pmatrix}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.4em;vertical-align:-0.95em;\"></span><span class=\"minner\"><span class=\"mopen delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">(</span></span><span class=\"mord\"><span class=\"mtable\"><span class=\"col-align-c\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.45em;\"><span style=\"top:-3.61em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">1</span></span></span><span style=\"top:-2.41em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">3</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.95em;\"><span></span></span></span></span></span><span class=\"arraycolsep\" style=\"width:0.5em;\"></span><span class=\"arraycolsep\" style=\"width:0.5em;\"></span><span class=\"col-align-c\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.45em;\"><span style=\"top:-3.61em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">2</span></span></span><span style=\"top:-2.41em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">4</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.95em;\"><span></span></span></span></span></span></span></span><span class=\"mclose delimcenter\" style=\"top:0em;\"><span class=\"delimsizing size3\">)</span></span></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "array-alignment",
+    "schema": 1,
+    "source": "\\begin{array}{lr}x&10\\\\y+z&2\\end{array}",
+    "display": "block",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mtable rowspacing=\"0.16em\" columnalign=\"left right\" columnspacing=\"1em\"><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mi>x</mi></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>10</mn></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mrow><mi>y</mi><mo>+</mo><mi>z</mi></mrow></mstyle></mtd><mtd><mstyle scriptlevel=\"0\" displaystyle=\"false\"><mn>2</mn></mstyle></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">\\begin{array}{lr}x&amp;10\\\\y+z&amp;2\\end{array}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:2.4em;vertical-align:-0.95em;\"></span><span class=\"mord\"><span class=\"mtable\"><span class=\"arraycolsep\" style=\"width:0.5em;\"></span><span class=\"col-align-l\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.45em;\"><span style=\"top:-3.61em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span></span></span><span style=\"top:-2.41em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.044em;\">z</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.95em;\"><span></span></span></span></span></span><span class=\"arraycolsep\" style=\"width:0.5em;\"></span><span class=\"arraycolsep\" style=\"width:0.5em;\"></span><span class=\"col-align-r\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.45em;\"><span style=\"top:-3.61em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">10</span></span></span><span style=\"top:-2.41em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord\">2</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.95em;\"><span></span></span></span></span></span><span class=\"arraycolsep\" style=\"width:0.5em;\"></span></span></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "text",
+    "schema": 1,
+    "source": "\\text{a small equation} + \\mathrm{ABC}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext>a small equation</mtext><mo>+</mo><mrow><mi mathvariant=\"normal\">A</mi><mi mathvariant=\"normal\">B</mi><mi mathvariant=\"normal\">C</mi></mrow></mrow><annotation encoding=\"application/x-tex\">\\text{a small equation} + \\mathrm{ABC}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mord text\"><span class=\"mord\">a small equation</span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6833em;\"></span><span class=\"mord\"><span class=\"mord mathrm\">ABC</span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "unicode-accent",
+    "schema": 1,
+    "source": "\\text{Café} + \\alpha + \\Omega",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mrow><mtext>Caf</mtext><mover accent=\"true\"><mtext>e</mtext><mo>ˊ</mo></mover></mrow><mo>+</mo><mi>α</mi><mo>+</mo><mi mathvariant=\"normal\">Ω</mi></mrow><annotation encoding=\"application/x-tex\">\\text{Café} + \\alpha + \\Omega</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.7778em;vertical-align:-0.0833em;\"></span><span class=\"mord text\"><span class=\"mord\">Caf</span><span class=\"mord katex-accent\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6944em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\">e</span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"accent-body\" style=\"left:-0.25em;\"><span class=\"mord\">ˊ</span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0037em;\">α</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6833em;\"></span><span class=\"mord\">Ω</span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "font-roster",
+    "schema": 1,
+    "source": "\\mathbb{R}+\\mathcal{F}+\\mathfrak{g}+\\mathtt{x}+\\mathsf{A}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi mathvariant=\"double-struck\">R</mi><mo>+</mo><mi mathvariant=\"script\">F</mi><mo>+</mo><mi mathvariant=\"fraktur\">g</mi><mo>+</mo><mi mathvariant=\"monospace\">x</mi><mo>+</mo><mi mathvariant=\"sans-serif\">A</mi></mrow><annotation encoding=\"application/x-tex\">\\mathbb{R}+\\mathcal{F}+\\mathfrak{g}+\\mathtt{x}+\\mathsf{A}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.7722em;vertical-align:-0.0833em;\"></span><span class=\"mord mathbb\">R</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.7667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathcal\" style=\"margin-right:0.0993em;\">F</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.7724em;vertical-align:-0.1891em;\"></span><span class=\"mord mathfrak\">g</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathtt\">x</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathsf\">A</span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "text-ligature",
+    "schema": 1,
+    "source": "\\text{office -- ``text''}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext>office – “text”</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{office -- ``text&#x27;&#x27;}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6944em;\"></span><span class=\"mord text\"><span class=\"mord\">office – “text”</span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "overline",
+    "schema": 1,
+    "source": "\\overline{x+y}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mover accent=\"true\"><mrow><mi>x</mi><mo>+</mo><mi>y</mi></mrow><mo stretchy=\"true\">‾</mo></mover></mrow><annotation encoding=\"application/x-tex\">\\overline{x+y}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.9778em;vertical-align:-0.1944em;\"></span><span class=\"mord katex-overline\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7833em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span></span></span><span style=\"top:-3.7033em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"overline-line\" style=\"border-bottom-width:0.04em;\"></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.1944em;\"><span></span></span></span></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "accent",
+    "schema": 1,
+    "source": "\\hat{x}+\\vec{v}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mover accent=\"true\"><mi>x</mi><mo>^</mo></mover><mo>+</mo><mover accent=\"true\"><mi>v</mi><mo>⃗</mo></mover></mrow><annotation encoding=\"application/x-tex\">\\hat{x}+\\vec{v}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.7778em;vertical-align:-0.0833em;\"></span><span class=\"mord katex-accent\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.6944em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord mathnormal\">x</span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"accent-body\" style=\"left:-0.2222em;\"><span class=\"mord\">^</span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.714em;\"></span><span class=\"mord katex-accent\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.714em;\"><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">v</span></span><span style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"accent-body\" style=\"left:-0.2077em;\"><span class=\"katex-overlay\" style=\"height:0.714em;width:0.471em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"0.471em\" height=\"0.714em\" style=\"width:0.471em\" viewBox=\"0 0 471 714\" preserveAspectRatio=\"xMinYMin\"><path d=\"M377 20c0-5.333 1.833-10 5.5-14S391 0 397 0c4.667 0 8.667 1.667 12 5\n3.333 2.667 6.667 9 10 19 6.667 24.667 20.333 43.667 41 57 7.333 4.667 11\n10.667 11 18 0 6-1 10-3 12s-6.667 5-14 9c-28.667 14.667-53.667 35.667-75 63\n-1.333 1.333-3.167 3.5-5.5 6.5s-4 4.833-5 5.5c-1 .667-2.5 1.333-4.5 2s-4.333 1\n-7 1c-4.667 0-9.167-1.833-13.5-5.5S337 184 337 178c0-12.667 15.667-32.333 47-59\nH213l-171-1c-8.667-6-13-12.333-13-19 0-4.667 4.333-11.333 13-20h359\nc-16-25.333-24-45-24-59z\"/></svg></span></span></span></span></span></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "spacing",
+    "schema": 1,
+    "source": "a\\!b\\,c\\quad d",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>a</mi><mtext> ⁣</mtext><mi>b</mi><mtext> </mtext><mi>c</mi><mspace width=\"1em\"/><mi>d</mi></mrow><annotation encoding=\"application/x-tex\">a\\!b\\,c\\quad d</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">a</span><span class=\"mspace\" style=\"margin-right:-0.1667em;\"></span><span class=\"mord mathnormal\">b</span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord mathnormal\">c</span><span class=\"mspace\" style=\"margin-right:1em;\"></span><span class=\"mord mathnormal\">d</span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "color",
+    "schema": 1,
+    "source": "\\color{red}{x}+y",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mstyle mathcolor=\"red\"><mi>x</mi><mo>+</mo><mi>y</mi></mstyle></mrow><annotation encoding=\"application/x-tex\">\\color{red}{x}+y</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord\" style=\"color:red;\"><span class=\"mord mathnormal\" style=\"color:red;\">x</span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\" style=\"color:red;\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.625em;vertical-align:-0.1944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;color:red;\">y</span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "unsupported-lap",
+    "schema": 1,
+    "source": "\\llap{x}y",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mpadded lspace=\"-1width\" width=\"0px\"><mtext>x</mtext></mpadded><mi>y</mi></mrow><annotation encoding=\"application/x-tex\">\\llap{x}y</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.625em;vertical-align:-0.1944em;\"></span><span class=\"mord katex-vbox\"><span class=\"katex-thinbox\"><span class=\"llap\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"katex-inner\"><span class=\"mord\"><span class=\"mord text\"><span class=\"mord textrm\">x</span></span></span></span><span class=\"katex-fix\"></span></span></span></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "unsupported-tag",
+    "schema": 1,
+    "source": "x=y\\tag{1}",
+    "display": "block",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mtable width=\"100%\"><mtr><mtd width=\"50%\"></mtd><mtd><mrow><mi>x</mi><mo>=</mo><mi>y</mi></mrow></mtd><mtd width=\"50%\"></mtd><mtd><mtext>(1)</mtext></mtd></mtr></mtable><annotation encoding=\"application/x-tex\">x=y\\tag{1}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.625em;vertical-align:-0.1944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0359em;\">y</span></span><span class=\"katex-tag\"><span class=\"katex-strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord text\"><span class=\"mord\">(</span><span class=\"mord\"><span class=\"mord\">1</span></span><span class=\"mord\">)</span></span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "unsupported-unicode-fallback",
+    "schema": 1,
+    "source": "\\text{東京}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext>東京</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{東京}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:0.6833em;\"></span><span class=\"mord text\"><span class=\"mord cjk_fallback\">東京</span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "untrusted-link",
+    "schema": 1,
+    "source": "\\href{https://example.com}{x}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mstyle mathcolor=\"#cc0000\"><mtext>\\href</mtext></mstyle></mrow><annotation encoding=\"application/x-tex\">\\href{https://example.com}{x}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord text\" style=\"color:#cc0000;\"><span class=\"mord\" style=\"color:#cc0000;\">\\href</span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "untrusted-image",
+    "schema": 1,
+    "source": "\\includegraphics{https://example.com/x.png}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "<span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mstyle mathcolor=\"#cc0000\"><mtext>\\includegraphics</mtext></mstyle></mrow><annotation encoding=\"application/x-tex\">\\includegraphics{https://example.com/x.png}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"katex-base\"><span class=\"katex-strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord text\" style=\"color:#cc0000;\"><span class=\"mord\" style=\"color:#cc0000;\">\\includegraphics</span></span></span></span></span>",
+    "originalError": null,
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "css-version-mismatch",
+        "message": "Current Twyne CSS 0.16.47 does not match KaTeX 0.18.1; current Write geometry is not certified."
+      }
+    ]
+  },
+  {
+    "id": "unknown-command",
+    "schema": 1,
+    "source": "\\notARealCommand{x}",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "",
+    "originalError": "Undefined control sequence: \\notARealCommand at position 1: \\̲n̲o̲t̲A̲R̲e̲a̲l̲C̲o̲m̲m̲a̲n̲d̲{x}",
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "source",
+        "message": "Undefined control sequence: \\notARealCommand at position 1: \\̲n̲o̲t̲A̲R̲e̲a̲l̲C̲o̲m̲m̲a̲n̲d̲{x}"
+      }
+    ]
+  },
+  {
+    "id": "broken-group",
+    "schema": 1,
+    "source": "\\frac{a}{",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "",
+    "originalError": "Unexpected end of input in a macro argument, expected '}' at end of input: \\frac{a}{",
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "source",
+        "message": "Unexpected end of input in a macro argument, expected '}' at end of input: \\frac{a}{"
+      }
+    ]
+  },
+  {
+    "id": "empty",
+    "schema": 1,
+    "source": " \n\t ",
+    "display": "inline",
+    "profile": "currentSource",
+    "fontSizePx": 18,
+    "color": 3156258,
+    "widthPx": 600,
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+    "originalHtml": "",
+    "originalError": "Enter LaTeX to render this equation.",
+    "fidelity": "refused",
+    "issues": [
+      {
+        "kind": "source",
+        "message": "Enter LaTeX to render this equation."
+      }
+    ]
+  }
+]

@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "status": "unapplied",
+  "patch_target": "desktop/gpui/src/dossier_view.rs",
+  "inspected_inputs": {
+    "desktop/gpui/src/dossier_view.rs": "b9a27db900b6624055a3cd1b293bab93bfd1c2c26f37847ffebf366d281ba274",
+    "src/components/onboarding/dossier-folio.tsx": "77c1fb9bce10345add264b57c4389c9b7a90d629ddd652b0ef8ef0a0cbb8a281",
+    "src/components/onboarding/dossier-top-bar.tsx": "ca2f2f14ef7abdb58b116268ae1c0524ca5ac5957bc2fe63b9f646aa43cd6492",
+    "src/components/onboarding/anti-tabula-rasa.tsx": "bd8162f3e0ca95ebdb8e4b817f3b1cc92099e7a1c0f489d9215d7ae9d4a4706c",
+    "src/components/brief/dossier-preview.tsx": "8388ee9fd9d16ceed1445eb55a32c2ffb4edf94189988d740c4b252084b5bf0e",
+    "src/global.css": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+    "desktop/gpui/vendor/gpui-pre/src/elements/div.rs": "10f334243fae305666e48d4939ed63495ce01b13534db22a751062a6f76fa59b",
+    "desktop/gpui/vendor/gpui-pre/src/styled.rs": "c6e62fe136bedf887ee755c886df5466d5fe0b398a004b35d1a3530fef809c8d",
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": "1df348e63d51dd87331540a9d6494eda5fab34328373c4f5a0691bf2349e9635",
+    "desktop/gpui/vendor/gpui-pre/src/element.rs": "1eea2303609c4aca23e44e623a9d44eded93ad8b70f86e3e4c7446b3e0238b4c"
+  },
+  "proposed_view_hashes": {
+    "local_presentation": "c151cf24b2f0393ec0859f2a763a845f0c94f65a859675c56a2af910d7f4a8a3",
+    "local_plus_optional_same_pass": "0f6b4ffc7b061e19454ca32c452422a1abec4879b46d2d31a5d61331dfb453c9"
+  },
+  "public_api_excerpts": {
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": {
+      "start": "    pub fn request_layout(\n",
+      "end": "    /// Obtain the bounds computed for the given LayoutId",
+      "sha256": "20dad64154e98ecbe9f93f652505910c66fe482dce6285b58a15ecfbe90da765",
+      "purpose": "The only public Window layout functions relied on by the optional ordinary-Div proposal. Whole backend/runtime proof remains Parent-owned."
+    }
+  }
+}

@@ -1,0 +1,172 @@
+--- a/desktop/gpui/src/lib.rs
++++ b/desktop/gpui/src/lib.rs
+@@ -17,6 +17,8 @@
+ pub mod dossier;
+ pub mod dossier_conversation;
+ pub mod dossier_filing;
++#[cfg(feature = "desktop")]
++pub mod dossier_image_lifecycle;
+ #[cfg(feature = "desktop")]
+ pub mod dossier_multiply;
+ #[cfg(feature = "desktop")]
+--- a/desktop/gpui/src/dossier_view.rs
++++ b/desktop/gpui/src/dossier_view.rs
+@@ -10,6 +10,7 @@
+         FIELD_LABELS, FilingState, PriorMaterial, STEPS, StepKind, TemplatePiece,
+         WRITING_FORMAT_SUGGESTIONS,
+     },
++    dossier_image_lifecycle::{DossierImageLease, DossierImageLifecycle},
+     dossier_paper::{DossierPaper, DossierPaperMetrics},
+     dossier_stamp::DossierStampSet,
+     manuscript::timestamp,
+@@ -135,6 +136,7 @@
+     filing_request: Option<u64>,
+     dirty: bool,
+     start_over_confirm: bool,
++    image_lease: Option<DossierImageLease>,
+     paper: Option<Arc<DossierPaper>>,
+     reviewed_stamps: Option<Arc<DossierStampSet>>,
+     question_leaf_height: Pixels,
+@@ -324,6 +326,7 @@
+             filing_request: None,
+             dirty: false,
+             start_over_confirm: false,
++            image_lease: None,
+             paper: None,
+             reviewed_stamps: None,
+             question_leaf_height: px(0.),
+@@ -342,7 +345,62 @@
+     // Explicit constructor/theme/resize boundary only; never called by render,
+     // InputEvent::Change or a paint callback. Public for manual DPR test/host
+     // transitions that do not invoke GPUI's platform bounds callbacks.
++    /// The root attaches this before mounting a newly created form.
++    pub fn attach_image_lifecycle(
++        &mut self,
++        lifecycle: &DossierImageLifecycle,
++        window: &Window,
++        cx: &mut Context<Self>,
++    ) -> Result<()> {
++        anyhow::ensure!(self.image_lease.is_none(), "Dossier images are already attached");
++        let lease = lifecycle.lease(window, cx)?;
++        lease.replace(&self.prepared_images(), window, cx)?;
++        self.image_lease = Some(lease);
++        Ok(())
++    }
++
++    pub fn image_lease(&self) -> Option<&DossierImageLease> {
++        self.image_lease.as_ref()
++    }
++
++    fn prepared_images(&self) -> Vec<Arc<gpui_kit::RenderImage>> {
++        let mut images = Vec::with_capacity(10);
++        if let Some(paper) = &self.paper {
++            images.push(paper.raster_image().clone());
++        }
++        if let Some(stamps) = &self.reviewed_stamps {
++            for count in 0..crate::dossier_stamp::COUNT_VARIANTS {
++                images.push(stamps.stamp(count).expect("Complete prepared stamp set").raster_image().clone());
++            }
++        }
++        // Product multiply is currently unmounted. When integrated, include
++        // its premultiplied_group() here ONLY as an optional tenth image.
++        images
++    }
++
+     pub fn prepare_paper(&mut self, window: &Window, cx: &mut Context<Self>) {
++        // A retained unmounted form is not a new consumer on a theme event.
++        if self.image_lease.as_ref().is_some_and(|lease| !lease.is_current()) {
++            return;
++        }
++        let previous_paper = self.paper.clone();
++        let previous_stamps = self.reviewed_stamps.clone();
++        self.prepare_paper_candidate(window, cx);
++        if let Some(lease) = &self.image_lease {
++            if let Err(error) = lease.replace(&self.prepared_images(), window, cx) {
++                // Candidate preparation cannot upload. Preserve the accepted
++                // pointers/lease on refusal, rather than paint untracked data.
++                // Existing paint guards refuse a now-stale palette/DPR.
++                self.paper = previous_paper;
++                self.reviewed_stamps = previous_stamps;
++                self.error = Some("The Dossier paper could not be prepared. Your answers remain here.".into());
++                eprintln!("Could not track Dossier prepared images: {error:#}");
++                cx.notify();
++            }
++        }
++    }
++
++    fn prepare_paper_candidate(&mut self, window: &Window, cx: &mut Context<Self>) {
+         self.prepare_reviewed_stamps(window, cx);
+         let viewport = window.viewport_size();
+         let colors = *theme::palette(cx);
+--- a/desktop/gpui/src/app.rs
++++ b/desktop/gpui/src/app.rs
+@@ -29,6 +29,7 @@
+         DossierMode, DossierOptions, DossierSession, DossierSubmission, PriorMaterial,
+         RecoveryIdentity,
+     },
++    dossier_image_lifecycle::DossierImageLifecycle,
+     dossier_view::{DossierEvent, DossierView},
+     editor::view::{InitialMode, OpeningInitial, RichEditorEvent, RichEditorView},
+     editor::{RichDocument, Selection},
+@@ -222,6 +223,7 @@
+     proof_task: Option<Task<()>>,
+     pdf_requested: bool,
+     applying_source: bool,
++    dossier_images: Option<DossierImageLifecycle>,
+     dossier: Option<Entity<DossierView>>,
+     dossier_subscription: Option<Subscription>,
+     notes: Entity<TextareaState>,
+@@ -670,6 +672,9 @@
+             proof_task: None,
+             pdf_requested: false,
+             applying_source: false,
++            dossier_images: DossierImageLifecycle::new(window, cx)
++                .map_err(|error| eprintln!("Dossier image retirement is unavailable: {error:#}"))
++                .ok(),
+             dossier: None,
+             dossier_subscription: None,
+             notes,
+@@ -1925,6 +1930,15 @@
+         match DossierSession::open(options, timestamp()) {
+             Ok(session) => {
+                 let view = cx.new(|cx| DossierView::new(session, window, cx));
++                if let Some(lifecycle) = &self.dossier_images {
++                    if let Err(error) = view.update(cx, |view, cx| {
++                        view.attach_image_lifecycle(lifecycle, window, cx)
++                    }) {
++                        self.error = Some(format!("Could not prepare the Dossier: {error:#}"));
++                        cx.notify();
++                        return;
++                    }
++                }
+                 self.dossier_subscription = Some(cx.subscribe_in(
+                     &view,
+                     window,
+@@ -4259,6 +4273,16 @@
+ 
+ impl Render for WritingRoom {
+     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
++        if let Some(lifecycle) = &self.dossier_images {
++            // Same condition as the actual child mount below. Failed departure
++            // still keeps the current form; retained old entities lose leases.
++            let keep = self.dossier.as_ref()
++                .filter(|_| !self.standalone_route())
++                .and_then(|view| view.read(cx).image_lease().cloned());
++            if let Err(error) = lifecycle.retain_only(keep.as_ref(), window, cx) {
++                self.error = Some(format!("Could not update Dossier paper ownership: {error:#}"));
++            }
++        }
+         self.sync_math_source_presence(cx);
+         self.sync_research_steering_mount(window, cx);
+         self.sync_flow_presence(cx);
+@@ -4561,6 +4585,10 @@
+                         this.child(card)
+                     })
+             })
++            // Persistent, including after Dossier removal and on every route.
++            .when_some(self.dossier_images.as_ref(), |this, lifecycle| {
++                this.child(lifecycle.marker())
++            })
+     }
+ }
+ 

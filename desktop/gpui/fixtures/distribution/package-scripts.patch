@@ -1,0 +1,12 @@
+--- a/package.json
++++ b/package.json
+@@ -30,6 +30,9 @@
+     "desktop.gpui": "bun desktop/gpui/tools/build-helper.ts run",
+     "desktop.gpui.build": "bun desktop/gpui/tools/build-helper.ts build",
+     "desktop.gpui.build-helper": "bun desktop/gpui/tools/build-helper.ts",
++    "desktop.gpui.package": "rtk proxy bun desktop/gpui/packaging/stage.ts stage",
++    "desktop.gpui.package.verify": "rtk proxy bun desktop/gpui/packaging/stage.ts verify",
++    "desktop.gpui.package.test": "rtk proxy bun test desktop/gpui/fixtures/distribution/stage.test.ts",
+     "desktop.gpui.check": "cargo check --locked --manifest-path desktop/gpui/Cargo.toml",
+     "desktop.gpui.test": "cargo test --locked --no-default-features --manifest-path desktop/gpui/Cargo.toml",
+     "desktop.gpui.test-ui": "cargo test --locked --features ui-tests --manifest-path desktop/gpui/Cargo.toml",

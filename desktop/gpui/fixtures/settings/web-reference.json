@@ -1,0 +1,478 @@
+{
+  "provenance": "Generated from the current src/utils/theme.ts and palette.ts; UI definitions come from the current Settings Appearance section.",
+  "default": {
+    "preset": "editorial"
+  },
+  "tokens": [
+    {
+      "id": "paper",
+      "cssVar": "--color-paper",
+      "label": "Paper",
+      "description": "The page itself — the ground everything sits on."
+    },
+    {
+      "id": "paper-2",
+      "cssVar": "--color-paper-2",
+      "label": "Paper, deep",
+      "description": "Sidebars and panels, a shade below the page."
+    },
+    {
+      "id": "paper-3",
+      "cssVar": "--color-paper-3",
+      "label": "Rule",
+      "description": "Borders, dividers, and hairlines."
+    },
+    {
+      "id": "paper-soft",
+      "cssVar": "--color-paper-soft",
+      "label": "Paper, raised",
+      "description": "Cards, inputs, and anything lifted off the page."
+    },
+    {
+      "id": "ink",
+      "cssVar": "--color-ink",
+      "label": "Ink",
+      "description": "Body text and headings."
+    },
+    {
+      "id": "ink-light",
+      "cssVar": "--color-ink-light",
+      "label": "Ink, secondary",
+      "description": "Supporting text."
+    },
+    {
+      "id": "ink-muted",
+      "cssVar": "--color-ink-muted",
+      "label": "Ink, muted",
+      "description": "Labels, captions, and placeholders."
+    },
+    {
+      "id": "vermilion",
+      "cssVar": "--color-vermilion",
+      "label": "Accent",
+      "description": "The masthead red — buttons, marks, emphasis."
+    }
+  ],
+  "presets": [
+    {
+      "id": "editorial",
+      "label": "Editorial",
+      "description": "Aged newsprint and vermilion. The room as first printed.",
+      "dark": false,
+      "tokens": {
+        "paper": "#f4ecd8",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#1f1b16",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#c1272d"
+      }
+    },
+    {
+      "id": "foolscap",
+      "label": "Foolscap",
+      "description": "Cool grey-white with the yellow taken out. Easiest on tired eyes.",
+      "dark": false,
+      "tokens": {
+        "paper": "#eef0f1",
+        "paper-2": "#e3e6e8",
+        "paper-3": "#c9ced2",
+        "paper-soft": "#f7f8f9",
+        "ink": "#1c2024",
+        "ink-light": "#3f464d",
+        "ink-muted": "#69727a",
+        "vermilion": "#9b4a52"
+      }
+    },
+    {
+      "id": "broadsheet",
+      "label": "Broadsheet",
+      "description": "Near-white and high contrast. Maximum legibility, minimum tint.",
+      "dark": false,
+      "tokens": {
+        "paper": "#ffffff",
+        "paper-2": "#f4f4f4",
+        "paper-3": "#c4c4c4",
+        "paper-soft": "#fafafa",
+        "ink": "#111111",
+        "ink-light": "#333333",
+        "ink-muted": "#5c5c5c",
+        "vermilion": "#b3121a"
+      }
+    },
+    {
+      "id": "nightpress",
+      "label": "Nightpress",
+      "description": "The composing room after hours. Warm dark, ink reversed out.",
+      "dark": true,
+      "tokens": {
+        "paper": "#191714",
+        "paper-2": "#211e1a",
+        "paper-3": "#3b3630",
+        "paper-soft": "#252119",
+        "ink": "#ece4d4",
+        "ink-light": "#c4bbab",
+        "ink-muted": "#8e8577",
+        "vermilion": "#e2686c"
+      }
+    }
+  ],
+  "wcagAA": 4.5,
+  "normalization": [
+    {
+      "input": null,
+      "expected": {
+        "preset": "editorial"
+      }
+    },
+    {
+      "input": [],
+      "expected": {
+        "preset": "editorial"
+      }
+    },
+    {
+      "input": "nightpress",
+      "expected": {
+        "preset": "editorial"
+      }
+    },
+    {
+      "input": {},
+      "expected": {
+        "preset": "editorial"
+      }
+    },
+    {
+      "input": {
+        "preset": "unknown"
+      },
+      "expected": {
+        "preset": "editorial"
+      }
+    },
+    {
+      "input": {
+        "preset": "system",
+        "custom": {
+          "paper": "#ABC",
+          "ink": "#123456"
+        }
+      },
+      "expected": {
+        "preset": "system",
+        "custom": {
+          "paper": "#aabbcc",
+          "ink": "#123456"
+        }
+      }
+    },
+    {
+      "input": {
+        "preset": "foolscap",
+        "custom": {
+          "paper": " #abc",
+          "paper-2": "#1234",
+          "paper-3": "#12abEF",
+          "paper-soft": "#abc ",
+          "ink": "url(evil)",
+          "ink-light": 123,
+          "ink-muted": "#fff",
+          "vermilion": "#888888",
+          "unknown": "#000000"
+        }
+      },
+      "expected": {
+        "preset": "foolscap",
+        "custom": {
+          "paper-3": "#12abef",
+          "ink-muted": "#ffffff",
+          "vermilion": "#888888"
+        }
+      }
+    },
+    {
+      "input": {
+        "preset": "broadsheet",
+        "custom": []
+      },
+      "expected": {
+        "preset": "broadsheet"
+      }
+    },
+    {
+      "input": {
+        "preset": "Editorial",
+        "custom": {
+          "ink": "#0e0",
+          "paper": "#00ff00"
+        }
+      },
+      "expected": {
+        "preset": "editorial",
+        "custom": {
+          "ink": "#00ee00",
+          "paper": "#00ff00"
+        }
+      }
+    }
+  ],
+  "resolved": [
+    {
+      "preference": {
+        "preset": "editorial"
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#f4ecd8",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#1f1b16",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#c1272d"
+      },
+      "contrast": 14.541076250801735
+    },
+    {
+      "preference": {
+        "preset": "editorial"
+      },
+      "prefersDark": true,
+      "tokens": {
+        "paper": "#f4ecd8",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#1f1b16",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#c1272d"
+      },
+      "contrast": 14.541076250801735
+    },
+    {
+      "preference": {
+        "preset": "foolscap"
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#eef0f1",
+        "paper-2": "#e3e6e8",
+        "paper-3": "#c9ced2",
+        "paper-soft": "#f7f8f9",
+        "ink": "#1c2024",
+        "ink-light": "#3f464d",
+        "ink-muted": "#69727a",
+        "vermilion": "#9b4a52"
+      },
+      "contrast": 14.334985435971586
+    },
+    {
+      "preference": {
+        "preset": "foolscap"
+      },
+      "prefersDark": true,
+      "tokens": {
+        "paper": "#eef0f1",
+        "paper-2": "#e3e6e8",
+        "paper-3": "#c9ced2",
+        "paper-soft": "#f7f8f9",
+        "ink": "#1c2024",
+        "ink-light": "#3f464d",
+        "ink-muted": "#69727a",
+        "vermilion": "#9b4a52"
+      },
+      "contrast": 14.334985435971586
+    },
+    {
+      "preference": {
+        "preset": "broadsheet"
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#ffffff",
+        "paper-2": "#f4f4f4",
+        "paper-3": "#c4c4c4",
+        "paper-soft": "#fafafa",
+        "ink": "#111111",
+        "ink-light": "#333333",
+        "ink-muted": "#5c5c5c",
+        "vermilion": "#b3121a"
+      },
+      "contrast": 18.883060964594996
+    },
+    {
+      "preference": {
+        "preset": "broadsheet"
+      },
+      "prefersDark": true,
+      "tokens": {
+        "paper": "#ffffff",
+        "paper-2": "#f4f4f4",
+        "paper-3": "#c4c4c4",
+        "paper-soft": "#fafafa",
+        "ink": "#111111",
+        "ink-light": "#333333",
+        "ink-muted": "#5c5c5c",
+        "vermilion": "#b3121a"
+      },
+      "contrast": 18.883060964594996
+    },
+    {
+      "preference": {
+        "preset": "nightpress"
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#191714",
+        "paper-2": "#211e1a",
+        "paper-3": "#3b3630",
+        "paper-soft": "#252119",
+        "ink": "#ece4d4",
+        "ink-light": "#c4bbab",
+        "ink-muted": "#8e8577",
+        "vermilion": "#e2686c"
+      },
+      "contrast": 14.152219836331506
+    },
+    {
+      "preference": {
+        "preset": "nightpress"
+      },
+      "prefersDark": true,
+      "tokens": {
+        "paper": "#191714",
+        "paper-2": "#211e1a",
+        "paper-3": "#3b3630",
+        "paper-soft": "#252119",
+        "ink": "#ece4d4",
+        "ink-light": "#c4bbab",
+        "ink-muted": "#8e8577",
+        "vermilion": "#e2686c"
+      },
+      "contrast": 14.152219836331506
+    },
+    {
+      "preference": {
+        "preset": "system"
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#f4ecd8",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#1f1b16",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#c1272d"
+      },
+      "contrast": 14.541076250801735
+    },
+    {
+      "preference": {
+        "preset": "system"
+      },
+      "prefersDark": true,
+      "tokens": {
+        "paper": "#191714",
+        "paper-2": "#211e1a",
+        "paper-3": "#3b3630",
+        "paper-soft": "#252119",
+        "ink": "#ece4d4",
+        "ink-light": "#c4bbab",
+        "ink-muted": "#8e8577",
+        "vermilion": "#e2686c"
+      },
+      "contrast": 14.152219836331506
+    },
+    {
+      "preference": {
+        "preset": "system",
+        "custom": {
+          "paper": "#aabbcc",
+          "ink": "#123456"
+        }
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#aabbcc",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#123456",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#c1272d"
+      },
+      "contrast": 6.47326871631626
+    },
+    {
+      "preference": {
+        "preset": "system",
+        "custom": {
+          "paper": "#aabbcc",
+          "ink": "#123456"
+        }
+      },
+      "prefersDark": true,
+      "tokens": {
+        "paper": "#aabbcc",
+        "paper-2": "#211e1a",
+        "paper-3": "#3b3630",
+        "paper-soft": "#252119",
+        "ink": "#123456",
+        "ink-light": "#c4bbab",
+        "ink-muted": "#8e8577",
+        "vermilion": "#e2686c"
+      },
+      "contrast": 6.47326871631626
+    },
+    {
+      "preference": {
+        "preset": "editorial",
+        "custom": {
+          "ink": "#00ee00",
+          "paper": "#00ff00"
+        }
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#00ff00",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#00ee00",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#c1272d"
+      },
+      "contrast": 1.1567811680188158
+    },
+    {
+      "preference": {
+        "preset": "editorial",
+        "custom": {
+          "ink": "#00ee00",
+          "paper": "#00ff00"
+        }
+      },
+      "prefersDark": true,
+      "tokens": {
+        "paper": "#00ff00",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#00ee00",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#c1272d"
+      },
+      "contrast": 1.1567811680188158
+    }
+  ]
+}

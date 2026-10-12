@@ -1,0 +1,98 @@
+{
+  "browser": "154.0.8037.57",
+  "networkRequests": 0,
+  "source": "Actual original Google DM Sans4.004 and Special Elite1.001 response bytes; original global.css",
+  "responses": [
+    {
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2Hp2ywxg089UriCZOIHQ.woff2",
+      "path": "/tmp/twyne-original-web-fonts/3-rP2Hp2ywxg089UriCZOIHQ.woff2",
+      "status": 200,
+      "bytes": 62724
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/specialelite/v20/XLYgIZbkc4JPUL5CVArUVL0ntnAOSA.woff2",
+      "path": "/tmp/twyne-original-web-fonts/2-XLYgIZbkc4JPUL5CVArUVL0ntnAOSA.woff2",
+      "status": 200,
+      "bytes": 53296
+    }
+  ],
+  "metrics": [
+    {
+      "id": "dm400auto",
+      "source": "Save note",
+      "widthPx": 54.640625,
+      "fontFamily": "\"DM Sans\"",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "fontOpticalSizing": "auto",
+      "fontVariationSettings": "normal",
+      "letterSpacing": "normal"
+    },
+    {
+      "id": "dm600auto",
+      "source": "Save note",
+      "widthPx": 56.84375,
+      "fontFamily": "\"DM Sans\"",
+      "fontSize": "12px",
+      "fontWeight": "600",
+      "fontOpticalSizing": "auto",
+      "fontVariationSettings": "normal",
+      "letterSpacing": "normal"
+    },
+    {
+      "id": "dm700auto",
+      "source": "Save note",
+      "widthPx": 57.734375,
+      "fontFamily": "\"DM Sans\"",
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "fontOpticalSizing": "auto",
+      "fontVariationSettings": "normal",
+      "letterSpacing": "normal"
+    },
+    {
+      "id": "dm600none",
+      "source": "Save note",
+      "widthPx": 57.328125,
+      "fontFamily": "\"DM Sans\"",
+      "fontSize": "12px",
+      "fontWeight": "600",
+      "fontOpticalSizing": "none",
+      "fontVariationSettings": "normal",
+      "letterSpacing": "normal"
+    },
+    {
+      "id": "dm600opsz9",
+      "source": "Save note",
+      "widthPx": 57.328125,
+      "fontFamily": "\"DM Sans\"",
+      "fontSize": "12px",
+      "fontWeight": "600",
+      "fontOpticalSizing": "none",
+      "fontVariationSettings": "\"opsz\" 9",
+      "letterSpacing": "normal"
+    },
+    {
+      "id": "dm600opsz12",
+      "source": "Save note",
+      "widthPx": 56.84375,
+      "fontFamily": "\"DM Sans\"",
+      "fontSize": "12px",
+      "fontWeight": "600",
+      "fontOpticalSizing": "none",
+      "fontVariationSettings": "\"opsz\" 12",
+      "letterSpacing": "normal"
+    },
+    {
+      "id": "special",
+      "source": "PLACE NOTE",
+      "widthPx": 83.875,
+      "fontFamily": "\"Special Elite\"",
+      "fontSize": "11.2px",
+      "fontWeight": "400",
+      "fontOpticalSizing": "auto",
+      "fontVariationSettings": "normal",
+      "letterSpacing": "2.016px"
+    }
+  ]
+}

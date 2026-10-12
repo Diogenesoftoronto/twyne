@@ -1,0 +1,21 @@
+{
+  "provider": "fal",
+  "model": "bytedance/seedance-2.5/image-to-video",
+  "source": "public/assets/social/twyne-writers-desk-background-v1.jpg",
+  "source_sha256": "f05ce34f50ec96e56a918ad0723dad346682e4542913cd02c27eb99e809748aa",
+  "output": "public/assets/social/twyne-writers-desk-seedance-background-v1.mp4",
+  "input": {
+    "prompt": "One continuous six-second photorealistic shot of this exact warm, sunlit writer's desk. The overhead camera is completely locked in place throughout: identical framing, perspective and scale, no pan, zoom, dolly, rotation or camera shake. Animate the physical scene with delicate, clearly visible wisps of steam curling upward from the coffee on the right; the white flower sprigs gently sway a few millimetres in a light breeze; soft leaf shadows on the ivory paper slowly flutter and return to their opening position. Preserve the desk, manuscript stacks, books, fountain pen, red pencil, cup and all other objects exactly in place with stable shapes and textures. The broad ivory paper area on the left stays empty, calm and unobstructed for typography to be added separately. Keep the existing warm afternoon light and editorial photographic realism. No hands or people, no new objects, no logos, captions or added lettering, no cuts or transitions. Natural quiet ambient movement in the objects and shadows, not movement of a still photograph. Return smoothly to the supplied ending frame for a gentle repeating scene.",
+    "resolution": "720p",
+    "duration": "6",
+    "aspect_ratio": "auto",
+    "generate_audio": false,
+    "bitrate_mode": "high",
+    "codec": "H264",
+    "end_frame": "same-as-start"
+  },
+  "created_at": "2026-09-29T23:38:09.486Z",
+  "status": "SUBMISSION_REJECTED",
+  "submission_http_status": 403,
+  "submission_error": "User is locked. Reason: Exhausted balance. Top up your balance at fal.ai/dashboard/billing."
+}

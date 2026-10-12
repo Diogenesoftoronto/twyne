@@ -1,0 +1,9 @@
+{
+  "status": "parent_reviewed_pending_oracle_and_host_verification",
+  "model": "sakana/fugu-max",
+  "corrections": [
+    "Explicit output lifetime belongs to the object, not the lookup key."
+  ],
+  "proposalSha256": "daa4ce05c1b4fc488211ff79cffcf280b9f0ce404d0fc977e16c61e7fd75a264",
+  "acceptedPath": "desktop/gpui/src/gen_ui/notebook.rs"
+}

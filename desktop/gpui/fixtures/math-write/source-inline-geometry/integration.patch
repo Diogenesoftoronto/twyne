@@ -1,0 +1,23 @@
+diff --git a/desktop/gpui/target/verification/source-nodeview-server.ts b/desktop/gpui/target/verification/source-nodeview-server.ts
+--- a/desktop/gpui/target/verification/source-nodeview-server.ts
++++ b/desktop/gpui/target/verification/source-nodeview-server.ts
+@@ -1,12 +1,19 @@
+ import fs from "node:fs";
+ import path from "node:path";
++import { prepareInlineGeometry } from "../../fixtures/math-write/source-inline-geometry/fixture-server";
+ const root = path.resolve(import.meta.dir, "../../../..");
+ const fixture = path.join(root, "desktop/gpui/fixtures/math-write/nodeview");
++const inlineGeometry = await prepareInlineGeometry();
++console.log("Source inline geometry artifacts: " + inlineGeometry.generated);
+ const server = Bun.serve({
+   hostname: "127.0.0.1",
+   port: 5196,
+   fetch(request) {
+     const url = new URL(request.url);
++    if (url.pathname.startsWith(inlineGeometry.prefix)) {
++      return inlineGeometry.fetch(request) ??
++        new Response("Unknown inline-geometry fixture path", {status: 404});
++    }
+     if (url.pathname === "/") return new Response(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Actual Source Math NodeViews</title><link rel="stylesheet" href="/original-fonts.css"><link rel="stylesheet" href="/original.css"><style>body{margin:0}.fixture-root{max-width:1024px;padding:24px;margin:auto}.fixture-caption,.fixture-controls{font:14px/20px monospace;margin:0 0 12px}.fixture-case{padding:16px;margin:12px 0;border:1px solid #cbbb96}.fixture-case .ProseMirror{min-height:0}.fixture-controls{display:flex;gap:12px}.fixture-controls button{padding:6px 12px}</style></head><body><main class="fixture-root"><h1 class="fixture-caption">Actual Source Math NodeViews / original</h1><p class="fixture-caption">Isolated original NodeViews and assets. No storage, accounts or providers.</p><div class="fixture-controls"><button data-testid="fixture-undo">Fixture Undo</button><button data-testid="fixture-redo">Fixture Redo</button><span id="fixture-status">Loading actual NodeViews…</span></div><div id="cases"></div></main><script type="module" src="/build/client.js"></script></body></html>`, {headers: {"content-type": "text/html", "Content-Security-Policy": "default-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'none'; img-src 'self' data:; media-src 'none'; frame-src 'none'"}});
+     const name = path.basename(url.pathname);
+     let file: string | undefined;

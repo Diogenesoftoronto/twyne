@@ -19,7 +19,8 @@ import { reportApplicationError } from "./application-diagnostics";
  * is the permission set standard.site publications use; `blob:image/*` lets a
  * later version upload cover images.
  */
-export const SCOPE = "atproto blob:image/* include:site.standard.authFull";
+export const SCOPE =
+  "atproto blob:image/* include:site.standard.authFull repo:love.twyne.desk";
 export const AUTH_CALLBACK_PATH = "/auth/callback/";
 export const ATPROTO_SESSION_CHANGED = "twyne:atproto-session-changed";
 

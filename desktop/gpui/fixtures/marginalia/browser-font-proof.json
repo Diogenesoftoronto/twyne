@@ -1,0 +1,212 @@
+{
+  "originalSource": [
+    {
+      "path": "/tmp/twyne-original-web-fonts/1-kmKWZrc3Hgbbcjq75U4uslyuy4kn0qNccR04_RUJeby2OU36SjNNluc.woff2",
+      "family": "Libre Baskerville",
+      "subfamily": "Italic",
+      "postScriptName": "LibreBaskerville-Italic",
+      "version": "Version 2.005",
+      "unitsPerEm": 1000,
+      "axes": [],
+      "url": "https://fonts.gstatic.com/s/librebaskerville/v24/kmKWZrc3Hgbbcjq75U4uslyuy4kn0qNccR04_RUJeby2OU36SjNNluc.woff2"
+    },
+    {
+      "path": "/tmp/twyne-original-web-fonts/2-XLYgIZbkc4JPUL5CVArUVL0ntnAOSA.woff2",
+      "family": "Special Elite",
+      "subfamily": "Regular",
+      "postScriptName": "SpecialElite-Regular",
+      "version": "Version 1.001",
+      "unitsPerEm": 2048,
+      "axes": [],
+      "url": "https://fonts.gstatic.com/s/specialelite/v20/XLYgIZbkc4JPUL5CVArUVL0ntnAOSA.woff2"
+    },
+    {
+      "path": "/tmp/twyne-original-web-fonts/3-rP2Hp2ywxg089UriCZOIHQ.woff2",
+      "family": "DM Sans 9pt",
+      "subfamily": "Regular",
+      "postScriptName": "DMSans-9ptRegular",
+      "version": "Version 4.004;gftools[0.9.30]",
+      "unitsPerEm": 1000,
+      "axes": [
+        {
+          "tag": "opsz",
+          "min": 9.0,
+          "default": 9.0,
+          "max": 40.0
+        },
+        {
+          "tag": "wght",
+          "min": 100.0,
+          "default": 400.0,
+          "max": 1000.0
+        }
+      ],
+      "url": "https://fonts.gstatic.com/s/dmsans/v17/rP2Hp2ywxg089UriCZOIHQ.woff2"
+    },
+    {
+      "path": "/tmp/twyne-original-web-fonts/4-kmKnZrc3Hgbbcjq75U4uslyuy4kn0qNZaxM.woff2",
+      "family": "Libre Baskerville",
+      "subfamily": "Regular",
+      "postScriptName": "LibreBaskerville-Regular",
+      "version": "Version 2.005",
+      "unitsPerEm": 1000,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 400.0,
+          "default": 400.0,
+          "max": 700.0
+        }
+      ],
+      "url": "https://fonts.gstatic.com/s/librebaskerville/v24/kmKnZrc3Hgbbcjq75U4uslyuy4kn0qNZaxM.woff2"
+    },
+    {
+      "path": "/tmp/twyne-original-web-fonts/5-0QIhMX1D_JOuMw_LIftL.woff2",
+      "family": "Lora",
+      "subfamily": "Italic",
+      "postScriptName": "Lora-Italic",
+      "version": "Version 3.008",
+      "unitsPerEm": 1000,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 400.0,
+          "default": 400.0,
+          "max": 700.0
+        }
+      ],
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QIhMX1D_JOuMw_LIftL.woff2"
+    },
+    {
+      "path": "/tmp/twyne-original-web-fonts/6-0QIvMX1D_JOuMwr7Iw.woff2",
+      "family": "Lora",
+      "subfamily": "Regular",
+      "postScriptName": "Lora-Regular",
+      "version": "Version 3.008",
+      "unitsPerEm": 1000,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 400.0,
+          "default": 400.0,
+          "max": 700.0
+        }
+      ],
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QIvMX1D_JOuMwr7Iw.woff2"
+    },
+    {
+      "path": "/tmp/twyne-original-web-fonts/7-0QIvMX1D_JOuM3b7I-NP.woff2",
+      "family": "Lora",
+      "subfamily": "Regular",
+      "postScriptName": "Lora-Regular",
+      "version": "Version 3.008",
+      "unitsPerEm": 1000,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 400.0,
+          "default": 400.0,
+          "max": 700.0
+        }
+      ],
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QIvMX1D_JOuM3b7I-NP.woff2"
+    }
+  ],
+  "nativeBundled": [
+    {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/assets/fonts/librebaskerville-LibreBaskerville-Regular.ttf",
+      "family": "Libre Baskerville",
+      "subfamily": "Regular",
+      "postScriptName": "LibreBaskerville-Regular",
+      "version": "Version 2.005; ttfautohint (v1.8.4.7-5d5b)",
+      "unitsPerEm": 1000,
+      "axes": []
+    },
+    {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/assets/fonts/librebaskerville-LibreBaskerville-Bold.ttf",
+      "family": "Libre Baskerville",
+      "subfamily": "Bold",
+      "postScriptName": "LibreBaskerville-Bold",
+      "version": "Version 2.005; ttfautohint (v1.8.4.7-5d5b)",
+      "unitsPerEm": 1000,
+      "axes": []
+    },
+    {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/assets/fonts/lora-Lora-Regular.ttf",
+      "family": "Lora",
+      "subfamily": "Regular",
+      "postScriptName": "Lora-Regular",
+      "version": "Version 3.021; ttfautohint (v1.8.4.7-5d5b)",
+      "unitsPerEm": 1000,
+      "axes": []
+    },
+    {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/assets/fonts/lora-Lora-Bold.ttf",
+      "family": "Lora",
+      "subfamily": "Bold",
+      "postScriptName": "Lora-Bold",
+      "version": "Version 3.021; ttfautohint (v1.8.4.7-5d5b)",
+      "unitsPerEm": 1000,
+      "axes": []
+    },
+    {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/assets/fonts/lora-Lora-wght.ttf",
+      "family": "Lora",
+      "subfamily": "Regular",
+      "postScriptName": "Lora-Regular",
+      "version": "Version 3.008",
+      "unitsPerEm": 1000,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 400.0,
+          "default": 400.0,
+          "max": 700.0
+        }
+      ]
+    },
+    {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/assets/fonts/lora-Lora-Italic-wght.ttf",
+      "family": "Lora",
+      "subfamily": "Italic",
+      "postScriptName": "Lora-Italic",
+      "version": "Version 3.008",
+      "unitsPerEm": 1000,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 400.0,
+          "default": 400.0,
+          "max": 700.0
+        }
+      ]
+    },
+    {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/assets/fonts/dmsans-DMSans-Regular.ttf",
+      "family": "DM Sans",
+      "subfamily": "Regular",
+      "postScriptName": "DMSans-Regular",
+      "version": "Version 4.004; ttfautohint (v1.8.4.7-5d5b)",
+      "unitsPerEm": 1000,
+      "axes": []
+    },
+    {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/assets/fonts/dmsans-DMSans-Bold.ttf",
+      "family": "DM Sans",
+      "subfamily": "Bold",
+      "postScriptName": "DMSans-Bold",
+      "version": "Version 4.004; ttfautohint (v1.8.4.7-5d5b)",
+      "unitsPerEm": 1000,
+      "axes": []
+    },
+    {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/assets/fonts/specialelite-SpecialElite-Regular.ttf",
+      "family": "Special Elite",
+      "subfamily": "Regular",
+      "postScriptName": "SpecialElite-Regular",
+      "version": "Version 1.001",
+      "unitsPerEm": 2048,
+      "axes": []
+    }
+  ]
+}

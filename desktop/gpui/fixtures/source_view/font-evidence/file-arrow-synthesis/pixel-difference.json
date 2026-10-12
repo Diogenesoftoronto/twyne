@@ -1,0 +1,11 @@
+{
+  "sameDM600FallbackSynthesisVsNone": {
+    "differentPhysicalPixels": 21,
+    "totalPixels": 1280,
+    "summedNormalizedGrayAbsoluteDifference": 3.9137254901960787
+  },
+  "explicitMath400Vs600": {
+    "differentPhysicalPixels": 0
+  },
+  "nativeBoundary": "GPUI exact original Regular face/glyph/advance; no Chrome fallback synthetic bold."
+}

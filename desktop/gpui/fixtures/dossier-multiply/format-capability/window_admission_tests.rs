@@ -1,0 +1,157 @@
+// Unapplied test module for gpui-pre/src/window.rs. Root owns compilation.
+#[cfg(all(test, any(target_os = "linux", target_os = "freebsd")))]
+mod destination_multiply_capability_tests {
+    use crate::{
+        AppContext as _, AtlasKey, AtlasTile, Bounds, Context, DevicePixels,
+        HeadlessAtlas, IntoElement, PlatformAtlas, Render, RenderImage, Size,
+        Styled, TestAppContext, Window, canvas, fill, px, rgb,
+    };
+    use std::{
+        borrow::Cow,
+        cell::Cell,
+        rc::Rc,
+        sync::{
+            Arc,
+            atomic::{AtomicUsize, Ordering},
+        },
+    };
+
+    #[derive(Default)]
+    struct CountingAtlas {
+        inner: HeadlessAtlas,
+        requests: AtomicUsize,
+    }
+
+    impl PlatformAtlas for CountingAtlas {
+        fn get_or_insert_with<'a>(
+            &self,
+            key: AtlasKey,
+            build: &mut dyn FnMut() -> anyhow::Result<
+                Option<(Size<DevicePixels>, Cow<'a, [u8]>)>,
+            >,
+        ) -> anyhow::Result<Option<AtlasTile>> {
+            self.requests.fetch_add(1, Ordering::Relaxed);
+            self.inner.get_or_insert_with(key, build)
+        }
+
+        fn remove(&self, key: &AtlasKey) {
+            self.inner.remove(key);
+        }
+
+        fn contains(&self, key: &AtlasKey) -> bool {
+            self.inner.contains(key)
+        }
+    }
+
+    struct AdmissionView {
+        atlas: Arc<CountingAtlas>,
+        group: Arc<RenderImage>,
+        ordinary: Arc<RenderImage>,
+        painted: Rc<Cell<bool>>,
+    }
+
+    impl Render for AdmissionView {
+        fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
+            let atlas = self.atlas.clone();
+            let group = self.group.clone();
+            let ordinary = self.ordinary.clone();
+            let painted = self.painted.clone();
+            canvas(
+                |_, _, _| (),
+                move |bounds, (), window, _| {
+                    // Instrument allocation requests on the existing headless
+                    // atlas; the actual TestWindow keeps its default-false cap.
+                    window.sprite_atlas = atlas.clone();
+                    assert_eq!(window.scale_factor(), 2.);
+                    assert_eq!(bounds.size, crate::size(px(16.), px(16.)));
+                    assert!(!window.supports_destination_multiply());
+                    window.paint_quad(fill(bounds, rgb(0xffffff)));
+                    window
+                        .paint_image(
+                            bounds,
+                            bounds,
+                            Default::default(),
+                            ordinary.clone(),
+                            0,
+                            false,
+                        )
+                        .unwrap();
+                    let operations = window.next_frame.scene.len();
+                    let requests = atlas.requests.load(Ordering::Relaxed);
+                    let sprites = window.next_frame.scene.polychrome_sprites.len();
+                    assert!(!window.has_image_atlas_entry(&group));
+
+                    let error = window
+                        .paint_multiply_image(bounds, group.clone(), 0.7)
+                        .expect_err("Unimplemented backend must refuse before admission");
+                    assert!(error.to_string().contains("unavailable for this backend"));
+                    assert_eq!(atlas.requests.load(Ordering::Relaxed), requests);
+                    assert_eq!(window.next_frame.scene.len(), operations);
+                    assert_eq!(window.next_frame.scene.polychrome_sprites.len(), sprites);
+                    assert!(!window.has_image_atlas_entry(&group));
+
+                    // Existing no-op semantics remain neutral even unsupported.
+                    window
+                        .paint_multiply_image(bounds, group.clone(), 0.)
+                        .unwrap();
+                    window
+                        .paint_multiply_image(Bounds::default(), group.clone(), 0.7)
+                        .unwrap();
+                    assert_eq!(atlas.requests.load(Ordering::Relaxed), requests);
+                    assert_eq!(window.next_frame.scene.len(), operations);
+
+                    // Continue the same actual scene through ordinary APIs.
+                    window.paint_quad(fill(bounds, rgb(0x0000ff)));
+                    window
+                        .paint_image(
+                            bounds,
+                            bounds,
+                            Default::default(),
+                            ordinary.clone(),
+                            0,
+                            false,
+                        )
+                        .unwrap();
+                    assert_eq!(atlas.requests.load(Ordering::Relaxed), requests + 1);
+                    assert!(window.has_image_atlas_entry(&ordinary));
+                    assert_eq!(window.next_frame.scene.polychrome_sprites.len(), sprites + 1);
+                    assert!(
+                        window
+                            .next_frame
+                            .scene
+                            .polychrome_sprites
+                            .iter()
+                            .all(|sprite| {
+                                sprite.blend == crate::PolychromeSpriteBlend::SourceOver
+                            })
+                    );
+                    painted.set(true);
+                },
+            )
+            .w(px(16.))
+            .h(px(16.))
+        }
+    }
+
+    #[gpui::test]
+    fn test_destination_multiply_default_backend_refusal_preserves_scene_and_atlas(
+        cx: &mut TestAppContext,
+    ) {
+        let painted = Rc::new(Cell::new(false));
+        let make_image = |pixel| {
+            Arc::new(RenderImage::new(smallvec::SmallVec::from_const([
+                image::Frame::new(image::RgbaImage::from_pixel(32, 32, image::Rgba(pixel))),
+            ])))
+        };
+        let view = AdmissionView {
+            atlas: Arc::new(CountingAtlas::default()),
+            group: make_image([16, 32, 64, 128]),
+            ordinary: make_image([128, 128, 128, 255]),
+            painted: painted.clone(),
+        };
+        let window = cx.add_window(move |_, _| view);
+        cx.update_window(window.into(), |_, window, cx| window.draw(cx).clear(cx))
+            .unwrap();
+        assert!(painted.get());
+    }
+}

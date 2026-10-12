@@ -1,0 +1,161 @@
+{
+  "guest_menu": {
+    "state": "verified Source: auth.value.loading === false AND auth.value.user is falsy",
+    "trigger": {
+      "element": "button type=button",
+      "content": "Icon name=\"user\" size=18 (verified)",
+      "title": "Editor's office",
+      "ariaLabel": "Open the editor's office (account)",
+      "ariaExpanded": "menuOpen.value",
+      "class": "icon-btn p-1.5 text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
+    },
+    "panel": {
+      "visibleWhen": "menuOpen.value === true",
+      "class": "absolute right-0 top-full mt-2 w-72 folio p-3 space-y-2",
+      "style": "z-index: var(--z-dropdown)",
+      "sectionsInOrder": [
+        {
+          "id": "nav",
+          "heading": null,
+          "containerClass": "flex flex-col gap-1 pb-2 border-b border-[var(--color-paper-3)]",
+          "items": [
+            { "order": 1, "text": "Preferences", "icon": "settings", "iconSize": 16, "action": "close menu, then nav(\"/settings/\")" },
+            { "order": 2, "text": "My Desk", "icon": "house", "iconSize": 16, "action": "close menu, then nav(\"/desk/\")" },
+            { "order": 3, "text": "The Manual", "icon": "book-open", "iconSize": 16, "action": "close menu, then nav(\"/docs/\")" },
+            { "order": 4, "text": "Privacy ledger", "icon": "shield-check", "iconSize": 16, "action": "close menu, then nav(\"/privacy-ledger/\")" }
+          ]
+        },
+        {
+          "id": "invitations",
+          "condition": "invitations.length > 0",
+          "verifiedGuestBehavior": "cleared/hidden when not authenticated (useVisibleTask$ returns early; list spliced empty), so section is not rendered signed out"
+        },
+        {
+          "id": "shared",
+          "condition": "sharedFolios.length > 0",
+          "verifiedGuestBehavior": "cleared/hidden when not authenticated, so section is not rendered signed out"
+        },
+        {
+          "id": "auth-panel",
+          "condition": "always rendered when menu open",
+          "branch": "signed-out branch",
+          "label": "The Editor's Office (dept-label)",
+          "heading": "Sign in with your Not Organic account.",
+          "subtext": "New here? You can create one on the next page. The same account holds your plan, your credit and your published writing.",
+          "error": "optional ApplicationNotice (compact) when store.error set",
+          "button": { "idle": "Continue with Not Organic", "busy": "Redirecting…", "disabledWhen": "store.redirecting" }
+        }
+      ]
+    }
+  },
+  "signed_in_menu": {
+    "state": "verified Source: auth.value.user is truthy (auth.loading false)",
+    "trigger": {
+      "element": "button type=button",
+      "title": "Signed in as {accountDisplay}",
+      "ariaLabel": "Open account menu. Signed in as {accountDisplay}",
+      "ariaExpanded": "menuOpen.value",
+      "class": "icon-btn gap-1.5 border border-[var(--color-sage)] bg-[var(--color-paper-soft)] px-2 py-1.5 text-[var(--color-ink)] hover:text-[var(--color-vermilion)]",
+      "contentOrder": [
+        { "order": 1, "condition": "avatar URL valid AND failedAvatar !== avatar", "element": "img src=avatar alt=\"\" width=20 height=20 referrerPolicy=no-referrer", "class": "h-5 w-5 flex-shrink-0 rounded-full object-cover", "onError": "set failedAvatar=avatar" },
+        { "order": 1, "condition": "no avatar OR failedAvatar === avatar", "element": "span aria-hidden=true", "text": "accountInitials(accountDisplay)", "class": "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-paper-3)] text-[9px] font-semibold" },
+        { "order": 2, "element": "span", "text": "{accountDisplay}", "class": "hidden max-w-[8.5rem] truncate text-[11px] font-semibold lg:inline", "style": "font-family: var(--font-sans)" }
+      ]
+    },
+    "panel": {
+      "identical to guest panel sections and order; differs only by conditional sections below and AuthPanel branch",
+      "sectionsInOrder": [
+        { "id": "nav", "items": ["Preferences", "My Desk", "The Manual", "Privacy ledger"], "note": "same labels, icons, order, and actions as guest_menu.nav (verified)" },
+        {
+          "id": "invitations",
+          "condition": "invitations.length > 0",
+          "heading": "Invitations",
+          "headingClass": "px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-light)]",
+          "perItem": [
+            { "text": "{folioName}", "class": "truncate text-sm text-[var(--color-ink)]" },
+            { "text": "Invited as {role}", "class": "mt-0.5 text-[11px] text-[var(--color-ink-light)]" },
+            { "button": "Open", "class": "text-xs font-semibold text-[var(--color-vermilion)] hover:underline disabled:opacity-50", "action": "close menu, then nav(\"/editor?shared=\" + encodeURIComponent(lixId))", "disabledWhen": "invitationBusy === lixId" },
+            { "button": "Decline", "class": "text-xs text-[var(--color-ink-light)] hover:text-[var(--color-ink)] disabled:opacity-50", "action": "rejectInvitation(lixId); menu stays open", "disabledWhen": "invitationBusy === lixId" }
+          ],
+          "errorText": "Could not decline that invitation. Try again.",
+          "errorClass": "px-2 text-xs text-[var(--color-vermilion)]",
+          "errorRole": "alert"
+        },
+        {
+          "id": "shared",
+          "condition": "sharedFolios.length > 0",
+          "heading": "Shared with me",
+          "item": {
+            "element": "button",
+            "class": "block w-full rounded-sm px-2.5 py-2 text-left hover:bg-[var(--color-paper-soft)] focus-ring",
+            "action": "close menu, then nav(\"/editor?shared=\" + encodeURIComponent(lixId))",
+            "text": "{folioName}",
+            "textClass": "block truncate text-sm text-[var(--color-ink)]",
+            "subtext": "role === \"editor\" ? \"Can edit\" : \"Can comment\"",
+            "subtextClass": "mt-0.5 block text-[11px] text-[var(--color-ink-light)]"
+          }
+        },
+        {
+          "id": "auth-panel",
+          "branch": "signed-in branch",
+          "label": "The Editor's Office (dept-label)",
+          "line1": "On the masthead",
+          "line2": "{accountDisplayName(user)}",
+          "button": "Sign out",
+          "buttonAction": "signOut()"
+        }
+      ]
+    }
+  },
+  "interactions": {
+    "verified": [
+      "Trigger click toggles menuOpen.value.",
+      "Document click closes menu when target is outside rootRef (rootRef contains target check).",
+      "Document keydown Escape closes menu when open.",
+      "menuOpen is the external `open` Signal if provided, otherwise internal useSignal(false).",
+      "Every nav item sets menuOpen=false before nav().",
+      "Invitation Open sets menuOpen=false before nav; Decline does not close.",
+      "Invitation Decline sets invitationBusy to lixId, clears invitationError, calls rejectInvitation mutation, removes item on success, sets error on failure, always clears busy.",
+      "AuthPanel sign-in sets redirecting=true, remembers auth attempt, captures product event, calls startNotOrganicSignIn(returnTo), and on throw clears attempt, reports diagnostic, normalizes error, captures failure event, shows notice, resets redirecting.",
+      "AuthPanel loading shows '…loading…' with no menu items beyond the label.",
+      "menuOpen.aria-expanded reflects open state on the trigger."
+    ],
+    "unknownNativeWiring": [
+      "External control of `open` via a Signal is a Source contract; native equivalent (if any) is unknown.",
+      "Auth identity source, accountDisplayName/accountInitials inputs, and avatar validity come from utils (account-display.ts) and auth-context; native providers unknown.",
+      "Sign-out implementation (signOut), Not Organic redirect (startNotOrganicSignIn) target and network behavior are unknown and must not be inferred.",
+      "Invitation/shared subscriptions via Convex onUpdate (api.collaboration.listPendingInvitations, listSharedWithMe) and rejectInvitation mutation are backend wiring not visible in this Source beyond call names; capabilities unknown."
+    ]
+  },
+  "styling": {
+    "verifiedTokensAndClasses": [
+      "icon-btn: inline-flex, min 1.75rem hit target, radius 2px, color var(--color-ink-muted), hover color var(--color-ink) + bg var(--color-paper-2), active scale(0.9), focus-visible 2px solid var(--color-vermilion) offset 1px.",
+      "folio: bg var(--color-paper-soft), border 1px solid var(--color-paper-3), layered inset/outer box-shadows.",
+      "btn-press: typewriter uppercase letter-spacing 0.18em, 0.7rem, bg var(--color-ink), color var(--color-paper), radius 2px; hover bg/border var(--color-vermilion-2); active translateY(1px) scale(0.98); disabled opacity 0.4.",
+      "btn-paper: sans 0.75rem weight 600, bg var(--color-paper-soft), border var(--color-paper-3); hover bg var(--color-paper-2), border var(--color-ink-muted).",
+      "dept-label: typewriter, 0.625rem, letter-spacing 0.32em, uppercase, color var(--color-ink-muted).",
+      "Nav item font-family var(--font-display), text-sm, py-1.5 px-2, hover text var(--color-vermilion).",
+      "Panel width w-72; z-index var(--z-dropdown).",
+      "Avatar/initials 20x20 (h-5 w-5) rounded-full; initials text-[9px] font-semibold on var(--color-paper-3).",
+      "Name span hidden until lg breakpoint (lg:inline), max-w-[8.5rem], text-[11px] font-semibold, font var(--font-sans).",
+      "AuthPanel signed-in display name uses var(--font-typewriter) with letter-spacing 0.08em; heading uses var(--font-display) weight 600; subtext var(--font-serif) italic."
+    ],
+    "note": "Values are exact class names/tokens from Source. No native token mapping is asserted."
+  },
+  "unsupported_routes": {
+    "referencedNavigations": [
+      { "label": "Preferences", "target": "/settings/" },
+      { "label": "My Desk", "target": "/desk/" },
+      { "label": "The Manual", "target": "/docs/" },
+      { "label": "Privacy ledger", "target": "/privacy-ledger/" },
+      { "label": "Invitation Open / Shared item", "target": "/editor?shared={encodeURIComponent(lixId)}" }
+    ],
+    "signOut": "no route; calls signOut() (verified call name only)",
+    "notOrganicSignIn": "redirects via startNotOrganicSignIn(returnTo); destination URL unknown",
+    "unknown": [
+      "Whether the native/GPUI port implements /settings/, /desk/, /docs/, /privacy-ledger/, or /editor?shared=",
+      "Whether /docs/ is the Manual (label implies but route resolution is not verified here).",
+      "Query parameter name is exactly `shared` (verified from Source); value is encodeURIComponent(lixId)."
+    ]
+  }
+}

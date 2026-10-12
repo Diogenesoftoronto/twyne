@@ -1,0 +1,72 @@
+{
+  "cases": [
+    {
+      "id": "fraction-inline",
+      "kind": "latex",
+      "source": "\\frac{a}{b}",
+      "block": false,
+      "font_size_px": 18,
+      "width_px": 640,
+      "color": 2038550
+    },
+    {
+      "id": "integral-block",
+      "kind": "latex",
+      "source": "\\int_0^1 x^2\\,dx = \\frac{1}{3}",
+      "block": true,
+      "font_size_px": 18,
+      "width_px": 640,
+      "color": 2038550
+    },
+    {
+      "id": "aligned-block",
+      "kind": "latex",
+      "source": "\\begin{aligned}a^2+b^2&=c^2\\\\e^{i\\pi}+1&=0\\end{aligned}",
+      "block": true,
+      "font_size_px": 18,
+      "width_px": 640,
+      "color": 2038550
+    },
+    {
+      "id": "invalid-latex",
+      "kind": "latex",
+      "source": "\\frac{a}{",
+      "block": false,
+      "font_size_px": 18,
+      "width_px": 640,
+      "color": 2038550
+    },
+    {
+      "id": "native-typst-math",
+      "kind": "typst",
+      "source": "$ sum_(k=1)^n k = (n(n+1))/2 $",
+      "block": true,
+      "font_size_px": 18,
+      "width_px": 640,
+      "color": 2038550
+    },
+    {
+      "id": "flowchart",
+      "kind": "mermaid",
+      "source": "flowchart LR\n  Draft[Draft] --> Revision[Revision]\n  Revision --> Proof[Proof]\n  Proof --> Draft",
+      "block": true,
+      "font_size_px": 18,
+      "width_px": 640,
+      "color": 2038550
+    },
+    {
+      "id": "sequence",
+      "kind": "mermaid",
+      "source": "sequenceDiagram\n  participant Author\n  participant Notebook\n  Author->>Notebook: Write a sentence\n  Notebook-->>Author: Save locally",
+      "block": true,
+      "font_size_px": 18,
+      "width_px": 640,
+      "color": 2038550
+    }
+  ],
+  "fidelity": {
+    "latex": "Uses the exact installed MathJax SVG proof/export pipeline. The editor uses KaTeX HTML; KaTeX Write geometry parity remains pending.",
+    "typst": "Actual pinned native compiler, sized SVG page. Native inline baseline metric remains pending. Generic RawTypst stays source-visible.",
+    "mermaid": "Actual local browser verification only. No implicit system Chrome dependency ships. An explicitly packaged renderer is required; unavailable errors preserve source. SVG labels use the exact web proof/export htmlLabels=false configuration."
+  }
+}

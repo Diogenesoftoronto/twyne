@@ -1,0 +1,6 @@
+Original Manager assistance raw Cast glyph spans, source symbols ♠ ♥ ♦ ✦ ♣.
+2026-10-04: Package byte-identical Liberation Serif Bold 2.1.5 and its
+original SIL OFL/copyright notice. Reuse existing Adwaita Mono for ✦.
+No outline, advance, hint, weight, family, source-symbol or source-attr edits.
+Apply only to raw Manager spans at original16px/24px600; circular DM Sans
+badges, Lora card headings, shared fallback and Typst fontbook stay unchanged.

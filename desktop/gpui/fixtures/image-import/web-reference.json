@@ -1,0 +1,255 @@
+{
+  "provenance": "Actual current offline image-upload.ts FileReader plus ImageNode/insertImageFiles in installed Tiptap, captured in local Chrome with all network blocked. Technical raster fixtures are not Twyne artwork.",
+  "blockedNetworkRequests": 0,
+  "cases": [
+    {
+      "fixture": "plate.png",
+      "filename": "Plate & détail.png",
+      "mime": "image/png",
+      "result": {
+        "uploaded": {
+          "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAI0lEQVR4nGM4qK77/8ubG//lpcX+M5hE1Pyv7kn8v32S3X8AtPYOD0M+q7cAAAAASUVORK5CYII=",
+          "storage": "inline",
+          "imageId": null,
+          "contentType": "image/png",
+          "size": 113
+        },
+        "attrs": {
+          "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAI0lEQVR4nGM4qK77/8ubG//lpcX+M5hE1Pyv7kn8v32S3X8AtPYOD0M+q7cAAAAASUVORK5CYII=",
+          "alt": "Plate & détail",
+          "caption": "",
+          "alignment": "center",
+          "width": 100,
+          "aspectRatio": 1.5,
+          "imageId": null,
+          "offline": true,
+          "uploadId": "<upload-id>",
+          "uploadStatus": "ready",
+          "uploadProgress": 1,
+          "uploadError": null
+        },
+        "html": "<figure src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAI0lEQVR4nGM4qK77/8ubG//lpcX+M5hE1Pyv7kn8v32S3X8AtPYOD0M+q7cAAAAASUVORK5CYII=\" alt=\"Plate &amp; détail\" caption=\"\" alignment=\"center\" width=\"100\" aspectratio=\"1.5\" offline=\"true\" uploadid=\"<upload-id>\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-image-aspect-ratio=\"1.5\" data-image-offline=\"true\" data-upload-id=\"<upload-id>\" data-upload-status=\"ready\" data-alt-text=\"Plate &amp; détail\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid;\"><img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAI0lEQVR4nGM4qK77/8ubG//lpcX+M5hE1Pyv7kn8v32S3X8AtPYOD0M+q7cAAAAASUVORK5CYII=\" alt=\"Plate &amp; détail\" style=\"display: block; width: 100%; height: auto; aspect-ratio: 1.5 / 1;\"></figure><p>Before.</p>",
+        "width": 3,
+        "height": 2
+      }
+    },
+    {
+      "fixture": "plate.jpg",
+      "filename": "Photograph.jpg",
+      "mime": "image/jpeg",
+      "result": {
+        "uploaded": {
+          "src": "data:image/jpeg;base64,/9j/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAACAAMDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAAA//EABkQAAMBAQEAAAAAAAAAAAAAAAQFBgcDAv/EABUBAQEAAAAAAAAAAAAAAAAAAAcI/8QAHREAAgMBAAMBAAAAAAAAAAAABAUBAgMGAAcREv/aAAwDAQACEQMRAD8AGGxbHNMg4Cx0fJs00CuPgYhadVW8JLVdIYumpVRMTgBbx8qPZkBT80mUTyQXsV74KkapapA58AARR+UA+8eo6ZD7c9gp0fRPUyhd0hwq9UqbsFy0EbOafgcMEMjEUXCn2fxlhlTOv2flY8ePW2WXScSif9Fnm/et8jD2zp1SrRs0OIYmaEGsWJ0bmGl73mb7Ek7a7a3mbXvaZmfP/9k=",
+          "storage": "inline",
+          "imageId": null,
+          "contentType": "image/jpeg",
+          "size": 434
+        },
+        "attrs": {
+          "src": "data:image/jpeg;base64,/9j/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAACAAMDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAAA//EABkQAAMBAQEAAAAAAAAAAAAAAAQFBgcDAv/EABUBAQEAAAAAAAAAAAAAAAAAAAcI/8QAHREAAgMBAAMBAAAAAAAAAAAABAUBAgMGAAcREv/aAAwDAQACEQMRAD8AGGxbHNMg4Cx0fJs00CuPgYhadVW8JLVdIYumpVRMTgBbx8qPZkBT80mUTyQXsV74KkapapA58AARR+UA+8eo6ZD7c9gp0fRPUyhd0hwq9UqbsFy0EbOafgcMEMjEUXCn2fxlhlTOv2flY8ePW2WXScSif9Fnm/et8jD2zp1SrRs0OIYmaEGsWJ0bmGl73mb7Ek7a7a3mbXvaZmfP/9k=",
+          "alt": "Photograph",
+          "caption": "",
+          "alignment": "center",
+          "width": 100,
+          "aspectRatio": 1.5,
+          "imageId": null,
+          "offline": true,
+          "uploadId": "<upload-id>",
+          "uploadStatus": "ready",
+          "uploadProgress": 1,
+          "uploadError": null
+        },
+        "html": "<figure src=\"data:image/jpeg;base64,/9j/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAACAAMDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAAA//EABkQAAMBAQEAAAAAAAAAAAAAAAQFBgcDAv/EABUBAQEAAAAAAAAAAAAAAAAAAAcI/8QAHREAAgMBAAMBAAAAAAAAAAAABAUBAgMGAAcREv/aAAwDAQACEQMRAD8AGGxbHNMg4Cx0fJs00CuPgYhadVW8JLVdIYumpVRMTgBbx8qPZkBT80mUTyQXsV74KkapapA58AARR+UA+8eo6ZD7c9gp0fRPUyhd0hwq9UqbsFy0EbOafgcMEMjEUXCn2fxlhlTOv2flY8ePW2WXScSif9Fnm/et8jD2zp1SrRs0OIYmaEGsWJ0bmGl73mb7Ek7a7a3mbXvaZmfP/9k=\" alt=\"Photograph\" caption=\"\" alignment=\"center\" width=\"100\" aspectratio=\"1.5\" offline=\"true\" uploadid=\"<upload-id>\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-image-aspect-ratio=\"1.5\" data-image-offline=\"true\" data-upload-id=\"<upload-id>\" data-upload-status=\"ready\" data-alt-text=\"Photograph\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid;\"><img src=\"data:image/jpeg;base64,/9j/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAACAAMDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAAA//EABkQAAMBAQEAAAAAAAAAAAAAAAQFBgcDAv/EABUBAQEAAAAAAAAAAAAAAAAAAAcI/8QAHREAAgMBAAMBAAAAAAAAAAAABAUBAgMGAAcREv/aAAwDAQACEQMRAD8AGGxbHNMg4Cx0fJs00CuPgYhadVW8JLVdIYumpVRMTgBbx8qPZkBT80mUTyQXsV74KkapapA58AARR+UA+8eo6ZD7c9gp0fRPUyhd0hwq9UqbsFy0EbOafgcMEMjEUXCn2fxlhlTOv2flY8ePW2WXScSif9Fnm/et8jD2zp1SrRs0OIYmaEGsWJ0bmGl73mb7Ek7a7a3mbXvaZmfP/9k=\" alt=\"Photograph\" style=\"display: block; width: 100%; height: auto; aspect-ratio: 1.5 / 1;\"></figure><p>Before.</p>",
+        "width": 3,
+        "height": 2
+      }
+    },
+    {
+      "fixture": "rotated.jpg",
+      "filename": "Rotated.jpg",
+      "mime": "image/jpeg",
+      "result": {
+        "uploaded": {
+          "src": "data:image/jpeg;base64,/9j/4QC8RXhpZgAASUkqAAgAAAAGABIBAwABAAAABgAAABoBBQABAAAAVgAAABsBBQABAAAAXgAAACgBAwABAAAAAgAAABMCAwABAAAAAQAAAGmHBAABAAAAZgAAAAAAAAA4YwAA6AMAADhjAADoAwAABgAAkAcABAAAADAyMTABkQcABAAAAAECAwAAoAcABAAAADAxMDABoAMAAQAAAP//AAACoAQAAQAAAAMAAAADoAQAAQAAAAIAAAAAAAAA/+IB8ElDQ19QUk9GSUxFAAEBAAAB4GxjbXMEIAAAbW50clJHQiBYWVogB+IAAwAUAAkADgAdYWNzcE1TRlQAAAAAc2F3c2N0cmwAAAAAAAAAAAAAAAAAAPbWAAEAAAAA0y1oYW5keem/Vlo+AbaDI4VVRvdPqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKZGVzYwAAAPwAAAAkY3BydAAAASAAAAAid3RwdAAAAUQAAAAUY2hhZAAAAVgAAAAsclhZWgAAAYQAAAAUZ1hZWgAAAZgAAAAUYlhZWgAAAawAAAAUclRSQwAAAcAAAAAgZ1RSQwAAAcAAAAAgYlRSQwAAAcAAAAAgbWx1YwAAAAAAAAABAAAADGVuVVMAAAAIAAAAHABzAFIARwBCbWx1YwAAAAAAAAABAAAADGVuVVMAAAAGAAAAHABDAEMAMAAAWFlaIAAAAAAAAPbWAAEAAAAA0y1zZjMyAAAAAAABDD8AAAXd///zJgAAB5AAAP2S///7of///aIAAAPcAADAcVhZWiAAAAAAAABvoAAAOPIAAAOPWFlaIAAAAAAAAGKWAAC3iQAAGNpYWVogAAAAAAAAJKAAAA+FAAC2xHBhcmEAAAAAAAMAAAACZmkAAPKnAAANWQAAE9AAAApb/9sAQwABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB/9sAQwEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB/8AAEQgAAgADAwERAAIRAQMRAf/EABQAAQAAAAAAAAAAAAAAAAAAAAP/xAAZEAADAQEBAAAAAAAAAAAAAAAEBQYHAwL/xAAVAQEBAAAAAAAAAAAAAAAAAAAHCP/EAB0RAAIDAQADAQAAAAAAAAAAAAQFAQIDBgAHERL/2gAMAwEAAhEDEQA/ABhsWxzTIOAsdHybNNArj4GIWnVVvCS1XSGLpqVUTE4AW8fKj2ZAU/NJlE8kF7Fe+CpGqWqQOfAAEUflAPvHqOmQ+3PYKdH0T1MoXdIcKvVKm7BctBGzmn4HDBDIxFFwp9n8ZYZUzr9n5WPHj1tll0nEon/RZ5v3rfIw9s6dUq0bNDiGJmhBrFidG5hpe95m+xJO2u2t5m172mZnz//Z",
+          "storage": "inline",
+          "imageId": null,
+          "contentType": "image/jpeg",
+          "size": 1122
+        },
+        "attrs": {
+          "src": "data:image/jpeg;base64,/9j/4QC8RXhpZgAASUkqAAgAAAAGABIBAwABAAAABgAAABoBBQABAAAAVgAAABsBBQABAAAAXgAAACgBAwABAAAAAgAAABMCAwABAAAAAQAAAGmHBAABAAAAZgAAAAAAAAA4YwAA6AMAADhjAADoAwAABgAAkAcABAAAADAyMTABkQcABAAAAAECAwAAoAcABAAAADAxMDABoAMAAQAAAP//AAACoAQAAQAAAAMAAAADoAQAAQAAAAIAAAAAAAAA/+IB8ElDQ19QUk9GSUxFAAEBAAAB4GxjbXMEIAAAbW50clJHQiBYWVogB+IAAwAUAAkADgAdYWNzcE1TRlQAAAAAc2F3c2N0cmwAAAAAAAAAAAAAAAAAAPbWAAEAAAAA0y1oYW5keem/Vlo+AbaDI4VVRvdPqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKZGVzYwAAAPwAAAAkY3BydAAAASAAAAAid3RwdAAAAUQAAAAUY2hhZAAAAVgAAAAsclhZWgAAAYQAAAAUZ1hZWgAAAZgAAAAUYlhZWgAAAawAAAAUclRSQwAAAcAAAAAgZ1RSQwAAAcAAAAAgYlRSQwAAAcAAAAAgbWx1YwAAAAAAAAABAAAADGVuVVMAAAAIAAAAHABzAFIARwBCbWx1YwAAAAAAAAABAAAADGVuVVMAAAAGAAAAHABDAEMAMAAAWFlaIAAAAAAAAPbWAAEAAAAA0y1zZjMyAAAAAAABDD8AAAXd///zJgAAB5AAAP2S///7of///aIAAAPcAADAcVhZWiAAAAAAAABvoAAAOPIAAAOPWFlaIAAAAAAAAGKWAAC3iQAAGNpYWVogAAAAAAAAJKAAAA+FAAC2xHBhcmEAAAAAAAMAAAACZmkAAPKnAAANWQAAE9AAAApb/9sAQwABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB/9sAQwEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB/8AAEQgAAgADAwERAAIRAQMRAf/EABQAAQAAAAAAAAAAAAAAAAAAAAP/xAAZEAADAQEBAAAAAAAAAAAAAAAEBQYHAwL/xAAVAQEBAAAAAAAAAAAAAAAAAAAHCP/EAB0RAAIDAQADAQAAAAAAAAAAAAQFAQIDBgAHERL/2gAMAwEAAhEDEQA/ABhsWxzTIOAsdHybNNArj4GIWnVVvCS1XSGLpqVUTE4AW8fKj2ZAU/NJlE8kF7Fe+CpGqWqQOfAAEUflAPvHqOmQ+3PYKdH0T1MoXdIcKvVKm7BctBGzmn4HDBDIxFFwp9n8ZYZUzr9n5WPHj1tll0nEon/RZ5v3rfIw9s6dUq0bNDiGJmhBrFidG5hpe95m+xJO2u2t5m172mZnz//Z",
+          "alt": "Rotated",
+          "caption": "",
+          "alignment": "center",
+          "width": 100,
+          "aspectRatio": 0.6666666666666666,
+          "imageId": null,
+          "offline": true,
+          "uploadId": "<upload-id>",
+          "uploadStatus": "ready",
+          "uploadProgress": 1,
+          "uploadError": null
+        },
+        "html": "<figure src=\"data:image/jpeg;base64,/9j/4QC8RXhpZgAASUkqAAgAAAAGABIBAwABAAAABgAAABoBBQABAAAAVgAAABsBBQABAAAAXgAAACgBAwABAAAAAgAAABMCAwABAAAAAQAAAGmHBAABAAAAZgAAAAAAAAA4YwAA6AMAADhjAADoAwAABgAAkAcABAAAADAyMTABkQcABAAAAAECAwAAoAcABAAAADAxMDABoAMAAQAAAP//AAACoAQAAQAAAAMAAAADoAQAAQAAAAIAAAAAAAAA/+IB8ElDQ19QUk9GSUxFAAEBAAAB4GxjbXMEIAAAbW50clJHQiBYWVogB+IAAwAUAAkADgAdYWNzcE1TRlQAAAAAc2F3c2N0cmwAAAAAAAAAAAAAAAAAAPbWAAEAAAAA0y1oYW5keem/Vlo+AbaDI4VVRvdPqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKZGVzYwAAAPwAAAAkY3BydAAAASAAAAAid3RwdAAAAUQAAAAUY2hhZAAAAVgAAAAsclhZWgAAAYQAAAAUZ1hZWgAAAZgAAAAUYlhZWgAAAawAAAAUclRSQwAAAcAAAAAgZ1RSQwAAAcAAAAAgYlRSQwAAAcAAAAAgbWx1YwAAAAAAAAABAAAADGVuVVMAAAAIAAAAHABzAFIARwBCbWx1YwAAAAAAAAABAAAADGVuVVMAAAAGAAAAHABDAEMAMAAAWFlaIAAAAAAAAPbWAAEAAAAA0y1zZjMyAAAAAAABDD8AAAXd///zJgAAB5AAAP2S///7of///aIAAAPcAADAcVhZWiAAAAAAAABvoAAAOPIAAAOPWFlaIAAAAAAAAGKWAAC3iQAAGNpYWVogAAAAAAAAJKAAAA+FAAC2xHBhcmEAAAAAAAMAAAACZmkAAPKnAAANWQAAE9AAAApb/9sAQwABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB/9sAQwEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB/8AAEQgAAgADAwERAAIRAQMRAf/EABQAAQAAAAAAAAAAAAAAAAAAAAP/xAAZEAADAQEBAAAAAAAAAAAAAAAEBQYHAwL/xAAVAQEBAAAAAAAAAAAAAAAAAAAHCP/EAB0RAAIDAQADAQAAAAAAAAAAAAQFAQIDBgAHERL/2gAMAwEAAhEDEQA/ABhsWxzTIOAsdHybNNArj4GIWnVVvCS1XSGLpqVUTE4AW8fKj2ZAU/NJlE8kF7Fe+CpGqWqQOfAAEUflAPvHqOmQ+3PYKdH0T1MoXdIcKvVKm7BctBGzmn4HDBDIxFFwp9n8ZYZUzr9n5WPHj1tll0nEon/RZ5v3rfIw9s6dUq0bNDiGJmhBrFidG5hpe95m+xJO2u2t5m172mZnz//Z\" alt=\"Rotated\" caption=\"\" alignment=\"center\" width=\"100\" aspectratio=\"0.6666666666666666\" offline=\"true\" uploadid=\"<upload-id>\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-image-aspect-ratio=\"0.6666666666666666\" data-image-offline=\"true\" data-upload-id=\"<upload-id>\" data-upload-status=\"ready\" data-alt-text=\"Rotated\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid;\"><img src=\"data:image/jpeg;base64,/9j/4QC8RXhpZgAASUkqAAgAAAAGABIBAwABAAAABgAAABoBBQABAAAAVgAAABsBBQABAAAAXgAAACgBAwABAAAAAgAAABMCAwABAAAAAQAAAGmHBAABAAAAZgAAAAAAAAA4YwAA6AMAADhjAADoAwAABgAAkAcABAAAADAyMTABkQcABAAAAAECAwAAoAcABAAAADAxMDABoAMAAQAAAP//AAACoAQAAQAAAAMAAAADoAQAAQAAAAIAAAAAAAAA/+IB8ElDQ19QUk9GSUxFAAEBAAAB4GxjbXMEIAAAbW50clJHQiBYWVogB+IAAwAUAAkADgAdYWNzcE1TRlQAAAAAc2F3c2N0cmwAAAAAAAAAAAAAAAAAAPbWAAEAAAAA0y1oYW5keem/Vlo+AbaDI4VVRvdPqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKZGVzYwAAAPwAAAAkY3BydAAAASAAAAAid3RwdAAAAUQAAAAUY2hhZAAAAVgAAAAsclhZWgAAAYQAAAAUZ1hZWgAAAZgAAAAUYlhZWgAAAawAAAAUclRSQwAAAcAAAAAgZ1RSQwAAAcAAAAAgYlRSQwAAAcAAAAAgbWx1YwAAAAAAAAABAAAADGVuVVMAAAAIAAAAHABzAFIARwBCbWx1YwAAAAAAAAABAAAADGVuVVMAAAAGAAAAHABDAEMAMAAAWFlaIAAAAAAAAPbWAAEAAAAA0y1zZjMyAAAAAAABDD8AAAXd///zJgAAB5AAAP2S///7of///aIAAAPcAADAcVhZWiAAAAAAAABvoAAAOPIAAAOPWFlaIAAAAAAAAGKWAAC3iQAAGNpYWVogAAAAAAAAJKAAAA+FAAC2xHBhcmEAAAAAAAMAAAACZmkAAPKnAAANWQAAE9AAAApb/9sAQwABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB/9sAQwEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB/8AAEQgAAgADAwERAAIRAQMRAf/EABQAAQAAAAAAAAAAAAAAAAAAAAP/xAAZEAADAQEBAAAAAAAAAAAAAAAEBQYHAwL/xAAVAQEBAAAAAAAAAAAAAAAAAAAHCP/EAB0RAAIDAQADAQAAAAAAAAAAAAQFAQIDBgAHERL/2gAMAwEAAhEDEQA/ABhsWxzTIOAsdHybNNArj4GIWnVVvCS1XSGLpqVUTE4AW8fKj2ZAU/NJlE8kF7Fe+CpGqWqQOfAAEUflAPvHqOmQ+3PYKdH0T1MoXdIcKvVKm7BctBGzmn4HDBDIxFFwp9n8ZYZUzr9n5WPHj1tll0nEon/RZ5v3rfIw9s6dUq0bNDiGJmhBrFidG5hpe95m+xJO2u2t5m172mZnz//Z\" alt=\"Rotated\" style=\"display: block; width: 100%; height: auto; aspect-ratio: 0.666667 / 1;\"></figure><p>Before.</p>",
+        "width": 2,
+        "height": 3
+      }
+    },
+    {
+      "fixture": "plate.gif",
+      "filename": ".hidden",
+      "mime": "image/gif",
+      "result": {
+        "uploaded": {
+          "src": "data:image/gif;base64,R0lGODlhAwACAIIAAExpcXuMYR8bFjRYfPTs2MEnLbeSPgAAACH5BAUAAAAALAAAAAADAAIAAAMEWCQTlgA7",
+          "storage": "inline",
+          "imageId": null,
+          "contentType": "image/gif",
+          "size": 63
+        },
+        "attrs": {
+          "src": "data:image/gif;base64,R0lGODlhAwACAIIAAExpcXuMYR8bFjRYfPTs2MEnLbeSPgAAACH5BAUAAAAALAAAAAADAAIAAAMEWCQTlgA7",
+          "alt": "",
+          "caption": "",
+          "alignment": "center",
+          "width": 100,
+          "aspectRatio": 1.5,
+          "imageId": null,
+          "offline": true,
+          "uploadId": "<upload-id>",
+          "uploadStatus": "ready",
+          "uploadProgress": 1,
+          "uploadError": null
+        },
+        "html": "<figure src=\"data:image/gif;base64,R0lGODlhAwACAIIAAExpcXuMYR8bFjRYfPTs2MEnLbeSPgAAACH5BAUAAAAALAAAAAADAAIAAAMEWCQTlgA7\" alt=\"\" caption=\"\" alignment=\"center\" width=\"100\" aspectratio=\"1.5\" offline=\"true\" uploadid=\"<upload-id>\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-image-aspect-ratio=\"1.5\" data-image-offline=\"true\" data-upload-id=\"<upload-id>\" data-upload-status=\"ready\" data-alt-text=\"\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid;\"><img src=\"data:image/gif;base64,R0lGODlhAwACAIIAAExpcXuMYR8bFjRYfPTs2MEnLbeSPgAAACH5BAUAAAAALAAAAAADAAIAAAMEWCQTlgA7\" alt=\"\" style=\"display: block; width: 100%; height: auto; aspect-ratio: 1.5 / 1;\"></figure><p>Before.</p>",
+        "width": 3,
+        "height": 2
+      }
+    },
+    {
+      "fixture": "plate.webp",
+      "filename": "A plate.",
+      "mime": "image/webp",
+      "result": {
+        "uploaded": {
+          "src": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4TEAAAAAvAkAAAC9AEEAikEtgq44ywSRk0jaC6rou9k/S2K0WkiSIYaM3XI/zRzic+Y/ty0HK4Z2mQJBtG9p2tkf0P/ID",
+          "storage": "inline",
+          "imageId": null,
+          "contentType": "image/webp",
+          "size": 84
+        },
+        "attrs": {
+          "src": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4TEAAAAAvAkAAAC9AEEAikEtgq44ywSRk0jaC6rou9k/S2K0WkiSIYaM3XI/zRzic+Y/ty0HK4Z2mQJBtG9p2tkf0P/ID",
+          "alt": "A plate.",
+          "caption": "",
+          "alignment": "center",
+          "width": 100,
+          "aspectRatio": 1.5,
+          "imageId": null,
+          "offline": true,
+          "uploadId": "<upload-id>",
+          "uploadStatus": "ready",
+          "uploadProgress": 1,
+          "uploadError": null
+        },
+        "html": "<figure src=\"data:image/webp;base64,UklGRkwAAABXRUJQVlA4TEAAAAAvAkAAAC9AEEAikEtgq44ywSRk0jaC6rou9k/S2K0WkiSIYaM3XI/zRzic+Y/ty0HK4Z2mQJBtG9p2tkf0P/ID\" alt=\"A plate.\" caption=\"\" alignment=\"center\" width=\"100\" aspectratio=\"1.5\" offline=\"true\" uploadid=\"<upload-id>\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-image-aspect-ratio=\"1.5\" data-image-offline=\"true\" data-upload-id=\"<upload-id>\" data-upload-status=\"ready\" data-alt-text=\"A plate.\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid;\"><img src=\"data:image/webp;base64,UklGRkwAAABXRUJQVlA4TEAAAAAvAkAAAC9AEEAikEtgq44ywSRk0jaC6rou9k/S2K0WkiSIYaM3XI/zRzic+Y/ty0HK4Z2mQJBtG9p2tkf0P/ID\" alt=\"A plate.\" style=\"display: block; width: 100%; height: auto; aspect-ratio: 1.5 / 1;\"></figure><p>Before.</p>",
+        "width": 3,
+        "height": 2
+      }
+    },
+    {
+      "fixture": "animated.gif",
+      "filename": "Motion.gif",
+      "mime": "image/gif",
+      "result": {
+        "uploaded": {
+          "src": "data:image/gif;base64,R0lGODlhAwACAIIAAExpcXuMYR8bFjRYfPTs2MEnLbeSPgAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQFAgAAACwAAAAAAwACAAADBFgkE5YAIfkEBQIAAAAsAAAAAAMAAgAAAwQoRTaRADs=",
+          "storage": "inline",
+          "imageId": null,
+          "contentType": "image/gif",
+          "size": 107
+        },
+        "attrs": {
+          "src": "data:image/gif;base64,R0lGODlhAwACAIIAAExpcXuMYR8bFjRYfPTs2MEnLbeSPgAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQFAgAAACwAAAAAAwACAAADBFgkE5YAIfkEBQIAAAAsAAAAAAMAAgAAAwQoRTaRADs=",
+          "alt": "Motion",
+          "caption": "",
+          "alignment": "center",
+          "width": 100,
+          "aspectRatio": 1.5,
+          "imageId": null,
+          "offline": true,
+          "uploadId": "<upload-id>",
+          "uploadStatus": "ready",
+          "uploadProgress": 1,
+          "uploadError": null
+        },
+        "html": "<figure src=\"data:image/gif;base64,R0lGODlhAwACAIIAAExpcXuMYR8bFjRYfPTs2MEnLbeSPgAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQFAgAAACwAAAAAAwACAAADBFgkE5YAIfkEBQIAAAAsAAAAAAMAAgAAAwQoRTaRADs=\" alt=\"Motion\" caption=\"\" alignment=\"center\" width=\"100\" aspectratio=\"1.5\" offline=\"true\" uploadid=\"<upload-id>\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-image-aspect-ratio=\"1.5\" data-image-offline=\"true\" data-upload-id=\"<upload-id>\" data-upload-status=\"ready\" data-alt-text=\"Motion\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid;\"><img src=\"data:image/gif;base64,R0lGODlhAwACAIIAAExpcXuMYR8bFjRYfPTs2MEnLbeSPgAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQFAgAAACwAAAAAAwACAAADBFgkE5YAIfkEBQIAAAAsAAAAAAMAAgAAAwQoRTaRADs=\" alt=\"Motion\" style=\"display: block; width: 100%; height: auto; aspect-ratio: 1.5 / 1;\"></figure><p>Before.</p>",
+        "width": 3,
+        "height": 2
+      }
+    },
+    {
+      "fixture": "animated.webp",
+      "filename": "Motion.webp",
+      "mime": "image/webp",
+      "result": {
+        "uploaded": {
+          "src": "data:image/webp;base64,UklGRugAAABXRUJQVlA4WAoAAAACAAAAAgAAAQAAQU5JTQYAAAD/////AABBTk1GWAAAAAAAAAAAAAIAAAEAABQAAAJWUDhMQAAAAC8CQAAAL0AQQCKQS2CrjjLBJGTSNoLqui72T9LYrRaSJIhhozdcj/NHOJz5j+3LQcrhnaZAkG0b2na2R/Q/8gNBTk1GXAAAAAAAAAAAAAIAAAEAABQAAABWUDhMQwAAAC8CQAAAL0AQQCKQS2CrjjLBJGTSNoLqui72T9LYrRaSJIhhozdcj/NHOJz5j+3LQcrhnaagkG0EOLV7RI7pIvof4wUA",
+          "storage": "inline",
+          "imageId": null,
+          "contentType": "image/webp",
+          "size": 240
+        },
+        "attrs": {
+          "src": "data:image/webp;base64,UklGRugAAABXRUJQVlA4WAoAAAACAAAAAgAAAQAAQU5JTQYAAAD/////AABBTk1GWAAAAAAAAAAAAAIAAAEAABQAAAJWUDhMQAAAAC8CQAAAL0AQQCKQS2CrjjLBJGTSNoLqui72T9LYrRaSJIhhozdcj/NHOJz5j+3LQcrhnaZAkG0b2na2R/Q/8gNBTk1GXAAAAAAAAAAAAAIAAAEAABQAAABWUDhMQwAAAC8CQAAAL0AQQCKQS2CrjjLBJGTSNoLqui72T9LYrRaSJIhhozdcj/NHOJz5j+3LQcrhnaagkG0EOLV7RI7pIvof4wUA",
+          "alt": "Motion",
+          "caption": "",
+          "alignment": "center",
+          "width": 100,
+          "aspectRatio": 1.5,
+          "imageId": null,
+          "offline": true,
+          "uploadId": "<upload-id>",
+          "uploadStatus": "ready",
+          "uploadProgress": 1,
+          "uploadError": null
+        },
+        "html": "<figure src=\"data:image/webp;base64,UklGRugAAABXRUJQVlA4WAoAAAACAAAAAgAAAQAAQU5JTQYAAAD/////AABBTk1GWAAAAAAAAAAAAAIAAAEAABQAAAJWUDhMQAAAAC8CQAAAL0AQQCKQS2CrjjLBJGTSNoLqui72T9LYrRaSJIhhozdcj/NHOJz5j+3LQcrhnaZAkG0b2na2R/Q/8gNBTk1GXAAAAAAAAAAAAAIAAAEAABQAAABWUDhMQwAAAC8CQAAAL0AQQCKQS2CrjjLBJGTSNoLqui72T9LYrRaSJIhhozdcj/NHOJz5j+3LQcrhnaagkG0EOLV7RI7pIvof4wUA\" alt=\"Motion\" caption=\"\" alignment=\"center\" width=\"100\" aspectratio=\"1.5\" offline=\"true\" uploadid=\"<upload-id>\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-image-aspect-ratio=\"1.5\" data-image-offline=\"true\" data-upload-id=\"<upload-id>\" data-upload-status=\"ready\" data-alt-text=\"Motion\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid;\"><img src=\"data:image/webp;base64,UklGRugAAABXRUJQVlA4WAoAAAACAAAAAgAAAQAAQU5JTQYAAAD/////AABBTk1GWAAAAAAAAAAAAAIAAAEAABQAAAJWUDhMQAAAAC8CQAAAL0AQQCKQS2CrjjLBJGTSNoLqui72T9LYrRaSJIhhozdcj/NHOJz5j+3LQcrhnaZAkG0b2na2R/Q/8gNBTk1GXAAAAAAAAAAAAAIAAAEAABQAAABWUDhMQwAAAC8CQAAAL0AQQCKQS2CrjjLBJGTSNoLqui72T9LYrRaSJIhhozdcj/NHOJz5j+3LQcrhnaagkG0EOLV7RI7pIvof4wUA\" alt=\"Motion\" style=\"display: block; width: 100%; height: auto; aspect-ratio: 1.5 / 1;\"></figure><p>Before.</p>",
+        "width": 3,
+        "height": 2
+      }
+    },
+    {
+      "fixture": "animated.png",
+      "filename": "Motion.png",
+      "mime": "image/png",
+      "result": {
+        "uploaded": {
+          "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAACGFjVEwAAAACAAAAAPONk3AAAAAaZmNUTAAAAAAAAAADAAAAAgAAAAAAAAAAAAEAMgAAFc7ocAAAACNJREFUeJxjOKiu+//Lmxv/5aXF/jOYRNT8r+5J/L99kt1/ALT2Dg9DPqu3AAAAGmZjVEwAAAABAAAAAwAAAAIAAAAAAAAAAAABADIAAI69AqQAAAAnZmRBVAAAAAJ4nGOQlxb7f1Bd9/+XNzf+M2yfZPffJKLmf3VP4n8AqroOD0vMemgAAAAASUVORK5CYII=",
+          "storage": "inline",
+          "imageId": null,
+          "contentType": "image/png",
+          "size": 239
+        },
+        "attrs": {
+          "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAACGFjVEwAAAACAAAAAPONk3AAAAAaZmNUTAAAAAAAAAADAAAAAgAAAAAAAAAAAAEAMgAAFc7ocAAAACNJREFUeJxjOKiu+//Lmxv/5aXF/jOYRNT8r+5J/L99kt1/ALT2Dg9DPqu3AAAAGmZjVEwAAAABAAAAAwAAAAIAAAAAAAAAAAABADIAAI69AqQAAAAnZmRBVAAAAAJ4nGOQlxb7f1Bd9/+XNzf+M2yfZPffJKLmf3VP4n8AqroOD0vMemgAAAAASUVORK5CYII=",
+          "alt": "Motion",
+          "caption": "",
+          "alignment": "center",
+          "width": 100,
+          "aspectRatio": 1.5,
+          "imageId": null,
+          "offline": true,
+          "uploadId": "<upload-id>",
+          "uploadStatus": "ready",
+          "uploadProgress": 1,
+          "uploadError": null
+        },
+        "html": "<figure src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAACGFjVEwAAAACAAAAAPONk3AAAAAaZmNUTAAAAAAAAAADAAAAAgAAAAAAAAAAAAEAMgAAFc7ocAAAACNJREFUeJxjOKiu+//Lmxv/5aXF/jOYRNT8r+5J/L99kt1/ALT2Dg9DPqu3AAAAGmZjVEwAAAABAAAAAwAAAAIAAAAAAAAAAAABADIAAI69AqQAAAAnZmRBVAAAAAJ4nGOQlxb7f1Bd9/+XNzf+M2yfZPffJKLmf3VP4n8AqroOD0vMemgAAAAASUVORK5CYII=\" alt=\"Motion\" caption=\"\" alignment=\"center\" width=\"100\" aspectratio=\"1.5\" offline=\"true\" uploadid=\"<upload-id>\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-image-aspect-ratio=\"1.5\" data-image-offline=\"true\" data-upload-id=\"<upload-id>\" data-upload-status=\"ready\" data-alt-text=\"Motion\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid;\"><img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAACGFjVEwAAAACAAAAAPONk3AAAAAaZmNUTAAAAAAAAAADAAAAAgAAAAAAAAAAAAEAMgAAFc7ocAAAACNJREFUeJxjOKiu+//Lmxv/5aXF/jOYRNT8r+5J/L99kt1/ALT2Dg9DPqu3AAAAGmZjVEwAAAABAAAAAwAAAAIAAAAAAAAAAAABADIAAI69AqQAAAAnZmRBVAAAAAJ4nGOQlxb7f1Bd9/+XNzf+M2yfZPffJKLmf3VP4n8AqroOD0vMemgAAAAASUVORK5CYII=\" alt=\"Motion\" style=\"display: block; width: 100%; height: auto; aspect-ratio: 1.5 / 1;\"></figure><p>Before.</p>",
+        "width": 3,
+        "height": 2
+      }
+    }
+  ],
+  "nativeDisplayScope": "Pinned GPUI honors static EXIF orientation and GIF animation. The existing embedded Image::to_image_data WebP/APNG paths display a static frame; imports preserve and validate all original animation frames without re-encoding."
+}

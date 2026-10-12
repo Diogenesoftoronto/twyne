@@ -1,0 +1,27 @@
+--- a/desktop/gpui/src/app.rs
++++ b/desktop/gpui/src/app.rs
+@@ -408,8 +408,24 @@
+         snapshot["surface"] = serde_json::json!({
+             "dossierRetained": self.dossier.is_some(),
+             "dossierMounted": self.dossier.is_some() && !self.standalone_route(),
+             "standaloneRoute": self.standalone_route(),
++        });
++        // Observation only: no retained image Arc, upload, refresh or mutation.
++        snapshot["foxing"] = self.dossier.as_ref().map_or(serde_json::Value::Null, |view| {
++            let view = view.read(cx);
++            let prepared = view.prepared_multiply();
++            serde_json::json!({
++                "prepared": prepared.is_some(),
++                "transparent": prepared.map(|ready| ready.is_transparent()),
++                "imageId": prepared.and_then(|ready| ready.premultiplied_group())
++                    .map(|image| image.id.0.to_string()),
++                "logicalWidth": prepared.map(|ready| ready.metrics().width()),
++                "logicalHeight": prepared.map(|ready| ready.metrics().height()),
++                "scaleFactor": prepared.map(|ready| ready.metrics().scale_factor()),
++                "paintStatus": format!("{:?}", view.foxing_paint_status()),
++                "supportsDestinationMultiply": window.supports_destination_multiply(),
++            })
+         });
+         Some(snapshot)
+     }
+ 

@@ -1,0 +1,22 @@
+{
+  "status": "completed",
+  "provider": "sakana",
+  "model": "fugu-max",
+  "reasoningEffort": "high",
+  "maxCompletionTokens": 20000,
+  "scope": "advisory-only; no product edits",
+  "inputSha256": "aa1b1670926b18f534f67a6d6b1bbcb804d5e43e5d40946e03b2a0da04374822",
+  "promptSha256": "e663c82dc2a19efaba24effbb1e676256f5ab60b95ecce38ab626a336c3a69ed",
+  "launcherSha256": "e5f06aa7c3c609b969b73bdb176c89f4a76f6f3889210a89594aa3b328b94a03",
+  "globalConfigModified": false,
+  "credential": "privately resolved from Skate; never persisted in config",
+  "startedUnix": 1791213676.7244675,
+  "exitCode": 0,
+  "response.txtSha256": "439aa8c9e660103480ac4ec8a632d9c06d35090fbf24a68a18765c1f0bb96856",
+  "stderr.txtSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "responseJsonValid": true,
+  "assistantFinishReasons": [
+    "end_turn"
+  ],
+  "elapsedSeconds": 770.639
+}

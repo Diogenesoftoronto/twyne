@@ -1,0 +1,954 @@
+[
+  {
+    "query": "",
+    "results": [
+      {
+        "id": "insert.image",
+        "score": 0
+      },
+      {
+        "id": "insert.table",
+        "score": 0
+      },
+      {
+        "id": "insert.mermaid",
+        "score": 0
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 0
+      },
+      {
+        "id": "insert.math-block",
+        "score": 0
+      },
+      {
+        "id": "insert.endnote",
+        "score": 0
+      },
+      {
+        "id": "insert.footnote",
+        "score": 0
+      },
+      {
+        "id": "paragraph.heading-1",
+        "score": 0
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 0
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 0
+      },
+      {
+        "id": "insert.horizontal-rule",
+        "score": 0
+      },
+      {
+        "id": "insert.page-break",
+        "score": 0
+      },
+      {
+        "id": "paragraph.bullet-list",
+        "score": 0
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 0
+      },
+      {
+        "id": "paragraph.task-list",
+        "score": 0
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 0
+      },
+      {
+        "id": "paragraph.code-block",
+        "score": 0
+      }
+    ]
+  },
+  {
+    "query": "hea",
+    "results": [
+      {
+        "id": "paragraph.heading-1",
+        "score": 794
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 794
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 794
+      },
+      {
+        "id": "paragraph.task-list",
+        "score": 240
+      },
+      {
+        "id": "insert.table",
+        "score": 221
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 219
+      },
+      {
+        "id": "paragraph.code-block",
+        "score": 219
+      },
+      {
+        "id": "insert.page-break",
+        "score": 210
+      },
+      {
+        "id": "insert.footnote",
+        "score": 204
+      },
+      {
+        "id": "insert.endnote",
+        "score": 201
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 185
+      },
+      {
+        "id": "insert.image",
+        "score": 175
+      },
+      {
+        "id": "insert.math-block",
+        "score": 170
+      },
+      {
+        "id": "insert.horizontal-rule",
+        "score": 170
+      }
+    ]
+  },
+  {
+    "query": "h1",
+    "results": [
+      {
+        "id": "paragraph.heading-1",
+        "score": 416
+      }
+    ]
+  },
+  {
+    "query": "ta",
+    "results": [
+      {
+        "id": "insert.table",
+        "score": 797
+      },
+      {
+        "id": "paragraph.task-list",
+        "score": 489
+      },
+      {
+        "id": "paragraph.bullet-list",
+        "score": 487
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 485
+      },
+      {
+        "id": "insert.footnote",
+        "score": 475
+      },
+      {
+        "id": "insert.horizontal-rule",
+        "score": 469
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 459
+      },
+      {
+        "id": "insert.endnote",
+        "score": 417
+      },
+      {
+        "id": "insert.image",
+        "score": 238
+      },
+      {
+        "id": "insert.math-block",
+        "score": 229
+      },
+      {
+        "id": "insert.mermaid",
+        "score": 228
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 228
+      },
+      {
+        "id": "paragraph.code-block",
+        "score": 218
+      },
+      {
+        "id": "paragraph.heading-1",
+        "score": 213
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 213
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 213
+      },
+      {
+        "id": "insert.page-break",
+        "score": 209
+      }
+    ]
+  },
+  {
+    "query": "grid",
+    "results": [
+      {
+        "id": "insert.table",
+        "score": 446
+      },
+      {
+        "id": "insert.mermaid",
+        "score": 228
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 209
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 208
+      },
+      {
+        "id": "paragraph.heading-1",
+        "score": 200
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 190
+      },
+      {
+        "id": "paragraph.bullet-list",
+        "score": 183
+      },
+      {
+        "id": "paragraph.task-list",
+        "score": 183
+      },
+      {
+        "id": "insert.image",
+        "score": 178
+      }
+    ]
+  },
+  {
+    "query": "form",
+    "results": [
+      {
+        "id": "paragraph.code-block",
+        "score": 461
+      },
+      {
+        "id": "insert.math-block",
+        "score": 424
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 411
+      },
+      {
+        "id": "insert.mermaid",
+        "score": 212
+      },
+      {
+        "id": "insert.image",
+        "score": 205
+      }
+    ]
+  },
+  {
+    "query": "la",
+    "results": [
+      {
+        "id": "insert.image",
+        "score": 484
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 475
+      },
+      {
+        "id": "insert.math-block",
+        "score": 472
+      },
+      {
+        "id": "insert.table",
+        "score": 437
+      },
+      {
+        "id": "paragraph.task-list",
+        "score": 239
+      },
+      {
+        "id": "paragraph.bullet-list",
+        "score": 237
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 235
+      },
+      {
+        "id": "insert.endnote",
+        "score": 219
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 218
+      },
+      {
+        "id": "paragraph.code-block",
+        "score": 218
+      },
+      {
+        "id": "paragraph.heading-1",
+        "score": 213
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 213
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 213
+      },
+      {
+        "id": "insert.page-break",
+        "score": 209
+      },
+      {
+        "id": "insert.horizontal-rule",
+        "score": 185
+      },
+      {
+        "id": "insert.mermaid",
+        "score": 171
+      }
+    ]
+  },
+  {
+    "query": "math",
+    "results": [
+      {
+        "id": "insert.math-block",
+        "score": 446
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 434
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 199
+      },
+      {
+        "id": "insert.horizontal-rule",
+        "score": 195
+      },
+      {
+        "id": "insert.image",
+        "score": 191
+      },
+      {
+        "id": "paragraph.code-block",
+        "score": 191
+      },
+      {
+        "id": "insert.mermaid",
+        "score": 184
+      }
+    ]
+  },
+  {
+    "query": "eq",
+    "results": [
+      {
+        "id": "insert.math-block",
+        "score": 788
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 640
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 213
+      }
+    ]
+  },
+  {
+    "query": "note",
+    "results": [
+      {
+        "id": "insert.endnote",
+        "score": 497
+      },
+      {
+        "id": "insert.footnote",
+        "score": 496
+      },
+      {
+        "id": "insert.table",
+        "score": 225
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 225
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 225
+      },
+      {
+        "id": "insert.math-block",
+        "score": 218
+      },
+      {
+        "id": "insert.page-break",
+        "score": 218
+      },
+      {
+        "id": "insert.horizontal-rule",
+        "score": 217
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 212
+      },
+      {
+        "id": "paragraph.heading-1",
+        "score": 208
+      },
+      {
+        "id": "paragraph.code-block",
+        "score": 207
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 206
+      },
+      {
+        "id": "insert.image",
+        "score": 202
+      },
+      {
+        "id": "insert.mermaid",
+        "score": 192
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 186
+      },
+      {
+        "id": "paragraph.bullet-list",
+        "score": 168
+      }
+    ]
+  },
+  {
+    "query": "plate",
+    "results": [
+      {
+        "id": "insert.image",
+        "score": 485
+      },
+      {
+        "id": "insert.math-block",
+        "score": 219
+      },
+      {
+        "id": "insert.page-break",
+        "score": 191
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 187
+      },
+      {
+        "id": "paragraph.task-list",
+        "score": 179
+      },
+      {
+        "id": "paragraph.heading-1",
+        "score": 172
+      },
+      {
+        "id": "paragraph.code-block",
+        "score": 169
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 168
+      }
+    ]
+  },
+  {
+    "query": "li",
+    "results": [
+      {
+        "id": "paragraph.bullet-list",
+        "score": 640
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 640
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 498
+      },
+      {
+        "id": "paragraph.task-list",
+        "score": 495
+      },
+      {
+        "id": "insert.table",
+        "score": 245
+      },
+      {
+        "id": "insert.math-block",
+        "score": 236
+      },
+      {
+        "id": "insert.page-break",
+        "score": 224
+      },
+      {
+        "id": "insert.image",
+        "score": 222
+      },
+      {
+        "id": "paragraph.heading-1",
+        "score": 218
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 218
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 218
+      },
+      {
+        "id": "insert.horizontal-rule",
+        "score": 212
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 207
+      },
+      {
+        "id": "insert.endnote",
+        "score": 194
+      }
+    ]
+  },
+  {
+    "query": "hr",
+    "results": [
+      {
+        "id": "insert.horizontal-rule",
+        "score": 402
+      },
+      {
+        "id": "paragraph.heading-1",
+        "score": 239
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 239
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 239
+      },
+      {
+        "id": "paragraph.task-list",
+        "score": 238
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 230
+      },
+      {
+        "id": "paragraph.code-block",
+        "score": 230
+      },
+      {
+        "id": "insert.table",
+        "score": 215
+      },
+      {
+        "id": "insert.footnote",
+        "score": 210
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 200
+      },
+      {
+        "id": "insert.endnote",
+        "score": 195
+      },
+      {
+        "id": "insert.page-break",
+        "score": 194
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 190
+      },
+      {
+        "id": "paragraph.bullet-list",
+        "score": 182
+      },
+      {
+        "id": "insert.mermaid",
+        "score": 180
+      },
+      {
+        "id": "insert.math-block",
+        "score": 173
+      },
+      {
+        "id": "insert.image",
+        "score": 167
+      }
+    ]
+  },
+  {
+    "query": "heaDing!",
+    "results": [
+      {
+        "id": "paragraph.heading-1",
+        "score": 798
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 798
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 798
+      }
+    ]
+  },
+  {
+    "query": "tble",
+    "results": [
+      {
+        "id": "insert.table",
+        "score": 249
+      },
+      {
+        "id": "insert.math-block",
+        "score": 235
+      },
+      {
+        "id": "paragraph.bullet-list",
+        "score": 219
+      },
+      {
+        "id": "insert.horizontal-rule",
+        "score": 217
+      },
+      {
+        "id": "paragraph.code-block",
+        "score": 215
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 212
+      },
+      {
+        "id": "paragraph.heading-1",
+        "score": 208
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 206
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 193
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 186
+      }
+    ]
+  },
+  {
+    "query": "zzzzz",
+    "results": []
+  },
+  {
+    "query": "🦊",
+    "results": [
+      {
+        "id": "insert.image",
+        "score": 0
+      },
+      {
+        "id": "insert.table",
+        "score": 0
+      },
+      {
+        "id": "insert.mermaid",
+        "score": 0
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 0
+      },
+      {
+        "id": "insert.math-block",
+        "score": 0
+      },
+      {
+        "id": "insert.endnote",
+        "score": 0
+      },
+      {
+        "id": "insert.footnote",
+        "score": 0
+      },
+      {
+        "id": "paragraph.heading-1",
+        "score": 0
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 0
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 0
+      },
+      {
+        "id": "insert.horizontal-rule",
+        "score": 0
+      },
+      {
+        "id": "insert.page-break",
+        "score": 0
+      },
+      {
+        "id": "paragraph.bullet-list",
+        "score": 0
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 0
+      },
+      {
+        "id": "paragraph.task-list",
+        "score": 0
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 0
+      },
+      {
+        "id": "paragraph.code-block",
+        "score": 0
+      }
+    ]
+  },
+  {
+    "query": "İ",
+    "results": [
+      {
+        "id": "insert.image",
+        "score": 796
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 786
+      },
+      {
+        "id": "paragraph.heading-1",
+        "score": 496
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 496
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 496
+      },
+      {
+        "id": "insert.horizontal-rule",
+        "score": 496
+      },
+      {
+        "id": "insert.mermaid",
+        "score": 495
+      },
+      {
+        "id": "insert.math-block",
+        "score": 495
+      },
+      {
+        "id": "insert.table",
+        "score": 494
+      },
+      {
+        "id": "paragraph.task-list",
+        "score": 494
+      },
+      {
+        "id": "insert.endnote",
+        "score": 492
+      },
+      {
+        "id": "paragraph.bullet-list",
+        "score": 492
+      },
+      {
+        "id": "insert.footnote",
+        "score": 491
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 490
+      },
+      {
+        "id": "insert.page-break",
+        "score": 486
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 456
+      }
+    ]
+  },
+  {
+    "query": "Mermaid",
+    "results": [
+      {
+        "id": "insert.mermaid",
+        "score": 792
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 184
+      },
+      {
+        "id": "insert.image",
+        "score": 181
+      },
+      {
+        "id": "insert.math-block",
+        "score": 153
+      }
+    ]
+  },
+  {
+    "query": "unordered",
+    "results": [
+      {
+        "id": "paragraph.bullet-list",
+        "score": 434
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 185
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 182
+      },
+      {
+        "id": "insert.math-block",
+        "score": 174
+      },
+      {
+        "id": "paragraph.code-block",
+        "score": 172
+      }
+    ]
+  },
+  {
+    "query": "title",
+    "results": [
+      {
+        "id": "paragraph.heading-1",
+        "score": 422
+      },
+      {
+        "id": "paragraph.heading-2",
+        "score": 416
+      },
+      {
+        "id": "insert.table",
+        "score": 235
+      },
+      {
+        "id": "insert.endnote",
+        "score": 228
+      },
+      {
+        "id": "paragraph.bullet-list",
+        "score": 228
+      },
+      {
+        "id": "insert.math-inline",
+        "score": 226
+      },
+      {
+        "id": "insert.math-block",
+        "score": 219
+      },
+      {
+        "id": "insert.horizontal-rule",
+        "score": 218
+      },
+      {
+        "id": "paragraph.heading-3",
+        "score": 207
+      },
+      {
+        "id": "insert.image",
+        "score": 183
+      },
+      {
+        "id": "paragraph.numbered-list",
+        "score": 181
+      },
+      {
+        "id": "paragraph.task-list",
+        "score": 179
+      },
+      {
+        "id": "paragraph.blockquote",
+        "score": 176
+      }
+    ]
+  }
+]

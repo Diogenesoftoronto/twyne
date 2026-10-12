@@ -1,0 +1,62 @@
+[
+ {
+  "text": "This",
+  "start": 0.36,
+  "end": 0.5
+ },
+ {
+  "text": "sentence",
+  "start": 0.56,
+  "end": 1
+ },
+ {
+  "text": "assumes",
+  "start": 1.08,
+  "end": 1.62
+ },
+ {
+  "text": "the",
+  "start": 1.66,
+  "end": 1.74
+ },
+ {
+  "text": "reader",
+  "start": 1.8,
+  "end": 2.22
+ },
+ {
+  "text": "already",
+  "start": 2.3,
+  "end": 2.68
+ },
+ {
+  "text": "agrees.",
+  "start": 2.74,
+  "end": 3.26
+ },
+ {
+  "text": "They",
+  "start": 3.74,
+  "end": 3.86
+ },
+ {
+  "text": "do",
+  "start": 3.9,
+  "end": 4
+ },
+ {
+  "text": "not.",
+  "start": 4.059,
+  "end": 4.4
+ },
+ {
+  "text": "Earn",
+  "start": 5.04,
+  "end": 5.2
+ },
+ {
+  "text": "it.",
+  "start": 5.26,
+  "end": 5.44
+ }
+]

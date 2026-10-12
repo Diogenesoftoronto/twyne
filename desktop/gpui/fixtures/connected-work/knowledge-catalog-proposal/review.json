@@ -1,0 +1,20 @@
+{
+  "status": "reviewed_for_adoption",
+  "scope": "Source catalog validation and JavaScript tool definition only",
+  "reviewer": "Root",
+  "source": "src/utils/account-knowledge.ts",
+  "sourceSha256": "a4d7c4b864f26f5c6eeded32cb4cef9b74b2abbcc1eb186e3e22819d7780c517",
+  "productionFile": "desktop/gpui/tools/connected/catalog.ts",
+  "corrections": [
+    "Do not adopt the prose Array.fill boundary cases: duplicate IDs require distinct source rows.",
+    "Run actual Source AST bodies for differential admission and tool-definition checks.",
+    "Transport maps any validation/serialization failure to a static ConnectedError; no raw catalog or exception text enters errors."
+  ],
+  "notProven": [
+    "Selection persistence",
+    "Immutable tool-call review",
+    "Revocation and schema-change review invalidation",
+    "Knowledge UI",
+    "Live provider gateway"
+  ]
+}

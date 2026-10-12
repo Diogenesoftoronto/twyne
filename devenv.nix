@@ -17,6 +17,56 @@
     bun.enable = true;
   };
 
+  # GPUI Kit is a native Rust application. Keep the compiler, linker and
+  # platform libraries in one shell instead of mixing host toolchains.
+  languages.rust = {
+    enable = true;
+    clangLinker.enable = true;
+  };
+
+  packages = [ pkgs.pkg-config ] ++ lib.optionals pkgs.stdenv.isLinux [
+    pkgs.fontconfig
+    pkgs.freetype
+    pkgs.libxkbcommon
+    pkgs.wayland
+    pkgs.libGL
+    pkgs.vulkan-loader
+    pkgs.xorg.libxcb
+    pkgs.openssl
+    # Native visual checks render in their own display, leaving the user's
+    # desktop and window layout untouched.
+    pkgs.xorg.xorgserver
+    pkgs.xorg.xwd
+  ];
+
+  env.LD_LIBRARY_PATH = lib.mkIf pkgs.stdenv.isLinux (
+    lib.mkDefault (lib.makeLibraryPath [
+      pkgs.stdenv.cc.cc.lib
+      pkgs.libxkbcommon
+      pkgs.wayland
+      pkgs.libGL
+      pkgs.vulkan-loader
+    ])
+  );
+  # Only the isolated screenshot harness opts into the software Vulkan driver.
+  env.TWYNE_GPUI_RENDER_ICD = lib.mkIf pkgs.stdenv.isLinux
+    "${pkgs.mesa}/share/vulkan/icd.d/lvp_icd.x86_64.json";
+
+  tasks."twyne:desktop:gpui" = {
+    description = "Launch the native offline GPUI writing room";
+    exec = "bun run desktop.gpui";
+  };
+
+  tasks."twyne:desktop:check" = {
+    description = "Check the native GPUI application";
+    exec = "bun run desktop.gpui.check";
+  };
+
+  tasks."twyne:desktop:test" = {
+    description = "Test native manuscript storage and file exchange";
+    exec = "bun run desktop.gpui.test";
+  };
+
   # Keep package.json as the command source of truth while exposing the common
   # project workflows through one namespaced devenv task graph.
   tasks."twyne:install" = {

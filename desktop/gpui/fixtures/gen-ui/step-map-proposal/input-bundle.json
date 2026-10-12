@@ -1,0 +1,8 @@
+{
+  "node_modules/prosemirror-transform/src/map.ts": {
+    "sha256": "2e59df00bf5e2444774a15c3e50ce55dc318161cd59b4cad287f4179d8f12fda"
+  },
+  "node_modules/prosemirror-transform/package.json": {
+    "sha256": "852df48473b416d840a30889fb1a9b9535b00ab6e3518b175abcddba8d87c24b"
+  }
+}

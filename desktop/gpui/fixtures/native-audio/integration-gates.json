@@ -1,0 +1,53 @@
+{
+  "recordedAt": "2026-10-05T01:27:33.060879+00:00",
+  "scope": "Optional native-audio foundation integrated and synthetic contract checked; no provider, device, recording, playback or UI proof",
+  "feature": "native-audio",
+  "defaultFeature": false,
+  "rust": {
+    "status": "pass",
+    "tests": 18,
+    "failed": 0,
+    "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --no-default-features --features native-audio --test native-audio-contract",
+    "log": "/tmp/twyne-gpui-audio-clippy-repair-tests.log",
+    "logSha256": "ad68410805d604361a33575c160bc07efc1b18072306309ea2d2a81d1ebeb96c",
+    "recordedAt": "2026-10-05T01:41:33.628304+00:00"
+  },
+  "files": {
+    "src/native_audio/alignment.rs": "554a2e74a8d182ac1d65a8c657a8271915e899e27642c314a332d7c82920d3a3",
+    "src/native_audio/backend.rs": "b5313285a995875a5b650630d5f63b5991ebb52515ee344531724de4f4f03978",
+    "src/native_audio/cache.rs": "d6b982688ba4a4b08ce5711e16f558affe6176b293a1f191bd7e48568b568195",
+    "src/native_audio/live_voice.rs": "cc3b8ac68698f72b574a30a40651d24b74852975561c07d2b51f1cc173dda947",
+    "src/native_audio/mod.rs": "eccb70b94fbb194b93d6eacafa8299381fb09b644865835479c458b4f7da4b81",
+    "src/native_audio/pcm.rs": "3893869c23480b1ad69c48988b19a80ad01a73c2ec5adc6d8e2ab64b9e69bc62",
+    "src/native_audio/request.rs": "15903666c559dd1a9c5453998aa40122a4715da671c9dd522e48d497a1c43eb1",
+    "src/native_audio/segment.rs": "f94547531867feaf390247dfc360023b0d0c8f53e8c6f82339650904263c97e1",
+    "src/native_audio/state.rs": "c58c2d2228898098677d90260ec553303edc628497b2c00153f9b4217b7618af",
+    "src/native_audio/transport.rs": "ad3dde75ec30357dffd443f7275c8dc981cf9e5d5c376fb97ef27672591e0353"
+  },
+  "contractHarness": "4b231f69f4f4e83df3b590179474b181f53bfbcb1c0a9bd9863e18f7d017a260",
+  "sharedExport": "890a6fdfedb99d8509f58a508afba869ece9e2e8f43b72fb6a7bf4ffb44c9db6",
+  "manifest": "d2fbf2769766b2a4758ef37c387fe8e146a25031f0448161def5e9fc3ba304eb",
+  "remaining": [
+    "Strict all-target aggregate Clippy and tests after Dossier registration",
+    "Actual platform audio adapters and eligible providers",
+    "Device consent and arbitration",
+    "Mounted native narration and Live voice flows"
+  ],
+  "libraryClippy": {
+    "status": "pass",
+    "scope": "Locked offline default desktop library with optional native-audio; warnings denied; no app/UI test/aggregate claim",
+    "seconds": 14.25,
+    "log": "/tmp/twyne-gpui-ai-audio-lib-clippy-corrected.log",
+    "logSha256": "9c565205b52797b42d8ce6db6e349c09dbfff5239658d584e17bbcc85f75ae13",
+    "recordedAt": "2026-10-05T01:41:33.628304+00:00"
+  },
+  "previousCargoGate": {
+    "status": "pass",
+    "tests": 18,
+    "failed": 0,
+    "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --no-default-features --features native-audio --test native-audio-contract",
+    "log": "/tmp/twyne-gpui-audio-cargo-gate.log",
+    "logSha256": "718c769d32ba350b58a3af5f251ceffdca3a58e68609b1972c7dcf6b238c46ce"
+  },
+  "reviewFollowUp": "Boxed error details preserve serialized shape/public field access and keep audio Result errors small; corrected lifecycle/iterator/lifetime/style Clippy findings. Contract18 re-passed."
+}

@@ -1,0 +1,63 @@
+{
+  "kind": "ordinary Twyne private Wayland application acceptance",
+  "binarySha256": "123a6430bf5bb950e3bc1dfa1b1a8f06b63778207f0044289f59c88f491fe549",
+  "root": "/tmp/twyne-owned-wayland-w2ps6byz",
+  "testOnlyApplicationSwitches": false,
+  "actualInput": "owned wtype",
+  "actualClipboard": "owned wl-copy/wl-paste",
+  "checks": [
+    {
+      "name": "normal application opens on owned Wayland surface",
+      "passed": true,
+      "detail": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 860
+      }
+    },
+    {
+      "name": "normal host wires real rich Wayland clipboard",
+      "passed": true,
+      "detail": "<p>First local Wayland draft 🦊.</p>"
+    },
+    {
+      "name": "normal paste keeps advertised plain text literal",
+      "passed": true,
+      "detail": "<p>New offline text 🦊 with literal &lt;b&gt;text&lt;/b&gt;.</p>"
+    },
+    {
+      "name": "normal local save preserves canonical source and rich projection",
+      "passed": true,
+      "detail": "/tmp/twyne-owned-wayland-w2ps6byz/library/manuscripts/103d5b8a-f7c0-4b0c-bd65-6e409708fa23.json"
+    },
+    {
+      "name": "normal Ctrl+Q exits without a leaked focused editor",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "normal application log has no shutdown panic",
+      "passed": true,
+      "detail": "t=utf-8\")\n[22:44:15.663902] wl_data_offer#4278190080.offer(\"text/plain\")\n[22:44:15.663909] wl_data_offer#4278190080.offer(\"TEXT\")\n[22:44:15.663914] wl_data_offer#4278190080.offer(\"STRING\")\n[22:44:15.663919] wl_data_offer#4278190080.offer(\"UTF8_STRING\")\n[22:44:15.663923] wl_data_device#19.selection(wl_data_offer#4278190080)\n[22:44:15.663932] wl_keyboard#92.modifiers(44, 0, 0, 0, 0)\n[22:44:15.665279]  -> wl_data_source#94.destroy()\n[22:44:15.665359]  -> wl_data_offer#4278190081.destroy()\n[22:44:15.665989] {mesa vk display queue}  -> wl_buffer#57.destroy()\n[22:44:15.666283] {mesa vk display queue}  -> wl_buffer#86.destroy()\n[22:44:15.666486] {mesa vk display queue}  -> wl_buffer#88.destroy()\n[22:44:15.666683] {mesa vk display queue}  -> wl_buffer#90.destroy()\n[22:44:15.666894] {mesa vk display queue}  -> wl_display#1.sync(new id wl_callback#95)\n[22:44:15.666901] {mesa vk display queue} discarded wl_buffer#90.release()\n[22:44:15.666905] {mesa vk display queue} discarded wl_buffer#57.release()\n[22:44:15.668688] {Display Queue} wl_display#1.delete_id(94)\n[22:44:15.668708] {Display Queue} wl_display#1.delete_id(57)\n[22:44:15.668713] {Display Queue} wl_display#1.delete_id(86)\n[22:44:15.668717] {Display Queue} wl_display#1.delete_id(88)\n[22:44:15.668720] {Display Queue} wl_display#1.delete_id(90)\n[22:44:15.668724] {Display Queue} wl_display#1.delete_id(95)\n[22:44:15.668727] {mesa vk display queue} wl_callback#95.done(44)\n[22:44:15.668781] {mesa vk display queue}  -> wp_presentation#32.destroy()\n[22:44:15.668788] {mesa vk display queue}  -> wp_tearing_control_manager_v1#53.destroy()\n[22:44:15.670517]  -> zxdg_toplevel_decoration_v1#26.destroy()\n[22:44:15.670548]  -> xdg_toplevel#25.destroy()\n[22:44:15.670563]  -> xdg_surface#24.destroy()\n[22:44:15.670574]  -> wp_viewport#28.destroy()\n[22:44:15.670588]  -> wl_surface#23.destroy()\n[22:44:15.672603]  -> wl_data_device#19.release()\n[22:44:15.672653]  -> zwp_text_input_v3#93.destroy()\n[22:44:15.672762]  -> wl_surface#21.destroy()\n"
+    },
+    {
+      "name": "normal shutdown preserves unrelated clipboard",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "import remains a copy and saved bytes survive shutdown",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "completed": true,
+  "remaining": [
+    "physical devices/other compositors",
+    "note popup pending-frame shutdown",
+    "full visual parity"
+  ],
+  "completedAt": "2026-10-04T22:44:48Z",
+  "buildFeatures": "default desktop, no ui-tests"
+}

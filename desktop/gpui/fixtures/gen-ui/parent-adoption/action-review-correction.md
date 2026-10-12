@@ -1,0 +1,1 @@
+The Source notebook save performs full normalized JSON read-back before resolving. Jot awaits that save. The Sakana action review stated otherwise because its supplied bundle omitted writing-tools-storage.ts. Treat that claim as rejected. No storage callback is mounted by this wave.

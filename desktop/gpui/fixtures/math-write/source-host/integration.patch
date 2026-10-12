@@ -1,0 +1,156 @@
+--- a/desktop/gpui/src/editor/view.rs
++++ b/desktop/gpui/src/editor/view.rs
+@@ -43,6 +43,9 @@
+ mod hyphenation;
+ #[path = "images.rs"]
+ mod images;
++#[path = "view_math_source.rs"]
++mod math_source;
++pub use math_source::{MathSourceHostContext, MathSourcePreflight};
+ #[path = "view_notes.rs"]
+ mod notes;
+ pub use notes::NoteReference;
+@@ -106,7 +109,7 @@
+ 
+ struct BindingsInstalled;
+ impl Global for BindingsInstalled {}
+-const EDITOR_KEY_CONTEXT: &str = "TwyneRichEditor && !TwyneCommentAnchor && !TwyneBlockHandle && !TwyneNoteAnchor && !TwyneInlineNotePopover";
++const EDITOR_KEY_CONTEXT: &str = "TwyneRichEditor && !TwyneCommentAnchor && !TwyneBlockHandle && !TwyneNoteAnchor && !TwyneInlineNotePopover && !TwyneMathAnchor && !TwyneMathSourceForm";
+ 
+ pub fn init(cx: &mut App) {
+     if cx.try_global::<BindingsInstalled>().is_some() {
+@@ -115,6 +118,7 @@
+     cx.set_global(BindingsInstalled);
+     notes::init(cx);
+     super::math_source_editor::init(cx);
++    math_source::init(cx);
+     cx.bind_keys([
+         KeyBinding::new("escape", CancelBlockDrag, Some("TwyneBlockHandle")),
+         KeyBinding::new("backspace", Backspace, Some(EDITOR_KEY_CONTEXT)),
+@@ -283,6 +287,7 @@
+     comment_focus: RefCell<HashMap<ElementId, Arc<str>>>,
+     comment_hover: Option<Arc<str>>,
+     notes: notes::NotesState,
++    math_source: math_source::MathSourceHostState,
+     blocks: RefCell<HashMap<NodePath, Arc<RichBlock>>>,
+     images: RefCell<HashMap<NodePath, CachedImage>>,
+     layouts: RefCell<HashMap<NodePath, CachedLayout>>,
+@@ -333,6 +338,7 @@
+             comment_focus: RefCell::new(HashMap::new()),
+             comment_hover: None,
+             notes: notes::NotesState::default(),
++            math_source: math_source::MathSourceHostState::default(),
+             blocks: RefCell::new(HashMap::new()),
+             images: RefCell::new(HashMap::new()),
+             layouts: RefCell::new(HashMap::new()),
+@@ -505,6 +511,7 @@
+         self.close_typing_group();
+         self.close_note_edit_group();
+         self.editor.end_history_group();
++        self.retire_math_source(cx);
+         self.editor.replace_document(document, record_history);
+         self.notes = notes::NotesState::default();
+         self.blocks.borrow_mut().clear();
+@@ -536,6 +543,7 @@
+         self.editor.end_history_group();
+         self.marked_range = None;
+         self.editor.set_read_only(read_only);
++        self.sync_math_source_read_only(cx);
+         cx.notify();
+     }
+     pub fn set_opening_initial(&mut self, opening: OpeningInitial, cx: &mut Context<Self>) {
+@@ -569,6 +577,7 @@
+             self.editor.end_history_group();
+         }
+         self.editor.set_selection(selection)?;
++        self.sync_math_source_target(cx);
+         cx.emit(RichEditorEvent::SelectionChanged);
+         cx.notify();
+         Ok(())
+@@ -608,6 +617,7 @@
+         }
+         match self.editor.execute(command) {
+             Ok(outcome) => {
++                self.sync_math_source_target(cx);
+                 self.error = None;
+                 if outcome.document_changed {
+                     self.sync_note_popup(note_identity_changed, window, cx);
+@@ -1591,6 +1601,8 @@
+         self.prepare_pagination_frame();
+         self.prepare_drag_frame(window, cx);
+         self.prepare_note_frame(window, cx);
++        self.sync_math_source_target(cx);
++        self.sync_math_source_read_only(cx);
+         let first_paragraph = self.document().nodes().iter().position(|node| {
+             node.as_element()
+                 .is_some_and(|element| element.kind == NodeKind::Paragraph)
+@@ -1624,6 +1636,9 @@
+             .key_context("TwyneRichEditor")
+             .track_focus(&self.focus)
+             .cursor(CursorStyle::IBeam)
++            .on_action(cx.listener(|this, _: &math_source::EditMathSource, window, cx| {
++                this.edit_selected_math_source(window, cx);
++            }))
+             .on_action(cx.listener(|this, _: &Backspace, window, cx| {
+                 this.delete_grapheme(false, window, cx)
+             }))
+@@ -1991,6 +2006,7 @@
+     images: Vec<AnyElement>,
+     comment_buttons: Vec<AnyElement>,
+     note_buttons: Vec<AnyElement>,
++    math_buttons: Vec<AnyElement>,
+ }
+ 
+ impl IntoElement for BlockElement {
+@@ -2213,12 +2229,21 @@
+                 note_buttons.push(button);
+             }
+         }
++        let math_buttons = math_source::anchor_buttons(
++            &self.view,
++            &layout,
++            self.global_start,
++            bounds,
++            window,
++            cx,
++        );
+         BlockPrepaint {
+             bounds,
+             layout,
+             images,
+             comment_buttons,
+             note_buttons,
++            math_buttons,
+         }
+     }
+     fn paint(
+@@ -2347,6 +2372,9 @@
+         for button in &mut state.note_buttons {
+             button.paint(window, cx);
+         }
++        for button in &mut state.math_buttons {
++            button.paint(window, cx);
++        }
+         if !read_only
+             && focus.is_focused(window)
+             && selection.is_empty()
+@@ -2498,6 +2526,19 @@
+         return container.into_any_element();
+     }
+     if element.kind.is_atom() {
++        if element.kind == NodeKind::Math(crate::editor::MathDisplay::Block)
++            && let Some(form) = renderer.state.math_form_at(&path)
++        {
++            // Same equation container and retained form child; no detached
++            // overlay, source token, or saved renderer drawn under the form.
++            return div()
++                .w_full()
++                .my(px(16.))
++                .py(px(12.))
++                .px(px(16.))
++                .child(form)
++                .into_any_element();
++        }
+         if matches!(element.kind, NodeKind::Math(_) | NodeKind::Mermaid) {
+             return div()
+                 .w_full()

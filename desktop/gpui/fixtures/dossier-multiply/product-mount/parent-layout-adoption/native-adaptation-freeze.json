@@ -1,0 +1,31 @@
+{
+  "status": "Frozen separate unapplied tenth-image observation/driver proposal",
+  "artifactsSha256": {
+    "native-observation.patch": "8478da4c128585d611dc06f904bafdf8d652d8da78a2045fd741847c7fb66556",
+    "native-driver-adaptation.patch": "116c6c4bdefb2d53e2749e5b948b4a0db67d4813c06ccfd6dcf9d65c34c66bb3",
+    "native_driver_helpers.py": "444503ea8d532e677183e6cc58f7e075d7905014a5e02d29f34102cfd2d3f902",
+    "build_native_adaptation.py": "d5b3d5056c7ffc92de56600139e5ddeee278e9c625aa1674dfebb7484acc51b1",
+    "check_native_adaptation.py": "86d10dde2b3e38c89c6650efdb62837fa28c3402716a6a695a053ebc9af19cfa",
+    "driver_contract_tests.py": "dc9558db6a27637f799b8f272288679f60a3b2e0ea481b8237bfb75d1dad7e48",
+    "native-adaptation-pins.json": "70648069b02c35fb0258a0e0551e268fbd5d6d0c52d82534e1b3a5203b8f0815",
+    "native-adaptation-input-drift.json": "841b2c620c606bd2f055d6f349dd055104bbdc8fdff1a888f6e43829f8cd8191",
+    "native-adaptation-check-receipt.json": "348616548b426e03fda2a936298d93a5101dbf14ebddd43b0dc51c1013005f70",
+    "NATIVE-ADAPTATION.md": "6894ff79e69adab08bb02b833d4feccfc3e03d064cde27dd3521b1b1e00e2dd8"
+  },
+  "baseSha256": {
+    "desktop/gpui/src/app.rs": "9ffb3f6003c910a8bfbf6647c4ad79510c4e4bff06a3063ff72f07d3873e695e",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/check-native.py": "522cf0ec2cebb8bda75c855f35a5b0eb6ab3b447d6f54f1370c8cd2dc6b30b32"
+  },
+  "proposedSha256": {
+    "desktop/gpui/src/app.rs": "f39eadba8ab26edc91857485dd118a227570b4f090dfb8379955934a78f56e5f",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/check-native.py": "0ee80a96811ee62f6d2e8e646460ccf4cca81661ba19c12ee623878f54792cba"
+  },
+  "frozenRebaseArtifactsUnchanged": true,
+  "historicalInputDriftRetained": true,
+  "pythonSyntaxAndGitApplyChecks": "PASS only",
+  "realOrdinaryStampRequirement": "all eight real prepared/painted variants, nine ordinary images",
+  "syntheticTestsAuthored": 6,
+  "syntheticTestsExecuted": false,
+  "nativeOrCargoExecution": false,
+  "sharedFileWritesOrPatchApplication": false
+}

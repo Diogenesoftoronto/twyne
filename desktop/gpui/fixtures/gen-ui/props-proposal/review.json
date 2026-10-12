@@ -1,0 +1,10 @@
+{
+  "status": "proposal_frozen_for_parent_review",
+  "model": "sakana/fugu-max",
+  "productionAdopted": false,
+  "checksRun": false,
+  "codeSha256": "dabd36e19965fadfe30b0e723b33ceafc249ffd2c4b713775560fb642e7c05de",
+  "responseSha256": "4ab82633bb6f229bd842ec99b523eb37f08c7af996440c8219c8f291d1171167",
+  "inputBundleSha256": "e0753d069229cbd44f7594dfd069d80264717ec272ff947830a960e0db399c55",
+  "sourceJob": "sakana-genui-props-worker-c0290d9d4cbd"
+}

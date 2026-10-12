@@ -1,0 +1,200 @@
+{
+  "source": "Existing original Lora 3.008 variable assets from src/assets/typst",
+  "originalVersion": "3.008",
+  "browserEvidence": "fixtures/marginalia/browser-font-proof.json (actual original Google Lora version/axes)",
+  "tool": {
+    "package": "fontTools",
+    "version": "4.61.1"
+  },
+  "method": "instantiateVariableFont wght=400/700, optimize=True, updateFontNames=True, unchanged source timestamps, deterministic SFNT table order",
+  "family": "Twyne Body",
+  "reservedFontName": "Lora",
+  "nameMapping": "Canonical source Lora is mapped to native UI family Twyne Body only while rendering",
+  "license": "SIL Open Font License 1.1",
+  "licenseSource": "src/assets/typst/lora-OFL.txt",
+  "licenseSha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
+  "originalVariableAndTypstBytesUnchanged": true,
+  "glyphDesignChanges": false,
+  "instances": [
+    {
+      "file": "fonts/TwyneBody-Regular.ttf",
+      "sha256": "64eef465428ae32ca4b50df6f812c12ea1d5e5e3575fca74356aa4273128953a",
+      "bytes": 135556,
+      "source": "src/assets/typst/lora-Lora-wght.ttf",
+      "sourceSha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7",
+      "version": "3.008",
+      "family": "Twyne Body",
+      "style": "Regular",
+      "axes": {
+        "wght": 400
+      },
+      "glyphs": 892,
+      "unitsPerEm": 1000,
+      "testGlyphs": {
+        "A": {
+          "glyphId": 1,
+          "advanceUnits": 626
+        },
+        "W": {
+          "glyphId": 165,
+          "advanceUnits": 995
+        },
+        "a": {
+          "glyphId": 183,
+          "advanceUnits": 516
+        },
+        "g": {
+          "glyphId": 240,
+          "advanceUnits": 553
+        },
+        "m": {
+          "glyphId": 277,
+          "advanceUnits": 894
+        },
+        "x": {
+          "glyphId": 356,
+          "advanceUnits": 530
+        },
+        "é": {
+          "glyphId": 219,
+          "advanceUnits": 542
+        }
+      }
+    },
+    {
+      "file": "fonts/TwyneBody-Bold.ttf",
+      "sha256": "281e9c2fa50c8512cc36495c492f47be11979669c995807e03d77dab9ed1c4da",
+      "bytes": 135196,
+      "source": "src/assets/typst/lora-Lora-wght.ttf",
+      "sourceSha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7",
+      "version": "3.008",
+      "family": "Twyne Body",
+      "style": "Bold",
+      "axes": {
+        "wght": 700
+      },
+      "glyphs": 892,
+      "unitsPerEm": 1000,
+      "testGlyphs": {
+        "A": {
+          "glyphId": 1,
+          "advanceUnits": 668
+        },
+        "W": {
+          "glyphId": 165,
+          "advanceUnits": 1016
+        },
+        "a": {
+          "glyphId": 183,
+          "advanceUnits": 524
+        },
+        "g": {
+          "glyphId": 240,
+          "advanceUnits": 557
+        },
+        "m": {
+          "glyphId": 277,
+          "advanceUnits": 920
+        },
+        "x": {
+          "glyphId": 356,
+          "advanceUnits": 548
+        },
+        "é": {
+          "glyphId": 219,
+          "advanceUnits": 538
+        }
+      }
+    },
+    {
+      "file": "fonts/TwyneBody-Italic.ttf",
+      "sha256": "04d5cf8074062d46056ad2534c7f4df7dc5e3821b2663bd19d7f9fd83c13d346",
+      "bytes": 141144,
+      "source": "src/assets/typst/lora-Lora-Italic-wght.ttf",
+      "sourceSha256": "22d8d8854b53807aa664ca34f2031a9ed57a1d0dea296b8b96cdd3aad937a2b3",
+      "version": "3.008",
+      "family": "Twyne Body",
+      "style": "Italic",
+      "axes": {
+        "wght": 400
+      },
+      "glyphs": 889,
+      "unitsPerEm": 1000,
+      "testGlyphs": {
+        "A": {
+          "glyphId": 1,
+          "advanceUnits": 631
+        },
+        "W": {
+          "glyphId": 165,
+          "advanceUnits": 994
+        },
+        "a": {
+          "glyphId": 183,
+          "advanceUnits": 548
+        },
+        "g": {
+          "glyphId": 240,
+          "advanceUnits": 518
+        },
+        "m": {
+          "glyphId": 277,
+          "advanceUnits": 876
+        },
+        "x": {
+          "glyphId": 356,
+          "advanceUnits": 545
+        },
+        "é": {
+          "glyphId": 219,
+          "advanceUnits": 477
+        }
+      }
+    },
+    {
+      "file": "fonts/TwyneBody-BoldItalic.ttf",
+      "sha256": "1b5768a4698ca163106305f466f14bfb729809ee96a94d2925b3326373d34ec4",
+      "bytes": 141856,
+      "source": "src/assets/typst/lora-Lora-Italic-wght.ttf",
+      "sourceSha256": "22d8d8854b53807aa664ca34f2031a9ed57a1d0dea296b8b96cdd3aad937a2b3",
+      "version": "3.008",
+      "family": "Twyne Body",
+      "style": "Bold Italic",
+      "axes": {
+        "wght": 700
+      },
+      "glyphs": 889,
+      "unitsPerEm": 1000,
+      "testGlyphs": {
+        "A": {
+          "glyphId": 1,
+          "advanceUnits": 667
+        },
+        "W": {
+          "glyphId": 165,
+          "advanceUnits": 1010
+        },
+        "a": {
+          "glyphId": 183,
+          "advanceUnits": 549
+        },
+        "g": {
+          "glyphId": 240,
+          "advanceUnits": 520
+        },
+        "m": {
+          "glyphId": 277,
+          "advanceUnits": 878
+        },
+        "x": {
+          "glyphId": 356,
+          "advanceUnits": 543
+        },
+        "é": {
+          "glyphId": 219,
+          "advanceUnits": 470
+        }
+      }
+    }
+  ]
+}

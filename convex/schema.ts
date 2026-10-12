@@ -83,6 +83,8 @@ const usageMetricFields = {
 };
 
 export default defineSchema({
+  // Durable, explicitly queued instruments. Selected manuscript/source context
+  // and feedback belong to this account, independent of a browser session.
   instrumentTasks: defineTable(taskFields)
     .index("by_userId", ["userId"])
     .index("by_userId_and_folioId", ["userId", "folioId"])
@@ -537,6 +539,18 @@ export default defineSchema({
     bio: v.optional(v.string()),
     /** Convex storage id for the writer's profile picture, if set. */
     avatarStorageId: v.optional(v.id("_storage")),
+    // Durable desired PDS state; no credentials. Missing means never opted in.
+    deskPublication: v.optional(
+      v.object({
+        enabled: v.boolean(),
+        did: v.string(),
+        revision: v.number(),
+        syncedRevision: v.optional(v.number()),
+        publicationId: v.optional(v.string()),
+        payload: v.optional(v.string()),
+        updatedAt: v.number(),
+      }),
+    ),
     publicStats: v.optional(
       v.object({
         writingHeatmap: v.boolean(),
@@ -555,6 +569,18 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"])
     .index("by_handle", ["handle"]),
+
+  // An extra alias is a request only. No payment or ownership is granted here.
+  aliasRequests: defineTable({
+    userId: v.string(),
+    handle: v.string(),
+    status: v.literal("pending"),
+    priceMicrousd: v.number(),
+    currency: v.literal("USD"),
+    requestedAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_and_handle", ["userId", "handle"]),
 
   // ── Writer-authored inline comments (margin notes, with threads). ──
   // The CommentMark in the manuscript holds the id; the body, replies,

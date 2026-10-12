@@ -1,0 +1,61 @@
+{
+  "status": "PASS-unapplied-isolated-check-only",
+  "exitCode": 0,
+  "command": [
+    "rtk",
+    "proxy",
+    "git",
+    "apply",
+    "--check",
+    "--verbose",
+    "--directory=<OWNED_STAGE>",
+    "/home/diogenes/Projects/twyne/desktop/gpui/fixtures/dossier-multiply/integration.patch"
+  ],
+  "output": "Checking patch <OWNED_STAGE>/desktop/gpui/vendor/gpui-pre/src/scene.rs...\nChecking patch <OWNED_STAGE>/desktop/gpui/vendor/gpui-pre/src/window.rs...\nChecking patch <OWNED_STAGE>/desktop/gpui/vendor/gpui-pre/src/svg_renderer.rs...\nChecking patch <OWNED_STAGE>/desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs...\nChecking patch <OWNED_STAGE>/desktop/gpui/vendor/gpui-pre-wgpu/src/shaders.wgsl...\n",
+  "patchSha256": "f2d1ae7ef0d3ddca91c1cf56675473180de4d61c73db3eaaa952df2107e02404",
+  "pinnedBaselines": [
+    {
+      "target": "desktop/gpui/vendor/gpui-pre/src/scene.rs",
+      "readFrom": "/home/diogenes/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gpui-pre-0.3.7/src/scene.rs",
+      "beforeSha256": "2162c7da284ca995e5a84a3c9b66fbd65abb63d96858c0cc76c25efd4ba1d66e",
+      "proposedSha256": "bec00dd28b02b70238483b20ed7766abc8c361a765ede2281076a888892beac4"
+    },
+    {
+      "target": "desktop/gpui/vendor/gpui-pre/src/window.rs",
+      "readFrom": "/home/diogenes/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gpui-pre-0.3.7/src/window.rs",
+      "beforeSha256": "f8b04c37c6c18cc78b3ddd80844e5aa225e7ebafa689df5d04d1493fd45e61dc",
+      "proposedSha256": "802a2ef83a5cca1efa95eee62556f9f38a98afc1f500e10b19dbec3eeeac23fc"
+    },
+    {
+      "target": "desktop/gpui/vendor/gpui-pre/src/svg_renderer.rs",
+      "readFrom": "/home/diogenes/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gpui-pre-0.3.7/src/svg_renderer.rs",
+      "beforeSha256": "fb12dae87c0cd4c5f5a1fbbd2f9548d52fde9440c21e3d576dfeb0233eda88a6",
+      "proposedSha256": "a8f6c099eef7df4d5bb858ed098d2fdd59b142f083af75c5fd2546f5dd81398a"
+    },
+    {
+      "target": "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs",
+      "readFrom": "/home/diogenes/Projects/twyne/desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs",
+      "beforeSha256": "2d72815acc3296934e9107af4a32120761fef00c4ee823aea05a1d414af446b8",
+      "proposedSha256": "8902431999319e8d9fa7688a0bd54113836344f6e01226c35ee61878b0d55c02"
+    },
+    {
+      "target": "desktop/gpui/vendor/gpui-pre-wgpu/src/shaders.wgsl",
+      "readFrom": "/home/diogenes/Projects/twyne/desktop/gpui/vendor/gpui-pre-wgpu/src/shaders.wgsl",
+      "beforeSha256": "1d91f2c8a1958a241f1b659a4137c160592c8076b9be09049db4c9fb9a344529",
+      "proposedSha256": "a7cb934c806b86a999992b82153c4b81e880d17e9cd992627841c2ca5eaf21bd"
+    }
+  ],
+  "parentOwnedCurrentReadOnlyHashes": {
+    "src/global.css": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+    "desktop/gpui/src/dossier_paper.rs": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+    "desktop/gpui/src/dossier_view.rs": "d44ef9fa35803b6d0a4ea3decb5e5455abfcf8233d23c6a6442986d9f33c2055",
+    "desktop/gpui/src/lib.rs": "5e853d0b7858a61fc2f0b9f029a0c476fb03e07c6d4a9fc61568441cec39055e",
+    "desktop/gpui/Cargo.toml": "d2fbf2769766b2a4758ef37c387fe8e146a25031f0448161def5e9fc3ba304eb",
+    "desktop/gpui/Cargo.lock": "0276cac861d2dde4235eaacad27917e826abfd3af2922a432f17e0c204fed7da"
+  },
+  "limits": [
+    "No application",
+    "No Cargo/rustc/WGPU/GPUI execution",
+    "Parent module and app registration still absent"
+  ]
+}

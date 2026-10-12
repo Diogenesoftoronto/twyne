@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "status": "frozen_unapplied",
+  "timestamp_utc": "2026-10-05T07:37:10.648321+00:00",
+  "ownership": "Only NEW desktop/gpui/fixtures/dossier-layout-correction/** written; Parent/shared/Source/runtime/old audit untouched",
+  "target": "desktop/gpui/src/dossier_view.rs",
+  "target_base_sha256": "b9a27db900b6624055a3cd1b293bab93bfd1c2c26f37847ffebf366d281ba274",
+  "files": {
+    "README.md": "2156978cc13ac14c2dc90305eaf2f9afcd7c018c646278652750d969788fec6f",
+    "authoring-input-history.json": "63ebe316cb19708f6159e0d299f667549beea5ef9f09f00cbc42b0ba3096a497",
+    "build-patch.py": "94c42bb72fa344c6ac841c0dcb64ee9393acaafb26863708d2e29012f6976237",
+    "check.py": "4a3428a8a9a9ca8f7ed244b7545f92560c0d041625176725a16cd8039f6904a4",
+    "first-inspection.json": "a015169379593edde12a3bb3498dfa1f3bd22955f35894d00e47783fa1d70918",
+    "geometry-cases.json": "35387dd4b19d8ebfe525b1f141f0e8f388d43fb352f5fcf97ef3b0703009e8a2",
+    "integration.patch": "98fd0d02dbfc580047f1927014842428d43c90f70ad664668ca4ea0b8a960b7c",
+    "mounted_tests.rs": "8cafaf1153f49573411793d473eabb32b668e74f87ce751a308447314fbdb374",
+    "optional-same-pass.patch": "bec9c6c2e78ea5cd5202a750ce7b097e29f0546046d3c81c6dc0aff0d063773c",
+    "optional_tests.rs": "5b3b7bf18c4d263504a7421307416a52c3798e5c11d8ea3c3abc95e4ef39d639",
+    "parent-probes.json": "0152c12bd4943aff6c1a651f9d1439a1208063d7fe654079a696c2c7a70de12e",
+    "patch-base.json": "f38fe041764094161333045b50b3c04358ef91532bb5b1f2f50a59569dc36e40"
+  },
+  "checks_run": [
+    {
+      "check": "integration.patch git apply --check",
+      "result": "pass",
+      "execution": "read-only; no patch applied"
+    },
+    {
+      "check": "Both exact in-memory patch stages/proposed hashes and protected lifecycle/mutation/callback regions",
+      "result": "pass"
+    },
+    {
+      "check": "Source declarations and ten CSS box cases",
+      "result": "pass",
+      "boundary": "Declaration-derived; no new observed browser/native geometry"
+    },
+    {
+      "check": "Rustfmt stdin parsing of both proposed views and both authored regression files",
+      "result": "pass",
+      "boundary": "Syntax only, not Rust type checking"
+    },
+    {
+      "check": "Python syntax without __pycache__, JSON syntax and non-patch authored trailing whitespace",
+      "result": "pass"
+    },
+    {
+      "check": "Deterministic builder --check",
+      "result": "pass",
+      "boundary": "Used Window layout excerpt still matches; Parent changed full file outside excerpt and notice retained"
+    }
+  ],
+  "authored_unrun": {
+    "local_mounted_regressions": 4,
+    "optional_mounted_regressions": 2,
+    "parent_probe_cases": 8,
+    "rust_type_checking": false,
+    "cargo": false,
+    "native_run": false,
+    "browser": false,
+    "network": false,
+    "actual_ime": false,
+    "all_os": false
+  },
+  "stages": {
+    "integration.patch": "Local constants/breakpoints/cap/minima/masks/rail, no question-centering adoption",
+    "optional-same-pass.patch": "Separate relative stage after local proposal; actual child + two equal flex spacers/minimum-height, conditional on Parent first-frame/tall-scroll/input proof"
+  },
+  "unchanged": [
+    "Current source fonts/assets/form flow/error/success/capability semantics",
+    "Constructor/lifecycle image lease registration/rollback and full-window preparation",
+    "Filing/recovery/import guards and original input/key callbacks",
+    "Unmeasured below1024 native220px left leaf",
+    "All previous dossier-layout-audit checkpoint/observed centering receipts"
+  ],
+  "remaining_limits": [
+    "Source implicit grid auto-row used heights below1024 remain unobserved; no guessed replacement",
+    "Custom tracked department child still lacks true CSS ellipsis",
+    "Narrow unsafe centered rail overflow/first numeral reachability needs actual Source comparison",
+    "Optional percentage/min-height/flex allocation and natural scroll extent are unexecuted",
+    "No actual first-frame pixel, pointer/caret/IME, theme/DPR or atlas/runtime acceptance",
+    "Card/source typography/caret/background/shadow and filing overlay/transition gaps remain outside this correction"
+  ]
+}

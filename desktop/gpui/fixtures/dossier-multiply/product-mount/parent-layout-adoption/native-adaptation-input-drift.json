@@ -1,0 +1,10 @@
+{
+  "kind": "Retained failed exact-input check before adaptation freeze",
+  "failure": "Parent input drifted: desktop/gpui/src/app.rs",
+  "historicalBaseSha256": "03f30f92b1c0df2f97e98bef730886d7f29eb5c254b979ba3e4ffa55027efa5a",
+  "currentObservedSha256": "9ffb3f6003c910a8bfbf6647c4ad79510c4e4bff06a3063ff72f07d3873e695e",
+  "captureMethodContextStillMatchesUnappliedPatch": true,
+  "unappliedGitCheckAlreadyPassed": true,
+  "sharedFileWasNotWritten": true,
+  "action": "Explicitly regenerate only the unfrozen separate observation patch against current Parent input; frozen mount patches stay unchanged"
+}

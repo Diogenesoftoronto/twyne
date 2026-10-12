@@ -1,0 +1,384 @@
+{
+  "sourceVersion": "2.014; ttfautohint (v1.8.4.7-5d5b)",
+  "package": "Fedora google-noto-sans-mono-fonts-20250301-1.fc42.noarch",
+  "originalDirectory": "/usr/share/fonts/google-noto/",
+  "originals": [
+    {
+      "file": "fonts/source/NotoSansMono-Regular.ttf",
+      "sha256": "65b5e2b2c4a1fba9ae8be1f026cb35b03dcb8886d9b2a4147054fde12f7e767d",
+      "weight": 400
+    },
+    {
+      "file": "fonts/source/NotoSansMono-SemiBold.ttf",
+      "sha256": "82e49094ec3a1a3c8fa0d730016f5f890384f6e164dd2cc84f39b30639bb6e8f",
+      "weight": 600
+    }
+  ],
+  "browserEvidence": "fixtures/source_view/font-evidence/actual-app-source-fonts.json",
+  "headingAndFallbackEvidence": "fixtures/source_view/font-evidence/web-cjk-fonts.json",
+  "syntheticItalicMechanism": "https://raw.githubusercontent.com/chromium/chromium/main/third_party/blink/renderer/platform/fonts/font_platform_data.cc#CreateSkFont",
+  "syntheticItalicEvidenceBoundary": "Browser selects original Regular for CSS italic. Current primary Chromium source specifies -1/4 skew; derived outline raster is not asserted pixel-identical to that Chrome build.",
+  "faces": [
+    {
+      "file": "fonts/TwyneSource-Regular.ttf",
+      "sha256": "43ce77069898a9d0fb65ca33b2885d5ab70c4d4637ac9ead4a33a511093dfff5",
+      "bytes": 591008,
+      "family": "Twyne Source",
+      "style": "Regular",
+      "weight": 400,
+      "source": "fonts/source/NotoSansMono-Regular.ttf",
+      "sourceSha256": "65b5e2b2c4a1fba9ae8be1f026cb35b03dcb8886d9b2a4147054fde12f7e767d",
+      "glyphIdsAndAdvancesUnchanged": true,
+      "outlinesAndHintingUnchanged": true,
+      "shear": 0,
+      "originalGlyphAutohintInstructionsRemoved": false,
+      "testGlyphs": {
+        "/": {
+          "glyphId": 18,
+          "advanceUnits": 600
+        },
+        " ": {
+          "glyphId": 3,
+          "advanceUnits": 600
+        },
+        "S": {
+          "glyphId": 54,
+          "advanceUnits": 600
+        },
+        "o": {
+          "glyphId": 82,
+          "advanceUnits": 600
+        },
+        "u": {
+          "glyphId": 88,
+          "advanceUnits": 600
+        },
+        "r": {
+          "glyphId": 85,
+          "advanceUnits": 600
+        },
+        "c": {
+          "glyphId": 70,
+          "advanceUnits": 600
+        },
+        "e": {
+          "glyphId": 72,
+          "advanceUnits": 600
+        },
+        ":": {
+          "glyphId": 29,
+          "advanceUnits": 600
+        },
+        "C": {
+          "glyphId": 38,
+          "advanceUnits": 600
+        },
+        "a": {
+          "glyphId": 68,
+          "advanceUnits": 600
+        },
+        "f": {
+          "glyphId": 73,
+          "advanceUnits": 600
+        },
+        "é": {
+          "glyphId": 170,
+          "advanceUnits": 600
+        },
+        "=": {
+          "glyphId": 32,
+          "advanceUnits": 600
+        },
+        "#": {
+          "glyphId": 6,
+          "advanceUnits": 600
+        },
+        "m": {
+          "glyphId": 80,
+          "advanceUnits": 600
+        },
+        "(": {
+          "glyphId": 11,
+          "advanceUnits": 600
+        },
+        ")": {
+          "glyphId": 12,
+          "advanceUnits": 600
+        },
+        "›": {
+          "glyphId": 531,
+          "advanceUnits": 600
+        }
+      }
+    },
+    {
+      "file": "fonts/TwyneSource-SemiBold.ttf",
+      "sha256": "d140e73c234671cf0a4300feffa24d7efdce744eeec8b3cd09e103ca33b19b68",
+      "bytes": 599976,
+      "family": "Twyne Source",
+      "style": "SemiBold",
+      "weight": 600,
+      "source": "fonts/source/NotoSansMono-SemiBold.ttf",
+      "sourceSha256": "82e49094ec3a1a3c8fa0d730016f5f890384f6e164dd2cc84f39b30639bb6e8f",
+      "glyphIdsAndAdvancesUnchanged": true,
+      "outlinesAndHintingUnchanged": true,
+      "shear": 0,
+      "originalGlyphAutohintInstructionsRemoved": false,
+      "testGlyphs": {
+        "/": {
+          "glyphId": 18,
+          "advanceUnits": 600
+        },
+        " ": {
+          "glyphId": 3,
+          "advanceUnits": 600
+        },
+        "S": {
+          "glyphId": 54,
+          "advanceUnits": 600
+        },
+        "o": {
+          "glyphId": 82,
+          "advanceUnits": 600
+        },
+        "u": {
+          "glyphId": 88,
+          "advanceUnits": 600
+        },
+        "r": {
+          "glyphId": 85,
+          "advanceUnits": 600
+        },
+        "c": {
+          "glyphId": 70,
+          "advanceUnits": 600
+        },
+        "e": {
+          "glyphId": 72,
+          "advanceUnits": 600
+        },
+        ":": {
+          "glyphId": 29,
+          "advanceUnits": 600
+        },
+        "C": {
+          "glyphId": 38,
+          "advanceUnits": 600
+        },
+        "a": {
+          "glyphId": 68,
+          "advanceUnits": 600
+        },
+        "f": {
+          "glyphId": 73,
+          "advanceUnits": 600
+        },
+        "é": {
+          "glyphId": 170,
+          "advanceUnits": 600
+        },
+        "=": {
+          "glyphId": 32,
+          "advanceUnits": 600
+        },
+        "#": {
+          "glyphId": 6,
+          "advanceUnits": 600
+        },
+        "m": {
+          "glyphId": 80,
+          "advanceUnits": 600
+        },
+        "(": {
+          "glyphId": 11,
+          "advanceUnits": 600
+        },
+        ")": {
+          "glyphId": 12,
+          "advanceUnits": 600
+        },
+        "›": {
+          "glyphId": 531,
+          "advanceUnits": 600
+        }
+      }
+    },
+    {
+      "file": "fonts/TwyneSource-Oblique.ttf",
+      "sha256": "3048d0f368b76b58877432e30cb0ada023b71c8af856fc44c922c069b23244df",
+      "bytes": 535908,
+      "family": "Twyne Source",
+      "style": "Oblique",
+      "weight": 400,
+      "source": "fonts/source/NotoSansMono-Regular.ttf",
+      "sourceSha256": "65b5e2b2c4a1fba9ae8be1f026cb35b03dcb8886d9b2a4147054fde12f7e767d",
+      "glyphIdsAndAdvancesUnchanged": true,
+      "outlinesAndHintingUnchanged": false,
+      "shear": 0.25,
+      "originalGlyphAutohintInstructionsRemoved": true,
+      "testGlyphs": {
+        "/": {
+          "glyphId": 18,
+          "advanceUnits": 600
+        },
+        " ": {
+          "glyphId": 3,
+          "advanceUnits": 600
+        },
+        "S": {
+          "glyphId": 54,
+          "advanceUnits": 600
+        },
+        "o": {
+          "glyphId": 82,
+          "advanceUnits": 600
+        },
+        "u": {
+          "glyphId": 88,
+          "advanceUnits": 600
+        },
+        "r": {
+          "glyphId": 85,
+          "advanceUnits": 600
+        },
+        "c": {
+          "glyphId": 70,
+          "advanceUnits": 600
+        },
+        "e": {
+          "glyphId": 72,
+          "advanceUnits": 600
+        },
+        ":": {
+          "glyphId": 29,
+          "advanceUnits": 600
+        },
+        "C": {
+          "glyphId": 38,
+          "advanceUnits": 600
+        },
+        "a": {
+          "glyphId": 68,
+          "advanceUnits": 600
+        },
+        "f": {
+          "glyphId": 73,
+          "advanceUnits": 600
+        },
+        "é": {
+          "glyphId": 170,
+          "advanceUnits": 600
+        },
+        "=": {
+          "glyphId": 32,
+          "advanceUnits": 600
+        },
+        "#": {
+          "glyphId": 6,
+          "advanceUnits": 600
+        },
+        "m": {
+          "glyphId": 80,
+          "advanceUnits": 600
+        },
+        "(": {
+          "glyphId": 11,
+          "advanceUnits": 600
+        },
+        ")": {
+          "glyphId": 12,
+          "advanceUnits": 600
+        },
+        "›": {
+          "glyphId": 531,
+          "advanceUnits": 600
+        }
+      }
+    }
+  ],
+  "helperFont": {
+    "file": "fonts/TwyneSourceLabel-Regular.ttf",
+    "sha256": "7704551b96a022190102da82a304f7b51078eddfb1394111c5018c7381d7c11e",
+    "bytes": 56980,
+    "source": "fonts/dmsans-DMSans-opsz-wght.ttf",
+    "sourceSha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+    "version": "4.004",
+    "family": "Twyne Source Label",
+    "axes": {
+      "opsz": 11,
+      "wght": 400
+    },
+    "usage": "Original11px/400 Source helper and footer labels; footer alias reuses exact bytes",
+    "licenseSource": "src/assets/typst/dmsans-OFL.txt",
+    "licenseSha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1",
+    "testGlyphs": {
+      "D": {
+        "glyphId": 19,
+        "advanceUnits": 674
+      },
+      "o": {
+        "glyphId": 196,
+        "advanceUnits": 596
+      },
+      "c": {
+        "glyphId": 139,
+        "advanceUnits": 575
+      },
+      "u": {
+        "glyphId": 224,
+        "advanceUnits": 576
+      },
+      "m": {
+        "glyphId": 189,
+        "advanceUnits": 884
+      },
+      "e": {
+        "glyphId": 148,
+        "advanceUnits": 567
+      },
+      "n": {
+        "glyphId": 190,
+        "advanceUnits": 576
+      },
+      "t": {
+        "glyphId": 220,
+        "advanceUnits": 400
+      },
+      " ": {
+        "glyphId": 321,
+        "advanceUnits": 268
+      },
+      "h": {
+        "glyphId": 165,
+        "advanceUnits": 579
+      },
+      "l": {
+        "glyphId": 183,
+        "advanceUnits": 225
+      },
+      "p": {
+        "glyphId": 207,
+        "advanceUnits": 624
+      },
+      "r": {
+        "glyphId": 210,
+        "advanceUnits": 382
+      },
+      "s": {
+        "glyphId": 214,
+        "advanceUnits": 506
+      }
+    }
+  },
+  "tool": {
+    "package": "fontTools",
+    "version": "4.61.1"
+  },
+  "method": "Renamed explicit Source-only family; original timestamps and deterministic SFNT order. Oblique decomposes composites, quarter-shears upward-Y outlines and removes original autohints; all glyph IDs/advance widths retained.",
+  "license": "SIL Open Font License 1.1",
+  "licenseFile": "licenses/source-mono-OFL.txt",
+  "licenseSha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+  "licenseSource": "https://raw.githubusercontent.com/notofonts/latin-greek-cyrillic/main/OFL.txt",
+  "sharedMonoAndSourceBytesAndTypstUnchanged": true,
+  "explicitCjkFallback": "Droid Sans Fallback; original Hangul Noto Sans CJK JP Thin and Noto Color Emoji remain platform-dependent gaps"
+}

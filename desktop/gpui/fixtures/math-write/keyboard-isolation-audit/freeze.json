@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "state": "frozen-unexecuted",
+  "ownership": "desktop/gpui/fixtures/math-write/keyboard-isolation-audit/** only",
+  "validation": "syntax and patch context only; all tests remain unrun",
+  "artifacts": [
+    {
+      "path": "desktop/gpui/fixtures/math-write/keyboard-isolation-audit/README.md",
+      "sha256": "5f50a059f94ea484432fc0adb243a45b145941780e6ccdd6d8452df6724c0cd2"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/keyboard-isolation-audit/audit.json",
+      "sha256": "6fceaec42404385a1fe14982ad03d662c688793d892bf0e946f0bb1cbdafd60a"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/keyboard-isolation-audit/integration.patch",
+      "sha256": "e47ebcc9b2e41120cd9b5c089001402a8ecc0ef3012228c089c7649a0eaee7ca"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/keyboard-isolation-audit/native_tests.rs",
+      "sha256": "b5b672d68ba17f6393b9a9641a1ff77542e1e950ef0dda83621af6b2ac242cbe"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/keyboard-isolation-audit/source-contract.test.ts",
+      "sha256": "806ec2954b0b409057ef835251a0fd4ed3254d1190306b323603a10ae5d38fdc"
+    }
+  ]
+}

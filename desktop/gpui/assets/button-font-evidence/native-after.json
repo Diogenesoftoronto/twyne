@@ -1,0 +1,16 @@
+{
+  "system": "Actual Linux Cosmic/Swash platform text system",
+  "family": "Twyne Button Sans",
+  "sourceVersion": "4.004",
+  "axes": {
+    "opsz": 12,
+    "wght": 600
+  },
+  "actualSelectedFontId": "FontId(0)",
+  "source": "Save note",
+  "fontSizePx": 12.0,
+  "nativeAdvancePx": 56.832000732421875,
+  "originalResponseBrowserAdvancePx": 56.84375,
+  "exactDerivedGlyphIdsAndAdvanceUnits": true,
+  "defaultSansUnchanged": true
+}

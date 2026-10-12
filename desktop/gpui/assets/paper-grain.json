@@ -1,0 +1,79 @@
+{
+  "source": "src/global.css",
+  "sourceSha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+  "layers": [
+    {
+      "id": 1,
+      "x": 0.25,
+      "y": 0.35,
+      "radius": 1,
+      "period": 7
+    },
+    {
+      "id": 2,
+      "x": 0.75,
+      "y": 0.65,
+      "radius": 1,
+      "period": 11
+    },
+    {
+      "id": 3,
+      "x": 0.45,
+      "y": 0.85,
+      "radius": 1,
+      "period": 13
+    }
+  ],
+  "lightAlpha": [
+    0.025,
+    0.02,
+    0.015
+  ],
+  "darkAlpha": [
+    0.18,
+    0.14,
+    0.1
+  ],
+  "broadsheetAlpha": [
+    0,
+    0,
+    0
+  ],
+  "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+  "backgroundRepeat": "repeat, repeat, repeat",
+  "groups": [
+    {
+      "name": "outer",
+      "layers": [
+        {
+          "id": 3,
+          "x": 0.45,
+          "y": 0.85,
+          "radius": 1,
+          "period": 13
+        },
+        {
+          "id": 1,
+          "x": 0.25,
+          "y": 0.35,
+          "radius": 1,
+          "period": 7
+        }
+      ],
+      "period": 364
+    },
+    {
+      "name": "middle",
+      "layers": [
+        {
+          "id": 2,
+          "x": 0.75,
+          "y": 0.65,
+          "radius": 1,
+          "period": 11
+        }
+      ],
+      "period": 352
+    }
+  ]
+}

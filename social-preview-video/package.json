@@ -1,0 +1,11 @@
+{
+  "name": "social-preview-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "rtk proxy npx --yes hyperframes@0.8.93 preview",
+    "check": "rtk proxy npx --yes hyperframes@0.8.93 check",
+    "render": "rtk proxy npx --yes hyperframes@0.8.93 render",
+    "publish": "rtk proxy npx --yes hyperframes@0.8.93 publish"
+  }
+}

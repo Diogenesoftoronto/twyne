@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "scope": "Authored isolated Tiptap scaffold using actual original math NodeViews/forms; not the product route.",
+  "cases": [
+    {
+      "id": "ordinary",
+      "prefix": "Café é 東京 🧵 before ",
+      "source": "x+1",
+      "suffix": " after naïve prose and the next line.",
+      "draft": "  x^{n+1}_{i}  "
+    },
+    {
+      "id": "fraction",
+      "prefix": "The margin keeps Café and 東京 beside ",
+      "source": "\\frac{a+1}{1+x^2}",
+      "suffix": " then é and 🧵 carry on into the next printed line.",
+      "draft": "\\frac{a+1}{1+x^2}\n+\\sqrt{y}"
+    },
+    {
+      "id": "long",
+      "prefix": "Unicode é 東京 before ",
+      "source": "\\text{A deliberately long equation preview tests the original overflow boundary}",
+      "suffix": " after 🧵 the form, continuing into another line of prose.",
+      "draft": "\\text{A deliberately long equation preview tests the original overflow boundary}\n+\\frac{a+1}{b+2}\n+\\sqrt{y}"
+    }
+  ],
+  "scenarios": [
+    {"id":"wide-ordinary","caseId":"ordinary","viewportWidth":1280,"viewportHeight":860,"contentWidth":704,"dpr":1},
+    {"id":"wide-fraction","caseId":"fraction","viewportWidth":1280,"viewportHeight":860,"contentWidth":704,"dpr":1},
+    {"id":"narrow-ordinary","caseId":"ordinary","viewportWidth":620,"viewportHeight":860,"contentWidth":280,"dpr":1},
+    {"id":"narrow-long","caseId":"long","viewportWidth":620,"viewportHeight":860,"contentWidth":280,"dpr":1},
+    {"id":"small-ordinary","caseId":"ordinary","viewportWidth":320,"viewportHeight":860,"contentWidth":240,"dpr":1},
+    {"id":"narrow-ordinary-dpr2","caseId":"ordinary","viewportWidth":620,"viewportHeight":860,"contentWidth":280,"dpr":2}
+  ]
+}

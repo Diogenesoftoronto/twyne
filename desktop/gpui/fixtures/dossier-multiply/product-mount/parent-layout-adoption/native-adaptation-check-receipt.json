@@ -1,0 +1,28 @@
+{
+  "status": "Pinned unapplied adaptation / Python AST / git-apply checks only",
+  "checks": [
+    {
+      "patch": "native-observation.patch",
+      "target": "desktop/gpui/src/app.rs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "patch": "native-driver-adaptation.patch",
+      "target": "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/check-native.py",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "originalNativeHelperSha256": "a5bdb6b9b905667af78c7faa9f23532946570f48cc6e576b21dc7a6f3a737f27",
+  "currentNativeHelperSha256": "a5bdb6b9b905667af78c7faa9f23532946570f48cc6e576b21dc7a6f3a737f27",
+  "originalHelperPinStillCurrent": true,
+  "syntheticPredicateTestsAuthored": 6,
+  "syntheticTestsExecuted": false,
+  "nativeDriverExecuted": false,
+  "sharedFilesWritten": false,
+  "realStampGateStillRequiresAllEight": true,
+  "rootCargoNativeExecutionRequired": true
+}

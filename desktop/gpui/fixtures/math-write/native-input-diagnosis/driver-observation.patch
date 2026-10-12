@@ -1,0 +1,81 @@
+--- a/desktop/gpui/fixtures/math-write/native-host/check-native.py
++++ b/desktop/gpui/fixtures/math-write/native-host/check-native.py
+@@ -182,8 +182,45 @@
+         def __init__(self, binary, output, fixture):
+             self.deadline = time.monotonic() + TOTAL_SECONDS
+             self.actions = []
+             super().__init__(binary, output, fixture)
++            # Isolated fixture-only observation. This is not a field mutation.
++            self.x.XSync.argtypes, self.x.XSync.restype = [C.c_void_p, C.c_int], C.c_int
++            self.x.XGetInputFocus.argtypes, self.x.XGetInputFocus.restype = [C.c_void_p, C.POINTER(C.c_ulong), C.POINTER(C.c_int)], C.c_int
++            self.x.XQueryKeymap.argtypes, self.x.XQueryKeymap.restype = [C.c_void_p, C.c_void_p], C.c_int
++            self.native_window = None
++            self.key_observations = []
++
++        def key(self, name, down):
++            # The same single physical event is still sent exactly once.
++            code = self.x.XKeysymToKeycode(self.connection, self.x.XStringToKeysym(name.encode("ascii")))
++            super().key(name, down)
++            self.x.XSync(self.connection, 0)
++            focus, revert, held = C.c_ulong(), C.c_int(), C.create_string_buffer(32)
++            require(self.x.XGetInputFocus(self.connection, C.byref(focus), C.byref(revert)), "Owned X11 focus query failed")
++            require(self.x.XQueryKeymap(self.connection, held), "Owned X11 key state query failed")
++            pressed = [keycode for keycode in range(256)
++                       if held.raw[keycode // 8] & (1 << (keycode % 8))]
++            observation = {
++                "launch": self.launches, "key": name, "requestedDown": down, "keycode": code,
++                "xServerFocus": focus.value, "ownedWindow": self.native_window,
++                "xServerFocusIsOwnedWindow": focus.value == self.native_window,
++                "xServerPressedKeycodes": pressed, "requestedKeyIsDown": code in pressed,
++                "serverQueueSynchronized": True,
++            }
++            try:
++                state = self.state()
++                observation["latestNativeObservation"] = {
++                    "captureStamp": list(state.stamp), "fieldValue": self.field_value(state),
++                    "fieldContainsFocus": self.input_focused(state, FIELD),
++                    "lastInputWasKeyboard": state.get("keyboardInput"),
++                    "windowActive": state.get("windowActive"),
++                    "formPath": self.node(state, FORM).get("path") if self.node(state, FORM) else None,
++                }
++            except (FileNotFoundError, json.JSONDecodeError, KeyError) as error:
++                observation["nativeObservationUnavailable"] = type(error).__name__
++            self.key_observations.append(observation)
++            write_json(self.output / "actual-keys.json", self.key_observations)
+ 
+         def alive(self):
+             super().alive()
+             require(time.monotonic() < self.deadline, "Whole native-host run exceeded its six-minute deadline")
+@@ -244,8 +281,9 @@
+             finally:
+                 if children:
+                     self.x.XFree(children)
+             require(len(windows) == 1, "Exactly one native Twyne window must belong to the new owned display")
++            self.native_window = windows[0]
+             self.x.XSetInputFocus(self.connection, windows[0], 1, 0)
+             self.x.XFlush(self.connection)
+             self.wait_state("actual native activation", lambda state: state["windowActive"])
+ 
+@@ -351,10 +389,20 @@
+             return json.loads(terminal[len("Name("):-1])
+ 
+         def open_equation(self, display, raw):
+             self.click(self.anchor_id(display))
+-            state = self.wait_state(f"real retained {display} source form at original end-caret focus", lambda state:
+-                self.node(state, FORM) is not None and self.field_value(state) == raw and self.input_focused(state, FIELD))
++            # Require two fresh focused/visible field observations, not one
++            # first-mount snapshot. Expected authored raw text stays unchanged.
++            state = self.settled(f"two fresh focused retained {display} source field observations",
++                lambda state: self.input(state, FIELD),
++                lambda state: self.node(state, FORM) is not None
++                and self.field_value(state) == raw and self.input_focused(state, FIELD)
++                and state["windowActive"])
++            write_json(self.output / f"opened-{self.launches}-{display}-field.json", {
++                "expectedRaw": raw, "observations": self.settled_evidence,
++                "field": self.input(state, FIELD),
++                "limits": "Fresh observation/server-state proof does not identify the installed PlatformInputHandler",
++            })
+             field = self.input(state, FIELD)
+             require(field["role"] == "MultilineTextInput", "Actual source editor must expose a native multiline textarea")
+             return state
+ 

@@ -1,0 +1,105 @@
+{
+  "status": "failed retained run; cause unresolved",
+  "expectedRaw": "x+1!",
+  "observedRaw": "x+1",
+  "window": {
+    "windowActive": true,
+    "keyboardInput": true,
+    "windowOrigin": {
+      "x": 2.0,
+      "y": 2.0
+    },
+    "viewport": {
+      "width": 1280.0,
+      "height": 860.0
+    }
+  },
+  "field": {
+    "path": [
+      "View(EntityId(25v1))",
+      "Name(\"gpui_component::window_border::WindowBorder\")",
+      "Name(\"root\")",
+      "View(EntityId(1v1))",
+      "Name(\"writing-room\")",
+      "Name(\"body-field\")",
+      "Name(\"manuscript-page-canvas\")",
+      "Name(\"manuscript-page-content\")",
+      "View(EntityId(54v1))",
+      "Name(\"twyne-rich-manuscript\")",
+      "Name(\"twyne-atom-drag-3\")",
+      "View(EntityId(52v3))",
+      "Name(\"twyne-math-source-editor\")",
+      "Name(\"twyne-math-source-field\")",
+      "Name(\"gpui_component::input::textarea::Textarea\")",
+      "Name(\"gpui_component::input::input::Input\")",
+      "NamedInteger(\"input\", 12884901934)"
+    ],
+    "rect": {
+      "x": 316.0,
+      "y": 502.0,
+      "width": 650.0,
+      "height": 77.0
+    },
+    "visible": true,
+    "label": "Block LaTeX source",
+    "role": "MultilineTextInput",
+    "value": "x+1",
+    "expanded": null,
+    "disabled": null,
+    "focused": true
+  },
+  "form": {
+    "path": [
+      "View(EntityId(25v1))",
+      "Name(\"gpui_component::window_border::WindowBorder\")",
+      "Name(\"root\")",
+      "View(EntityId(1v1))",
+      "Name(\"writing-room\")",
+      "Name(\"body-field\")",
+      "Name(\"manuscript-page-canvas\")",
+      "Name(\"manuscript-page-content\")",
+      "View(EntityId(54v1))",
+      "Name(\"twyne-rich-manuscript\")",
+      "Name(\"twyne-atom-drag-3\")",
+      "View(EntityId(52v3))",
+      "Name(\"twyne-math-source-editor\")"
+    ],
+    "rect": {
+      "x": 305.0,
+      "y": 463.0,
+      "width": 672.0,
+      "height": 218.0
+    },
+    "visible": true,
+    "label": "Block LaTeX source",
+    "role": "Form",
+    "value": null,
+    "expanded": null,
+    "disabled": null,
+    "focused": null
+  },
+  "acceptanceCompletedChecks": [
+    "Actual CLI copy retains exact authored canonical/source bytes, unknown metadata and original import provenance",
+    "Actual native Write/Save uses the real local helper and keeps portable math metadata, marked Unicode prose and unknown attributes"
+  ],
+  "binarySha256": "eb9140901ef286468573d7036e1c7e6bc799705348511b0f0a3efcbfd26f90b1",
+  "driverSha256": "565ca5ec17e42d2f5a0b917cba319d336af0ff896206054fac5a275b1e5b2d3f",
+  "manuscript": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/math-inline-native-workflow-f379dceab0/library/manuscripts/cfdee1cb-492a-47a3-944b-80bd38429009.json",
+    "id": "cfdee1cb-492a-47a3-944b-80bd38429009",
+    "revision": 2,
+    "projection": "verified",
+    "fileSha256": "d92e6e3f3c29402a0ef950b1e1884c4c4f42404eea4f1e7df9af09e67267fc1f",
+    "bodyBytes": 8923,
+    "canonicalSourceBytes": 8923,
+    "htmlBytes": 954,
+    "canonicalSourceSha256": "b1893ad992aa6fd7e9f59a61aab357a2d33343356dec7c77b0f490b95ee8d874",
+    "bodyEqualsAuthoredFixture": true,
+    "canonicalSourceEqualsAuthoredFixture": true
+  },
+  "sourcePreserved": true,
+  "caretObservation": "local visual inspection of retained failure.png shows caret at end; no caret repair inferred",
+  "firstAppendCause": "Unresolved: no translated key/propagation/active input handler trace",
+  "independentStaticIssue": "Drag wrapper bubbling listener does not require its own exact focus; Space can invoke block dragging from descendant form; ! is not handled",
+  "execution": "Read-only filesystem inspection and local image view only; proposals unapplied/uncompiled/unexecuted"
+}

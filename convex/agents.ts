@@ -967,6 +967,7 @@ const personaValidator = v.object({
   criticalMethod: v.optional(v.string()),
   voice: v.optional(v.string()),
   signatureMoves: v.optional(v.array(v.string())),
+  hallmarks: v.optional(v.array(v.string())),
   avoidances: v.optional(v.array(v.string())),
   sampleLines: v.optional(v.array(v.string())),
   providerId: v.optional(v.string()),

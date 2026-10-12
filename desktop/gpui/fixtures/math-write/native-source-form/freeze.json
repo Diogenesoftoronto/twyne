@@ -1,0 +1,21 @@
+{
+  "status": "frozen-unregistered",
+  "nativeBuildOrTestsRun": false,
+  "checks": [
+    "rustfmt --edition 2024 --config skip_children=true --check",
+    "git apply --check (unapplied)",
+    "current source CSS SHA256 matches retained snapshot"
+  ],
+  "files": {
+    "desktop/gpui/src/editor/math_source_editor.rs": "d386b47e32e1ebe5cd653eb042b13aaf3ebe8e0972a88cad73471b33d3b475e7",
+    "desktop/gpui/fixtures/math-write/native-source-form/view_tests.rs": "06e74e7671984329bd08f1f750d0cde60c0c39474353f882d3bdf1b321bf2f32",
+    "desktop/gpui/fixtures/math-write/native-source-form/source-styles.json": "869e53e695f31144e96d70cef1041d5c08337f4748e52579336ec789c2e19e2e",
+    "desktop/gpui/fixtures/math-write/native-source-form/integration.patch": "cd8894956a7b79dd960141d05c2a49564e85ba8f6ee5d172fdd6dc24ca169403",
+    "desktop/gpui/fixtures/math-write/native-source-form/README.md": "ec262d0266ba2c595a7727eb62e58f50d686d7e1aeac745f511f6d4a8f6ba4f1"
+  },
+  "parentTestFilters": [
+    "editor::math_source_editor::tests",
+    "editor::transaction::math_source_tests"
+  ],
+  "sourceControlsCorpus": "Parent-owned narrower keyboard/focus/cancel worker was still running at freeze; no differential execution claim."
+}

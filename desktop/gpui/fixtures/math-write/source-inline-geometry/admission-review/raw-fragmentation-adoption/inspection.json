@@ -1,0 +1,560 @@
+{
+  "schemaVersion": 1,
+  "scope": "Read-only raw JSON inventory; no analyzer, browser, native or test execution.",
+  "checkpoint": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-8430f5ec-4a79-4e9e-865d-6a805e712a07",
+  "snapshots": [
+    {
+      "phase": "02-open-markers",
+      "selectedVariant": "markers",
+      "nodeCount": 169,
+      "layoutRowCount": 126,
+      "duplicateOwners": [
+        {
+          "nodeIndex": 35,
+          "backendNodeId": 1700,
+          "tag": "::after",
+          "parentNodeIndex": 34,
+          "parentObservedRole": {
+            "variant": "markers",
+            "role": "prefix-start"
+          },
+          "selectedOwnerRole": null,
+          "selectedDirectTextRole": null,
+          "rows": [
+            {
+              "layoutIndex": 23,
+              "bounds": [
+                22,
+                219.390625,
+                4,
+                1
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            },
+            {
+              "layoutIndex": 24,
+              "bounds": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            }
+          ]
+        },
+        {
+          "nodeIndex": 38,
+          "backendNodeId": 1701,
+          "tag": "::after",
+          "parentNodeIndex": 37,
+          "parentObservedRole": {
+            "variant": "markers",
+            "role": "before-math"
+          },
+          "selectedOwnerRole": null,
+          "selectedDirectTextRole": null,
+          "rows": [
+            {
+              "layoutIndex": 27,
+              "bounds": [
+                218.9375,
+                219.390625,
+                4,
+                1
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            },
+            {
+              "layoutIndex": 28,
+              "bounds": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            }
+          ]
+        },
+        {
+          "nodeIndex": 105,
+          "backendNodeId": 1702,
+          "tag": "::after",
+          "parentNodeIndex": 104,
+          "parentObservedRole": {
+            "variant": "markers",
+            "role": "after-math"
+          },
+          "selectedOwnerRole": null,
+          "selectedDirectTextRole": null,
+          "rows": [
+            {
+              "layoutIndex": 66,
+              "bounds": [
+                570.9375,
+                219.390625,
+                4,
+                1
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            },
+            {
+              "layoutIndex": 67,
+              "bounds": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            }
+          ]
+        },
+        {
+          "nodeIndex": 108,
+          "backendNodeId": 1703,
+          "tag": "::after",
+          "parentNodeIndex": 107,
+          "parentObservedRole": {
+            "variant": "markers",
+            "role": "suffix-end"
+          },
+          "selectedOwnerRole": null,
+          "selectedDirectTextRole": null,
+          "rows": [
+            {
+              "layoutIndex": 70,
+              "bounds": [
+                166.859375,
+                417.546875,
+                4,
+                1
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            },
+            {
+              "layoutIndex": 71,
+              "bounds": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            }
+          ]
+        }
+      ],
+      "selectedObservedOwnerCounts": [
+        {
+          "nodeIndex": 32,
+          "role": "editor",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 33,
+          "role": "paragraph",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 34,
+          "role": "prefix-start",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 37,
+          "role": "before-math",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 39,
+          "role": "atom",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 40,
+          "role": "saved-render",
+          "layoutCount": 0
+        },
+        {
+          "nodeIndex": 41,
+          "role": "saved-katex",
+          "layoutCount": 0
+        },
+        {
+          "nodeIndex": 54,
+          "role": "saved-html",
+          "layoutCount": 0
+        },
+        {
+          "nodeIndex": 55,
+          "role": "saved-base",
+          "layoutCount": 0
+        },
+        {
+          "nodeIndex": 67,
+          "role": "form",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 68,
+          "role": "label",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 70,
+          "role": "textarea",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 71,
+          "role": "preview",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 72,
+          "role": "preview-output",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 73,
+          "role": "preview-katex",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 99,
+          "role": "actions",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 100,
+          "role": "save",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 102,
+          "role": "cancel",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 104,
+          "role": "after-math",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 107,
+          "role": "suffix-end",
+          "layoutCount": 1
+        }
+      ],
+      "selectedDirectTextCounts": [
+        {
+          "nodeIndex": 36,
+          "role": "direct-paragraph-text",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 69,
+          "role": "direct-label-text",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 106,
+          "role": "direct-paragraph-text",
+          "layoutCount": 1
+        }
+      ],
+      "selectedGeometryOrDirectTextDuplicateOwners": [],
+      "captureScope": {
+        "scope": "none",
+        "fullPage": false,
+        "pixelsProven": false,
+        "appRouteProof": false
+      }
+    },
+    {
+      "phase": "03-open-control",
+      "selectedVariant": "control",
+      "nodeCount": 206,
+      "layoutRowCount": 136,
+      "duplicateOwners": [
+        {
+          "nodeIndex": 35,
+          "backendNodeId": 1700,
+          "tag": "::after",
+          "parentNodeIndex": 34,
+          "parentObservedRole": {
+            "variant": "markers",
+            "role": "prefix-start"
+          },
+          "selectedOwnerRole": null,
+          "selectedDirectTextRole": null,
+          "rows": [
+            {
+              "layoutIndex": 23,
+              "bounds": [
+                22,
+                219.390625,
+                4,
+                1
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            },
+            {
+              "layoutIndex": 24,
+              "bounds": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            }
+          ]
+        },
+        {
+          "nodeIndex": 38,
+          "backendNodeId": 1701,
+          "tag": "::after",
+          "parentNodeIndex": 37,
+          "parentObservedRole": {
+            "variant": "markers",
+            "role": "before-math"
+          },
+          "selectedOwnerRole": null,
+          "selectedDirectTextRole": null,
+          "rows": [
+            {
+              "layoutIndex": 27,
+              "bounds": [
+                218.9375,
+                219.390625,
+                4,
+                1
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            },
+            {
+              "layoutIndex": 28,
+              "bounds": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            }
+          ]
+        },
+        {
+          "nodeIndex": 105,
+          "backendNodeId": 1702,
+          "tag": "::after",
+          "parentNodeIndex": 104,
+          "parentObservedRole": {
+            "variant": "markers",
+            "role": "after-math"
+          },
+          "selectedOwnerRole": null,
+          "selectedDirectTextRole": null,
+          "rows": [
+            {
+              "layoutIndex": 66,
+              "bounds": [
+                570.9375,
+                219.390625,
+                4,
+                1
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            },
+            {
+              "layoutIndex": 67,
+              "bounds": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            }
+          ]
+        },
+        {
+          "nodeIndex": 108,
+          "backendNodeId": 1703,
+          "tag": "::after",
+          "parentNodeIndex": 107,
+          "parentObservedRole": {
+            "variant": "markers",
+            "role": "suffix-end"
+          },
+          "selectedOwnerRole": null,
+          "selectedDirectTextRole": null,
+          "rows": [
+            {
+              "layoutIndex": 70,
+              "bounds": [
+                166.859375,
+                417.546875,
+                4,
+                1
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            },
+            {
+              "layoutIndex": 71,
+              "bounds": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "textStringIndex": -1,
+              "text": null,
+              "textBoxIndices": []
+            }
+          ]
+        }
+      ],
+      "selectedObservedOwnerCounts": [
+        {
+          "nodeIndex": 120,
+          "role": "editor",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 121,
+          "role": "paragraph",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 123,
+          "role": "atom",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 124,
+          "role": "saved-render",
+          "layoutCount": 0
+        },
+        {
+          "nodeIndex": 125,
+          "role": "saved-katex",
+          "layoutCount": 0
+        },
+        {
+          "nodeIndex": 138,
+          "role": "saved-html",
+          "layoutCount": 0
+        },
+        {
+          "nodeIndex": 139,
+          "role": "saved-base",
+          "layoutCount": 0
+        },
+        {
+          "nodeIndex": 151,
+          "role": "form",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 152,
+          "role": "label",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 154,
+          "role": "textarea",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 155,
+          "role": "preview",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 156,
+          "role": "preview-output",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 157,
+          "role": "preview-katex",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 183,
+          "role": "actions",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 184,
+          "role": "save",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 186,
+          "role": "cancel",
+          "layoutCount": 1
+        }
+      ],
+      "selectedDirectTextCounts": [
+        {
+          "nodeIndex": 122,
+          "role": "direct-paragraph-text",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 153,
+          "role": "direct-label-text",
+          "layoutCount": 1
+        },
+        {
+          "nodeIndex": 188,
+          "role": "direct-paragraph-text",
+          "layoutCount": 1
+        }
+      ],
+      "selectedGeometryOrDirectTextDuplicateOwners": [],
+      "captureScope": {
+        "scope": "none",
+        "fullPage": false,
+        "pixelsProven": false,
+        "appRouteProof": false
+      }
+    }
+  ],
+  "conclusion": "The four duplicate owners are marker ::after paint pseudo-elements, not selected geometry/direct text owners. Selected fragmentation remains unsupported; remaining admission guards were not executed."
+}

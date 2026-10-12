@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 124">
+  <g fill="none" stroke="#000" stroke-linejoin="round">
+    <path d="M88 9l81 52-76 55L10 65z" stroke-width="4" stroke-dasharray="113 3 64 4"/>
+    <path d="M91 19l64 42-64 44-67-41z" stroke-width="1.5"/>
+    <path d="M44 39l91 48M43 88l94-49" stroke-width="1" stroke-dasharray="4 8" opacity=".55"/>
+  </g>
+  <text x="90" y="79" fill="#000" font-family="Georgia,serif" font-size="64" font-style="italic" font-weight="700" text-anchor="middle">C</text>
+  <text x="90" y="97" fill="#000" font-family="monospace" font-size="8" font-weight="700" letter-spacing="4" text-anchor="middle">PASS</text>
+</svg>

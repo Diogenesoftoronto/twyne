@@ -1,0 +1,14 @@
+{
+  "status": "current_source_revalidation",
+  "scope": "Source catalog validation and JavaScript tool definition only",
+  "source": "src/utils/account-knowledge.ts",
+  "sourceSha256": "bbf39e0d4f221fce3c5de0efede10f1f2e14c6dc0ee80e63e7ab9a8f6ed2b0c4",
+  "originalReview": "review.json",
+  "originalReviewSourceSha256": "a4d7c4b864f26f5c6eeded32cb4cef9b74b2abbcc1eb186e3e22819d7780c517",
+  "validation": "tools/connected/catalog.test.ts executes current Source AST bodies and compares catalog admission, bounds, metadata and tool definitions with the native helper adapter",
+  "notProven": [
+    "Live account authentication",
+    "Mounted knowledge UI",
+    "Live provider gateway"
+  ]
+}

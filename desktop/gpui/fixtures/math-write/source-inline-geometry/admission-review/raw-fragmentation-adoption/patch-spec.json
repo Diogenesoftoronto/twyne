@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "basePath": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/analyze.py",
+  "baseSha256": "cceaefd7383e1cfb76ec0a1f26b4fe09d4afa13a448bd05f7c451a7d0fe1ac2d",
+  "candidateSha256": "a480239c49cc2bd8515e13dc58793f239de2e35bae1dd4489b5047d338f853c9",
+  "changes": [
+    {
+      "old": "        self.by_node = {}\n        for i, node in enumerate(self.layout[\"nodeIndex\"]):\n            require(integer(node) and 0 <= node < count and node not in self.by_node,\n                    \"SNAPSHOT_LAYOUT_OWNER\", \"Duplicate/invalid layout owner; unsupported fragmentation.\")\n            self.by_node[node] = i\n",
+      "new": "        self.by_node = {}\n        self.fragmented_nodes = set()\n        for i, node in enumerate(self.layout[\"nodeIndex\"]):\n            require(integer(node) and 0 <= node < count,\n                    \"SNAPSHOT_LAYOUT_OWNER\", \"Invalid raw layout owner.\")\n            if node in self.fragmented_nodes:\n                continue\n            if node in self.by_node:\n                # Keep no chosen row for a fragmented owner, even identical rows.\n                self.fragmented_nodes.add(node)\n                del self.by_node[node]\n            else:\n                self.by_node[node] = i\n"
+    },
+    {
+      "old": "    def node_bounds(self, node):\n        index = self.index(node)\n        require(index in self.by_node, \"SNAPSHOT_LAYOUT_MISSING\", \"Observed node has no raw layout.\")\n",
+      "new": "    def node_bounds(self, node):\n        index = self.index(node)\n        require(index not in self.fragmented_nodes, \"SNAPSHOT_SELECTED_FRAGMENTATION\",\n                \"Selected node has multiple raw layout rows; none is chosen or merged.\")\n        require(index in self.by_node, \"SNAPSHOT_LAYOUT_MISSING\", \"Observed node has no raw layout.\")\n"
+    },
+    {
+      "old": "            if self.nodes[\"nodeType\"][index] != 3:\n                continue\n            require(index in self.by_node, \"MISSING_TEXT_LAYOUT\", \"Direct text node has no raw layout.\")\n",
+      "new": "            if self.nodes[\"nodeType\"][index] != 3:\n                continue\n            require(index not in self.fragmented_nodes, \"SNAPSHOT_SELECTED_FRAGMENTATION\",\n                    \"Selected direct text has multiple raw layout rows; none is chosen or merged.\")\n            require(index in self.by_node, \"MISSING_TEXT_LAYOUT\", \"Direct text node has no raw layout.\")\n"
+    }
+  ]
+}

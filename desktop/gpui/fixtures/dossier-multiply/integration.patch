@@ -1,0 +1,576 @@
+--- a/desktop/gpui/vendor/gpui-pre/src/scene.rs
++++ b/desktop/gpui/vendor/gpui-pre/src/scene.rs
+@@ -156,10 +156,34 @@
+         self.monochrome_sprites
+             .sort_by_key(|sprite| (sprite.order, sprite.tile.tile_id));
+         self.subpixel_sprites
+             .sort_by_key(|sprite| (sprite.order, sprite.tile.tile_id));
+-        self.polychrome_sprites
+-            .sort_by_key(|sprite| (sprite.order, sprite.tile.tile_id));
++        if self
++            .polychrome_sprites
++            .iter()
++            .all(|sprite| sprite.blend == PolychromeSpriteBlend::SourceOver)
++        {
++            // Preserve the exact ordinary-image fast path and tile sorting.
++            self.polychrome_sprites
++                .sort_by_key(|sprite| (sprite.order, sprite.tile.tile_id));
++        } else {
++            self.polychrome_sprites.sort_by_key(|sprite| sprite.order);
++            for group in self
++                .polychrome_sprites
++                .chunk_by_mut(|a, b| a.order == b.order)
++            {
++                if group
++                    .iter()
++                    .all(|sprite| sprite.blend == PolychromeSpriteBlend::SourceOver)
++                {
++                    // Ordinary-only orders retain exactly their previous order.
++                    group.sort_by_key(|sprite| sprite.tile.tile_id);
++                }
++                // A mixed-blend order keeps insertion order: source-over and
++                // destination multiply do not commute. Public multiply paint
++                // additionally creates a separate later layer/order barrier.
++            }
++        }
+         self.surfaces.sort_by_key(|surface| surface.order);
+     }
+ 
+     #[cfg_attr(
+@@ -426,17 +450,20 @@
+                     range: sprites_start..sprites_end,
+                 })
+             }
+             PrimitiveKind::PolychromeSprite => {
+-                let texture_id = self.polychrome_sprites_iter.peek().unwrap().tile.texture_id;
++                let first = self.polychrome_sprites_iter.peek().unwrap();
++                let texture_id = first.tile.texture_id;
++                let blend = first.blend;
+                 let sprites_start = self.polychrome_sprites_start;
+                 let mut sprites_end = sprites_start + 1;
+                 self.polychrome_sprites_iter.next();
+                 while self
+                     .polychrome_sprites_iter
+                     .next_if(|sprite| {
+                         (sprite.order, batch_kind) < max_order_and_kind
+                             && sprite.tile.texture_id == texture_id
++                            && sprite.blend == blend
+                     })
+                     .is_some()
+                 {
+                     sprites_end += 1;
+@@ -742,14 +769,27 @@
+         Primitive::SubpixelSprite(sprite)
+     }
+ }
+ 
++/// Pinned polychrome sprite blend mode. The u32 occupies the former padding
++/// word, preserving the 96-byte shader/Metal/WebGL transport layout.
++#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
++#[repr(u32)]
++pub enum PolychromeSpriteBlend {
++    /// Ordinary straight-alpha image rendering on every existing backend.
++    #[default]
++    SourceOver = 0,
++    /// Premultiplied group, supported only by the patched Linux/FreeBSD WGPU
++    /// image API. Requires an opaque backdrop and non-sRGB UNORM formats.
++    DestinationMultiply = 1,
++}
++
+ #[derive(Copy, Clone, Debug)]
+ #[repr(C)]
+ #[expect(missing_docs)]
+ pub struct PolychromeSprite {
+     pub order: DrawOrder,
+-    pub pad: u32,
++    pub blend: PolychromeSpriteBlend,
+     pub grayscale: PaddedBool32,
+     pub opacity: f32,
+     pub bounds: Bounds<ScaledPixels>,
+     pub content_mask: ContentMask<ScaledPixels>,
+@@ -946,4 +986,118 @@
+             content_mask: self.content_mask.scale(factor),
+         }
+     }
+ }
++
++#[cfg(test)]
++mod destination_multiply_tests {
++    use super::*;
++    use crate::{AtlasTextureKind, DevicePixels, TileId, size};
++
++    fn bounds() -> Bounds<ScaledPixels> {
++        Bounds::new(
++            point(ScaledPixels(0.), ScaledPixels(0.)),
++            size(ScaledPixels(64.), ScaledPixels(64.)),
++        )
++    }
++
++    fn sprite(tile_id: u32, blend: PolychromeSpriteBlend) -> PolychromeSprite {
++        PolychromeSprite {
++            order: 0,
++            blend,
++            grayscale: false.into(),
++            opacity: 0.7,
++            bounds: bounds(),
++            content_mask: ContentMask { bounds: bounds() },
++            corner_radii: Default::default(),
++            tile: AtlasTile {
++                texture_id: AtlasTextureId {
++                    index: 0,
++                    kind: AtlasTextureKind::Polychrome,
++                },
++                tile_id: TileId(tile_id),
++                padding: 0,
++                bounds: Bounds::new(
++                    point(DevicePixels(0), DevicePixels(0)),
++                    size(DevicePixels(64), DevicePixels(64)),
++                ),
++            },
++        }
++    }
++
++    #[test]
++    fn opaque_backdrop_and_normal_image_precede_separate_multiply_layer() {
++        let mut scene = Scene::default();
++        scene.push_layer(bounds());
++        scene.insert_primitive(Quad {
++            bounds: bounds(),
++            content_mask: ContentMask { bounds: bounds() },
++            ..Quad::default()
++        });
++        scene.insert_primitive(sprite(9, PolychromeSpriteBlend::SourceOver));
++        // The new Window paint API nests a fresh layer for the LAST overlay.
++        scene.push_layer(bounds());
++        scene.insert_primitive(sprite(1, PolychromeSpriteBlend::DestinationMultiply));
++        scene.pop_layer();
++        scene.pop_layer();
++        scene.finish();
++        let overlay = &scene.polychrome_sprites[1];
++        assert!(scene.quads[0].order < overlay.order);
++        assert!(scene.polychrome_sprites[0].order < overlay.order);
++        let batches: Vec<_> = scene.batches().collect();
++        assert_eq!(batches.len(), 3);
++        assert!(
++            matches!(&batches[2], PrimitiveBatch::PolychromeSprites { range, .. } if range == &(1..2))
++        );
++    }
++
++    #[test]
++    fn sprite_texture_sort_cannot_cross_a_blend_transition() {
++        let mut scene = Scene::default();
++        scene.push_layer(bounds());
++        for (id, blend) in [
++            (9, PolychromeSpriteBlend::SourceOver),
++            (2, PolychromeSpriteBlend::DestinationMultiply),
++            (1, PolychromeSpriteBlend::SourceOver),
++        ] {
++            scene.insert_primitive(sprite(id, blend));
++        }
++        scene.pop_layer();
++        scene.finish();
++        assert_eq!(
++            scene
++                .polychrome_sprites
++                .iter()
++                .map(|s| s.tile.tile_id.0)
++                .collect::<Vec<_>>(),
++            [9, 2, 1]
++        );
++        assert_eq!(scene.batches().count(), 3);
++        assert_eq!(std::mem::size_of::<PolychromeSprite>(), 96);
++        assert_eq!(std::mem::size_of::<PolychromeSpriteBlend>(), 4);
++    }
++
++    #[test]
++    fn ordinary_only_draw_orders_keep_the_pinned_tile_sort_even_with_an_overlay() {
++        for add_overlay in [false, true] {
++            let mut scene = Scene::default();
++            scene.push_layer(bounds());
++            for id in [9, 2, 1] {
++                scene.insert_primitive(sprite(id, PolychromeSpriteBlend::SourceOver));
++            }
++            if add_overlay {
++                scene.push_layer(bounds());
++                scene.insert_primitive(sprite(0, PolychromeSpriteBlend::DestinationMultiply));
++                scene.pop_layer();
++            }
++            scene.pop_layer();
++            scene.finish();
++            assert_eq!(
++                scene.polychrome_sprites[..3]
++                    .iter()
++                    .map(|s| s.tile.tile_id.0)
++                    .collect::<Vec<_>>(),
++                [1, 2, 9]
++            );
++        }
++    }
++}
+--- a/desktop/gpui/vendor/gpui-pre/src/window.rs
++++ b/desktop/gpui/vendor/gpui-pre/src/window.rs
+@@ -13,10 +13,10 @@
+     Hsla, InputHandler, IsZero, KeyBinding, KeyContext, KeyDownEvent, KeyEvent, Keystroke,
+     KeystrokeEvent, LayoutId, LineLayoutIndex, Modifiers, ModifiersChangedEvent, MonochromeSprite,
+     MouseButton, MouseEvent, MouseMoveEvent, MouseUpEvent, Path, Pixels, PlatformAtlas,
+     PlatformDisplay, PlatformInput, PlatformInputHandler, PlatformWindow, Point, PolychromeSprite,
+-    Priority, PromptButton, PromptLevel, Quad, Render, RenderGlyphParams, RenderImage,
+-    RenderImageParams, RenderSvgParams, Replay, ResizeEdge, SMOOTH_SVG_SCALE_FACTOR,
++    PolychromeSpriteBlend, Priority, PromptButton, PromptLevel, Quad, Render, RenderGlyphParams,
++    RenderImage, RenderImageParams, RenderSvgParams, Replay, ResizeEdge, SMOOTH_SVG_SCALE_FACTOR,
+     SUBPIXEL_VARIANTS_X, SUBPIXEL_VARIANTS_Y, ScaledPixels, Scene, Shadow, SharedString, Size,
+     StrikethroughStyle, Style, SubpixelSprite, SubscriberSet, Subscription, SystemWindowTab,
+     SystemWindowTabController, TabStopMap, TaffyLayoutEngine, Task, TextInputConfiguration,
+     TextInputStateChange, TextRenderingMode, TextStyle, TextStyleRefinement, ThermalState,
+@@ -4782,9 +4782,9 @@
+             let opacity = self.element_opacity();
+ 
+             self.next_frame.scene.insert_primitive(PolychromeSprite {
+                 order: 0,
+-                pad: 0,
++                blend: PolychromeSpriteBlend::SourceOver,
+                 grayscale: false.into(),
+                 bounds,
+                 corner_radii: Default::default(),
+                 content_mask,
+@@ -4954,15 +4954,109 @@
+         let opacity = self.element_opacity();
+ 
+         self.next_frame.scene.insert_primitive(PolychromeSprite {
+             order: 0,
+-            pad: 0,
++            blend: PolychromeSpriteBlend::SourceOver,
+             grayscale: grayscale.into(),
+             bounds: visible_bounds_snapped,
+             content_mask,
+             corner_radii,
+             tile: sub_tile,
+             opacity,
++        });
++        Ok(())
++    }
++
++    /// Paint ONE already-composited premultiplied BGRA group using destination
++    /// multiplication. The caller must have painted an opaque backdrop across
++    /// the whole bounds first, and must paint this AFTER all live descendants.
++    /// This is not general CSS blend-mode support for transparent backdrops.
++    ///
++    /// Supported only by the patched Linux/FreeBSD WGPU renderer, on non-sRGB
++    /// BGRA8/RGBA8 UNORM target/atlas formats. Rasterization happens beforehand.
++    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
++    pub fn paint_multiply_image(
++        &mut self,
++        bounds: Bounds<Pixels>,
++        data: Arc<RenderImage>,
++        group_opacity: f32,
++    ) -> Result<()> {
++        self.invalidator.debug_assert_paint();
++        anyhow::ensure!(
++            group_opacity.is_finite() && (0. ..=1.).contains(&group_opacity),
++            "multiply group opacity must be finite in 0..=1"
++        );
++        if group_opacity == 0. || bounds.is_empty() {
++            return Ok(());
++        }
++        anyhow::ensure!(
++            self.platform_window.background_appearance() == WindowBackgroundAppearance::Opaque,
++            "destination-multiply refuses transparent windows"
++        );
++        anyhow::ensure!(
++            self.element_opacity() == 1.,
++            "destination-multiply requires an unfaded opaque ancestor (no group-isolation API)"
++        );
++        anyhow::ensure!(
++            data.frame_count() == 1,
++            "multiply expects one prepared group frame"
++        );
++        let scale = self.scale_factor();
++        anyhow::ensure!(
++            [
++                bounds.left().0,
++                bounds.top().0,
++                bounds.right().0,
++                bounds.bottom().0
++            ]
++            .into_iter()
++            .all(|edge| edge.is_finite() && (edge * scale).fract() == 0.),
++            "multiply bounds must align exactly to the device grid"
++        );
++        let device_bounds = self.snap_bounds(bounds);
++        let image_size = data.size(0);
++        anyhow::ensure!(
++            device_bounds.size.width.0 == image_size.width.0 as f32
++                && device_bounds.size.height.0 == image_size.height.0 as f32,
++            "multiply requires a freshly prepared 1:1 device-pixel image"
++        );
++        let mask = self.content_mask().bounds;
++        anyhow::ensure!(
++            [mask.left().0, mask.top().0, mask.right().0, mask.bottom().0]
++                .into_iter()
++                .all(|edge| edge.is_finite() && (edge * scale).fract() == 0.),
++            "multiply content mask must align exactly to the device grid"
++        );
++        let content_mask = self.snapped_content_mask();
++        if device_bounds.intersect(&content_mask.bounds).is_empty() {
++            return Ok(());
++        }
++        let tile = self
++            .sprite_atlas
++            .get_or_insert_with(
++                RenderImageParams {
++                    image_id: data.id,
++                    frame_index: 0,
++                }
++                .into(),
++                &mut || Ok(Some((image_size, Cow::Borrowed(data.as_bytes(0).unwrap())))),
++            )?
++            .expect("prepared multiply group provides its pixels");
++
++        // A separate overlapping layer assigns a higher DrawOrder even inside
++        // a parent's shared layer. Merely appending an image is insufficient:
++        // core normally sorts equal-order primitives by kind/texture tile ID.
++        self.paint_layer(bounds, |window| {
++            window.next_frame.scene.insert_primitive(PolychromeSprite {
++                order: 0,
++                blend: PolychromeSpriteBlend::DestinationMultiply,
++                grayscale: false.into(),
++                opacity: group_opacity,
++                bounds: device_bounds,
++                content_mask,
++                corner_radii: Default::default(),
++                tile,
++            });
+         });
+         Ok(())
+     }
+ 
+--- a/desktop/gpui/vendor/gpui-pre/src/svg_renderer.rs
++++ b/desktop/gpui/vendor/gpui-pre/src/svg_renderer.rs
+@@ -217,8 +217,30 @@
+         image.scale_factor = image_scale_factor;
+         Ok(Arc::new(image))
+     }
+ 
++    /// Rasterize exact-size SVG group pixels as premultiplied BGRA.
++    ///
++    /// Only for the explicit destination-multiply image API: ordinary
++    /// `paint_image`/`img` expects straight-alpha BGRA. Retaining raw resvg
++    /// premultiplication avoids a lossy unpremultiply/premultiply round-trip.
++    /// Preparation happens outside paint, input and per-frame render.
++    pub fn render_parsed_premultiplied(
++        &self,
++        svg: &ParsedSvg,
++        size: Size<DevicePixels>,
++    ) -> Result<Arc<RenderImage>, usvg::Error> {
++        let pixmap = rasterize_tree(&svg.0, SvgSize::ExactSize(size))?;
++        let mut buffer =
++            image::ImageBuffer::from_raw(pixmap.width(), pixmap.height(), pixmap.take()).unwrap();
++        for pixel in buffer.chunks_exact_mut(4) {
++            pixel.swap(0, 2); // RGBA premultiplied -> BGRA premultiplied, no demultiply.
++        }
++        Ok(Arc::new(RenderImage::new(SmallVec::from_const([
++            Frame::new(buffer),
++        ]))))
++    }
++
+     /// Renders the given bytes into an image buffer.
+     pub fn render_single_frame(
+         &self,
+         bytes: &[u8],
+--- a/desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs
++++ b/desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs
+@@ -2,10 +2,10 @@
+ use anyhow::{Context as _, Result};
+ use bytemuck::{Pod, Zeroable};
+ use collections::FxHashMap;
+ use gpui::{
+-    AtlasTextureId, Background, Bounds, DevicePixels, GpuSpecs, Path, Point, PrimitiveBatch,
+-    ScaledPixels, Scene, Size, get_gamma_correction_ratios,
++    AtlasTextureId, Background, Bounds, DevicePixels, GpuSpecs, Path, Point, PolychromeSpriteBlend,
++    PrimitiveBatch, ScaledPixels, Scene, Size, get_gamma_correction_ratios,
+ };
+ use log::warn;
+ #[cfg(not(target_family = "wasm"))]
+ use raw_window_handle::{HasDisplayHandle, HasWindowHandle};
+@@ -131,8 +131,9 @@
+     underlines: wgpu::RenderPipeline,
+     mono_sprites: wgpu::RenderPipeline,
+     subpixel_sprites: Option<wgpu::RenderPipeline>,
+     poly_sprites: wgpu::RenderPipeline,
++    poly_multiply: Option<wgpu::RenderPipeline>,
+     #[allow(dead_code)]
+     surfaces: wgpu::RenderPipeline,
+ }
+ 
+@@ -223,8 +224,9 @@
+     is_bgr: bool,
+     dual_source_blending: bool,
+     adapter_info: wgpu::AdapterInfo,
+     target_format: wgpu::TextureFormat,
++    destination_multiply_supported: bool,
+     max_texture_size: u32,
+ }
+ 
+ /// GPU resources of a windowed renderer. A surface is only ever configured against the
+@@ -916,8 +918,44 @@
+             1,
+             &shader_module,
+         );
+ 
++        // No dual-source blending, extra attachment, framebuffer copy or
++        // destination sample is required. The fragment outputs the RGB factor.
++        let poly_multiply = matches!(
++            surface_format,
++            wgpu::TextureFormat::Bgra8Unorm | wgpu::TextureFormat::Rgba8Unorm
++        )
++        .then(|| {
++            create_pipeline(
++                "poly_multiply",
++                "vs_poly_sprite",
++                "fs_poly_multiply",
++                &layouts.globals,
++                &layouts.instances,
++                Some(&layouts.texture),
++                wgpu::PrimitiveTopology::TriangleStrip,
++                &[Some(wgpu::ColorTargetState {
++                    format: surface_format,
++                    blend: Some(wgpu::BlendState {
++                        color: wgpu::BlendComponent {
++                            src_factor: wgpu::BlendFactor::Zero,
++                            dst_factor: wgpu::BlendFactor::Src,
++                            operation: wgpu::BlendOperation::Add,
++                        },
++                        alpha: wgpu::BlendComponent {
++                            src_factor: wgpu::BlendFactor::Zero,
++                            dst_factor: wgpu::BlendFactor::One,
++                            operation: wgpu::BlendOperation::Add,
++                        },
++                    }),
++                    write_mask: wgpu::ColorWrites::ALL,
++                })],
++                1,
++                &shader_module,
++            )
++        });
++
+         let surfaces = create_pipeline(
+             "surfaces",
+             "vs_surface",
+             "fs_surface",
+@@ -938,8 +976,9 @@
+             underlines,
+             mono_sprites,
+             subpixel_sprites,
+             poly_sprites,
++            poly_multiply,
+             surfaces,
+         }
+     }
+ 
+@@ -1365,8 +1404,15 @@
+             is_bgr: false,
+             dual_source_blending,
+             adapter_info: context.adapter.get_info(),
+             target_format,
++            destination_multiply_supported: matches!(
++                target_format,
++                wgpu::TextureFormat::Bgra8Unorm | wgpu::TextureFormat::Rgba8Unorm
++            ) && matches!(
++                context.color_texture_format(),
++                wgpu::TextureFormat::Bgra8Unorm | wgpu::TextureFormat::Rgba8Unorm
++            ),
+             max_texture_size,
+         }
+     }
+ 
+@@ -1480,8 +1526,18 @@
+         scene: &Scene,
+         frame_view: &wgpu::TextureView,
+         clear_color: wgpu::Color,
+     ) -> Result<wgpu::SubmissionIndex> {
++        // Fail before encoding: byte-channel CSS multiplication must not be
++        // silently promoted to linear/sRGB or a different atlas representation.
++        anyhow::ensure!(
++            self.destination_multiply_supported
++                || !scene
++                    .polychrome_sprites
++                    .iter()
++                    .any(|sprite| { sprite.blend == PolychromeSpriteBlend::DestinationMultiply }),
++            "destination-multiply requires non-sRGB BGRA8/RGBA8 UNORM target and atlas"
++        );
+         let mut instance_offset = 0;
+         let instance_bindings = self
+             .write_instances(scene, &mut instance_offset)
+             .with_context(|| {
+@@ -1600,12 +1656,24 @@
+                             &mut pass,
+                         )?;
+                     }
+                     PrimitiveBatch::PolychromeSprites { texture_id, range } => {
++                        // Core batch iterator splits at every blend-mode change.
++                        let pipeline = match scene.polychrome_sprites[range.start].blend {
++                            PolychromeSpriteBlend::SourceOver => {
++                                &self.resources().pipelines.poly_sprites
++                            }
++                            PolychromeSpriteBlend::DestinationMultiply => self
++                                .resources()
++                                .pipelines
++                                .poly_multiply
++                                .as_ref()
++                                .context("destination-multiply pipeline unavailable")?,
++                        };
+                         self.draw_sprites(
+                             &instance_bindings.polychrome_sprites,
+                             texture_id,
+-                            &self.resources().pipelines.poly_sprites,
++                            pipeline,
+                             instance_range(range),
+                             &mut pass,
+                         )?;
+                     }
+--- a/desktop/gpui/vendor/gpui-pre-wgpu/src/shaders.wgsl
++++ b/desktop/gpui/vendor/gpui-pre-wgpu/src/shaders.wgsl
+@@ -1260,9 +1260,9 @@
+ // --- polychrome sprites --- //
+ 
+ struct PolychromeSprite {
+     order: u32,
+-    pad: u32,
++    blend_mode: u32,
+     grayscale: u32,
+     opacity: f32,
+     bounds: Bounds,
+     content_mask: Bounds,
+@@ -1309,8 +1309,32 @@
+     }
+     return blend_color(color, sprite.opacity * saturate(0.5 - distance));
+ }
+ 
++// Premultiplied source group -> effective destination factor. Opacity applies
++// ONCE to the group, not independently to its five overlapping backgrounds.
++@fragment
++fn fs_poly_multiply(input: PolySpriteVarying) -> @location(0) vec4<f32> {
++    let sprite = load_poly_sprite(input.sprite_id);
++    let atlas_size = vec2<f32>(textureDimensions(t_sprite, 0));
++    // Atlas tiles have no padding. Clamp to this tile's pixel centers so the
++    // linear sampler cannot pick a neighbouring normal-image texel.
++    let first_center = (vec2<f32>(sprite.tile.bounds.origin) + vec2<f32>(0.5)) / atlas_size;
++    let last_center = (vec2<f32>(sprite.tile.bounds.origin + sprite.tile.bounds.size) - vec2<f32>(0.5)) / atlas_size;
++    let sample = textureSample(t_sprite, s_sprite, clamp(input.tile_position, first_center, last_center));
++    // Sample before non-uniform clipping so implicit derivatives are valid.
++    // Returning zero would erase the destination under multiply; identity is 1.
++    if (any(input.clip_distances < vec4<f32>(0.0))) {
++        return vec4<f32>(1.0);
++    }
++    let distance = quad_sdf(input.position.xy, sprite.bounds, sprite.corner_radii);
++    let opacity = sprite.opacity * saturate(0.5 - distance);
++    let factor = vec3<f32>(1.0 - sample.a * opacity) + sample.rgb * opacity;
++    // Do NOT call blend_color: it would premultiply the FACTOR in transparent
++    // surface mode. Pipeline color = 0*src + factor*dst, alpha = 0*src + 1*dst.
++    return vec4<f32>(factor, 1.0);
++}
++
+ // --- surfaces --- //
+ 
+ struct SurfaceParams {
+     bounds: Bounds,

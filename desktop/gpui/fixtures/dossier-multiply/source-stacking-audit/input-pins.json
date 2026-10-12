@@ -1,0 +1,716 @@
+{
+  "schemaVersion": 1,
+  "status": "EXACT_READ_ONLY_INPUTS_AT_AUDIT_FREEZE",
+  "pathBases": {
+    "repository": "/home/diogenes/Projects/twyne",
+    "cached-registry": "/home/diogenes/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f"
+  },
+  "hashAlgorithm": "SHA-256 of original bytes; excerpt ranges inclusive, original line endings retained",
+  "dependencyVersions": {
+    "gpui-kit": "0.7.0",
+    "gpui-component": "0.7.0"
+  },
+  "files": [
+    {
+      "id": "folio-component",
+      "path": "src/components/onboarding/dossier-folio.tsx",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 4071,
+      "sha256": "77c1fb9bce10345add264b57c4389c9b7a90d629ddd652b0ef8ef0a0cbb8a281"
+    },
+    {
+      "id": "form-component",
+      "path": "src/components/onboarding/anti-tabula-rasa.tsx",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 45455,
+      "sha256": "bd8162f3e0ca95ebdb8e4b817f3b1cc92099e7a1c0f489d9215d7ae9d4a4706c"
+    },
+    {
+      "id": "conversation-component",
+      "path": "src/components/onboarding/conversational-interview.tsx",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 42089,
+      "sha256": "c26260023189e056008a1720cf7a1f6cc2e226863617dc58cbe8c43336aa2c84"
+    },
+    {
+      "id": "global-css",
+      "path": "src/global.css",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 205797,
+      "sha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2"
+    },
+    {
+      "id": "filing-helper",
+      "path": "src/utils/dossier-filing.ts",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 360,
+      "sha256": "a25831fa21e01686092fc94407d88ba2a87fa23b17a5990fb98c6a0c746e4d85"
+    },
+    {
+      "id": "create-route",
+      "path": "src/routes/dossier/create/index.tsx",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 11914,
+      "sha256": "a87f81b992f801155c5f26cbd70f0abcd8639c48548daf5ad71be81d8c908b49"
+    },
+    {
+      "id": "refine-route",
+      "path": "src/routes/dossier/refine/index.tsx",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 15479,
+      "sha256": "e59dcdc071c2204855455caf7ba5348be06a46582fcbfe71d52a552ac053dae3"
+    },
+    {
+      "id": "native-dossier-view",
+      "path": "desktop/gpui/src/dossier_view.rs",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 136488,
+      "sha256": "14c5344ee763518382ac811f91cbb41008ffe024a4fef36b0604c866e58689b3"
+    },
+    {
+      "id": "native-multiply",
+      "path": "desktop/gpui/src/dossier_multiply.rs",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 15348,
+      "sha256": "081783e97d06c44212b7d8a557754f064167a3f8b58ac64327a3206f9a2c3dc0"
+    },
+    {
+      "id": "native-app",
+      "path": "desktop/gpui/src/app.rs",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 300481,
+      "sha256": "dcab68091c979aa0a8770b3449ec2e95c6d43819936f6446bde7e6206c71849f"
+    },
+    {
+      "id": "native-main",
+      "path": "desktop/gpui/src/main.rs",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 22313,
+      "sha256": "37f247da470fd19cdbd2450c9165f2239269b2be667320672a63d0b146a2c0e0"
+    },
+    {
+      "id": "native-manifest",
+      "path": "desktop/gpui/Cargo.toml",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 2965,
+      "sha256": "72400ce488eb644e1aeca961548cbfe3fa068fda2be5ba020dc249205d1318b8"
+    },
+    {
+      "id": "native-lock",
+      "path": "desktop/gpui/Cargo.lock",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 255948,
+      "sha256": "44f147eca43dddc0f20802a4f0cf05eb36596cf3e6cf86c00ddc15d12c617c83"
+    },
+    {
+      "id": "base-root",
+      "path": "desktop/gpui/vendor/gpui-base/src/root.rs",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 13199,
+      "sha256": "e738745e5a72cb4016fcf5aa2f240b33156140a966d2905c9b7f70ad1bb7987f"
+    },
+    {
+      "id": "base-popup",
+      "path": "desktop/gpui/vendor/gpui-base/src/popup.rs",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 11385,
+      "sha256": "501034532166540e4a6abdf4a84667baf1141935385a048ebc960e8e9c215491"
+    },
+    {
+      "id": "base-tooltip",
+      "path": "desktop/gpui/vendor/gpui-base/src/tooltip.rs",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 10790,
+      "sha256": "51e71128411d9bf134df2b4e865e30b45260c6bd27b31a2af863ec874632fb74"
+    },
+    {
+      "id": "base-dialog",
+      "path": "desktop/gpui/vendor/gpui-base/src/dialog.rs",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 30815,
+      "sha256": "f56cc07dda43678903e2907b8c8c6028ae5fa80f0a637b8f065054a4c55b391d"
+    },
+    {
+      "id": "core-window",
+      "path": "desktop/gpui/vendor/gpui-pre/src/window.rs",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 371721,
+      "sha256": "c92daa1dd3a3bdcb477bed4d9368f7c47851453c6a387d31aa793860abefbc9b"
+    },
+    {
+      "id": "prior-native-probe",
+      "path": "desktop/gpui/fixtures/dossier-multiply/parent-native-pixel-gates.json",
+      "pathBase": "repository",
+      "origin": "current workspace; not modified by this audit",
+      "bytes": 243466,
+      "sha256": "a518e3629b27deba7ea26214066481294eb3d1b1ce8ad0398b6ed42ac0a528b2"
+    },
+    {
+      "id": "kit-lib",
+      "path": "gpui-kit-0.7.0/src/lib.rs",
+      "pathBase": "cached-registry",
+      "origin": "read-only local registry package",
+      "bytes": 6258,
+      "sha256": "b862a2f60ae2263647e4caea12dd6e38f50c735a83de5aebb42b0c7010fc568b"
+    },
+    {
+      "id": "kit-manifest",
+      "path": "gpui-kit-0.7.0/Cargo.toml",
+      "pathBase": "cached-registry",
+      "origin": "read-only local registry package",
+      "bytes": 8120,
+      "sha256": "b5c0fb89f1b2532169f943dd44d8c9c0f73f4a6b5435473d725089506ad772d7"
+    },
+    {
+      "id": "component-lib",
+      "path": "gpui-component-0.7.0/src/lib.rs",
+      "pathBase": "cached-registry",
+      "origin": "read-only local registry package",
+      "bytes": 3826,
+      "sha256": "0720e428baef517553e1ef6a87c55d64d6f8e217e2d5bcafdc2ab6e5806a72b6"
+    },
+    {
+      "id": "component-root",
+      "path": "gpui-component-0.7.0/src/root.rs",
+      "pathBase": "cached-registry",
+      "origin": "read-only local registry package",
+      "bytes": 17306,
+      "sha256": "aa736da3ec8a2b813a6a504831d0d5df2101f22cd7ce4ec12751cc16e1c09ed2"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "source-tree",
+      "fileId": "folio-component",
+      "excerpts": [
+        {
+          "firstLine": 47,
+          "lastLine": 94,
+          "bytes": 1882,
+          "sha256": "be5efa757a5a75ec74a445b97d5bf34e590790f0e10e9988c1a4184f12d7eb91"
+        }
+      ]
+    },
+    {
+      "id": "source-paper",
+      "fileId": "global-css",
+      "excerpts": [
+        {
+          "firstLine": 3525,
+          "lastLine": 3575,
+          "bytes": 1356,
+          "sha256": "87212b07026e139b98eee9d13f9b3e363b6ace39383e63775c3af2bbfc4417a1"
+        },
+        {
+          "firstLine": 699,
+          "lastLine": 706,
+          "bytes": 311,
+          "sha256": "4533edb6021e9d7d25f4eb799e58ddf33e469b1ffbf1f0b732874f7622c8420d"
+        }
+      ]
+    },
+    {
+      "id": "source-foxing",
+      "fileId": "global-css",
+      "excerpts": [
+        {
+          "firstLine": 3576,
+          "lastLine": 3609,
+          "bytes": 895,
+          "sha256": "43538cf7cf54783547f0b07e1520bc64e04975d93ceb09864024998795f54d8c"
+        }
+      ]
+    },
+    {
+      "id": "source-view-transition",
+      "fileId": "global-css",
+      "excerpts": [
+        {
+          "firstLine": 90,
+          "lastLine": 119,
+          "bytes": 592,
+          "sha256": "cac272b6edc5f2bb6497f4baf4257189d90784d059e5f4a06ebad9b5da580cec"
+        }
+      ]
+    },
+    {
+      "id": "source-leaf-animation",
+      "fileId": "global-css",
+      "excerpts": [
+        {
+          "firstLine": 5851,
+          "lastLine": 5864,
+          "bytes": 232,
+          "sha256": "828986d9d12c5bc8f6f0b0a615ce45d64bd2ea01de8487f159d50f0290b55537"
+        }
+      ]
+    },
+    {
+      "id": "source-frame-animation",
+      "fileId": "global-css",
+      "excerpts": [
+        {
+          "firstLine": 5866,
+          "lastLine": 5888,
+          "bytes": 660,
+          "sha256": "1af9a82c1235e2d9f213986c1fe29783dca77b96e50d2fe4442b418deb56bbc1"
+        }
+      ]
+    },
+    {
+      "id": "source-confirmation",
+      "fileId": "global-css",
+      "excerpts": [
+        {
+          "firstLine": 5890,
+          "lastLine": 5917,
+          "bytes": 831,
+          "sha256": "a29f4c9533b2804e832f45d56ea27ada28f7559234d2d6c0d862aac5d5addb4c"
+        }
+      ]
+    },
+    {
+      "id": "source-settle-keyframes",
+      "fileId": "global-css",
+      "excerpts": [
+        {
+          "firstLine": 5943,
+          "lastLine": 5972,
+          "bytes": 490,
+          "sha256": "51b8d8e38ce69799f40ab721b88f8012e11c83fbcc24393aae577ae02de66d76"
+        }
+      ]
+    },
+    {
+      "id": "source-reduced-motion",
+      "fileId": "global-css",
+      "excerpts": [
+        {
+          "firstLine": 6079,
+          "lastLine": 6090,
+          "bytes": 300,
+          "sha256": "b5850be9a639309dd3f9c505b0ccc734c50e7fdaff022bd6bdda09d7a151a27a"
+        }
+      ]
+    },
+    {
+      "id": "source-form-overlays",
+      "fileId": "form-component",
+      "excerpts": [
+        {
+          "firstLine": 693,
+          "lastLine": 749,
+          "bytes": 2031,
+          "sha256": "b9e8e6579f6757308241f9048d6ca84f95168f880ca9de7235a684cf0f02b652"
+        }
+      ]
+    },
+    {
+      "id": "source-error-slip",
+      "fileId": "global-css",
+      "excerpts": [
+        {
+          "firstLine": 2430,
+          "lastLine": 2440,
+          "bytes": 297,
+          "sha256": "012cea0576287f67bd383a262e44f9fba4a767fa475cc62d8b01e6bacbe7e8de"
+        }
+      ]
+    },
+    {
+      "id": "source-conversation-call",
+      "fileId": "conversation-component",
+      "excerpts": [
+        {
+          "firstLine": 592,
+          "lastLine": 613,
+          "bytes": 725,
+          "sha256": "ceef775b6ab5827605048f41fad38aa230fcbc4efda9b2553eac93bbd16b2d6e"
+        }
+      ]
+    },
+    {
+      "id": "source-filing-dwell",
+      "fileId": "filing-helper",
+      "excerpts": [
+        {
+          "firstLine": 1,
+          "lastLine": 10,
+          "bytes": 360,
+          "sha256": "a25831fa21e01686092fc94407d88ba2a87fa23b17a5990fb98c6a0c746e4d85"
+        }
+      ]
+    },
+    {
+      "id": "source-create-dwell",
+      "fileId": "create-route",
+      "excerpts": [
+        {
+          "firstLine": 212,
+          "lastLine": 217,
+          "bytes": 227,
+          "sha256": "f54793659153eb00c4068f6a60cbf9d0b01b69c94bb0ccfadd8ca1d0050e5bcc"
+        }
+      ]
+    },
+    {
+      "id": "source-refine-dwell",
+      "fileId": "refine-route",
+      "excerpts": [
+        {
+          "firstLine": 125,
+          "lastLine": 142,
+          "bytes": 611,
+          "sha256": "40b3b4d9e1a76aca46f952c9d0182ee7ee11fe2b850efe0d0d9db47284a19cac"
+        },
+        {
+          "firstLine": 158,
+          "lastLine": 175,
+          "bytes": 611,
+          "sha256": "40b3b4d9e1a76aca46f952c9d0182ee7ee11fe2b850efe0d0d9db47284a19cac"
+        }
+      ]
+    },
+    {
+      "id": "native-foxing",
+      "fileId": "native-dossier-view",
+      "excerpts": [
+        {
+          "firstLine": 544,
+          "lastLine": 604,
+          "bytes": 2897,
+          "sha256": "6efaf2411afff2bbba412426361b6a88284cd6d72bbb0c7bf8916b16835eccf4"
+        }
+      ]
+    },
+    {
+      "id": "native-filed-status",
+      "fileId": "native-dossier-view",
+      "excerpts": [
+        {
+          "firstLine": 2629,
+          "lastLine": 2640,
+          "bytes": 455,
+          "sha256": "ab6d2ef57aaf42e56d62c73404435cbced0d8203e8f3ad5a531086129381b384"
+        }
+      ]
+    },
+    {
+      "id": "native-dossier-root",
+      "fileId": "native-dossier-view",
+      "excerpts": [
+        {
+          "firstLine": 2673,
+          "lastLine": 2713,
+          "bytes": 1620,
+          "sha256": "cb5628db986032f2e2174417d123ed32834c5a3d4de4f8211cd292fc87247f0f"
+        }
+      ]
+    },
+    {
+      "id": "native-multiply-admission",
+      "fileId": "native-multiply",
+      "excerpts": [
+        {
+          "firstLine": 209,
+          "lastLine": 253,
+          "bytes": 1841,
+          "sha256": "801c6aefb81b433fba0ed8b0d98823e1d9e86e5b6c0552235c75e6d062f63bad"
+        }
+      ]
+    },
+    {
+      "id": "native-filing-completion",
+      "fileId": "native-app",
+      "excerpts": [
+        {
+          "firstLine": 2093,
+          "lastLine": 2108,
+          "bytes": 677,
+          "sha256": "8b21e0f8dfce5a1991dd548e4766c779fe998cdbfb5b60efb095a995d28f400f"
+        },
+        {
+          "firstLine": 2130,
+          "lastLine": 2145,
+          "bytes": 791,
+          "sha256": "b4ce533320005f8b6d880f88345d07dd9e76159cf9ebffce53a1df8afebd356c"
+        }
+      ]
+    },
+    {
+      "id": "native-entrypoint",
+      "fileId": "native-main",
+      "excerpts": [
+        {
+          "firstLine": 486,
+          "lastLine": 494,
+          "bytes": 345,
+          "sha256": "20ac5a337022ab7013131c800e15f6c4d279a81802ceccb2a85071ca8a9b0a80"
+        },
+        {
+          "firstLine": 519,
+          "lastLine": 526,
+          "bytes": 462,
+          "sha256": "d9e79b7cf8a2719d555adc690d019cc055351338ae46be8a3e18bda772c7b05e"
+        }
+      ]
+    },
+    {
+      "id": "native-cargo-kit",
+      "fileId": "native-manifest",
+      "excerpts": [
+        {
+          "firstLine": 16,
+          "lastLine": 20,
+          "bytes": 113,
+          "sha256": "a306f616b145c6edef3b5027b42bd246fadb5ad71ae469a44a15416f8f52487a"
+        },
+        {
+          "firstLine": 74,
+          "lastLine": 79,
+          "bytes": 203,
+          "sha256": "d24096c0553fb50f8ba1d70415106d71d628a3d94108edf166c35957c226666f"
+        }
+      ]
+    },
+    {
+      "id": "kit-default-features",
+      "fileId": "kit-manifest",
+      "excerpts": [
+        {
+          "firstLine": 39,
+          "lastLine": 49,
+          "bytes": 185,
+          "sha256": "9d2030bcb757f3d1d5335c39fe286a099c2885a2f451c87799071f11fe1ade30"
+        }
+      ]
+    },
+    {
+      "id": "kit-open-and-init",
+      "fileId": "kit-lib",
+      "excerpts": [
+        {
+          "firstLine": 144,
+          "lastLine": 157,
+          "bytes": 492,
+          "sha256": "18b41adc58b857d9a99850a62f5cf07deb1205b5e674ee318b62ba01d7a4ad42"
+        },
+        {
+          "firstLine": 165,
+          "lastLine": 176,
+          "bytes": 402,
+          "sha256": "7aad84463c2b857e103d1a264869f8cd5d67d7dd071120ab4c7c189ae0bbac30"
+        }
+      ]
+    },
+    {
+      "id": "component-init",
+      "fileId": "component-lib",
+      "excerpts": [
+        {
+          "firstLine": 127,
+          "lastLine": 149,
+          "bytes": 517,
+          "sha256": "0fdda1aace0ce8e3bef254226855590760ef9c4dfedb3ead2e0ae91b62541c28"
+        }
+      ]
+    },
+    {
+      "id": "component-plugin-register",
+      "fileId": "component-root",
+      "excerpts": [
+        {
+          "firstLine": 20,
+          "lastLine": 22,
+          "bytes": 112,
+          "sha256": "f89603a4de3e26d530f02545091448b68bfeceeb1ee82bc55fc98b4a009bfa96"
+        },
+        {
+          "firstLine": 72,
+          "lastLine": 87,
+          "bytes": 656,
+          "sha256": "1a84efbaadbfc80ad57bb844a51221eaaaee5d074bb33476b64e43dc62c0085d"
+        }
+      ]
+    },
+    {
+      "id": "component-plugin-render",
+      "fileId": "component-root",
+      "excerpts": [
+        {
+          "firstLine": 434,
+          "lastLine": 469,
+          "bytes": 1288,
+          "sha256": "ecbb11c176447abf418dc228f81afeb2b3bd3ae82b9eeb5dd7d51ed03b0aae73"
+        },
+        {
+          "firstLine": 476,
+          "lastLine": 494,
+          "bytes": 711,
+          "sha256": "a1c955184d6a7e3a65ff7f1035c530313b8179ee9b4d1e72662d021a2e0eea73"
+        }
+      ]
+    },
+    {
+      "id": "base-root-order",
+      "fileId": "base-root",
+      "excerpts": [
+        {
+          "firstLine": 25,
+          "lastLine": 45,
+          "bytes": 1102,
+          "sha256": "a75a0f07f95b364d4885f5b59b005614835a8e610a67ecc807349cd394379fdd"
+        },
+        {
+          "firstLine": 280,
+          "lastLine": 309,
+          "bytes": 1124,
+          "sha256": "23c40a231e5a6af426c3703ed62b5a7f343694b3a9068b91996bc45a5cd8c1d4"
+        }
+      ]
+    },
+    {
+      "id": "core-window-order",
+      "fileId": "core-window",
+      "excerpts": [
+        {
+          "firstLine": 3538,
+          "lastLine": 3588,
+          "bytes": 2217,
+          "sha256": "031a4b55c436bc6201d43e6c61a2c2e69701f8ab05140dd2beb013f4b8222cd0"
+        }
+      ]
+    },
+    {
+      "id": "core-deferred-order",
+      "fileId": "core-window",
+      "excerpts": [
+        {
+          "firstLine": 3757,
+          "lastLine": 3801,
+          "bytes": 2037,
+          "sha256": "f271aaf71cf2a7703125ee3959aba0386ccf36b914097f87d7563fe100456095"
+        }
+      ]
+    },
+    {
+      "id": "core-defer-contract",
+      "fileId": "core-window",
+      "excerpts": [
+        {
+          "firstLine": 4314,
+          "lastLine": 4341,
+          "bytes": 1387,
+          "sha256": "ddaf1e81630db3da5ac9ec4fccf050e8f47f7e6e21129805d7c25c8843bd2a06"
+        }
+      ]
+    },
+    {
+      "id": "core-multiply",
+      "fileId": "core-window",
+      "excerpts": [
+        {
+          "firstLine": 4969,
+          "lastLine": 5074,
+          "bytes": 4612,
+          "sha256": "078bed42b32a39fb3765e67f8a0a8b45d7882d92965b249514bf5bc9c4c9e8db"
+        }
+      ]
+    },
+    {
+      "id": "base-popup-deferred",
+      "fileId": "base-popup",
+      "excerpts": [
+        {
+          "firstLine": 11,
+          "lastLine": 15,
+          "bytes": 218,
+          "sha256": "7c4ae6ff025048d459a75f3dcb7c257c5436f37554f8312408aa16d12a34878f"
+        },
+        {
+          "firstLine": 175,
+          "lastLine": 199,
+          "bytes": 878,
+          "sha256": "3584844a5b36267b7640ddf837d79ce0637b9fc0d4f458fe4788177b54373a18"
+        }
+      ]
+    },
+    {
+      "id": "base-tooltip-deferred",
+      "fileId": "base-tooltip",
+      "excerpts": [
+        {
+          "firstLine": 11,
+          "lastLine": 14,
+          "bytes": 191,
+          "sha256": "51373552335c1d83816d1bc83be38e281600ccd77b944775a72260c7f839fc7d"
+        },
+        {
+          "firstLine": 221,
+          "lastLine": 246,
+          "bytes": 1078,
+          "sha256": "588406de30bc5a973e4b7c90f7c40fc9b4ac5987eba7f7e57f026bdceb8f7eb1"
+        }
+      ]
+    },
+    {
+      "id": "base-dialog-deferred",
+      "fileId": "base-dialog",
+      "excerpts": [
+        {
+          "firstLine": 530,
+          "lastLine": 555,
+          "bytes": 1084,
+          "sha256": "4bdb5bf28fa9222e3608e76e7f3da8a421d0cf6f9bbdbf23ea46926824ae0701"
+        },
+        {
+          "firstLine": 637,
+          "lastLine": 645,
+          "bytes": 257,
+          "sha256": "364e20585da7d89d33ae10ee9f3bf53530b36d7fd44c102a5a2b43fc67963e87"
+        }
+      ]
+    }
+  ],
+  "negativeSourceInspection": {
+    "fileId": "conversation-component",
+    "query": "overlays=",
+    "matches": 0,
+    "meaning": "The whole pinned conversational component does not pass an overlays prop; the form caller does."
+  },
+  "priorProbeSummary": {
+    "inputId": "prior-native-probe",
+    "passed": true,
+    "actualX11Executed": true,
+    "sample_count": 4464,
+    "mismatches": 0,
+    "maximum_error": 1,
+    "accepted_correct_multiply": true,
+    "boundaries": [
+      "Five-scene authored single-window native WGPU probe only",
+      "No product multiply mount, Source radial raster or full Source pixel parity",
+      "Actual keys inspected; no GPU completion fence or resource-memory measurement",
+      "No current DPR transition, multi-window, Wayland or other platform execution"
+    ],
+    "newExecution": false
+  },
+  "driftBoundary": "Source/native files remain Parent-owned. Later edits must be compared to these full-file and excerpt hashes; this audit does not pin future live execution."
+}

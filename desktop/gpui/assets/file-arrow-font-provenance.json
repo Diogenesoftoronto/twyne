@@ -1,0 +1,27 @@
+{
+  "file": "fonts/NotoSansMath-Regular.ttf",
+  "sha256": "d51afd5739c7ba6c44fcab35a88160e25dfb69a2d4ad0bd99533f8d894af1f96",
+  "bytes": 990564,
+  "family": "Noto Sans Math",
+  "postScriptName": "NotoSansMath-Regular",
+  "version": "3.000; ttfautohint (v1.8.4.7-5d5b)",
+  "weight": 400,
+  "style": "normal",
+  "source": "/usr/share/fonts/google-noto/NotoSansMath-Regular.ttf",
+  "package": "google-noto-sans-math-fonts-20250301-1.fc42.noarch",
+  "licenseFile": "licenses/noto-sans-math-OFL.txt",
+  "licenseSha256": "403a95275b469061b7d4371c328e0ada3bc7d63328abe2e88aad5cd243b2fe21",
+  "licenseSource": "https://raw.githubusercontent.com/notofonts/math/main/OFL.txt",
+  "copyright": "Copyright 2022 Google LLC. All Rights Reserved.",
+  "glyph": {
+    "source": "▾",
+    "codepoint": "U+25BE",
+    "id": 4754,
+    "advanceUnits": 462,
+    "unitsPerEm": 1000
+  },
+  "usage": "File disclosure arrow only; requested600/normal; original font bytes unchanged",
+  "evidence": "fixtures/source_view/font-evidence/file-arrow-actual-app.json",
+  "rasterBoundary": "Chrome154 fallback600 synthesis differs from font-synthesis:none. Explicit native Math400/600 resolves original Regular, retaining exact glyph/advance; Chromium faux-bold raster remains separate.",
+  "sharedSansSourceAttributesAndTypstUnchanged": true
+}

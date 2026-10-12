@@ -1,0 +1,115 @@
+--- a/desktop/gpui/src/lib.rs
++++ b/desktop/gpui/src/lib.rs
+@@ -49,6 +49,8 @@
+ #[cfg(feature = "desktop")]
+ pub mod page_furniture;
+ #[cfg(feature = "desktop")]
++pub mod dossier_paper;
++#[cfg(feature = "desktop")]
+ pub mod paper_grain;
+ #[cfg(feature = "desktop")]
+ pub mod revision_view;
+--- a/desktop/gpui/src/theme.rs
++++ b/desktop/gpui/src/theme.rs
+@@ -400,7 +400,7 @@
+ pub const COBALT: u32 = EDITORIAL.cobalt;
+ pub const WRITER_NOTE: u32 = EDITORIAL.writer_note;
+ 
+-struct NativePalette(Palette);
++pub(crate) struct NativePalette(Palette);
+ impl Global for NativePalette {}
+ struct FontsRegistered;
+ impl Global for FontsRegistered {}
+--- a/desktop/gpui/src/dossier_view.rs
++++ b/desktop/gpui/src/dossier_view.rs
+@@ -10,6 +10,7 @@
+         FIELD_LABELS, FilingState, PriorMaterial, STEPS, StepKind, TemplatePiece,
+         WRITING_FORMAT_SUGGESTIONS,
+     },
++    dossier_paper::{DossierPaper, DossierPaperMetrics},
+     manuscript::timestamp,
+     theme::{self, DISPLAY_FONT, SANS_FONT, SERIF_FONT, TYPEWRITER_FONT},
+     workspace::{AttachmentKind, BriefField, ProbeAnswer, ProbeKind},
+@@ -28,7 +29,7 @@
+     Task, TestSupportExt, Window, canvas, div, font, linear_color_stop, linear_gradient, px,
+     relative, rgb,
+ };
+-use std::{collections::BTreeMap, time::Duration};
++use std::{collections::BTreeMap, sync::Arc, time::Duration};
+ 
+ gpui_kit::actions!(dossier, [DossierBack, DossierNext, DossierCancel]);
+ 
+@@ -124,6 +125,7 @@
+     filing_request: Option<u64>,
+     dirty: bool,
+     start_over_confirm: bool,
++    paper: Option<Arc<DossierPaper>>,
+     question_leaf_height: Pixels,
+     question_height: Option<(usize, Pixels)>,
+     _subscriptions: Vec<Subscription>,
+@@ -251,6 +253,12 @@
+             let _ = this.flush_recovery(cx);
+             async {}
+         }));
++        subscriptions.push(cx.observe_window_bounds(window, |this, window, cx| {
++            this.prepare_paper(window, cx);
++        }));
++        subscriptions.push(cx.observe_global_in::<theme::NativePalette>(window, |this, window, cx| {
++            this.prepare_paper(window, cx);
++        }));
+         let material_word_count = dossier::material_word_count(&session.draft.prior_material.text);
+         let mut view = Self {
+             session,
+@@ -274,6 +282,7 @@
+             filing_request: None,
+             dirty: false,
+             start_over_confirm: false,
++            paper: None,
+             question_leaf_height: px(0.),
+             question_height: None,
+             _subscriptions: subscriptions,
+@@ -282,8 +291,35 @@
+         if view.session.draft.step == 7 {
+             view.rebuild_probe_controls(window, cx);
+         }
++        view.prepare_paper(window, cx);
+         view.focus_current(window, cx);
+         view
++    }
++
++    // Explicit constructor/theme/resize boundary only; never called by render,
++    // InputEvent::Change or a paint callback. Public for manual DPR test/host
++    // transitions that do not invoke GPUI's platform bounds callbacks.
++    pub fn prepare_paper(&mut self, window: &Window, cx: &mut Context<Self>) {
++        let viewport = window.viewport_size();
++        let colors = *theme::palette(cx);
++        let metrics = DossierPaperMetrics::new(
++            f32::from(viewport.width),
++            f32::from(viewport.height),
++            window.scale_factor(),
++        );
++        if metrics.as_ref().is_ok_and(|metrics| {
++            self.paper.as_ref().is_some_and(|paper| paper.matches(colors, *metrics))
++        }) {
++            return;
++        }
++        match metrics.and_then(|metrics| DossierPaper::prepare(colors, metrics)) {
++            Ok(paper) => self.paper = Some(paper),
++            Err(error) => {
++                self.paper = None;
++                eprintln!("Could not prepare Dossier paper: {error:#}");
++            }
++        }
++        cx.notify();
+     }
+ 
+     pub fn set_capabilities(&mut self, capabilities: DossierCapabilities, cx: &mut Context<Self>) {
+@@ -2143,6 +2179,8 @@
+             }))
+             .on_action(cx.listener(|this, _: &DossierNext, window, cx| this.next(window, cx)))
+             .on_action(cx.listener(|this, _: &DossierCancel, _, cx| this.cancel(cx)))
++            .relative()
++            .when_some(self.paper.clone(), |root, paper| root.child(paper.background()))
+             .child(frame)
+     }
+ }

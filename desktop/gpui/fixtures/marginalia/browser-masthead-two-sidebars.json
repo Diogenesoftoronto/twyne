@@ -1,0 +1,110 @@
+{
+  "header": {
+    "rect": {
+      "x": 288,
+      "y": 0,
+      "width": 528,
+      "height": 142
+    },
+    "styles": "Element: header.border-b-2\nBox: x=288 y=0 w=528 h=142\nChildren: 2  Text length: 106\nScroll Y: size=140 client=140 overflowing=false top=0\nScroll X: size=528 client=528 overflowing=false left=0\nStyles: display=block flex=0 1 auto flex-direction=row align-items=normal gap=normal font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal text-align=start white-space=normal padding=0px margin=0px border-width=0px 0px 2px min-width=auto min-height=auto"
+  },
+  "row": {
+    "rect": {
+      "x": 288,
+      "y": 0,
+      "width": 528,
+      "height": 116
+    },
+    "styles": "Element: div.flex\nBox: x=288 y=0 w=528 h=116\nChildren: 3  Text length: 105\nScroll Y: size=116 client=116 overflowing=false top=0\nScroll X: size=528 client=528 overflowing=false left=0\nStyles: display=flex flex=0 1 auto flex-direction=row align-items=center gap=16px font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal text-align=start white-space=normal padding=12px 20px 6px margin=0px border-width=0px min-width=0px min-height=0px"
+  },
+  "center": {
+    "rect": {
+      "x": 352.046875,
+      "y": 12,
+      "width": 154.765625,
+      "height": 98
+    },
+    "styles": "Element: div.flex-1\nBox: x=352 y=12 w=155 h=98\nChildren: 3  Text length: 85\nScroll Y: size=98 client=98 overflowing=false top=0\nScroll X: size=155 client=155 overflowing=false left=0\nStyles: display=flex flex=1 1 0% flex-direction=column align-items=center gap=normal font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal text-align=start white-space=normal padding=0px margin=0px border-width=0px min-width=auto min-height=auto"
+  },
+  "dept": {
+    "rect": {
+      "x": 352.046875,
+      "y": 12,
+      "width": 154.765625,
+      "height": 30
+    },
+    "styles": "Element: p.dept-label\nBox: x=352 y=12 w=155 h=30\nChildren: 0  Text length: 29\nScroll Y: size=30 client=30 overflowing=false top=0\nScroll X: size=155 client=155 overflowing=false left=0\nStyles: display=block flex=0 1 auto flex-direction=row align-items=normal gap=normal font-family=\"Special Elite\", \"Courier New\", monospace font-size=10px font-weight=400 line-height=15px letter-spacing=3.2px text-align=start white-space=normal padding=0px margin=0px border-width=0px min-width=auto min-height=auto"
+  },
+  "wordmark": {
+    "rect": {
+      "x": 351.92144775390625,
+      "y": 44.02484893798828,
+      "width": 154.78695678710938,
+      "height": 32.10333251953125
+    },
+    "styles": "Element: a.press\nBox: x=352 y=44 w=155 h=32\nChildren: 0  Text length: 5\nScroll Y: size=36 client=32 overflowing=true top=0\nScroll X: size=155 client=155 overflowing=false left=0\nStyles: display=block flex=0 1 auto flex-direction=row align-items=normal gap=normal font-family=\"Libre Baskerville\", \"Playfair Display\", Georgia, serif font-size=32px font-weight=700 line-height=32px letter-spacing=1.92px text-align=start white-space=normal padding=0px margin=2px 0px 0px border-width=0px min-width=auto min-height=auto"
+  },
+  "dateline": {
+    "rect": {
+      "x": 352.046875,
+      "y": 80,
+      "width": 154.765625,
+      "height": 30
+    },
+    "styles": "Element: p.mt-1\nBox: x=352 y=80 w=155 h=30\nChildren: 0  Text length: 51\nScroll Y: size=30 client=30 overflowing=false top=0\nScroll X: size=155 client=155 overflowing=false left=0\nStyles: display=block flex=0 1 auto flex-direction=row align-items=normal gap=normal font-family=\"Special Elite\", \"Courier New\", monospace font-size=10px font-weight=400 line-height=15px letter-spacing=0.5px text-align=start white-space=normal padding=0px margin=4px 0px 0px border-width=0px min-width=auto min-height=auto"
+  },
+  "actions": {
+    "rect": {
+      "x": 522.8125,
+      "y": 34.8125,
+      "width": 273.1875,
+      "height": 52.375
+    },
+    "styles": "Element: div.flex\nBox: x=523 y=35 w=273 h=52\nChildren: 4  Text length: 20\nScroll Y: size=56 client=52 overflowing=true top=0\nScroll X: size=273 client=273 overflowing=false left=0\nStyles: display=flex flex=0 1 auto flex-direction=row align-items=center gap=8px font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal text-align=start white-space=normal padding=0px margin=0px border-width=0px min-width=auto min-height=auto"
+  },
+  "drawerToggle": {
+    "rect": {
+      "x": 308,
+      "y": 46,
+      "width": 28.046875,
+      "height": 30
+    },
+    "styles": "Element: button.icon-btn\nBox: x=308 y=46 w=28 h=30\nChildren: 1  Text length: 0\nScroll Y: size=30 client=30 overflowing=false top=0\nScroll X: size=28 client=28 overflowing=false left=0\nStyles: display=flex flex=0 1 auto flex-direction=row align-items=center gap=normal font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal text-align=center white-space=normal padding=6px margin=0px border-width=0px min-width=28px min-height=28px\nAria: aria-expanded=true"
+  },
+  "createDossier": {
+    "rect": {
+      "x": 522.8125,
+      "y": 34.8125,
+      "width": 106.875,
+      "height": 52.375
+    },
+    "styles": "Element: button.btn-paper\nBox: x=523 y=35 w=107 h=52\nChildren: 1  Text length: 14\nScroll Y: size=54 client=50 overflowing=true top=0\nScroll X: size=108 client=105 overflowing=true left=0\nStyles: display=flex flex=0 1 auto flex-direction=row align-items=center gap=6px font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=12px font-weight=600 line-height=18px letter-spacing=normal text-align=center white-space=normal padding=7.2px 14.4px margin=0px border-width=1px min-width=auto min-height=auto"
+  },
+  "file": {
+    "rect": {
+      "x": 637.6875,
+      "y": 44.8125,
+      "width": 84.3125,
+      "height": 32.375
+    },
+    "styles": "Element: button.btn-paper\nBox: x=638 y=45 w=84 h=32\nChildren: 2  Text length: 6\nScroll Y: size=30 client=30 overflowing=false top=0\nScroll X: size=82 client=82 overflowing=false left=0\nStyles: display=inline-flex flex=0 1 auto flex-direction=row align-items=center gap=6px font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=12px font-weight=600 line-height=16px letter-spacing=normal text-align=center white-space=normal padding=7.2px 14.4px margin=0px border-width=1px min-width=0px min-height=0px\nAria: aria-expanded=false"
+  },
+  "account": {
+    "rect": {
+      "x": 730,
+      "y": 45.5,
+      "width": 30,
+      "height": 30
+    },
+    "styles": "Element: button.icon-btn\nBox: x=730 y=46 w=30 h=30\nChildren: 1  Text length: 0\nScroll Y: size=30 client=30 overflowing=false top=0\nScroll X: size=30 client=30 overflowing=false left=0\nStyles: display=inline-flex flex=0 1 auto flex-direction=row align-items=center gap=normal font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal text-align=center white-space=normal padding=6px margin=0px border-width=0px min-width=28px min-height=28px\nAria: aria-expanded=false"
+  },
+  "boardToggle": {
+    "rect": {
+      "x": 768,
+      "y": 46,
+      "width": 28,
+      "height": 30
+    },
+    "styles": "Element: button.icon-btn\nBox: x=768 y=46 w=28 h=30\nChildren: 1  Text length: 0\nScroll Y: size=30 client=30 overflowing=false top=0\nScroll X: size=28 client=28 overflowing=false left=0\nStyles: display=flex flex=0 1 auto flex-direction=row align-items=center gap=normal font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal text-align=center white-space=normal padding=6px margin=0px border-width=0px min-width=28px min-height=28px\nAria: aria-expanded=true"
+  }
+}

@@ -1,0 +1,911 @@
+{
+  "provenance": "Executed unmodified Source TS helpers, exact original Worklet and liveVoiceAudio with only in-memory WebAudio/device stubs. No provider/network/physical device/app calls.",
+  "hashes": {
+    "speech.ts": "30e72a7a31864672526fd3f251c3e9100860dd700b7c80ec9aeff0476f27a546",
+    "speech-segments.ts": "8b5bd308597fe2d79ba4df0871eeaa1c8d5e72312e16a0c81206805e5d19f9dc",
+    "speech-alignment.ts": "8266f20df794d1c2ac2b2982f6eb22ac61a3bc3cd7456775f0c1af12c5ae8934",
+    "live-voice-audio.ts": "239efd77d018aee56fb680fc12af8d395eadd5fdf585e8c658437ee6f3c57e11",
+    "live-voice.ts": "c546a4d14f47ebdee96ecff3431b84de4556588ffb3df8146df3db80ee281c09",
+    "personas.ts": "5887cc1e65dc0ae01bd33035f6a4537d53865ea630b8752793fbb5abd0ca0974",
+    "application-errors.ts": "f8cb8b2e796266455ee004ac4353759c1df9f666e546c7c567da153ceda7a38e",
+    "browser-inference.ts": "d399d0efd4024ae9bb761bcbfdcdaca01348b5835144a1978c2bef67cecf6bc7"
+  },
+  "personas": [
+    {
+      "id": "devil",
+      "name": "Mlle. Sceptique",
+      "role": "The Devil's Advocate",
+      "defaultVoice": "onyx",
+      "providerVoices": {
+        "fishaudio": "91f2fedea8bc4465a6c668b2776be809"
+      },
+      "instructions": "Cold, precise, adversarial. A prosecutor's cadence: short declaratives, controlled questions, no throat-clearing. She names the vulnerable proposition directly and often closes on the question the writer has avoided. Her vocabulary is legal and logical rather than therapeutic or literary."
+    },
+    {
+      "id": "angel",
+      "name": "Sœur Encourageante",
+      "role": "The Patron of Strengths",
+      "defaultVoice": "shimmer",
+      "providerVoices": {
+        "fishaudio": "23c1b755b9994a68a1d21d6a67562445"
+      },
+      "instructions": "Warm, attentive, and lyrical without becoming vague. Her sentences are longer and gently cumulative. She quotes the writer back to themselves, uses tactile language such as pulse, hinge, current, and breath, and turns praise into a practical instruction. Her kindness comes from exactness, never inflation."
+    },
+    {
+      "id": "scholar",
+      "name": "Professeur Athenæum",
+      "role": "The Scholar",
+      "defaultVoice": "echo",
+      "providerVoices": {
+        "fishaudio": "c5f56a6cc2ec4fa8920cb4c5889a3fb7"
+      },
+      "instructions": "Measured, exact, faintly pedantic. He writes careful, subordinated sentences and uses distinctions such as asserted versus demonstrated, example versus evidence, correlation versus cause. He may say 'one notes that' or 'it remains to be established,' but never hides the practical request beneath academic fog."
+    },
+    {
+      "id": "editor",
+      "name": "M. Le Stylo",
+      "role": "The Copy Chief",
+      "defaultVoice": "ash",
+      "providerVoices": {
+        "fishaudio": "3274bdf8143c4378a2cb779582d26364"
+      },
+      "instructions": "Terse, dry, impatient with waste. Fragments, arrows, and imperatives. He quotes the offending words, gives the cut, and stops. His humor is deadpan. He prefers concrete verbs and audible rhythm to explanations about craft."
+    },
+    {
+      "id": "reader",
+      "name": "Le Lecteur",
+      "role": "The Target Reader",
+      "defaultVoice": "alloy",
+      "providerVoices": {
+        "fishaudio": "125d6460953a443d8c65909adf87ca3f"
+      },
+      "instructions": "Plainspoken, immediate, and personal. First person, present tense. He says where he leans in, starts skimming, becomes skeptical, or wants an example. Ordinary words and short-to-medium sentences. He sounds like an intelligent subscriber, never like an editor performing audience analysis."
+    }
+  ],
+  "voiceCases": [
+    {
+      "id": "resident-name",
+      "request": {
+        "id": "n",
+        "text": "A note",
+        "author": "Mlle. Sceptique"
+      },
+      "enriched": {
+        "id": "n",
+        "text": "A note",
+        "author": "Mlle. Sceptique",
+        "voice": "onyx",
+        "voices": {
+          "fishaudio": "91f2fedea8bc4465a6c668b2776be809"
+        },
+        "instructions": "Cold, precise, adversarial. A prosecutor's cadence: short declaratives, controlled questions, no throat-clearing. She names the vulnerable proposition directly and often closes on the question the writer has avoided. Her vocabulary is legal and logical rather than therapeutic or literary."
+      },
+      "selected": {
+        "openai": "onyx",
+        "fishaudio": "91f2fedea8bc4465a6c668b2776be809",
+        "supertonic": "M1"
+      }
+    },
+    {
+      "id": "resident-role",
+      "request": {
+        "id": "n",
+        "text": "A note",
+        "author": "  THE PATRON OF STRENGTHS  "
+      },
+      "enriched": {
+        "id": "n",
+        "text": "A note",
+        "author": "  THE PATRON OF STRENGTHS  ",
+        "voice": "shimmer",
+        "voices": {
+          "fishaudio": "23c1b755b9994a68a1d21d6a67562445"
+        },
+        "instructions": "Warm, attentive, and lyrical without becoming vague. Her sentences are longer and gently cumulative. She quotes the writer back to themselves, uses tactile language such as pulse, hinge, current, and breath, and turns praise into a practical instruction. Her kindness comes from exactness, never inflation."
+      },
+      "selected": {
+        "openai": "shimmer",
+        "fishaudio": "23c1b755b9994a68a1d21d6a67562445",
+        "supertonic": "F1"
+      }
+    },
+    {
+      "id": "no-invented-alias",
+      "request": {
+        "id": "n",
+        "text": "A note",
+        "author": "Marguerite"
+      },
+      "enriched": {
+        "id": "n",
+        "text": "A note",
+        "author": "Marguerite"
+      },
+      "selected": {
+        "openai": null,
+        "fishaudio": null,
+        "supertonic": "F1"
+      }
+    },
+    {
+      "id": "explicit-empty-map",
+      "request": {
+        "id": "n",
+        "text": "A note",
+        "author": "Mlle. Sceptique",
+        "voices": {}
+      },
+      "enriched": {
+        "id": "n",
+        "text": "A note",
+        "author": "Mlle. Sceptique",
+        "voices": {},
+        "voice": "onyx",
+        "instructions": "Cold, precise, adversarial. A prosecutor's cadence: short declaratives, controlled questions, no throat-clearing. She names the vulnerable proposition directly and often closes on the question the writer has avoided. Her vocabulary is legal and logical rather than therapeutic or literary."
+      },
+      "selected": {
+        "openai": "onyx",
+        "fishaudio": "onyx",
+        "supertonic": "M1"
+      }
+    },
+    {
+      "id": "empty-override",
+      "request": {
+        "id": "n",
+        "text": "A note",
+        "voice": "echo",
+        "voices": {
+          "fishaudio": ""
+        }
+      },
+      "enriched": {
+        "id": "n",
+        "text": "A note",
+        "voice": "echo",
+        "voices": {
+          "fishaudio": ""
+        }
+      },
+      "selected": {
+        "openai": "echo",
+        "fishaudio": "echo",
+        "supertonic": "M2"
+      }
+    }
+  ],
+  "browserVoices": [
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "F5",
+    "M1",
+    "M2",
+    "M3",
+    "M4"
+  ],
+  "silenceWav": [
+    82,
+    73,
+    70,
+    70,
+    36,
+    0,
+    0,
+    0,
+    87,
+    65,
+    86,
+    69,
+    102,
+    109,
+    116,
+    32,
+    16,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    68,
+    172,
+    0,
+    0,
+    136,
+    88,
+    1,
+    0,
+    2,
+    0,
+    16,
+    0,
+    100,
+    97,
+    116,
+    97,
+    0,
+    0,
+    0,
+    0
+  ],
+  "segmentation": [
+    {
+      "id": "emoji-offset",
+      "source": "  😀 Café opens. A second voice answers.  ",
+      "options": {
+        "targetWords": 2,
+        "maxChars": 80
+      },
+      "sourceIntl": [
+        {
+          "start": 2,
+          "end": 16,
+          "text": "😀 Café opens."
+        },
+        {
+          "start": 17,
+          "end": 40,
+          "text": "A second voice answers."
+        }
+      ],
+      "sourceFallback": [
+        {
+          "start": 2,
+          "end": 16,
+          "text": "😀 Café opens."
+        },
+        {
+          "start": 17,
+          "end": 40,
+          "text": "A second voice answers."
+        }
+      ]
+    },
+    {
+      "id": "ecmascript-space",
+      "source": "﻿ First voice. Second voice.﻿",
+      "options": {
+        "targetWords": 2,
+        "maxChars": 80
+      },
+      "sourceIntl": [
+        {
+          "start": 2,
+          "end": 14,
+          "text": "First voice."
+        },
+        {
+          "start": 15,
+          "end": 28,
+          "text": "Second voice."
+        }
+      ],
+      "sourceFallback": [
+        {
+          "start": 2,
+          "end": 14,
+          "text": "First voice."
+        },
+        {
+          "start": 15,
+          "end": 28,
+          "text": "Second voice."
+        }
+      ]
+    },
+    {
+      "id": "long-multibyte",
+      "source": "é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; End.",
+      "options": {
+        "targetWords": 8,
+        "maxChars": 81
+      },
+      "sourceIntl": [
+        {
+          "start": 0,
+          "end": 76,
+          "text": "é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words;"
+        },
+        {
+          "start": 77,
+          "end": 153,
+          "text": "é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words;"
+        },
+        {
+          "start": 154,
+          "end": 230,
+          "text": "é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words;"
+        },
+        {
+          "start": 231,
+          "end": 268,
+          "text": "é😀 words; é😀 words; é😀 words; End."
+        }
+      ],
+      "sourceFallback": [
+        {
+          "start": 0,
+          "end": 76,
+          "text": "é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words;"
+        },
+        {
+          "start": 77,
+          "end": 153,
+          "text": "é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words;"
+        },
+        {
+          "start": 154,
+          "end": 230,
+          "text": "é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words; é😀 words;"
+        },
+        {
+          "start": 231,
+          "end": 268,
+          "text": "é😀 words; é😀 words; é😀 words; End."
+        }
+      ]
+    },
+    {
+      "id": "clause-without-space",
+      "source": "café—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—more tail.",
+      "options": {
+        "targetWords": 3,
+        "maxChars": 83
+      },
+      "sourceIntl": [
+        {
+          "start": 0,
+          "end": 186,
+          "text": "café—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—more tail."
+        }
+      ],
+      "sourceFallback": [
+        {
+          "start": 0,
+          "end": 186,
+          "text": "café—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—morecafé—more tail."
+        }
+      ]
+    },
+    {
+      "id": "crlf-and-quotes",
+      "source": "First paragraph.\n\r\n\"Second paragraph!\" Third—one.",
+      "options": {
+        "targetWords": 2,
+        "maxChars": 80
+      },
+      "sourceIntl": [
+        {
+          "start": 0,
+          "end": 16,
+          "text": "First paragraph."
+        },
+        {
+          "start": 19,
+          "end": 38,
+          "text": "\"Second paragraph!\""
+        },
+        {
+          "start": 39,
+          "end": 49,
+          "text": "Third—one."
+        }
+      ],
+      "sourceFallback": [
+        {
+          "start": 0,
+          "end": 16,
+          "text": "First paragraph."
+        },
+        {
+          "start": 19,
+          "end": 38,
+          "text": "\"Second paragraph!\""
+        },
+        {
+          "start": 39,
+          "end": 49,
+          "text": "Third—one."
+        }
+      ]
+    },
+    {
+      "id": "apostrophes-numbers",
+      "source": "Don't re-read 3.14 lightly. ’Tis déjà vu! The end.",
+      "options": {
+        "targetWords": 4,
+        "maxChars": 80
+      },
+      "sourceIntl": [
+        {
+          "start": 0,
+          "end": 27,
+          "text": "Don't re-read 3.14 lightly."
+        },
+        {
+          "start": 28,
+          "end": 50,
+          "text": "’Tis déjà vu! The end."
+        }
+      ],
+      "sourceFallback": [
+        {
+          "start": 0,
+          "end": 27,
+          "text": "Don't re-read 3.14 lightly."
+        },
+        {
+          "start": 28,
+          "end": 50,
+          "text": "’Tis déjà vu! The end."
+        }
+      ]
+    },
+    {
+      "id": "unbroken-token",
+      "source": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀. Next.",
+      "options": {
+        "targetWords": 1,
+        "maxChars": 80
+      },
+      "sourceIntl": [
+        {
+          "start": 0,
+          "end": 191,
+          "text": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀."
+        },
+        {
+          "start": 192,
+          "end": 197,
+          "text": "Next."
+        }
+      ],
+      "sourceFallback": [
+        {
+          "start": 0,
+          "end": 191,
+          "text": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀."
+        },
+        {
+          "start": 192,
+          "end": 197,
+          "text": "Next."
+        }
+      ]
+    },
+    {
+      "id": "intl-abbreviation",
+      "source": "Dr. Rivers arrived. The writer stopped. Then he left.",
+      "options": {
+        "targetWords": 2,
+        "maxChars": 80
+      },
+      "sourceIntl": [
+        {
+          "start": 0,
+          "end": 19,
+          "text": "Dr. Rivers arrived."
+        },
+        {
+          "start": 20,
+          "end": 39,
+          "text": "The writer stopped."
+        },
+        {
+          "start": 40,
+          "end": 53,
+          "text": "Then he left."
+        }
+      ],
+      "sourceFallback": [
+        {
+          "start": 0,
+          "end": 19,
+          "text": "Dr. Rivers arrived."
+        },
+        {
+          "start": 20,
+          "end": 39,
+          "text": "The writer stopped."
+        },
+        {
+          "start": 40,
+          "end": 53,
+          "text": "Then he left."
+        }
+      ]
+    },
+    {
+      "id": "blank",
+      "source": "﻿ \n\t ",
+      "options": {
+        "targetWords": 1,
+        "maxChars": 80
+      },
+      "sourceIntl": [],
+      "sourceFallback": []
+    }
+  ],
+  "alignment": [
+    {
+      "id": "utf16-repeated",
+      "source": "😀 écho écho, café.",
+      "sourceStart": 3,
+      "event": {
+        "content": "écho écho, café.",
+        "chunk_audio_offset_sec": 1.25,
+        "alignment": {
+          "segments": [
+            {
+              "text": "écho",
+              "start": 0,
+              "end": 0.2
+            },
+            {
+              "text": "écho",
+              "start": 0.3,
+              "end": 0.5
+            },
+            {
+              "text": "café",
+              "start": 0.6,
+              "end": 0.9
+            }
+          ]
+        }
+      },
+      "ranges": [
+        {
+          "sourceStart": 3,
+          "sourceEnd": 7,
+          "audioStart": 1.25,
+          "audioEnd": 1.45,
+          "precision": "word"
+        },
+        {
+          "sourceStart": 8,
+          "sourceEnd": 12,
+          "audioStart": 1.55,
+          "audioEnd": 1.75,
+          "precision": "word"
+        },
+        {
+          "sourceStart": 14,
+          "sourceEnd": 18,
+          "audioStart": 1.85,
+          "audioEnd": 2.15,
+          "precision": "word"
+        }
+      ],
+      "times": [
+        {
+          "seconds": -2,
+          "index": -1
+        },
+        {
+          "seconds": -1.5,
+          "index": -1
+        },
+        {
+          "seconds": 0,
+          "index": -1
+        },
+        {
+          "seconds": 1.25,
+          "index": 0
+        },
+        {
+          "seconds": 1.7,
+          "index": 1
+        },
+        {
+          "seconds": 2,
+          "index": 2
+        },
+        {
+          "seconds": 99,
+          "index": 2
+        }
+      ],
+      "offsets": [
+        {
+          "offset": 0,
+          "index": -1
+        },
+        {
+          "offset": 3,
+          "index": 0
+        },
+        {
+          "offset": 7,
+          "index": 0
+        },
+        {
+          "offset": 8,
+          "index": 1
+        },
+        {
+          "offset": 12,
+          "index": 1
+        },
+        {
+          "offset": 99,
+          "index": -1
+        }
+      ]
+    },
+    {
+      "id": "normalization-refusal",
+      "source": "Keep Café intact.",
+      "sourceStart": 5,
+      "event": {
+        "content": "Cafe intact.",
+        "alignment": {
+          "segments": [
+            {
+              "text": "Cafe",
+              "start": 0,
+              "end": 0.4
+            },
+            {
+              "text": "intact",
+              "start": 0.5,
+              "end": 0.9
+            }
+          ]
+        }
+      },
+      "ranges": [
+        {
+          "sourceStart": 10,
+          "sourceEnd": 16,
+          "audioStart": 0.5,
+          "audioEnd": 0.9,
+          "precision": "word"
+        }
+      ],
+      "times": [
+        {
+          "seconds": -2,
+          "index": -1
+        },
+        {
+          "seconds": -1.5,
+          "index": -1
+        },
+        {
+          "seconds": 0,
+          "index": -1
+        },
+        {
+          "seconds": 1.25,
+          "index": 0
+        },
+        {
+          "seconds": 1.7,
+          "index": 0
+        },
+        {
+          "seconds": 2,
+          "index": 0
+        },
+        {
+          "seconds": 99,
+          "index": 0
+        }
+      ],
+      "offsets": [
+        {
+          "offset": 0,
+          "index": -1
+        },
+        {
+          "offset": 3,
+          "index": -1
+        },
+        {
+          "offset": 7,
+          "index": -1
+        },
+        {
+          "offset": 8,
+          "index": -1
+        },
+        {
+          "offset": 12,
+          "index": 0
+        },
+        {
+          "offset": 99,
+          "index": -1
+        }
+      ]
+    },
+    {
+      "id": "negative-audio-offset",
+      "source": "A B",
+      "sourceStart": 0,
+      "event": {
+        "content": "A B",
+        "chunk_audio_offset_sec": -2,
+        "alignment": {
+          "segments": [
+            {
+              "text": "A",
+              "start": 0,
+              "end": 0.2
+            },
+            {
+              "text": "B",
+              "start": 0.5,
+              "end": 1
+            }
+          ]
+        }
+      },
+      "ranges": [
+        {
+          "sourceStart": 0,
+          "sourceEnd": 1,
+          "audioStart": -2,
+          "audioEnd": -1.8,
+          "precision": "word"
+        },
+        {
+          "sourceStart": 2,
+          "sourceEnd": 3,
+          "audioStart": -1.5,
+          "audioEnd": -1,
+          "precision": "word"
+        }
+      ],
+      "times": [
+        {
+          "seconds": -2,
+          "index": 0
+        },
+        {
+          "seconds": -1.5,
+          "index": 1
+        },
+        {
+          "seconds": 0,
+          "index": 1
+        },
+        {
+          "seconds": 1.25,
+          "index": 1
+        },
+        {
+          "seconds": 1.7,
+          "index": 1
+        },
+        {
+          "seconds": 2,
+          "index": 1
+        },
+        {
+          "seconds": 99,
+          "index": 1
+        }
+      ],
+      "offsets": [
+        {
+          "offset": 0,
+          "index": 0
+        },
+        {
+          "offset": 3,
+          "index": 1
+        },
+        {
+          "offset": 7,
+          "index": -1
+        },
+        {
+          "offset": 8,
+          "index": -1
+        },
+        {
+          "offset": 12,
+          "index": -1
+        },
+        {
+          "offset": 99,
+          "index": -1
+        }
+      ]
+    }
+  ],
+  "pcm": {
+    "input": [
+      0,
+      0.000019999999494757503,
+      -0.000019999999494757503,
+      0.5,
+      -0.5,
+      0.9999899864196777,
+      -0.9999899864196777,
+      1,
+      -1,
+      2,
+      -2,
+      0.12345600128173828,
+      -0.12345600128173828
+    ],
+    "quantized": [
+      0,
+      0,
+      0,
+      16383,
+      -16384,
+      32766,
+      -32767,
+      32767,
+      -32768,
+      32767,
+      -32768,
+      4045,
+      -4045
+    ],
+    "playback": [
+      0,
+      0,
+      0,
+      0.499969482421875,
+      -0.5,
+      0.99993896484375,
+      -0.999969482421875,
+      0.999969482421875,
+      -1,
+      0.999969482421875,
+      -1,
+      0.123443603515625,
+      -0.123443603515625
+    ],
+    "level": 0.260810854208184,
+    "emittedAfterFirst": 0,
+    "emittedAfterFull": 1,
+    "chunkBytes": 4800,
+    "scheduled": [
+      0,
+      0.1
+    ],
+    "oddError": "Invalid Live audio.",
+    "mutedTrackEnabled": false,
+    "tracksStopped": true
+  },
+  "sanitizedErrors": [
+    {
+      "code": "PROVIDER_ERROR",
+      "message": "The selected provider could not complete the request. Please try again.",
+      "referenceId": "err_46b145eb-35c8-4979-9494-125c8e3a119a",
+      "source": "provider",
+      "recovery": {
+        "action": "retry",
+        "canRetry": true
+      },
+      "metadata": {
+        "feature": "voice-narration",
+        "operation": "synthesize"
+      }
+    },
+    {
+      "code": "PROVIDER_ERROR",
+      "message": "The selected provider could not complete the request. Please try again.",
+      "referenceId": "err_b6b56b45-2829-413e-b15e-2a13c3e68de9",
+      "source": "provider",
+      "recovery": {
+        "action": "retry",
+        "canRetry": true
+      },
+      "metadata": {
+        "feature": "voice-narration",
+        "operation": "synthesize"
+      }
+    }
+  ]
+}

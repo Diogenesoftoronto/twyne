@@ -1,0 +1,45 @@
+{
+  "state": "FROZEN_FOR_PARENT_REVIEW",
+  "runtimePatchApplied": false,
+  "ownership": "Only NEW src/editor/atom_renderer_lifecycle.rs and fixtures/math-write/renderer-epoch/**",
+  "verified": {
+    "rustfmtSyntaxFormat": "PASS",
+    "unappliedPatchApplyCheck": "PASS",
+    "ownedFixtureInventory": "PASS;2 pure+10 GPUI entity regressions authored"
+  },
+  "unrun": [
+    "Rust compilation/Cargo",
+    "all12 Rust regressions",
+    "actual asynchronous race",
+    "native/browser/input/OS acceptance"
+  ],
+  "currentSourceAdmitted": false,
+  "fontOrPolicyChanges": false,
+  "dependenciesChanged": false,
+  "integration": [
+    "Private atom_lifecycle child module in editor/view.rs",
+    "PendingAtom receipt + checked lifecycle field",
+    "old setter/queue/start/completion methods replaced by new module",
+    "deferred visible frame epoch/block capture",
+    "view document/read-only retirement hooks",
+    "actual MathSourceHostContext owner transition retirement hook"
+  ],
+  "limits": [
+    "Synchronous render already running can finish old immutable renderer cache",
+    "Same renderer reuse keeps original semaphore/Busy and queue/map retention behavior",
+    "Source/raw keys checked and current node/offset guarded; no geometry admission or source generation",
+    "Deterministic constructed completions are not async/OS receipts"
+  ],
+  "tests": {
+    "pure": 2,
+    "gpuiEntity": 10
+  },
+  "sha256": {
+    "desktop/gpui/src/editor/atom_renderer_lifecycle.rs": "b4a9cc1de8444001ca53de5f4d472f336ca9b08e5444fd8b2260529885663920",
+    "desktop/gpui/fixtures/math-write/renderer-epoch/README.md": "231108011393572631f225cf9796c604ae0ce605347422c5c1a0e3da7cb0067c",
+    "desktop/gpui/fixtures/math-write/renderer-epoch/contract.json": "a8a017137657e03b52de6b3f9f8c67e33fc1eab005b1b4f62a82e36ea777a018",
+    "desktop/gpui/fixtures/math-write/renderer-epoch/integration.patch": "212333b15c544d9dc0a4283587c16bd1907ee4f032cb5268a198fe8b298d50b6",
+    "desktop/gpui/fixtures/math-write/renderer-epoch/lifecycle_tests.rs": "8837c01c58f208c20b16cc7fc5fc51338eefd702fdc91b43ff699da619256656",
+    "desktop/gpui/fixtures/math-write/renderer-epoch/patch-base.json": "1f5c0f6ee43d68f66254f4cf4ecd58476ad3c6c669152975ddeaefd8bedd4d83"
+  }
+}

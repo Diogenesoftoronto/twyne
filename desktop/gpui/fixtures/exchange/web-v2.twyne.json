@@ -1,0 +1,141 @@
+{
+  "version": 2,
+  "exportedAt": "2026-10-04T00:00:00.000Z",
+  "title": "Field and form",
+  "brief": {
+    "answers": {
+      "workingTitle": "Field and form",
+      "format": "Essay",
+      "audience": "Writers who keep notebooks",
+      "goal": "Make the ordinary visible",
+      "tone": "Attentive and direct",
+      "constraints": "Keep the source, marks, and uncertainty",
+      "successSignal": "The reader notices one small thing"
+    },
+    "attachments": [
+      {
+        "id": "attachment-document",
+        "kind": "document",
+        "title": "A clipped field note",
+        "text": "First line\r\nSecond line — Å",
+        "why": "A detail the draft should preserve",
+        "addedAt": 1791072000000
+      },
+      {
+        "id": "attachment-link",
+        "kind": "link",
+        "title": "A primary source",
+        "url": "https://example.com/source?q=field&n=1",
+        "why": "The source for a claim",
+        "addedAt": 1791072000001
+      }
+    ],
+    "completedAt": 1791072000000,
+    "updatedAt": 1791072000002,
+    "probes": [
+      {
+        "id": "choice",
+        "kind": "choice",
+        "prompt": "How should the reader feel?",
+        "options": ["Focused", "Restless"],
+        "answer": "Focused",
+        "relatesTo": "tone"
+      },
+      {
+        "id": "multi",
+        "kind": "multi",
+        "prompt": "Which threads matter?",
+        "options": ["History", "Form", "Time"],
+        "answer": ["History", "Form"],
+        "relatesTo": "goal"
+      },
+      {
+        "id": "blanks",
+        "kind": "blanks",
+        "prompt": "Finish the sentence.",
+        "template": "The reader should ___ and then ___.",
+        "answer": ["notice", "write"],
+        "relatesTo": "successSignal"
+      },
+      {
+        "id": "scale",
+        "kind": "scale",
+        "prompt": "How wide is the audience?",
+        "min": 0,
+        "max": 10,
+        "minLabel": "One writer",
+        "maxLabel": "Everyone",
+        "answer": 7.5,
+        "relatesTo": "audience"
+      },
+      {
+        "id": "unanswered",
+        "kind": "choice",
+        "prompt": "Still undecided?",
+        "options": ["Yes", "No"]
+      }
+    ]
+  },
+  "folios": [
+    {
+      "id": "folio-draft-non-uuid",
+      "name": "Field and form",
+      "type": "draft",
+      "createdAt": 1791072000000,
+      "updatedAt": 1791072000004,
+      "layout": {
+        "width": "wide",
+        "margin": "normal",
+        "marginX": 2.25,
+        "marginLeft": 1.75,
+        "marginRight": 2.5,
+        "marginTop": 1.25,
+        "marginBottom": 1.75,
+        "runningHeader": true,
+        "pageNumbers": true,
+        "showMarginGuides": false,
+        "paper": "a4",
+        "orientation": "portrait",
+        "marginUnit": "mm",
+        "openingInitial": {
+          "mode": "illuminated",
+          "collection": "alternate",
+          "size": "large"
+        },
+        "pageBorder": "engraved",
+        "columns": 2,
+        "columnGap": 1.75
+      },
+      "header": "Running header — Å",
+      "footer": "Private draft / folio 7"
+    },
+    {
+      "id": "folio-notes-non-uuid",
+      "name": "Field notes",
+      "type": "notes",
+      "createdAt": 1791071999995,
+      "updatedAt": 1791072000001,
+      "layout": {
+        "width": "normal",
+        "margin": "roomy",
+        "runningHeader": false,
+        "pageNumbers": false,
+        "pagination": "paginated"
+      },
+      "header": "",
+      "footer": ""
+    },
+    {
+      "id": "folio-outline-non-uuid",
+      "name": "Structure",
+      "type": "outline",
+      "createdAt": 1791071999999,
+      "updatedAt": 1791072000000
+    }
+  ],
+  "content": {
+    "html": "<p>Stale HTML — <em>this is not the canonical manuscript</em>.</p>",
+    "format": "typst",
+    "typstSource": "// Preserve my native source, including unknown syntax.\r\n#let double(x) = x * 2\r\n\r\n= Canonical Å — café\r\n\r\nThe canonical manuscript has *emphasis*, a 🧵, and custom code.\r\n#double(21)\r\n"
+  }
+}

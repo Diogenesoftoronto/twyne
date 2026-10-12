@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "scope": "Read-only input/hash inspection only. Checker/tests/browser/native were not executed by this worker.",
+  "checkpoint": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd",
+  "originalObserver": {
+    "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/observe.js",
+    "bytes": 15752,
+    "sha256": "e962aec7f943b034b49eefd4f915d91cdf7fdcc9c07750fdc5c173c9813d88dd"
+  },
+  "actualCollectorBoundary": "Opened inspected observations declare viewport screenshotCapture; original observer is full-page. Parent adapter provenance is independent. Future DOM-only collection is allowed only with retained Parent provenance and unchanged Source/CDP guards; this manifest creates no new observation.",
+  "reviewedArtifacts": [
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/01-closed-css.png",
+      "bytes": 64785,
+      "sha256": "460ef149e5b3dc2582aa177feaae6355c718968bcee6adffd81abf3e090d61fa",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/01-closed-dom-snapshot.json",
+      "bytes": 30527,
+      "sha256": "254657eb3fd656052506f58f094f9b5a18405d7208deee13ba9dea8dc7b05fe7",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/01-closed-snapshot.txt",
+      "bytes": 1797,
+      "sha256": "7192ecc7d8b047dd02fa0cc974f712e506c72b75d7c17bb89896f7865ee745d7",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/01-closed.json",
+      "bytes": 90437,
+      "sha256": "62a4e031a0a2758db04ea87b3510583b302da1c87377602febe5639a52336c70",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/01-open-markers-action.json",
+      "bytes": 17899,
+      "sha256": "5eb8991d62d3b563ed7e2271e94a133e10eb23af4118b2e5c03ba6fc3ebe10e8",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/02-open-control-action.json",
+      "bytes": 18454,
+      "sha256": "2cc616c93dc6c9b05877e35ef9696a309d7c66e19d0fafe7dd0178bb19281e8c",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/02-open-markers-css.png",
+      "bytes": 75970,
+      "sha256": "e0ae8df3249258c2e5b7d0d87ec7cb42efec622a11f6158a5141032f9d14eadf",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/02-open-markers-dom-snapshot.json",
+      "bytes": 34613,
+      "sha256": "c049e4edd372d874686e725adf591eb53d30a06707f1feab2a2059384fe36954",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/02-open-markers-snapshot.txt",
+      "bytes": 2126,
+      "sha256": "45a92c367c958930736aa2014c114491d18ff32df41f5b08832b3c4a8d20d0a5",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/02-open-markers.json",
+      "bytes": 145877,
+      "sha256": "9a77194709e3c6c7ed351c4bb5fce44878b253ef242a5c80176a96451245632c",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/03-open-control-css.png",
+      "bytes": 84038,
+      "sha256": "e525de3d9bcc20d747a7a905329ddf059c3a3f5c6756f48da60473aa5639650a",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/03-open-control-dom-snapshot.json",
+      "bytes": 36919,
+      "sha256": "d2a37a964373b0e8ccf1ce97547a394b64254af80fc17a2d41317d0053e452ca",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/03-open-control-snapshot.txt",
+      "bytes": 2509,
+      "sha256": "a6fd9f3805a517609c867ae874b5149401d7313e9274f1c9526b8a5da2672409",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/03-open-control.json",
+      "bytes": 200044,
+      "sha256": "38a29aba4c3b344e6b647e5c3ab28ba64ef0f8e3b04a8a2620916a7aa352ad78",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/configuration.json",
+      "bytes": 8678,
+      "sha256": "b016bc646beb35eab093b2815bff4b418a10e6b30d65b9399332fa05adf8d269",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/failure-1791186268117.json",
+      "bytes": 9615,
+      "sha256": "4d96c5789075f041f058b0bcb5bad0fbbeb2d92bae2b7984f4e8e973f05f1426",
+      "kind": "RETAINED_FAILURE_NOT_ADMITTED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/failure-1791186344315.json",
+      "bytes": 9616,
+      "sha256": "489d795b5c5c2a98d2fd0ace0adc2f6d33d6c25e99525d8a02eb1d6675e00b1c",
+      "kind": "RETAINED_FAILURE_NOT_ADMITTED"
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-81c2a7c3-f7be-416e-83a8-669b8a6383cd/server-provenance.json",
+      "bytes": 6530,
+      "sha256": "1553195ad7297040487a85a5bd0336f4c9b71fa21afdd7ceb7c4ae27a1366707",
+      "kind": "PARENT_ARTIFACT_UNREPLAYED"
+    }
+  ],
+  "sourceComparisonAtAuthoring": [
+    {
+      "path": "src/root.tsx",
+      "provenanceSha256": "782141e806ce60765944cfbe70a9d8c497e8b37b1b09c5e8a46e971c4a99839b",
+      "current": {
+        "path": "src/root.tsx",
+        "bytes": 4915,
+        "sha256": "782141e806ce60765944cfbe70a9d8c497e8b37b1b09c5e8a46e971c4a99839b"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "src/global.css",
+      "provenanceSha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+      "current": {
+        "path": "src/global.css",
+        "bytes": 205797,
+        "sha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "src/components/editor/extensions/math.ts",
+      "provenanceSha256": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2",
+      "current": {
+        "path": "src/components/editor/extensions/math.ts",
+        "bytes": 9377,
+        "sha256": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "src/components/editor/math/math-source-editor.ts",
+      "provenanceSha256": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb",
+      "current": {
+        "path": "src/components/editor/math/math-source-editor.ts",
+        "bytes": 6477,
+        "sha256": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "src/components/editor/math/math-renderer.ts",
+      "provenanceSha256": "0babc59d53aaf2ae9d3e23cf7dc7b2a98243e9d6682fecf622eda1eaddb02472",
+      "current": {
+        "path": "src/components/editor/math/math-renderer.ts",
+        "bytes": 2369,
+        "sha256": "0babc59d53aaf2ae9d3e23cf7dc7b2a98243e9d6682fecf622eda1eaddb02472"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "src/components/editor/math/math.css",
+      "provenanceSha256": "f29bbdea2806650b758422416d2a8e08a5a985f908feeddc8442362c412308b0",
+      "current": {
+        "path": "src/components/editor/math/math.css",
+        "bytes": 3950,
+        "sha256": "f29bbdea2806650b758422416d2a8e08a5a985f908feeddc8442362c412308b0"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "src/components/editor/math/katex.min.css",
+      "provenanceSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+      "current": {
+        "path": "src/components/editor/math/katex.min.css",
+        "bytes": 27211,
+        "sha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "node_modules/@tiptap/core/package.json",
+      "provenanceSha256": "33458eb2a6d085c60d13b3a467a3549521a3ec0c70163a851f47f2e963f2e842",
+      "current": {
+        "path": "node_modules/@tiptap/core/package.json",
+        "bytes": 1646,
+        "sha256": "33458eb2a6d085c60d13b3a467a3549521a3ec0c70163a851f47f2e963f2e842"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "node_modules/@tiptap/starter-kit/package.json",
+      "provenanceSha256": "731f367feb38431200df4de2c657e6afa26a747446221cc3c1c5a0a860a51cdb",
+      "current": {
+        "path": "node_modules/@tiptap/starter-kit/package.json",
+        "bytes": 2018,
+        "sha256": "731f367feb38431200df4de2c657e6afa26a747446221cc3c1c5a0a860a51cdb"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "node_modules/katex/package.json",
+      "provenanceSha256": "866b2c9be9067df41e016cd8e59722c21a282040b4fee39964f07a6c66969a9a",
+      "current": {
+        "path": "node_modules/katex/package.json",
+        "bytes": 6437,
+        "sha256": "866b2c9be9067df41e016cd8e59722c21a282040b4fee39964f07a6c66969a9a"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "desktop/gpui/target/verification/source-nodeview-server.ts",
+      "provenanceSha256": "badf2923774eed24303a6d234fe6883e045398c21ba4f1ede696568d5ddc793e",
+      "current": {
+        "path": "desktop/gpui/target/verification/source-nodeview-server.ts",
+        "bytes": 2391,
+        "sha256": "badf2923774eed24303a6d234fe6883e045398c21ba4f1ede696568d5ddc793e"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/nodeview/original.css",
+      "provenanceSha256": "71ddc6c68996dc01fed4c53b636dac92d573440504478b8cda76a4778ae701b7",
+      "current": {
+        "path": "desktop/gpui/fixtures/math-write/nodeview/original.css",
+        "bytes": 278414,
+        "sha256": "71ddc6c68996dc01fed4c53b636dac92d573440504478b8cda76a4778ae701b7"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/nodeview/original-fonts.css",
+      "provenanceSha256": "5c246196d8cbfd3f37845f4539c07d5dc0d9a763c6097e441ec398df18b0de56",
+      "current": {
+        "path": "desktop/gpui/fixtures/math-write/nodeview/original-fonts.css",
+        "bytes": 7808,
+        "sha256": "5c246196d8cbfd3f37845f4539c07d5dc0d9a763c6097e441ec398df18b0de56"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/nodeview/font-replay.json",
+      "provenanceSha256": "b55044a7548613480247c1bb7e36fa740b7a94efe02548035ce1ea4601c8b4fb",
+      "current": {
+        "path": "desktop/gpui/fixtures/math-write/nodeview/font-replay.json",
+        "bytes": 2723,
+        "sha256": "b55044a7548613480247c1bb7e36fa740b7a94efe02548035ce1ea4601c8b4fb"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/cases.json",
+      "provenanceSha256": "4d3334dc4c37922db8750d83a20fcca195bd7c587d7886669f2f8d9dcaf14079",
+      "current": {
+        "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/cases.json",
+        "bytes": 1725,
+        "sha256": "4d3334dc4c37922db8750d83a20fcca195bd7c587d7886669f2f8d9dcaf14079"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/client.ts",
+      "provenanceSha256": "a8c61d83b5dcb6a33f583624914e448a4ae08259d32def0458aa089e940b2beb",
+      "current": {
+        "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/client.ts",
+        "bytes": 8604,
+        "sha256": "a8c61d83b5dcb6a33f583624914e448a4ae08259d32def0458aa089e940b2beb"
+      },
+      "currentMatchesInspectedProvenance": true
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/fixture-server.ts",
+      "provenanceSha256": "e997a23fc2eb325ba22d6248556321560eb645b3ba5a972df6695a58edb0cdec",
+      "current": {
+        "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/fixture-server.ts",
+        "bytes": 10957,
+        "sha256": "e997a23fc2eb325ba22d6248556321560eb645b3ba5a972df6695a58edb0cdec"
+      },
+      "currentMatchesInspectedProvenance": true
+    }
+  ],
+  "unexecutedParentBatch": "desktop/gpui/target/verification/source-inline-geometry-batch-f2f71c6c1c07",
+  "notes": [
+    "Original successful and failure receipts remain unchanged.",
+    "Observed empty textarea selected-font lists and absence of visible field text rows are not upgraded to font/caret proof.",
+    "Current source hash inspection is not receipt authenticity or runtime proof."
+  ]
+}

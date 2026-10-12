@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=1080, height=1920"/>
+<title>Twyne — The Strike</title><script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<link rel="stylesheet" href="assets/twyne-base.css"/><style>
+.paper-bg {background:#f4ecd8}
+.photo {position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.sheet {position:absolute;inset:90px 70px;background:#f4ecd8;box-shadow:0 15px 70px rgba(31,27,22,.24)}
+.head {position:absolute;left:125px;right:125px;top:160px;display:flex;justify-content:space-between;font-family:var(--type);font-size:28px;letter-spacing:.1em;color:var(--ink-muted)}
+.rule {position:absolute;left:125px;right:125px;top:224px;height:3px;background:#d6c9a8;transform-origin:left}
+.phrase {position:absolute;left:130px;right:130px;top:520px;font-family:var(--display);font-size:84px;line-height:1.24}
+.old {position:relative;display:inline-block}.old i {position:absolute;left:-8px;right:-8px;top:52%;height:8px;border-radius:3px;background:var(--vermilion);transform-origin:left;transform:scaleX(var(--hf-strike-progress,0))}
+.new {font-style:italic;color:#a51f24;display:block;margin-top:38px;opacity:var(--hf-replace-opacity,0)}
+.note {position:absolute;left:130px;top:1010px;right:130px;font-family:var(--type);font-size:33px;color:#5f5545;line-height:1.5}
+.end {position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#f4ecd8}
+.end img {width:175px;height:175px}.wm {font-family:var(--display);font-size:132px;font-weight:700;letter-spacing:.06em;margin:35px 0}
+.tag {font-family:var(--serif);font-size:45px;line-height:1.35;width:770px;font-style:italic}.url {font-family:var(--sans);font-size:42px;color:#a51f24;margin-top:65px;letter-spacing:.08em}
+.footer {position:absolute;left:130px;bottom:245px;font-family:var(--type);font-size:30px;letter-spacing:.1em;color:#5f5545}
+</style></head><body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="15" data-width="1080" data-height="1920" data-fps="30">
+<div class="paper-bg"></div><video id="page-a" data-playback-rate="0.9" class="clip photo" src="assets/video/v-blank-vertical.mp4" muted playsinline data-start="0" data-duration="5.3" data-track-index="0"></video><video id="page-b" data-playback-rate="0.9" class="clip photo" src="assets/video/v-blank-vertical.mp4" muted playsinline data-start="5.3" data-duration="5.5" data-track-index="0"></video><div class="sheet"></div>
+<div id="page-head" class="head"><span>TWYNE</span><span>Draft / Revise</span></div><div class="rule" id="rule"></div>
+<section id="scene-1" class="clip" data-start="0" data-duration="5.3" data-track-index="1"><div class="phrase"><span class="old" id="old1"><span id="type1">Write faster.</span><i></i></span><strong class="new" id="new1">Write something<br>worth reading.</strong></div><div class="note" id="note1">A copy chief would make that cut.</div></section>
+<section id="scene-2" class="clip" data-start="5.3" data-duration="5.5" data-track-index="1"><div class="phrase"><span class="old" id="old2"><span id="type2">A blank page.</span><i></i></span><strong class="new" id="new2">A brief.<br>A room full of editors.</strong></div><div class="note" id="note2">A better place to start.</div></section>
+<div id="page-footer" class="footer">The sentence is still yours.</div>
+<section id="scene-3" class="clip" data-start="10.8" data-duration="4.2" data-track-index="2"><div class="end"><img id="mark" src="assets/img/griffin-red.svg" alt=""/><div class="wm" id="wm">TWYNE</div><div class="tag" id="tag">Draft with a room full of editors.</div><div class="url" id="url">twyne.love</div></div></section>
+<audio id="music" src="assets/audio/m-strike-cut.wav" data-start="0" data-duration="15" data-track-index="10" data-volume=".9"></audio>
+<audio id="typing1" src="assets/sfx/typing.mp3" data-start=".5" data-duration="1.3" data-volume=".3" data-track-index="11"></audio>
+<audio id="typing2" src="assets/sfx/typing.mp3" data-start="5.6" data-duration="1.3" data-volume=".3" data-track-index="11"></audio>
+<audio id="strike1" src="assets/sfx/whoosh-short.mp3" data-start="2.05" data-duration=".55" data-volume=".22" data-track-index="12"></audio>
+<audio id="strike2" src="assets/sfx/whoosh-short.mp3" data-start="7.2" data-duration=".55" data-volume=".22" data-track-index="12"></audio>
+</div><script src="assets/js/twyne-kit.js"></script><script src="assets/js/words.js"></script><script>
+const tl=gsap.timeline({paused:true});
+tl.fromTo("#rule",{scaleX:0},{scaleX:1,duration:.5,ease:"power2.out"},.2);
+TK.type(tl,document.querySelector("#type1"),.5,{cps:15});TK.type(tl,document.querySelector("#type2"),5.6,{cps:15});
+tl.to(["#page-head","#page-footer","#rule"],{opacity:0,duration:.2},10.6);
+// Registry strikethrough-replace integration, with Twyne typography and copy.
+[[1,2.05],[2,7.2]].forEach(([i,at])=>{
+tl.fromTo("#old"+i+" i",{"--hf-strike-progress":0},{"--hf-strike-progress":1,duration:.28,ease:"power2.out"},at);
+tl.fromTo("#new"+i,{"--hf-replace-opacity":0,y:14},{"--hf-replace-opacity":1,y:0,duration:.4,ease:"power2.out"},at+.24);
+tl.fromTo("#note"+i,{opacity:0},{opacity:1,duration:.4},at+.8);
+});
+tl.fromTo("#mark",{opacity:0,scale:.85},{opacity:1,scale:1,duration:.6,ease:"back.out(1.2)"},10.85);
+tl.fromTo("#wm",{opacity:0,y:28},{opacity:1,y:0,duration:.65,ease:"expo.out"},11.1);
+tl.fromTo("#tag",{opacity:0},{opacity:1,duration:.5},11.6);
+tl.fromTo("#url",{opacity:0},{opacity:1,duration:.45},12.2);
+window.__timelines["main"]=tl;
+</script></body></html>

@@ -1,0 +1,13 @@
+{
+  "status": "frozen additive authored adapter; unapplied/unexecuted",
+  "ownedFiles": {
+    "x11_driver.py": "f775ec236e7de2d4a975c9700b2c6477edf821de73a4bf686de51e52267d715f",
+    "x11-runner.patch": "65e70e8df09414a4d6499edee0612907bf9e5d42716365a63c64f340f1cf0fc0",
+    "X11_ADAPTER.md": "c3330d159c0e64439fa7c9dbe80ab769df827aa6285bf1b7fe0ef2d073029856",
+    "x11-adapter-pins.json": "a86800159b40dffdad72e3b4f9471ca5a6d47088faee3493a70e33f88958bfcf"
+  },
+  "baselineRunnerUnchanged": true,
+  "pixelCheckerUnchanged": true,
+  "noNativeExecution": true,
+  "noCompiledGPUProof": true
+}

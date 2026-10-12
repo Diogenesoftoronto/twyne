@@ -1,3 +1,4 @@
+import { AccountKnowledge } from "../../components/knowledge/account-knowledge";
 import {
   component$,
   useStore,
@@ -1195,6 +1196,10 @@ export default component$(() => {
             )}
           </section>
         )}
+
+        <section class="mt-6">
+          <AccountKnowledge compact />
+        </section>
 
         {/* Knowledge bases — documents the writer's MCP servers expose. */}
         {store.mcpDocuments.length > 0 && (

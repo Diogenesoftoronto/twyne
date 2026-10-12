@@ -1,0 +1,35 @@
+{
+  "recordedAt": "2026-10-05T01:04:03.716719+00:00",
+  "scope": "isolated native parser against executed unchanged Source; full AI runtime, providers and mounted consumers remain pending",
+  "source": {
+    "tests": 10,
+    "assertions": 240,
+    "failed": 0,
+    "sha256": {
+      "src/utils/generation-stream.ts": "000a846f48fae1bb3310e09c83617b349b7696bbc320f24fb667db09b3c389d4",
+      "src/utils/reasoning-tags.ts": "7f072f056b0821aeca4c216a0e0432f3748a058833063f09df81f24decc8f338",
+      "src/utils/interview-stream.ts": "3509f3ce104611bd4b916423336c3fb1818b995de5734c69955f3875fe43b617"
+    }
+  },
+  "rust": {
+    "tests": 4,
+    "failed": 0,
+    "compiler": "rustc1.95.0",
+    "mode": "standalone test binary with existing cached serde, serde_json and regex"
+  },
+  "cases": {
+    "reasoning": 32,
+    "generation": 23,
+    "interview": 45,
+    "textSnapshots": 8,
+    "snapshotFromRecord": 8
+  },
+  "pushSnapshots": 81,
+  "reviewCorrection": "chunkCase now sends successive characters rather than concatenating full prefixes",
+  "files": {
+    "src/native_ai/stream_accumulator.rs": "39cb95543ebf50d927c4161e9ae35a3117d5c7ce66845a19d24e463f663d5495",
+    "src/native_ai/stream_tests.rs": "af321282597d826c28d2f93c1313987d5e863b4625e82ae37aa24dfab31407b4",
+    "fixtures/native-ai/stream-contract/generate.ts": "6fbad25db23a26f0c8c1b9374146105ec506818fa8def0660ee086cc257e2bce",
+    "fixtures/native-ai/stream-contract/source-vectors.json": "35bc4d19cd236a48ddd529dc2bc3abd1eec7f8f7d10a1fe472b4bb1efde32c11"
+  }
+}

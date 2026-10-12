@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "generator": "desktop/gpui/fixtures/distribution/generate-reference.ts",
+  "note": "Loader metadata and hashes of the real native binaries and original metadata assets. No binary bytes are embedded. These values describe the current local build only and are not cross-platform proof.",
+  "binaries": {
+    "desktop": {
+      "bytes": 36361824,
+      "sha256": "2d4aa69c83338d90911636c3bc362b3e663e34ab1e2ae55c8b8a3c88d1698251",
+      "dependencies": {
+        "format": "elf",
+        "libraries": [
+          "libxcb.so.1",
+          "libxkbcommon.so.0",
+          "libxkbcommon-x11.so.0",
+          "libgcc_s.so.1",
+          "libm.so.6",
+          "libc.so.6",
+          "ld-linux-x86-64.so.2"
+        ],
+        "interpreter": "/lib64/ld-linux-x86-64.so.2",
+        "runpaths": [],
+        "architecture": "x86_64"
+      }
+    },
+    "document": {
+      "bytes": 89699808,
+      "sha256": "22749e4dfbeed0dd723b8a440dc49f922aeec793ba52366f59453504d20c10db",
+      "dependencies": {
+        "format": "elf",
+        "libraries": [
+          "libc.so.6",
+          "ld-linux-x86-64.so.2",
+          "libpthread.so.0",
+          "libdl.so.2",
+          "libm.so.6"
+        ],
+        "interpreter": "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2",
+        "runpaths": [],
+        "architecture": "x86_64"
+      }
+    },
+    "math-write": {
+      "present": false
+    }
+  },
+  "assets": {
+    "assets/public/icon-512.png": {
+      "bytes": 44775,
+      "sha256": "35cb9e9e3be5b8e2041c42bd85764aa05b122ef7e20cb5820128d0d3165ed861"
+    },
+    "assets/public/icon-192.png": {
+      "bytes": 2264,
+      "sha256": "1622efd1cf4c60d07c55e1c47e848e0595323ce0916b1820b85b050a5bb953ef"
+    },
+    "assets/public/favicon.ico": {
+      "bytes": 13294,
+      "sha256": "12dc114bd59663268117dcb41d131ecb4d487123fb4ace1c0c8b08ddcc3746c2"
+    },
+    "assets/public/favicon.svg": {
+      "bytes": 3536,
+      "sha256": "7c2ecc0a99f53dab21d16109e731e64717c34c9021e814f998f38ea996e547fc"
+    },
+    "assets/NOTICE.md": {
+      "bytes": 6433,
+      "sha256": "8a5733314ae5ac829b5a56f0ec982614be9c42e744d9a93135e3d399eff67330"
+    },
+    "assets/fonts/LICENSE": {
+      "bytes": 9723,
+      "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+    },
+    "assets/fonts/NOTICE": {
+      "bytes": 22100,
+      "sha256": "e33cd2ec7ac4730aff2497293c4012cfeb2560099563cc2fafc30ff120433d06"
+    },
+    "vendor/gpui-base/LICENSE-APACHE": {
+      "bytes": 10305,
+      "sha256": "d1b0449e5478c574ba4f686c2656df7fe77d66821a61f8b6ed3378a58ed9a811"
+    },
+    "licenses/hypher-LICENSE-APACHE": {
+      "bytes": 9723,
+      "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+    },
+    "licenses/hypher-LICENSE-MIT": {
+      "bytes": 1036,
+      "sha256": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1"
+    }
+  }
+}

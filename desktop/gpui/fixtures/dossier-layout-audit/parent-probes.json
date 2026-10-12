@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "status": "Authored only; none of these probes was executed by this audit",
+  "scope": "Parent-owned anonymous original fixture and fresh native data/display only",
+  "controls": {
+    "sharedNativeIds": ["dossier-form", "dossier-left-leaf", "dossier-question-leaf", "dossier-question-sheet", "dossier-active-question", "dossier-question", "dossier-answer-0", "dossier-answer-2", "dossier-ghost-above", "dossier-ghost-below", "dossier-back", "dossier-next"],
+    "nativeStepId": "(dossier-section, zero-based usize)",
+    "sourceReadCollector": "source-probe.js captureDossierLayout(), not executed",
+    "nativeReadCollector": "Existing capture-geometry-watch; no simulated callbacks",
+    "nativeSnapshotNeed": "Native labels/rendered bounds for title, hint, rail and frame chrome are not all currently observed; Parent may add narrowly scoped IDs in its owned view",
+    "limits": "The authored browser collector cannot establish chosen font face, native renderer geometry, input dispatch or persistence"
+  },
+  "cases": [
+    {
+      "id": "baseline-title",
+      "viewport": [1280, 860], "theme": "editorial", "dpr": 1,
+      "step": 0, "surface": "form", "mode": "create", "motion": "reduced",
+      "assertions": ["Compare fractional original versus actual native frame/leaf/question/card/button bounds", "Record exact current textarea/input values and recovery identity", "Compare header and empty footer colors independently of texture/disabled button pixels"],
+      "existingProof": "Only historical retained1280 title/Audience snapshots; new current comparison pending"
+    },
+    {
+      "id": "below-sm",
+      "viewport": [639, 860], "theme": "editorial", "dpr": 1, "step": 0,
+      "sourceDeclaration": "Frame x12/y12; preview one column; Surface caption hidden; stacked leaves",
+      "mustMeasure": ["Original implicit grid row heights", "Both leaf scroll/client heights", "Actual rail scrollWidth/clientWidth and last-control hit bounds"]
+    },
+    {
+      "id": "at-sm",
+      "viewport": [640, 860], "theme": "editorial", "dpr": 1, "step": 0,
+      "sourceDeclaration": "Frame x20/y16; preview two columns; Surface caption visible; stacked leaves",
+      "mustMeasure": ["Actual row-height change without losing raw field/focus/recovery", "Original and native widths after breakpoint"]
+    },
+    {
+      "id": "below-lg",
+      "viewport": [1023, 860], "theme": "editorial", "dpr": 1, "step": 2,
+      "sourceDeclaration": "Stacked implicit auto grid rows, not a prescribed220px/50percent split",
+      "mustMeasure": ["Original auto track sizes with the same seven current values", "Question available height and lower ghost visibility"]
+    },
+    {
+      "id": "at-lg",
+      "viewport": [1024, 860], "theme": "editorial", "dpr": 1, "step": 2,
+      "sourceDeclaration": "Side-by-side minmax(0,1fr)/minmax(0,1.02fr)",
+      "mustMeasure": ["Same-pass wrapped question/numeral/hint and centering", "Preserved raw value and actual caret after width change"]
+    },
+    {
+      "id": "actual-mobile-width",
+      "viewport": [620, 860], "theme": "nightpress", "dpr": 2, "step": 0,
+      "mustMeasure": ["Original implicit tracks in dark theme", "No assumption that standalone paper620 raster is full-form proof", "Real focused control and horizontal rail scrolling"]
+    },
+    {
+      "id": "short-narrow",
+      "viewport": [320, 320], "theme": "broadsheet", "dpr": 1, "step": 9,
+      "mustMeasure": ["Header department/counter and surface controls do not overlap unexpectedly", "Source frame masks and native footer overflow", "Accessible real Send to press and last Roman button, with rail scrolling if necessary", "Document stays viewport-locked while leaf/input scroll owners remain independent"],
+      "boundary": "Source actual behavior itself must be recorded; do not infer all controls fit from the declarations"
+    },
+    {
+      "id": "above-max-width",
+      "viewport": [1600, 860], "theme": "editorial", "dpr": 1, "step": 0,
+      "sourceDeclaration": "Outer wrapper1472; inset frame x84/w1432; full-viewport paper remains1600wide",
+      "mustMeasure": ["Stamp/title alignment after inner cap", "Background and image origin remain full viewport", "Mask bounds remain on the inset frame"]
+    },
+    {
+      "id": "long-active-answer",
+      "viewport": [620, 860], "theme": "editorial", "dpr": 1, "step": 2,
+      "authoredInput": "A known owned multiline answer beyond500 Unicode scalars, with one long Latin token, line breaks and exact trailing whitespace",
+      "mustMeasure": ["Original unclamped active preview versus bounded native prefix", "Left leaf scroll extent and caret width/placement", "Inactive three-line clamp after leaving the field", "Input/recovery/manuscript values remain exact; no fixture truncation to make geometry pass"]
+    },
+    {
+      "id": "navigation-first-frame",
+      "viewport": [1280, 860], "theme": "editorial", "dpr": 1,
+      "transitions": ["I to III", "III to VIII", "VIII to I"],
+      "mustMeasure": ["Every actual captured frame, not only two identical settled frames", "Sheet height, active question height/y, ghost bounds, scroll offset, focus and input bounds", "Original feed animation separately from centering; reduced-motion comparison first", "No source/value/history changes from measuring"]
+    },
+    {
+      "id": "resize-and-reopen",
+      "theme": "editorial", "dpr": 1, "step": 2,
+      "viewportSequence": [[1280, 860], [620, 860], [1024, 860], [1280, 500]],
+      "mustMeasure": ["Current width-qualified natural question height in the first frame after actual platform bounds notification", "No old measurement/observer/focus effect after cancel and a new same-scope entity mount", "Exact unblurred draft and same owned recovery identity survive ordinary close/reopen", "Native input/caret remains in the actual visible clip"]
+    },
+    {
+      "id": "theme-transition",
+      "viewport": [1280, 860], "dpr": 1, "step": 2,
+      "themeSequence": ["editorial", "nightpress", "broadsheet"],
+      "mustMeasure": ["No geometry change merely from core color preference", "Current image key/scale before paint and honest fallback if preparation fails", "Broadsheet foxing absent but its sheet ink patterns retained", "No stale palette prepared image or altered draft/focus"],
+      "boundary": "Multiply/stamp/atlas acceptance remains the independently reviewed Parent slice"
+    },
+    {
+      "id": "raster-budget-transition",
+      "viewport": [1280, 860], "theme": "editorial", "step": 0,
+      "dprSequence": [1, 2, 3],
+      "sourceDeclaration": "No corresponding native8,388,608pixel cap",
+      "nativeCalculation": "DPR2=4,403,200pixels accepted;DPR3=9,907,200pixels refused",
+      "mustMeasure": ["Actual scale notification and image key", "Explicit honest flat fallback at refusal without stretching old image", "Layout/input/recovery unchanged by texture refusal"],
+      "boundary": "Parent may use only supported owned device/compositor settings; no fake real-device proof from a test setter"
+    },
+    {
+      "id": "filing-and-error-layout",
+      "viewport": [1280, 860], "theme": "editorial", "dpr": 1, "step": 9,
+      "mustMeasure": ["Real guarded filing and acknowledgement, not arbitrary status injection", "Whether saved status paints before successful route departure and whether it consumes height", "Source success overlay is pointer-neutral and does not reflow leaves", "Qualified late error/success cannot alter a new entity/folio recovery or focus", "Existing canonical/imported bytes and nonempty projected HTML preserved"],
+      "boundary": "Existing deterministic stale-receipt tests and eleven-check native filing are distinct proof; this plan did not rerun either"
+    }
+  ],
+  "forbiddenShortcuts": [
+    "No full parity claim from declaration/PNG arithmetic",
+    "No fixed replacement for unmeasured Source grid auto rows",
+    "No font-size fudge, source filler, fake provider activity or rewritten prior receipts",
+    "No global font/wrap change for a local Dossier geometry issue",
+    "No explicit recursive Window draw for measurement or image retirement"
+  ]
+}

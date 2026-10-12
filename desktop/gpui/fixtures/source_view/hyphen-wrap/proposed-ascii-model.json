@@ -1,0 +1,1945 @@
+{
+  "scope": "Proposal-only pure model. Actual Chromium ASCII compatibility context, break-spaces, emergency source-byte cuts, exact original Noto Mono 13px/600unit=7.8px advance. Not a shipping engine change.",
+  "sources": [
+    "https://raw.githubusercontent.com/chromium/chromium/154.0.8037.57/third_party/blink/renderer/platform/text/character_property_data_generator.cc",
+    "https://raw.githubusercontent.com/chromium/chromium/154.0.8037.57/third_party/blink/renderer/platform/text/text_break_iterator.cc"
+  ],
+  "cases": 90,
+  "matches": 90,
+  "results": [
+    {
+      "width": 1280,
+      "id": "marker-ordinary",
+      "source": "// twyne-document:1\n",
+      "breakOffsets": [
+        3,
+        9,
+        19
+      ],
+      "predictedRows": [
+        "// twyne-document:1"
+      ],
+      "browserRows": [
+        "// twyne-document:1"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "ascii-hyphen",
+      "source": "opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        8,
+        17,
+        23,
+        31
+      ],
+      "predictedRows": [
+        "opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "ascii-with-prefix",
+      "source": "prefix opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        7,
+        15,
+        24,
+        30,
+        38
+      ],
+      "predictedRows": [
+        "prefix opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "prefix opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "keyword-hyphen",
+      "source": "#stroke-dash(\"opening-concrete-after-midnight\")\n",
+      "breakOffsets": [
+        8,
+        22,
+        31,
+        37,
+        47
+      ],
+      "predictedRows": [
+        "#stroke-dash(\"opening-concrete-after-midnight\")"
+      ],
+      "browserRows": [
+        "#stroke-dash(\"opening-concrete-after-midnight\")"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "heading-hyphen",
+      "source": "= opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        2,
+        10,
+        19,
+        25,
+        33
+      ],
+      "predictedRows": [
+        "= opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "= opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "comment-hyphen",
+      "source": "// opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        3,
+        11,
+        20,
+        26,
+        34
+      ],
+      "predictedRows": [
+        "// opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "// opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "leading-hyphen",
+      "source": "-opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        1,
+        9,
+        18,
+        24,
+        32
+      ],
+      "predictedRows": [
+        "-opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "-opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "spaced-leading-hyphen",
+      "source": "prefix -opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        7,
+        8,
+        16,
+        25,
+        31,
+        39
+      ],
+      "predictedRows": [
+        "prefix -opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "prefix -opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "numeric-hyphen",
+      "source": "2026-10-04-2026-10-04-2026-10-04\n",
+      "breakOffsets": [
+        5,
+        8,
+        11,
+        16,
+        19,
+        22,
+        27,
+        30,
+        32
+      ],
+      "predictedRows": [
+        "2026-10-04-2026-10-04-2026-10-04"
+      ],
+      "browserRows": [
+        "2026-10-04-2026-10-04-2026-10-04"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "letter-digit",
+      "source": "opening-1234567890-after-midnight\n",
+      "breakOffsets": [
+        8,
+        19,
+        25,
+        33
+      ],
+      "predictedRows": [
+        "opening-1234567890-after-midnight"
+      ],
+      "browserRows": [
+        "opening-1234567890-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "minus-digit",
+      "source": "-12345678901234567890 + -12345678901234567890\n",
+      "breakOffsets": [
+        22,
+        24,
+        45
+      ],
+      "predictedRows": [
+        "-12345678901234567890 + -12345678901234567890"
+      ],
+      "browserRows": [
+        "-12345678901234567890 + -12345678901234567890"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "hyphen-repeat",
+      "source": "opening--concrete---after-midnight\n",
+      "breakOffsets": [
+        8,
+        9,
+        18,
+        19,
+        20,
+        26,
+        34
+      ],
+      "predictedRows": [
+        "opening--concrete---after-midnight"
+      ],
+      "browserRows": [
+        "opening--concrete---after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "space-control",
+      "source": "opening concrete after midnight\n",
+      "breakOffsets": [
+        8,
+        17,
+        23,
+        31
+      ],
+      "predictedRows": [
+        "opening concrete after midnight"
+      ],
+      "browserRows": [
+        "opening concrete after midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "slash-control",
+      "source": "opening/concrete/after/midnight\n",
+      "breakOffsets": [
+        31
+      ],
+      "predictedRows": [
+        "opening/concrete/after/midnight"
+      ],
+      "browserRows": [
+        "opening/concrete/after/midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 1280,
+      "id": "underscore-control",
+      "source": "opening_concrete_after_midnight\n",
+      "breakOffsets": [
+        31
+      ],
+      "predictedRows": [
+        "opening_concrete_after_midnight"
+      ],
+      "browserRows": [
+        "opening_concrete_after_midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "marker-ordinary",
+      "source": "// twyne-document:1\n",
+      "breakOffsets": [
+        3,
+        9,
+        19
+      ],
+      "predictedRows": [
+        "// twyne-document:1"
+      ],
+      "browserRows": [
+        "// twyne-document:1"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "ascii-hyphen",
+      "source": "opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        8,
+        17,
+        23,
+        31
+      ],
+      "predictedRows": [
+        "opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "ascii-with-prefix",
+      "source": "prefix opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        7,
+        15,
+        24,
+        30,
+        38
+      ],
+      "predictedRows": [
+        "prefix opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "prefix opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "keyword-hyphen",
+      "source": "#stroke-dash(\"opening-concrete-after-midnight\")\n",
+      "breakOffsets": [
+        8,
+        22,
+        31,
+        37,
+        47
+      ],
+      "predictedRows": [
+        "#stroke-dash(\"opening-concrete-after-midnight\")"
+      ],
+      "browserRows": [
+        "#stroke-dash(\"opening-concrete-after-midnight\")"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "heading-hyphen",
+      "source": "= opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        2,
+        10,
+        19,
+        25,
+        33
+      ],
+      "predictedRows": [
+        "= opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "= opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "comment-hyphen",
+      "source": "// opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        3,
+        11,
+        20,
+        26,
+        34
+      ],
+      "predictedRows": [
+        "// opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "// opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "leading-hyphen",
+      "source": "-opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        1,
+        9,
+        18,
+        24,
+        32
+      ],
+      "predictedRows": [
+        "-opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "-opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "spaced-leading-hyphen",
+      "source": "prefix -opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        7,
+        8,
+        16,
+        25,
+        31,
+        39
+      ],
+      "predictedRows": [
+        "prefix -opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "prefix -opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "numeric-hyphen",
+      "source": "2026-10-04-2026-10-04-2026-10-04\n",
+      "breakOffsets": [
+        5,
+        8,
+        11,
+        16,
+        19,
+        22,
+        27,
+        30,
+        32
+      ],
+      "predictedRows": [
+        "2026-10-04-2026-10-04-2026-10-04"
+      ],
+      "browserRows": [
+        "2026-10-04-2026-10-04-2026-10-04"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "letter-digit",
+      "source": "opening-1234567890-after-midnight\n",
+      "breakOffsets": [
+        8,
+        19,
+        25,
+        33
+      ],
+      "predictedRows": [
+        "opening-1234567890-after-midnight"
+      ],
+      "browserRows": [
+        "opening-1234567890-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "minus-digit",
+      "source": "-12345678901234567890 + -12345678901234567890\n",
+      "breakOffsets": [
+        22,
+        24,
+        45
+      ],
+      "predictedRows": [
+        "-12345678901234567890 + -12345678901234567890"
+      ],
+      "browserRows": [
+        "-12345678901234567890 + -12345678901234567890"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "hyphen-repeat",
+      "source": "opening--concrete---after-midnight\n",
+      "breakOffsets": [
+        8,
+        9,
+        18,
+        19,
+        20,
+        26,
+        34
+      ],
+      "predictedRows": [
+        "opening--concrete---after-midnight"
+      ],
+      "browserRows": [
+        "opening--concrete---after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "space-control",
+      "source": "opening concrete after midnight\n",
+      "breakOffsets": [
+        8,
+        17,
+        23,
+        31
+      ],
+      "predictedRows": [
+        "opening concrete after midnight"
+      ],
+      "browserRows": [
+        "opening concrete after midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "slash-control",
+      "source": "opening/concrete/after/midnight\n",
+      "breakOffsets": [
+        31
+      ],
+      "predictedRows": [
+        "opening/concrete/after/midnight"
+      ],
+      "browserRows": [
+        "opening/concrete/after/midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 640,
+      "id": "underscore-control",
+      "source": "opening_concrete_after_midnight\n",
+      "breakOffsets": [
+        31
+      ],
+      "predictedRows": [
+        "opening_concrete_after_midnight"
+      ],
+      "browserRows": [
+        "opening_concrete_after_midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "marker-ordinary",
+      "source": "// twyne-document:1\n",
+      "breakOffsets": [
+        3,
+        9,
+        19
+      ],
+      "predictedRows": [
+        "// twyne-document:1"
+      ],
+      "browserRows": [
+        "// twyne-document:1"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "ascii-hyphen",
+      "source": "opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        8,
+        17,
+        23,
+        31
+      ],
+      "predictedRows": [
+        "opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "ascii-with-prefix",
+      "source": "prefix opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        7,
+        15,
+        24,
+        30,
+        38
+      ],
+      "predictedRows": [
+        "prefix opening-concrete-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "prefix opening-concrete-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "keyword-hyphen",
+      "source": "#stroke-dash(\"opening-concrete-after-midnight\")\n",
+      "breakOffsets": [
+        8,
+        22,
+        31,
+        37,
+        47
+      ],
+      "predictedRows": [
+        "#stroke-dash(\"opening-concrete-",
+        "after-midnight\")"
+      ],
+      "browserRows": [
+        "#stroke-dash(\"opening-concrete-",
+        "after-midnight\")"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "heading-hyphen",
+      "source": "= opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        2,
+        10,
+        19,
+        25,
+        33
+      ],
+      "predictedRows": [
+        "= opening-concrete-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "= opening-concrete-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "comment-hyphen",
+      "source": "// opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        3,
+        11,
+        20,
+        26,
+        34
+      ],
+      "predictedRows": [
+        "// opening-concrete-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "// opening-concrete-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "leading-hyphen",
+      "source": "-opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        1,
+        9,
+        18,
+        24,
+        32
+      ],
+      "predictedRows": [
+        "-opening-concrete-after-midnight"
+      ],
+      "browserRows": [
+        "-opening-concrete-after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "spaced-leading-hyphen",
+      "source": "prefix -opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        7,
+        8,
+        16,
+        25,
+        31,
+        39
+      ],
+      "predictedRows": [
+        "prefix -opening-concrete-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "prefix -opening-concrete-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "numeric-hyphen",
+      "source": "2026-10-04-2026-10-04-2026-10-04\n",
+      "breakOffsets": [
+        5,
+        8,
+        11,
+        16,
+        19,
+        22,
+        27,
+        30,
+        32
+      ],
+      "predictedRows": [
+        "2026-10-04-2026-10-04-2026-10-04"
+      ],
+      "browserRows": [
+        "2026-10-04-2026-10-04-2026-10-04"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "letter-digit",
+      "source": "opening-1234567890-after-midnight\n",
+      "breakOffsets": [
+        8,
+        19,
+        25,
+        33
+      ],
+      "predictedRows": [
+        "opening-1234567890-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "opening-1234567890-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "minus-digit",
+      "source": "-12345678901234567890 + -12345678901234567890\n",
+      "breakOffsets": [
+        22,
+        24,
+        45
+      ],
+      "predictedRows": [
+        "-12345678901234567890 + ",
+        "-12345678901234567890"
+      ],
+      "browserRows": [
+        "-12345678901234567890 + ",
+        "-12345678901234567890"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "hyphen-repeat",
+      "source": "opening--concrete---after-midnight\n",
+      "breakOffsets": [
+        8,
+        9,
+        18,
+        19,
+        20,
+        26,
+        34
+      ],
+      "predictedRows": [
+        "opening--concrete---after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "opening--concrete---after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "space-control",
+      "source": "opening concrete after midnight\n",
+      "breakOffsets": [
+        8,
+        17,
+        23,
+        31
+      ],
+      "predictedRows": [
+        "opening concrete after midnight"
+      ],
+      "browserRows": [
+        "opening concrete after midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "slash-control",
+      "source": "opening/concrete/after/midnight\n",
+      "breakOffsets": [
+        31
+      ],
+      "predictedRows": [
+        "opening/concrete/after/midnight"
+      ],
+      "browserRows": [
+        "opening/concrete/after/midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 320,
+      "id": "underscore-control",
+      "source": "opening_concrete_after_midnight\n",
+      "breakOffsets": [
+        31
+      ],
+      "predictedRows": [
+        "opening_concrete_after_midnight"
+      ],
+      "browserRows": [
+        "opening_concrete_after_midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "marker-ordinary",
+      "source": "// twyne-document:1\n",
+      "breakOffsets": [
+        3,
+        9,
+        19
+      ],
+      "predictedRows": [
+        "// twyne-",
+        "document:1"
+      ],
+      "browserRows": [
+        "// twyne-",
+        "document:1"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "ascii-hyphen",
+      "source": "opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        8,
+        17,
+        23,
+        31
+      ],
+      "predictedRows": [
+        "opening-concrete-",
+        "after-midnight"
+      ],
+      "browserRows": [
+        "opening-concrete-",
+        "after-midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "ascii-with-prefix",
+      "source": "prefix opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        7,
+        15,
+        24,
+        30,
+        38
+      ],
+      "predictedRows": [
+        "prefix opening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "prefix opening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "keyword-hyphen",
+      "source": "#stroke-dash(\"opening-concrete-after-midnight\")\n",
+      "breakOffsets": [
+        8,
+        22,
+        31,
+        37,
+        47
+      ],
+      "predictedRows": [
+        "#stroke-",
+        "dash(\"opening-",
+        "concrete-after-",
+        "midnight\")"
+      ],
+      "browserRows": [
+        "#stroke-",
+        "dash(\"opening-",
+        "concrete-after-",
+        "midnight\")"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "heading-hyphen",
+      "source": "= opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        2,
+        10,
+        19,
+        25,
+        33
+      ],
+      "predictedRows": [
+        "= opening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "= opening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "comment-hyphen",
+      "source": "// opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        3,
+        11,
+        20,
+        26,
+        34
+      ],
+      "predictedRows": [
+        "// opening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "// opening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "leading-hyphen",
+      "source": "-opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        1,
+        9,
+        18,
+        24,
+        32
+      ],
+      "predictedRows": [
+        "-opening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "-opening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "spaced-leading-hyphen",
+      "source": "prefix -opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        7,
+        8,
+        16,
+        25,
+        31,
+        39
+      ],
+      "predictedRows": [
+        "prefix -opening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "prefix -opening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "numeric-hyphen",
+      "source": "2026-10-04-2026-10-04-2026-10-04\n",
+      "breakOffsets": [
+        5,
+        8,
+        11,
+        16,
+        19,
+        22,
+        27,
+        30,
+        32
+      ],
+      "predictedRows": [
+        "2026-10-04-2026-",
+        "10-04-2026-10-04"
+      ],
+      "browserRows": [
+        "2026-10-04-2026-",
+        "10-04-2026-10-04"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "letter-digit",
+      "source": "opening-1234567890-after-midnight\n",
+      "breakOffsets": [
+        8,
+        19,
+        25,
+        33
+      ],
+      "predictedRows": [
+        "opening-",
+        "1234567890-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "opening-",
+        "1234567890-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "minus-digit",
+      "source": "-12345678901234567890 + -12345678901234567890\n",
+      "breakOffsets": [
+        22,
+        24,
+        45
+      ],
+      "predictedRows": [
+        "-1234567890123456",
+        "7890 + ",
+        "-1234567890123456",
+        "7890"
+      ],
+      "browserRows": [
+        "-1234567890123456",
+        "7890 + ",
+        "-1234567890123456",
+        "7890"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "hyphen-repeat",
+      "source": "opening--concrete---after-midnight\n",
+      "breakOffsets": [
+        8,
+        9,
+        18,
+        19,
+        20,
+        26,
+        34
+      ],
+      "predictedRows": [
+        "opening--",
+        "concrete---after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "opening--",
+        "concrete---after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "space-control",
+      "source": "opening concrete after midnight\n",
+      "breakOffsets": [
+        8,
+        17,
+        23,
+        31
+      ],
+      "predictedRows": [
+        "opening concrete ",
+        "after midnight"
+      ],
+      "browserRows": [
+        "opening concrete ",
+        "after midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "slash-control",
+      "source": "opening/concrete/after/midnight\n",
+      "breakOffsets": [
+        31
+      ],
+      "predictedRows": [
+        "opening/concrete/",
+        "after/midnight"
+      ],
+      "browserRows": [
+        "opening/concrete/",
+        "after/midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 200,
+      "id": "underscore-control",
+      "source": "opening_concrete_after_midnight\n",
+      "breakOffsets": [
+        31
+      ],
+      "predictedRows": [
+        "opening_concrete_",
+        "after_midnight"
+      ],
+      "browserRows": [
+        "opening_concrete_",
+        "after_midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "marker-ordinary",
+      "source": "// twyne-document:1\n",
+      "breakOffsets": [
+        3,
+        9,
+        19
+      ],
+      "predictedRows": [
+        "// twyne-",
+        "document:1"
+      ],
+      "browserRows": [
+        "// twyne-",
+        "document:1"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "ascii-hyphen",
+      "source": "opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        8,
+        17,
+        23,
+        31
+      ],
+      "predictedRows": [
+        "opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "ascii-with-prefix",
+      "source": "prefix opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        7,
+        15,
+        24,
+        30,
+        38
+      ],
+      "predictedRows": [
+        "prefix ",
+        "opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "prefix ",
+        "opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "keyword-hyphen",
+      "source": "#stroke-dash(\"opening-concrete-after-midnight\")\n",
+      "breakOffsets": [
+        8,
+        22,
+        31,
+        37,
+        47
+      ],
+      "predictedRows": [
+        "#stroke-",
+        "dash(\"openin",
+        "g-concrete-",
+        "after-",
+        "midnight\")"
+      ],
+      "browserRows": [
+        "#stroke-",
+        "dash(\"openin",
+        "g-concrete-",
+        "after-",
+        "midnight\")"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "heading-hyphen",
+      "source": "= opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        2,
+        10,
+        19,
+        25,
+        33
+      ],
+      "predictedRows": [
+        "= opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "= opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "comment-hyphen",
+      "source": "// opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        3,
+        11,
+        20,
+        26,
+        34
+      ],
+      "predictedRows": [
+        "// opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "// opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "leading-hyphen",
+      "source": "-opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        1,
+        9,
+        18,
+        24,
+        32
+      ],
+      "predictedRows": [
+        "-opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "-opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "spaced-leading-hyphen",
+      "source": "prefix -opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        7,
+        8,
+        16,
+        25,
+        31,
+        39
+      ],
+      "predictedRows": [
+        "prefix -",
+        "opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "prefix -",
+        "opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "numeric-hyphen",
+      "source": "2026-10-04-2026-10-04-2026-10-04\n",
+      "breakOffsets": [
+        5,
+        8,
+        11,
+        16,
+        19,
+        22,
+        27,
+        30,
+        32
+      ],
+      "predictedRows": [
+        "2026-10-04-",
+        "2026-10-04-",
+        "2026-10-04"
+      ],
+      "browserRows": [
+        "2026-10-04-",
+        "2026-10-04-",
+        "2026-10-04"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "letter-digit",
+      "source": "opening-1234567890-after-midnight\n",
+      "breakOffsets": [
+        8,
+        19,
+        25,
+        33
+      ],
+      "predictedRows": [
+        "opening-",
+        "1234567890-",
+        "after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "opening-",
+        "1234567890-",
+        "after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "minus-digit",
+      "source": "-12345678901234567890 + -12345678901234567890\n",
+      "breakOffsets": [
+        22,
+        24,
+        45
+      ],
+      "predictedRows": [
+        "-12345678901",
+        "234567890 + ",
+        "-12345678901",
+        "234567890"
+      ],
+      "browserRows": [
+        "-12345678901",
+        "234567890 + ",
+        "-12345678901",
+        "234567890"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "hyphen-repeat",
+      "source": "opening--concrete---after-midnight\n",
+      "breakOffsets": [
+        8,
+        9,
+        18,
+        19,
+        20,
+        26,
+        34
+      ],
+      "predictedRows": [
+        "opening--",
+        "concrete---",
+        "after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "opening--",
+        "concrete---",
+        "after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "space-control",
+      "source": "opening concrete after midnight\n",
+      "breakOffsets": [
+        8,
+        17,
+        23,
+        31
+      ],
+      "predictedRows": [
+        "opening ",
+        "concrete ",
+        "after ",
+        "midnight"
+      ],
+      "browserRows": [
+        "opening ",
+        "concrete ",
+        "after ",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "slash-control",
+      "source": "opening/concrete/after/midnight\n",
+      "breakOffsets": [
+        31
+      ],
+      "predictedRows": [
+        "opening/conc",
+        "rete/after/m",
+        "idnight"
+      ],
+      "browserRows": [
+        "opening/conc",
+        "rete/after/m",
+        "idnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 160,
+      "id": "underscore-control",
+      "source": "opening_concrete_after_midnight\n",
+      "breakOffsets": [
+        31
+      ],
+      "predictedRows": [
+        "opening_conc",
+        "rete_after_m",
+        "idnight"
+      ],
+      "browserRows": [
+        "opening_conc",
+        "rete_after_m",
+        "idnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "marker-ordinary",
+      "source": "// twyne-document:1\n",
+      "breakOffsets": [
+        3,
+        9,
+        19
+      ],
+      "predictedRows": [
+        "// ",
+        "twyne-",
+        "document",
+        ":1"
+      ],
+      "browserRows": [
+        "// ",
+        "twyne-",
+        "document",
+        ":1"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "ascii-hyphen",
+      "source": "opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        8,
+        17,
+        23,
+        31
+      ],
+      "predictedRows": [
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "ascii-with-prefix",
+      "source": "prefix opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        7,
+        15,
+        24,
+        30,
+        38
+      ],
+      "predictedRows": [
+        "prefix ",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "prefix ",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "keyword-hyphen",
+      "source": "#stroke-dash(\"opening-concrete-after-midnight\")\n",
+      "breakOffsets": [
+        8,
+        22,
+        31,
+        37,
+        47
+      ],
+      "predictedRows": [
+        "#stroke-",
+        "dash(\"op",
+        "ening-",
+        "concrete",
+        "-after-",
+        "midnight",
+        "\")"
+      ],
+      "browserRows": [
+        "#stroke-",
+        "dash(\"op",
+        "ening-",
+        "concrete",
+        "-after-",
+        "midnight",
+        "\")"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "heading-hyphen",
+      "source": "= opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        2,
+        10,
+        19,
+        25,
+        33
+      ],
+      "predictedRows": [
+        "= ",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "= ",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "comment-hyphen",
+      "source": "// opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        3,
+        11,
+        20,
+        26,
+        34
+      ],
+      "predictedRows": [
+        "// ",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "// ",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "leading-hyphen",
+      "source": "-opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        1,
+        9,
+        18,
+        24,
+        32
+      ],
+      "predictedRows": [
+        "-",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "-",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "spaced-leading-hyphen",
+      "source": "prefix -opening-concrete-after-midnight\n",
+      "breakOffsets": [
+        7,
+        8,
+        16,
+        25,
+        31,
+        39
+      ],
+      "predictedRows": [
+        "prefix -",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "prefix -",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "numeric-hyphen",
+      "source": "2026-10-04-2026-10-04-2026-10-04\n",
+      "breakOffsets": [
+        5,
+        8,
+        11,
+        16,
+        19,
+        22,
+        27,
+        30,
+        32
+      ],
+      "predictedRows": [
+        "2026-10-",
+        "04-2026-",
+        "10-04-",
+        "2026-10-",
+        "04"
+      ],
+      "browserRows": [
+        "2026-10-",
+        "04-2026-",
+        "10-04-",
+        "2026-10-",
+        "04"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "letter-digit",
+      "source": "opening-1234567890-after-midnight\n",
+      "breakOffsets": [
+        8,
+        19,
+        25,
+        33
+      ],
+      "predictedRows": [
+        "opening-",
+        "12345678",
+        "90-",
+        "after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "opening-",
+        "12345678",
+        "90-",
+        "after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "minus-digit",
+      "source": "-12345678901234567890 + -12345678901234567890\n",
+      "breakOffsets": [
+        22,
+        24,
+        45
+      ],
+      "predictedRows": [
+        "-1234567",
+        "89012345",
+        "67890 + ",
+        "-1234567",
+        "89012345",
+        "67890"
+      ],
+      "browserRows": [
+        "-1234567",
+        "89012345",
+        "67890 + ",
+        "-1234567",
+        "89012345",
+        "67890"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "hyphen-repeat",
+      "source": "opening--concrete---after-midnight\n",
+      "breakOffsets": [
+        8,
+        9,
+        18,
+        19,
+        20,
+        26,
+        34
+      ],
+      "predictedRows": [
+        "opening-",
+        "-",
+        "concrete",
+        "---",
+        "after-",
+        "midnight"
+      ],
+      "browserRows": [
+        "opening-",
+        "-",
+        "concrete",
+        "---",
+        "after-",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "space-control",
+      "source": "opening concrete after midnight\n",
+      "breakOffsets": [
+        8,
+        17,
+        23,
+        31
+      ],
+      "predictedRows": [
+        "opening ",
+        "concrete",
+        " after ",
+        "midnight"
+      ],
+      "browserRows": [
+        "opening ",
+        "concrete",
+        " after ",
+        "midnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "slash-control",
+      "source": "opening/concrete/after/midnight\n",
+      "breakOffsets": [
+        31
+      ],
+      "predictedRows": [
+        "opening/",
+        "concrete",
+        "/after/m",
+        "idnight"
+      ],
+      "browserRows": [
+        "opening/",
+        "concrete",
+        "/after/m",
+        "idnight"
+      ],
+      "matches": true
+    },
+    {
+      "width": 130,
+      "id": "underscore-control",
+      "source": "opening_concrete_after_midnight\n",
+      "breakOffsets": [
+        31
+      ],
+      "predictedRows": [
+        "opening_",
+        "concrete",
+        "_after_m",
+        "idnight"
+      ],
+      "browserRows": [
+        "opening_",
+        "concrete",
+        "_after_m",
+        "idnight"
+      ],
+      "matches": true
+    }
+  ]
+}

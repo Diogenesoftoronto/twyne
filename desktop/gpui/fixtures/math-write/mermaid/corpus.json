@@ -1,0 +1,30 @@
+[
+  {
+    "id": "flow-default",
+    "branch": "default-modern-MathML",
+    "diagram": "flowchart",
+    "legacy": false,
+    "source": "flowchart TB\n  fraction[\"$$\\frac{1}{1+x^2}$$\"] --> radical[\"$$\\sqrt{x^2+y^2}$$\"]\n  matrix[\"$$\\begin{pmatrix}a&b\\\\\\\\c&d\\end{pmatrix}$$\"] --> text[\"$$\\text{rate}=\\frac{\\Delta x}{\\Delta t}$$\"]\n  scripts[\"$$x^{n+1}_{i}$$\"] --> delimiter[\"$$\\left\\langle\\frac{a}{b},\\sqrt{c}\\right\\rangle$$\"]\n  delimiter --> plain[\"Source diagram\"]"
+  },
+  {
+    "id": "sequence-default",
+    "branch": "default-modern-MathML",
+    "diagram": "sequenceDiagram",
+    "legacy": false,
+    "source": "sequenceDiagram\n  participant A as Writer\n  participant B as Reader\n  A->>B: $$\\frac{1}{1+x^2}$$\n  B-->>A: $$\\sqrt{x^2+y^2}$$\n  Note over A,B: $$x^{n+1}_{i}$$"
+  },
+  {
+    "id": "flow-legacy",
+    "branch": "authored-forceLegacyMathML",
+    "diagram": "flowchart",
+    "legacy": true,
+    "source": "---\nconfig:\n  forceLegacyMathML: true\n---\nflowchart TB\n  fraction[\"$$\\frac{1}{1+x^2}$$\"] --> radical[\"$$\\sqrt{x^2+y^2}$$\"]\n  matrix[\"$$\\begin{pmatrix}a&b\\\\\\\\c&d\\end{pmatrix}$$\"] --> text[\"$$\\text{rate}=\\frac{\\Delta x}{\\Delta t}$$\"]\n  scripts[\"$$x^{n+1}_{i}$$\"] --> delimiter[\"$$\\left\\langle\\frac{a}{b},\\sqrt{c}\\right\\rangle$$\"]\n  delimiter --> plain[\"Source diagram\"]"
+  },
+  {
+    "id": "sequence-legacy",
+    "branch": "authored-forceLegacyMathML",
+    "diagram": "sequenceDiagram",
+    "legacy": true,
+    "source": "---\nconfig:\n  forceLegacyMathML: true\n---\nsequenceDiagram\n  participant A as Writer\n  participant B as Reader\n  A->>B: $$\\frac{1}{1+x^2}$$\n  B-->>A: $$\\sqrt{x^2+y^2}$$\n  Note over A,B: $$x^{n+1}_{i}$$"
+  }
+]

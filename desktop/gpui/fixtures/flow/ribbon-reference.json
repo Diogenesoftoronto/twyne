@@ -1,0 +1,1767 @@
+{
+  "provenance": "Original FlowRibbon SVG/dictionaries extracted directly from current component; actual global.css and typst-workspace.css rules, original bundled font bytes, settled browser-computed geometry in local Chrome. This checks markup/style states, not Qwik event lifecycle or hosted Google Fonts byte identity.",
+  "blockedNetworkRequests": 0,
+  "deviceScaleFactor": 4,
+  "cases": [
+    {
+      "host": "writingWorkspace",
+      "width": 1280,
+      "mode": "away",
+      "result": {
+        "label": "away",
+        "ariaLabel": "away. No keys for a while.",
+        "title": "No keys for a while.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 0.45,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 80.09375,
+          "height": 16.5
+        },
+        "labelBounds": {
+          "width": 33.703125,
+          "height": 16.5
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 1280,
+      "mode": "working",
+      "result": {
+        "label": "writing",
+        "ariaLabel": "writing. Twyne is reading your pace. The margin brings things in freely.",
+        "title": "Twyne is reading your pace. The margin brings things in freely.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 98.53125,
+          "height": 16.5
+        },
+        "labelBounds": {
+          "width": 52.140625,
+          "height": 16.5
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 1280,
+      "mode": "settling",
+      "result": {
+        "label": "settling in",
+        "ariaLabel": "settling in. A steady run is building. New margin notes wait until you pause.",
+        "title": "A steady run is building. New margin notes wait until you pause.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -1.4)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 120.84375,
+          "height": 16.5
+        },
+        "labelBounds": {
+          "width": 74.453125,
+          "height": 16.5
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 1280,
+      "mode": "flow",
+      "result": {
+        "label": "in flow · 2 min",
+        "ariaLabel": "in flow · 2 min. You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "title": "You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(193, 39, 45)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -2.8)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 142.59375,
+          "height": 16.5
+        },
+        "labelBounds": {
+          "width": 96.203125,
+          "height": 16.5
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 1280,
+      "mode": "stuck",
+      "result": {
+        "label": "paused",
+        "ariaLabel": "paused. A long pause. The margin offers one way back in.",
+        "title": "A long pause. The margin offers one way back in.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 0,
+        "slackOpacity": 0.7,
+        "bounds": {
+          "width": 92.765625,
+          "height": 16.5
+        },
+        "labelBounds": {
+          "width": 46.375,
+          "height": 16.5
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 641,
+      "mode": "away",
+      "result": {
+        "label": "away",
+        "ariaLabel": "away. No keys for a while.",
+        "title": "No keys for a while.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 0.45,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 80.09375,
+          "height": 16.5
+        },
+        "labelBounds": {
+          "width": 33.703125,
+          "height": 16.5
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 641,
+      "mode": "working",
+      "result": {
+        "label": "writing",
+        "ariaLabel": "writing. Twyne is reading your pace. The margin brings things in freely.",
+        "title": "Twyne is reading your pace. The margin brings things in freely.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 98.53125,
+          "height": 16.5
+        },
+        "labelBounds": {
+          "width": 52.140625,
+          "height": 16.5
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 641,
+      "mode": "settling",
+      "result": {
+        "label": "settling in",
+        "ariaLabel": "settling in. A steady run is building. New margin notes wait until you pause.",
+        "title": "A steady run is building. New margin notes wait until you pause.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -1.4)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 120.84375,
+          "height": 16.5
+        },
+        "labelBounds": {
+          "width": 74.453125,
+          "height": 16.5
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 641,
+      "mode": "flow",
+      "result": {
+        "label": "in flow · 2 min",
+        "ariaLabel": "in flow · 2 min. You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "title": "You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(193, 39, 45)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -2.8)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 142.59375,
+          "height": 16.5
+        },
+        "labelBounds": {
+          "width": 96.203125,
+          "height": 16.5
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 641,
+      "mode": "stuck",
+      "result": {
+        "label": "paused",
+        "ariaLabel": "paused. A long pause. The margin offers one way back in.",
+        "title": "A long pause. The margin offers one way back in.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 0,
+        "slackOpacity": 0.7,
+        "bounds": {
+          "width": 92.765625,
+          "height": 16.5
+        },
+        "labelBounds": {
+          "width": 46.375,
+          "height": 16.5
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 640,
+      "mode": "away",
+      "result": {
+        "label": "away",
+        "ariaLabel": "away. No keys for a while.",
+        "title": "No keys for a while.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 0.45,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 640,
+      "mode": "working",
+      "result": {
+        "label": "writing",
+        "ariaLabel": "writing. Twyne is reading your pace. The margin brings things in freely.",
+        "title": "Twyne is reading your pace. The margin brings things in freely.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 640,
+      "mode": "settling",
+      "result": {
+        "label": "settling in",
+        "ariaLabel": "settling in. A steady run is building. New margin notes wait until you pause.",
+        "title": "A steady run is building. New margin notes wait until you pause.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -1.4)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 640,
+      "mode": "flow",
+      "result": {
+        "label": "in flow · 2 min",
+        "ariaLabel": "in flow · 2 min. You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "title": "You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(193, 39, 45)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -2.8)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 640,
+      "mode": "stuck",
+      "result": {
+        "label": "paused",
+        "ariaLabel": "paused. A long pause. The margin offers one way back in.",
+        "title": "A long pause. The margin offers one way back in.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 0,
+        "slackOpacity": 0.7,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 639,
+      "mode": "away",
+      "result": {
+        "label": "away",
+        "ariaLabel": "away. No keys for a while.",
+        "title": "No keys for a while.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": false,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 0.45,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 0,
+          "height": 0
+        },
+        "labelBounds": {
+          "width": 0,
+          "height": 0
+        },
+        "spoolBounds": {
+          "width": 0,
+          "height": 0
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 639,
+      "mode": "working",
+      "result": {
+        "label": "writing",
+        "ariaLabel": "writing. Twyne is reading your pace. The margin brings things in freely.",
+        "title": "Twyne is reading your pace. The margin brings things in freely.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": false,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 0,
+          "height": 0
+        },
+        "labelBounds": {
+          "width": 0,
+          "height": 0
+        },
+        "spoolBounds": {
+          "width": 0,
+          "height": 0
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 639,
+      "mode": "settling",
+      "result": {
+        "label": "settling in",
+        "ariaLabel": "settling in. A steady run is building. New margin notes wait until you pause.",
+        "title": "A steady run is building. New margin notes wait until you pause.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": false,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 0,
+          "height": 0
+        },
+        "labelBounds": {
+          "width": 0,
+          "height": 0
+        },
+        "spoolBounds": {
+          "width": 0,
+          "height": 0
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 639,
+      "mode": "flow",
+      "result": {
+        "label": "in flow · 2 min",
+        "ariaLabel": "in flow · 2 min. You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "title": "You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": false,
+        "labelVisible": false,
+        "color": "rgb(193, 39, 45)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 0,
+          "height": 0
+        },
+        "labelBounds": {
+          "width": 0,
+          "height": 0
+        },
+        "spoolBounds": {
+          "width": 0,
+          "height": 0
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "writingWorkspace",
+      "width": 639,
+      "mode": "stuck",
+      "result": {
+        "label": "paused",
+        "ariaLabel": "paused. A long pause. The margin offers one way back in.",
+        "title": "A long pause. The margin offers one way back in.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": false,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "fontSize": "11px",
+        "lineHeight": "16.5px",
+        "tracking": "1.1px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 0,
+        "slackOpacity": 0.7,
+        "bounds": {
+          "width": 0,
+          "height": 0
+        },
+        "labelBounds": {
+          "width": 0,
+          "height": 0
+        },
+        "spoolBounds": {
+          "width": 0,
+          "height": 0
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 1280,
+      "mode": "away",
+      "result": {
+        "label": "away",
+        "ariaLabel": "away. No keys for a while.",
+        "title": "No keys for a while.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 0.45,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "11.52px",
+        "lineHeight": "17.28px",
+        "tracking": "1.152px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 76.96875,
+          "height": 17.265625
+        },
+        "labelBounds": {
+          "width": 30.578125,
+          "height": 17.265625
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 1280,
+      "mode": "working",
+      "result": {
+        "label": "writing",
+        "ariaLabel": "writing. Twyne is reading your pace. The margin brings things in freely.",
+        "title": "Twyne is reading your pace. The margin brings things in freely.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "11.52px",
+        "lineHeight": "17.28px",
+        "tracking": "1.152px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 101.765625,
+          "height": 17.265625
+        },
+        "labelBounds": {
+          "width": 55.375,
+          "height": 17.265625
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 1280,
+      "mode": "settling",
+      "result": {
+        "label": "settling in",
+        "ariaLabel": "settling in. A steady run is building. New margin notes wait until you pause.",
+        "title": "A steady run is building. New margin notes wait until you pause.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "11.52px",
+        "lineHeight": "17.28px",
+        "tracking": "1.152px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -1.4)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 130.15625,
+          "height": 17.265625
+        },
+        "labelBounds": {
+          "width": 83.765625,
+          "height": 17.265625
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 1280,
+      "mode": "flow",
+      "result": {
+        "label": "in flow · 2 min",
+        "ariaLabel": "in flow · 2 min. You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "title": "You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(193, 39, 45)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "11.52px",
+        "lineHeight": "17.28px",
+        "tracking": "1.152px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -2.8)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 148.78125,
+          "height": 17.265625
+        },
+        "labelBounds": {
+          "width": 102.390625,
+          "height": 17.265625
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 1280,
+      "mode": "stuck",
+      "result": {
+        "label": "paused",
+        "ariaLabel": "paused. A long pause. The margin offers one way back in.",
+        "title": "A long pause. The margin offers one way back in.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "11.52px",
+        "lineHeight": "17.28px",
+        "tracking": "1.152px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 0,
+        "slackOpacity": 0.7,
+        "bounds": {
+          "width": 94.09375,
+          "height": 17.265625
+        },
+        "labelBounds": {
+          "width": 47.703125,
+          "height": 17.265625
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 641,
+      "mode": "away",
+      "result": {
+        "label": "away",
+        "ariaLabel": "away. No keys for a while.",
+        "title": "No keys for a while.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 0.45,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "11.52px",
+        "lineHeight": "17.28px",
+        "tracking": "1.152px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 76.96875,
+          "height": 17.265625
+        },
+        "labelBounds": {
+          "width": 30.578125,
+          "height": 17.265625
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 641,
+      "mode": "working",
+      "result": {
+        "label": "writing",
+        "ariaLabel": "writing. Twyne is reading your pace. The margin brings things in freely.",
+        "title": "Twyne is reading your pace. The margin brings things in freely.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "11.52px",
+        "lineHeight": "17.28px",
+        "tracking": "1.152px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 101.765625,
+          "height": 17.265625
+        },
+        "labelBounds": {
+          "width": 55.375,
+          "height": 17.265625
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 641,
+      "mode": "settling",
+      "result": {
+        "label": "settling in",
+        "ariaLabel": "settling in. A steady run is building. New margin notes wait until you pause.",
+        "title": "A steady run is building. New margin notes wait until you pause.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "11.52px",
+        "lineHeight": "17.28px",
+        "tracking": "1.152px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -1.4)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 130.15625,
+          "height": 17.265625
+        },
+        "labelBounds": {
+          "width": 83.765625,
+          "height": 17.265625
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 641,
+      "mode": "flow",
+      "result": {
+        "label": "in flow · 2 min",
+        "ariaLabel": "in flow · 2 min. You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "title": "You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(193, 39, 45)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "11.52px",
+        "lineHeight": "17.28px",
+        "tracking": "1.152px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -2.8)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 148.78125,
+          "height": 17.265625
+        },
+        "labelBounds": {
+          "width": 102.390625,
+          "height": 17.265625
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 641,
+      "mode": "stuck",
+      "result": {
+        "label": "paused",
+        "ariaLabel": "paused. A long pause. The margin offers one way back in.",
+        "title": "A long pause. The margin offers one way back in.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": true,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "11.52px",
+        "lineHeight": "17.28px",
+        "tracking": "1.152px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 0,
+        "slackOpacity": 0.7,
+        "bounds": {
+          "width": 94.09375,
+          "height": 17.265625
+        },
+        "labelBounds": {
+          "width": 47.703125,
+          "height": 17.265625
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 640,
+      "mode": "away",
+      "result": {
+        "label": "away",
+        "ariaLabel": "away. No keys for a while.",
+        "title": "No keys for a while.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 0.45,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "tracking": "1.2px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 640,
+      "mode": "working",
+      "result": {
+        "label": "writing",
+        "ariaLabel": "writing. Twyne is reading your pace. The margin brings things in freely.",
+        "title": "Twyne is reading your pace. The margin brings things in freely.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "tracking": "1.2px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 640,
+      "mode": "settling",
+      "result": {
+        "label": "settling in",
+        "ariaLabel": "settling in. A steady run is building. New margin notes wait until you pause.",
+        "title": "A steady run is building. New margin notes wait until you pause.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "tracking": "1.2px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -1.4)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 640,
+      "mode": "flow",
+      "result": {
+        "label": "in flow · 2 min",
+        "ariaLabel": "in flow · 2 min. You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "title": "You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(193, 39, 45)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "tracking": "1.2px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -2.8)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 640,
+      "mode": "stuck",
+      "result": {
+        "label": "paused",
+        "ariaLabel": "paused. A long pause. The margin offers one way back in.",
+        "title": "A long pause. The margin offers one way back in.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "tracking": "1.2px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 0,
+        "slackOpacity": 0.7,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 639,
+      "mode": "away",
+      "result": {
+        "label": "away",
+        "ariaLabel": "away. No keys for a while.",
+        "title": "No keys for a while.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 0.45,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "tracking": "1.2px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 639,
+      "mode": "working",
+      "result": {
+        "label": "writing",
+        "ariaLabel": "writing. Twyne is reading your pace. The margin brings things in freely.",
+        "title": "Twyne is reading your pace. The margin brings things in freely.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "tracking": "1.2px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 639,
+      "mode": "settling",
+      "result": {
+        "label": "settling in",
+        "ariaLabel": "settling in. A steady run is building. New margin notes wait until you pause.",
+        "title": "A steady run is building. New margin notes wait until you pause.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "tracking": "1.2px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -1.4)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 639,
+      "mode": "flow",
+      "result": {
+        "label": "in flow · 2 min",
+        "ariaLabel": "in flow · 2 min. You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "title": "You're in flow. The margin holds everything until you pause; Escape brings it back.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(193, 39, 45)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "tracking": "1.2px",
+        "textTransform": "uppercase",
+        "bandTransform": "matrix(1, 0, 0, 1, 0, -2.8)",
+        "bandOpacity": 1,
+        "slackOpacity": 0,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    },
+    {
+      "host": "manuscript",
+      "width": 639,
+      "mode": "stuck",
+      "result": {
+        "label": "paused",
+        "ariaLabel": "paused. A long pause. The margin offers one way back in.",
+        "title": "A long pause. The margin offers one way back in.",
+        "role": "status",
+        "ariaLive": "off",
+        "visible": true,
+        "labelVisible": false,
+        "color": "rgb(74, 63, 51)",
+        "opacity": 1,
+        "gap": "6.4px",
+        "font": "\"Special Elite\", \"Courier New\", monospace",
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "tracking": "1.2px",
+        "textTransform": "uppercase",
+        "bandTransform": "none",
+        "bandOpacity": 0,
+        "slackOpacity": 0.7,
+        "bounds": {
+          "width": 40,
+          "height": 10
+        },
+        "labelBounds": {
+          "width": 1,
+          "height": 1
+        },
+        "spoolBounds": {
+          "width": 40,
+          "height": 10
+        },
+        "black": "rgb(31, 27, 22)",
+        "red": "rgb(193, 39, 45)"
+      },
+      "transitions": {
+        "band": "1.6s, 1.2s",
+        "easing": "ease, ease",
+        "slack": "1.2s"
+      }
+    }
+  ]
+}

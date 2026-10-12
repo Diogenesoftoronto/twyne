@@ -1,0 +1,16 @@
+Hypher 0.1.8
+https://github.com/typst/hypher/tree/v0.1.8
+
+Code license: MIT OR Apache-2.0.
+
+American English hyphenation patterns:
+https://github.com/typst/hypher/blob/v0.1.8/patterns/hyph-en-us.tex
+
+Copyright (C) 1990, 2004, 2005 Gerard D.C. Kuiken
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+These patterns form part of the hyph-utf8 package. Twyne embeds the
+dictionary through Hypher for display-only English paragraph hyphenation.

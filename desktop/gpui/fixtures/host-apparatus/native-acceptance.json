@@ -1,0 +1,41 @@
+{
+  "display": "new isolated Xvfb, terminated",
+  "backend": "X11",
+  "input": "separate-process XTEST",
+  "clipboard": "separate-process xclip on owned display",
+  "fixture": "explicit retained test metadata; no provider activity",
+  "notes": true,
+  "checks": [
+    "Owned X11 window is actually activated before text input",
+    "Actual Board opens retained scoped sources with citation enabled and provider preview disabled",
+    "Actual blank Enter is consumed, Shift-Enter writes a line, and modified Enter keeps the draft with the original offline provider error without writing manuscript or bibliography",
+    "Actual Board context switch retains the steering draft and original error",
+    "Actual cite inserts a durable native footnote before its source timestamp is confirmed and keeps foreign rows exact",
+    "Actual focused editor Ctrl-Z and Ctrl-Y restore the draft and its single citation exactly",
+    "Actual unblurred note textarea Ctrl-S files the latest text, keeps the popup input focused and presents Saved locally",
+    "Actual Reference dismissal captures the pending multiline note before restoring its manuscript marker",
+    "Actual Kind select previews without filing, then confirms Endnote with the authored multiline text retained",
+    "Actual focused note reference Undo and Redo restore kind conversion without replacing its note text",
+    "Actual Copy all publishes writer and background sources for the exact active scope to a separate X11 clipboard client",
+    "Actual style change files only local metadata and preserves the cited manuscript",
+    "Actual full-page Back returns to the scoped Apparatus Board with a fresh steering mount",
+    "Actual backup obstruction keeps accepted source bytes and blocks full-page departure",
+    "Actual Retry files the held scoped removal once while preserving the footnote and foreign rows",
+    "Actual Ctrl-Q exits cleanly with the accepted bibliography and cited manuscript"
+  ],
+  "binarySha256": "31f4213ce8a7b920debcafa6c180d8de665a84bd877bcfbf81826555c9185b06",
+  "provenance": "Actual isolated X11 run completed 2026-10-04 22:21 UTC after the queued saved-revision correction and readiness-gated remount driver. The retained note screenshot waits for actual Saved footer pixels. New pagination, Wayland and KaTeX modules remain unintegrated.",
+  "noteSavePresentation": {
+    "kind": "Actual X11 pixels compared to the same window's pre-edit saved footer",
+    "savedFooterRect": {
+      "x": 247.0,
+      "y": 836.0,
+      "width": 67.0,
+      "height": 16.0
+    },
+    "savedFooterRgbaSha256": "21d2c4f0d06c55247be9c4e0ef58e74a66e3de79a66864c220129719e48b453d",
+    "savedFooterMatches": true,
+    "captures": 2,
+    "elapsedSeconds": 0.49324358098965604
+  }
+}

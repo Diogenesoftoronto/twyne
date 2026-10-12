@@ -1,0 +1,229 @@
+--- a/desktop/gpui/src/dossier_view.rs
++++ b/desktop/gpui/src/dossier_view.rs
+@@ -975,7 +975,7 @@
+         }
+     }
+ 
+-    fn top_bar(&self, cx: &mut Context<Self>) -> AnyElement {
++    fn top_bar(&self, small: bool, cx: &mut Context<Self>) -> AnyElement {
+         let colors = *theme::palette(cx);
+         div()
+             .flex()
+@@ -1055,12 +1055,16 @@
+                     .gap(px(4.))
+                     .font_family(TYPEWRITER_FONT)
+                     .text_size(px(9.6))
+-                    .child(
+-                        div()
+-                            .mr(px(4.))
+-                            .text_color(rgb(colors.ink_muted))
+-                            .child(tracked_typewriter("SURFACE:", 9.6, 1.728, colors.ink_muted)),
+-                    )
++                    .when(!small, |this| {
++                        this.child(
++                            div()
++                                .id("dossier-surface-caption")
++                                .test_support()
++                                .mr(px(4.))
++                                .text_color(rgb(colors.ink_muted))
++                                .child(tracked_typewriter("SURFACE:", 9.6, 1.728, colors.ink_muted)),
++                        )
++                    })
+                     .child(
+                         Button::new("dossier-surface-form")
+                             .ghost()
+@@ -1106,7 +1110,7 @@
+             .into_any_element()
+     }
+ 
+-    fn preview(&self, cx: &mut Context<Self>) -> AnyElement {
++    fn preview(&self, small: bool, cx: &mut Context<Self>) -> AnyElement {
+         let colors = *theme::palette(cx);
+         let reviewed = if self.session.options.mode == DossierMode::Refine {
+             7
+@@ -1240,9 +1244,11 @@
+             )
+             .child(
+                 div()
++                    .id("dossier-preview-grid")
++                    .test_support()
+                     .mt(px(12.))
+                     .grid()
+-                    .grid_cols(2)
++                    .grid_cols(if small { 1 } else { 2 })
+                     .gap(px(6.))
+                     .children(cards),
+             )
+@@ -1972,6 +1978,7 @@
+             .bg(rgb(colors.sidebar))
+             .child(
+                 paper_button("dossier-back", "← Back", cx)
++                    .flex_shrink_0()
+                     .disabled(index == 0 || self.session.filing == FilingState::Filing)
+                     .on_click(cx.listener(|this, _, window, cx| {
+                         this.go_to(this.session.draft.step.saturating_sub(1), window, cx)
+@@ -1979,15 +1986,24 @@
+             )
+             .child(
+                 div()
++                    .id("dossier-section-rail")
++                    .test_support()
++                    .role(Role::Navigation)
++                    .aria_label("Folio sections")
+                     .flex()
+                     .items_center()
+                     .justify_center()
+                     .gap(px(2.))
+                     .min_w_0()
++                    // The stable keyed Div retains its own scroll offset.
++                    // No new view/owner/atlas lease is captured by the rail.
++                    .overflow_x_scroll()
++                    .restrict_scroll_to_axis()
+                     .children(STEPS.iter().enumerate().map(|(step_index, step)| {
+                         let selected = index == step_index;
+                         let filled = self.session.draft.is_section_filed(step_index);
+                         Button::new(("dossier-section", step_index))
++                            .flex_shrink_0()
+                             .ghost()
+                             .small()
+                             .h(px(21.52))
+@@ -2028,6 +2044,7 @@
+             )
+             .child(
+                 Button::new("dossier-next")
++                    .flex_shrink_0()
+                     .ghost()
+                     .small()
+                     .rounded(px(2.))
+@@ -2133,6 +2150,8 @@
+ impl Render for DossierView {
+     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+         let colors = *theme::palette(cx);
++        // Tailwind's unmodified `sm` breakpoint is inclusive at 640px.
++        let small = window.viewport_size().width < px(640.);
+         let index = self.session.draft.step;
+         let step = STEPS[index];
+         let content = match step.kind {
+@@ -2280,6 +2299,7 @@
+                 .flex_1()
+                 .min_w_0()
+                 .min_h_0()
++                .overflow_hidden()
+                 .bg(rgb(colors.paper))
+                 .child(
+                     div()
+@@ -2292,10 +2312,15 @@
+                                 .items_baseline()
+                                 .justify_between()
+                                 .gap(px(12.))
+-                                .child(department(step.department, cx))
+-                                .child(department(format!("Folio {} of 10", index + 1), cx)),
++                                // Match the Source shrink/clip boundary.
++                                // The tracked child does not implement CSS ellipsis.
++                                .child(department(step.department, cx).min_w_0().overflow_hidden())
++                                .child(
++                                    department(format!("Folio {} of 10", index + 1), cx)
++                                        .flex_shrink_0(),
++                                ),
+                         )
+-                        .child(div().mt(px(6.)).h(px(3.)).bg(rgb(colors.sidebar)).child(
++                        .child(div().mt(px(6.)).h(px(3.)).overflow_hidden().bg(rgb(colors.sidebar)).child(
+                             div().h_full().w(relative((index + 1) as f32 / 10.)).bg(
+                                 linear_gradient(
+                                     90.,
+@@ -2345,14 +2370,19 @@
+                 )
+                 .child(self.footer(cx));
+         let mut frame = div()
++            .id("dossier-frame")
++            .test_support()
++            .relative()
+             .flex()
+             .flex_col()
+             .flex_1()
++            .min_w_0()
+             .min_h_0()
++            .overflow_hidden()
+             .border_1()
+             .border_color(rgb(colors.rule))
+             .bg(rgb(colors.paper))
+-            .child(self.top_bar(cx));
++            .child(self.top_bar(small, cx));
+         for (index, error) in [self.error.as_ref(), self.session.recovery_error.as_ref()]
+             .into_iter()
+             .flatten()
+@@ -2423,10 +2453,14 @@
+         let wide = window.viewport_size().width >= px(1024.);
+         frame = frame.child(
+             div()
++                .id("dossier-leaf-body")
++                .test_support()
+                 .flex()
+                 .when(!wide, |this| this.flex_col())
+                 .flex_1()
++                .min_w_0()
+                 .min_h_0()
++                .overflow_hidden()
+                 .child(
+                     div()
+                         .id("dossier-left-leaf")
+@@ -2444,7 +2478,7 @@
+                             linear_color_stop(rgb(colors.paper_soft), 0.),
+                             linear_color_stop(rgb(colors.sidebar), 1.),
+                         ))
+-                        .child(self.preview(cx)),
++                        .child(self.preview(small, cx)),
+                 )
+                 .child(leaf),
+         );
+@@ -2456,9 +2490,11 @@
+             .size_full()
+             .flex()
+             .flex_col()
++            .items_center()
++            .min_w_0()
++            .min_h_0()
++            .overflow_hidden()
+             .bg(rgb(colors.paper))
+-            .px(px(20.))
+-            .py(px(16.))
+             .on_action(cx.listener(|this, _: &DossierBack, window, cx| {
+                 this.go_to(this.session.draft.step.saturating_sub(1), window, cx)
+             }))
+@@ -2468,7 +2504,23 @@
+             .when_some(self.paper.clone(), |root, paper| {
+                 root.child(paper.background())
+             })
+-            .child(frame)
++            .child(
++                // Source's 92rem cap includes this wrapper's own gutters.
++                // Keep full-viewport paper/leases on the outer positioned root.
++                div()
++                    .id("dossier-folio-wrapper")
++                    .test_support()
++                    .w_full()
++                    .max_w(px(1472.))
++                    .flex()
++                    .flex_col()
++                    .flex_1()
++                    .min_w_0()
++                    .min_h_0()
++                    .px(px(if small { 12. } else { 20. }))
++                    .py(px(if small { 12. } else { 16. }))
++                    .child(frame),
++            )
+     }
+ }
+ 
+@@ -3074,4 +3126,11 @@
+         })
+         .unwrap();
+     }
++
++    mod layout_correction {
++        include!(concat!(
++            env!("CARGO_MANIFEST_DIR"),
++            "/fixtures/dossier-layout-correction/mounted_tests.rs"
++        ));
++    }
+ }

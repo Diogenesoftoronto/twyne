@@ -1,0 +1,15 @@
+{
+  "status": "observed",
+  "key": "Control+Shift+Enter",
+  "beforeQuestion": "Who is this for?",
+  "afterQuestion": "What should the piece accomplish?",
+  "beforeRaw": "A thoughtful reader who needs the point made clearly",
+  "afterRaw": "Make the central argument feel inevitable and worth caring about",
+  "url": "http://127.0.0.1:5180/dossier/create/",
+  "source": {
+    "file": "src/components/onboarding/anti-tabula-rasa.tsx",
+    "sha256": "bd8162f3e0ca95ebdb8e4b817f3b1cc92099e7a1c0f489d9215d7ae9d4a4706c"
+  },
+  "scope": "Actual Source Dossier in owned Chrome at1280x860 with local draft, no filing. The first call failed while writing a receipt after the action and successful next-field wait; the following observation confirmed the actual next field and raw text.",
+  "sourceConsoleLimit": "Source auth get-session request fails CORS on the local Vite origin; no authenticated flow proof."
+}

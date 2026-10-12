@@ -1,0 +1,143 @@
+{
+  "url": "http://localhost:5180/editor/",
+  "fontProof": [
+    {
+      "nodeId": 3119,
+      "html": {
+        "outerHTML": "<div class=\"cm-line\"><span class=\"ͼ9\">// twyne-document:1</span><img class=\"cm-widgetBuffer\" aria-hidden=\"true\"><span aria-label=\"folded code\" title=\"unfold\" class=\"cm-foldPlaceholder\" contenteditable=\"false\">Document helpers</span><img class=\"cm-widgetBuffer\" aria-hidden=\"true\"></div>"
+      },
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "DM Sans 9pt",
+            "postScriptName": "DMSans-9ptRegular",
+            "isCustomFont": true,
+            "glyphCount": 16
+          },
+          {
+            "familyName": "Noto Sans Mono",
+            "postScriptName": "NotoSansMono-Regular",
+            "isCustomFont": false,
+            "glyphCount": 19
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 3120,
+      "html": {
+        "outerHTML": "<div class=\"cm-line cm-activeLine\"><span class=\"ͼ5\">#twyne-node</span>(<span class=\"ͼ6\">\"h1\"</span>, <span class=\"ͼ6\">\"{}\"</span>)[<span class=\"ͼ5\">#text</span>(<span class=\"ͼ6\">\"The notebook\"</span>)]</div>"
+      },
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "Noto Sans Mono",
+            "postScriptName": "NotoSansMono-Regular",
+            "isCustomFont": false,
+            "glyphCount": 46
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 3121,
+      "html": {
+        "outerHTML": "<div class=\"cm-line\"><br></div>"
+      },
+      "fonts": {
+        "fonts": []
+      }
+    },
+    {
+      "nodeId": 3122,
+      "html": {
+        "outerHTML": "<div class=\"cm-line\"><span class=\"ͼ5\">#twyne-node</span>(<span class=\"ͼ6\">\"p\"</span>, <span class=\"ͼ6\">\"{}\"</span>)[<span class=\"ͼ5\">#text</span>(<span class=\"ͼ6\">\"The notebook was small enough to carry in a coat pocket. By November, its corners had softened and the cover had begun to remember the shape of a hand.\"</span>)]</div>"
+      },
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "Noto Sans Mono",
+            "postScriptName": "NotoSansMono-Regular",
+            "isCustomFont": false,
+            "glyphCount": 184
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 3123,
+      "html": {
+        "outerHTML": "<div class=\"cm-line\"><br></div>"
+      },
+      "fonts": {
+        "fonts": []
+      }
+    },
+    {
+      "nodeId": 3124,
+      "html": {
+        "outerHTML": "<div class=\"cm-line\"><span class=\"ͼ5\">#twyne-node</span>(<span class=\"ͼ6\">\"p\"</span>, <span class=\"ͼ6\">\"{}\"</span>)[<span class=\"ͼ5\">#text</span>(<span class=\"ͼ6\">\"Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.\"</span>)]</div>"
+      },
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "Noto Sans Mono",
+            "postScriptName": "NotoSansMono-Regular",
+            "isCustomFont": false,
+            "glyphCount": 182
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 3125,
+      "html": {
+        "outerHTML": "<div class=\"cm-line\"><br></div>"
+      },
+      "fonts": {
+        "fonts": []
+      }
+    },
+    {
+      "nodeId": 3126,
+      "html": {
+        "outerHTML": "<div class=\"cm-line\"><span class=\"ͼ5\">#twyne-node</span>(<span class=\"ͼ6\">\"h2\"</span>, <span class=\"ͼ6\">\"{}\"</span>)[<span class=\"ͼ5\">#text</span>(<span class=\"ͼ6\">\"A note for the next draft\"</span>)]</div>"
+      },
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "Noto Sans Mono",
+            "postScriptName": "NotoSansMono-Regular",
+            "isCustomFont": false,
+            "glyphCount": 59
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 3127,
+      "html": {
+        "outerHTML": "<div class=\"cm-line\"><br></div>"
+      },
+      "fonts": {
+        "fonts": []
+      }
+    },
+    {
+      "nodeId": 3128,
+      "html": {
+        "outerHTML": "<div class=\"cm-line\"><span class=\"ͼ5\">#twyne-node</span>(<span class=\"ͼ6\">\"p\"</span>, <span class=\"ͼ6\">\"{}\"</span>)[<span class=\"ͼ5\">#text</span>(<span class=\"ͼ6\">\"Keep the opening concrete. Let the change in the room carry the ending.\"</span>)]</div>"
+      },
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "Noto Sans Mono",
+            "postScriptName": "NotoSansMono-Regular",
+            "isCustomFont": false,
+            "glyphCount": 104
+          }
+        ]
+      }
+    }
+  ]
+}

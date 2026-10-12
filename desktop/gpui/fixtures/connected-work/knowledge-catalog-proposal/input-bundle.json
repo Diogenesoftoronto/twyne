@@ -1,0 +1,23 @@
+{
+  "src/components/auth/account-menu.tsx": {
+    "sha256": "878bc863e010cd8e198b836306a2a1d9ab2201b2c81ffefa5763a7154bb9219c"
+  },
+  "src/components/auth/auth-panel.tsx": {
+    "sha256": "4530063de22b5e306004032a8786b260f2b28717e179c3b780ce99b9548b54fe"
+  },
+  "src/utils/account-display.ts": {
+    "sha256": "c9330fbb3073671648d5730a41cc192f7cc1f92e642377bf689343bfed1ca242"
+  },
+  "src/global.css": {
+    "sha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2"
+  },
+  "desktop/gpui/src/chrome.rs": {
+    "sha256": "4f4f3612b575e41b4982fe4cd21cf9c9c2a05e621ad771c7874b4714fc325e7d"
+  },
+  "desktop/gpui/src/theme.rs": {
+    "sha256": "ce3eea0bc31c01d41c49c7c44bd11db6dc931cc7d437e92f86ea02a2e7f0977c"
+  },
+  "src/utils/account-knowledge.ts": {
+    "sha256": "a4d7c4b864f26f5c6eeded32cb4cef9b74b2abbcc1eb186e3e22819d7780c517"
+  }
+}

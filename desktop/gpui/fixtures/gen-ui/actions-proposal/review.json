@@ -1,0 +1,9 @@
+{
+  "status": "parent_reviewed",
+  "model": "sakana/fugu-max",
+  "responseSha256": "76efe192355e343269c324976d536da1fa46f2133132f376ca21ef8de4f6b383",
+  "sourceJob": "sakana-genui-actions-review-defe6af59aa4",
+  "productionAdopted": false,
+  "parentCorrections": [],
+  "checksRun": false
+}

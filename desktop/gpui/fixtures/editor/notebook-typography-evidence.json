@@ -1,0 +1,554 @@
+{
+  "recorded_at": "2026-10-04",
+  "fixture": "desktop/gpui/fixtures/marginalia/browser-manuscript.html",
+  "fixture_bytes": 1077,
+  "fixture_sha256": "d2cb4e4732965dda5e3fbb01c28e95e08f0a2d0abee6e06b71c96f5e379c40d6",
+  "source_font_inputs": [
+    {
+      "path": "src/assets/typst/lora-Lora-wght.ttf",
+      "sha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7"
+    },
+    {
+      "path": "src/assets/typst/librebaskerville-LibreBaskerville-Regular.ttf",
+      "sha256": "df9fddf43dbd7de435c316b86a52b3d6b3ad2f6fb2ed3f6fd8bdc1835f30eec1"
+    },
+    {
+      "path": "src/assets/typst/librebaskerville-LibreBaskerville-Bold.ttf",
+      "sha256": "62e23c5e6bf1e68fc0ef4ddeeab894ac21c808027f6cb6730cda2055a159ae03"
+    }
+  ],
+  "isolated_browser_dictionary_available": false,
+  "actual_original_app_wide_break": {
+    "provenance": "workspace_exchange session 4 original-font DOM/range probe; coordinator retained screenshot /tmp/twyne-reference-quiet-original-fonts.png",
+    "body_width_px": 704,
+    "float_inset_px": 98.265625,
+    "remaining_width_px": 605.734375,
+    "row2_suffix": "remem-",
+    "row3_prefix": "ber"
+  },
+  "assembled_native_capture_after_correction": [
+    "/tmp/twyne-native-writing-initial-1280.png",
+    "/tmp/twyne-native-writing-initial-620.png"
+  ],
+  "isolated_reports": [
+    {
+      "kind": "native-before",
+      "body_width_px": 704,
+      "backend": "X11",
+      "html_unchanged": true,
+      "blocks": [
+        {
+          "source": "The notebook",
+          "bounds": {
+            "x": 40.0,
+            "y": 88.0,
+            "width": 704.0,
+            "height": 67.0
+          },
+          "row_texts": [
+            "The notebook"
+          ]
+        },
+        {
+          "source": "The notebook was small enough to carry in a coat pocket. By November, its corners had softened and the cover had begun to remember the shape of a hand.",
+          "bounds": {
+            "x": 40.0,
+            "y": 173.0,
+            "width": 704.0,
+            "height": 98.0
+          },
+          "row_texts": [
+            "The notebook was small enough to carry in a coat pocket. By ",
+            "November, its corners had softened and the cover had begun to re",
+            "member the shape of a hand."
+          ]
+        },
+        {
+          "source": "Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.",
+          "bounds": {
+            "x": 40.0,
+            "y": 279.0,
+            "width": 704.0,
+            "height": 65.0
+          },
+          "row_texts": [
+            "Most pages held ordinary things: the name of a book, a sentence overheard on the ",
+            "train, the hours of a shop she kept arriving at after it had closed."
+          ]
+        },
+        {
+          "source": "A note for the next draft",
+          "bounds": {
+            "x": 40.0,
+            "y": 380.0,
+            "width": 704.0,
+            "height": 30.0
+          },
+          "row_texts": [
+            "A note for the next draft"
+          ]
+        },
+        {
+          "source": "Keep the opening concrete. Let the change in the room carry the ending.",
+          "bounds": {
+            "x": 40.0,
+            "y": 420.0,
+            "width": 704.0,
+            "height": 33.0
+          },
+          "row_texts": [
+            "Keep the opening concrete. Let the change in the room carry the ending."
+          ]
+        }
+      ],
+      "initial": null,
+      "full_remem_prefix": {
+        "family": "Twyne Body",
+        "size": 18.0,
+        "text": "November, its corners had softened and the cover had begun to remem‐",
+        "width": 605.2859497070312,
+        "ascent": 18.108001708984375,
+        "descent": 4.931999683380127
+      }
+    },
+    {
+      "kind": "native",
+      "body_width_px": 704,
+      "backend": "X11",
+      "html_unchanged": true,
+      "blocks": [
+        {
+          "source": "The notebook",
+          "bounds": {
+            "x": 40.0,
+            "y": 88.0,
+            "width": 704.0,
+            "height": 67.0
+          },
+          "row_texts": [
+            "The notebook"
+          ]
+        },
+        {
+          "source": "The notebook was small enough to carry in a coat pocket. By November, its corners had softened and the cover had begun to remember the shape of a hand.",
+          "bounds": {
+            "x": 40.0,
+            "y": 173.0,
+            "width": 704.0,
+            "height": 98.0
+          },
+          "row_texts": [
+            "The notebook was small enough to carry in a coat pocket. By ",
+            "November, its corners had softened and the cover had begun to remem",
+            "ber the shape of a hand."
+          ]
+        },
+        {
+          "source": "Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.",
+          "bounds": {
+            "x": 40.0,
+            "y": 279.0,
+            "width": 704.0,
+            "height": 65.0
+          },
+          "row_texts": [
+            "Most pages held ordinary things: the name of a book, a sentence overheard on the ",
+            "train, the hours of a shop she kept arriving at after it had closed."
+          ]
+        },
+        {
+          "source": "A note for the next draft",
+          "bounds": {
+            "x": 40.0,
+            "y": 380.0,
+            "width": 704.0,
+            "height": 30.0
+          },
+          "row_texts": [
+            "A note for the next draft"
+          ]
+        },
+        {
+          "source": "Keep the opening concrete. Let the change in the room carry the ending.",
+          "bounds": {
+            "x": 40.0,
+            "y": 420.0,
+            "width": 704.0,
+            "height": 33.0
+          },
+          "row_texts": [
+            "Keep the opening concrete. Let the change in the room carry the ending."
+          ]
+        }
+      ],
+      "initial": null,
+      "full_remem_prefix": {
+        "family": "Twyne Body",
+        "size": 18.0,
+        "text": "November, its corners had softened and the cover had begun to remem‐",
+        "width": 605.2859497070312,
+        "ascent": 18.108001708984375,
+        "descent": 4.931999683380127
+      }
+    },
+    {
+      "kind": "web",
+      "body_width_px": 704,
+      "backend": "154.0.8037.57",
+      "html_unchanged": null,
+      "blocks": [
+        {
+          "source": "The notebook",
+          "bounds": {
+            "x": 40,
+            "y": 88,
+            "width": 704,
+            "height": 66.390625
+          },
+          "row_texts": [
+            "The notebook"
+          ]
+        },
+        {
+          "source": "The notebook was small enough to carry in a coat pocket. By November, its corners had softened and the cover had begun to remember the shape of a hand.",
+          "bounds": {
+            "x": 40,
+            "y": 172.390625,
+            "width": 704,
+            "height": 97.171875
+          },
+          "row_texts": [
+            "he notebook was small enough to carry in a coat pocket. By ",
+            "November, its corners had softened and the cover had begun to ",
+            "remember the shape of a hand."
+          ]
+        },
+        {
+          "source": "Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.",
+          "bounds": {
+            "x": 40,
+            "y": 277.65625,
+            "width": 704,
+            "height": 64.78125
+          },
+          "row_texts": [
+            "Most pages held ordinary things: the name of a book, a sentence overheard on the ",
+            "train, the hours of a shop she kept arriving at after it had closed."
+          ]
+        },
+        {
+          "source": "A note for the next draft",
+          "bounds": {
+            "x": 40,
+            "y": 378.4375,
+            "width": 704,
+            "height": 30
+          },
+          "row_texts": [
+            "A note for the next draft"
+          ]
+        },
+        {
+          "source": "Keep the opening concrete. Let the change in the room carry the ending.",
+          "bounds": {
+            "x": 40,
+            "y": 418.03125,
+            "width": 704,
+            "height": 32.390625
+          },
+          "row_texts": [
+            "Keep the opening concrete. Let the change in the room carry the ending."
+          ]
+        }
+      ],
+      "initial": {
+        "bounds": {
+          "x": 40,
+          "y": 175.03125,
+          "width": 87.6875,
+          "height": 87.6875,
+          "top": 175.03125,
+          "right": 127.6875,
+          "bottom": 262.71875,
+          "left": 40
+        },
+        "fontSize": "75.6px",
+        "margin": "2.646px 10.584px 1.512px 0px"
+      },
+      "full_remem_prefix": {
+        "family": "Lora",
+        "size": 18,
+        "text": "November, its corners had softened and the cover had begun to remem‐",
+        "width": 605.2821044921875,
+        "fontAscent": 18,
+        "fontDescent": 5,
+        "inkAscent": 13,
+        "inkDescent": 4
+      }
+    },
+    {
+      "kind": "native-before",
+      "body_width_px": 554,
+      "backend": "X11",
+      "html_unchanged": true,
+      "blocks": [
+        {
+          "source": "The notebook",
+          "bounds": {
+            "x": 40.0,
+            "y": 88.0,
+            "width": 554.0,
+            "height": 67.0
+          },
+          "row_texts": [
+            "The notebook"
+          ]
+        },
+        {
+          "source": "The notebook was small enough to carry in a coat pocket. By November, its corners had softened and the cover had begun to remember the shape of a hand.",
+          "bounds": {
+            "x": 40.0,
+            "y": 173.0,
+            "width": 554.0,
+            "height": 130.0
+          },
+          "row_texts": [
+            "The notebook was small enough to carry in a coat ",
+            "pocket. By November, its corners had softened and ",
+            "the cover had begun to remember the shape of a ",
+            "hand."
+          ]
+        },
+        {
+          "source": "Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.",
+          "bounds": {
+            "x": 40.0,
+            "y": 311.0,
+            "width": 554.0,
+            "height": 98.0
+          },
+          "row_texts": [
+            "Most pages held ordinary things: the name of a book, a sentence ",
+            "overheard on the train, the hours of a shop she kept arriving at af",
+            "ter it had closed."
+          ]
+        },
+        {
+          "source": "A note for the next draft",
+          "bounds": {
+            "x": 40.0,
+            "y": 445.0,
+            "width": 554.0,
+            "height": 30.0
+          },
+          "row_texts": [
+            "A note for the next draft"
+          ]
+        },
+        {
+          "source": "Keep the opening concrete. Let the change in the room carry the ending.",
+          "bounds": {
+            "x": 40.0,
+            "y": 485.0,
+            "width": 554.0,
+            "height": 65.0
+          },
+          "row_texts": [
+            "Keep the opening concrete. Let the change in the room carry the ",
+            "ending."
+          ]
+        }
+      ],
+      "initial": null,
+      "full_remem_prefix": {
+        "family": "Twyne Body",
+        "size": 18.0,
+        "text": "November, its corners had softened and the cover had begun to remem‐",
+        "width": 605.2859497070312,
+        "ascent": 18.108001708984375,
+        "descent": 4.931999683380127
+      }
+    },
+    {
+      "kind": "native",
+      "body_width_px": 554,
+      "backend": "X11",
+      "html_unchanged": true,
+      "blocks": [
+        {
+          "source": "The notebook",
+          "bounds": {
+            "x": 40.0,
+            "y": 88.0,
+            "width": 554.0,
+            "height": 67.0
+          },
+          "row_texts": [
+            "The notebook"
+          ]
+        },
+        {
+          "source": "The notebook was small enough to carry in a coat pocket. By November, its corners had softened and the cover had begun to remember the shape of a hand.",
+          "bounds": {
+            "x": 40.0,
+            "y": 173.0,
+            "width": 554.0,
+            "height": 130.0
+          },
+          "row_texts": [
+            "The notebook was small enough to carry in a coat ",
+            "pocket. By November, its corners had softened and ",
+            "the cover had begun to remember the shape of a ",
+            "hand."
+          ]
+        },
+        {
+          "source": "Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.",
+          "bounds": {
+            "x": 40.0,
+            "y": 311.0,
+            "width": 554.0,
+            "height": 98.0
+          },
+          "row_texts": [
+            "Most pages held ordinary things: the name of a book, a sentence ",
+            "overheard on the train, the hours of a shop she kept arriving at af",
+            "ter it had closed."
+          ]
+        },
+        {
+          "source": "A note for the next draft",
+          "bounds": {
+            "x": 40.0,
+            "y": 445.0,
+            "width": 554.0,
+            "height": 30.0
+          },
+          "row_texts": [
+            "A note for the next draft"
+          ]
+        },
+        {
+          "source": "Keep the opening concrete. Let the change in the room carry the ending.",
+          "bounds": {
+            "x": 40.0,
+            "y": 485.0,
+            "width": 554.0,
+            "height": 65.0
+          },
+          "row_texts": [
+            "Keep the opening concrete. Let the change in the room carry the ",
+            "ending."
+          ]
+        }
+      ],
+      "initial": null,
+      "full_remem_prefix": {
+        "family": "Twyne Body",
+        "size": 18.0,
+        "text": "November, its corners had softened and the cover had begun to remem‐",
+        "width": 605.2859497070312,
+        "ascent": 18.108001708984375,
+        "descent": 4.931999683380127
+      }
+    },
+    {
+      "kind": "web",
+      "body_width_px": 554,
+      "backend": "154.0.8037.57",
+      "html_unchanged": null,
+      "blocks": [
+        {
+          "source": "The notebook",
+          "bounds": {
+            "x": 40,
+            "y": 88,
+            "width": 554,
+            "height": 66.390625
+          },
+          "row_texts": [
+            "The notebook"
+          ]
+        },
+        {
+          "source": "The notebook was small enough to carry in a coat pocket. By November, its corners had softened and the cover had begun to remember the shape of a hand.",
+          "bounds": {
+            "x": 40,
+            "y": 172.390625,
+            "width": 554,
+            "height": 129.5625
+          },
+          "row_texts": [
+            "he notebook was small enough to carry in a coat ",
+            "pocket. By November, its corners had softened and ",
+            "the cover had begun to remember the shape of a ",
+            "hand."
+          ]
+        },
+        {
+          "source": "Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.",
+          "bounds": {
+            "x": 40,
+            "y": 310.046875,
+            "width": 554,
+            "height": 97.171875
+          },
+          "row_texts": [
+            "Most pages held ordinary things: the name of a book, a sentence ",
+            "overheard on the train, the hours of a shop she kept arriving at ",
+            "after it had closed."
+          ]
+        },
+        {
+          "source": "A note for the next draft",
+          "bounds": {
+            "x": 40,
+            "y": 443.21875,
+            "width": 554,
+            "height": 30
+          },
+          "row_texts": [
+            "A note for the next draft"
+          ]
+        },
+        {
+          "source": "Keep the opening concrete. Let the change in the room carry the ending.",
+          "bounds": {
+            "x": 40,
+            "y": 482.8125,
+            "width": 554,
+            "height": 64.78125
+          },
+          "row_texts": [
+            "Keep the opening concrete. Let the change in the room carry the ",
+            "ending."
+          ]
+        }
+      ],
+      "initial": {
+        "bounds": {
+          "x": 40,
+          "y": 175.03125,
+          "width": 87.6875,
+          "height": 87.6875,
+          "top": 175.03125,
+          "right": 127.6875,
+          "bottom": 262.71875,
+          "left": 40
+        },
+        "fontSize": "75.6px",
+        "margin": "2.646px 10.584px 1.512px 0px"
+      },
+      "full_remem_prefix": {
+        "family": "Lora",
+        "size": 18,
+        "text": "November, its corners had softened and the cover had begun to remem‐",
+        "width": 605.2821044921875,
+        "fontAscent": 18,
+        "fontDescent": 5,
+        "inkAscent": 13,
+        "inkDescent": 4
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "baseSha256": "84dd9abb6818821f037ba0d8c33c18a521d0590e3ed19caa6ff4cb5e50dbc40b",
+  "adaptedDriverSha256": "64b243f47fb28680d21f616a83628ff68242ce8522f0ac56a6efe9e3222d9315",
+  "originalDriverUnmodified": true,
+  "failureOutput": "desktop/gpui/target/verification/dossier-current-product-atlas-native-657f03119c4a",
+  "observedFailure": {
+    "actualTitle": "atlas keeps this title!",
+    "actualFieldFocused": true,
+    "actualWindowActive": true,
+    "lastInputWasKeyboard": false
+  },
+  "cause": "Atlas driver pulses mouse motion before every read; this overwrites the actual last-input kind after keyboard typing",
+  "correction": "Suspend own pointer pulses only while observing the exact inherited value/focus/keyboard predicate after physical typing; original 20s deadline, fresh bounds, lifecycle ordering and nine ordinary/eight stamp gates stay exact",
+  "nativeExecuted": false
+}

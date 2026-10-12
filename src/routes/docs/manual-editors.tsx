@@ -1,6 +1,7 @@
 import { component$, useStyles$ } from "@qwik.dev/core";
 import { PERSONAS } from "../../utils/personas";
 import styles from "./manual-editors.css?inline";
+import { renderMarkdown } from "../../utils/markdown";
 
 /** Names, roles, marks, and examples stay with the live cast. The portraits
  * are original illustrations of fictional voices, made for this manual. */
@@ -112,9 +113,11 @@ export const ManualEditors = component$(() => {
                 {sample && (
                   <figure class="manual-editors__signature">
                     <figcaption>In this voice</figcaption>
-                    <blockquote>
-                      <p>“{sample}”</p>
-                    </blockquote>
+                    {/* Rendered as a note would be: the hallmarks are
+                      typographic — a bold ruling, a blessing on its own line. */}
+                    <blockquote
+                      dangerouslySetInnerHTML={renderMarkdown(sample)}
+                    />
                   </figure>
                 )}
               </div>

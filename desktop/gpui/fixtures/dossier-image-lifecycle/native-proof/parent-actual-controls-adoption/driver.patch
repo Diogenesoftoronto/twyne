@@ -1,0 +1,82 @@
+--- desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/parent-keyboard-capture-adoption/check-native.py
++++ desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/parent-actual-controls-adoption/check-native.py
+@@ -451,6 +451,7 @@
+             "DPR1 only; no occlusion/device recovery/multiwindow/global memory/sustained stress proof",
+             "Recorded is a scene admission observation, not a presentation/GPU-completion or exact Source foxing-raster receipt",
+             "Settings has no observed activation control while Dossier is mounted; retained-form Settings→Back requires an independent mounted host gate",
++            "File is absent while Dossier is mounted; active-form House departure and recovery refusal are not OS-tested by this driver",
+             "Theme is driven through actual Settings after real Dossier cancellation; no injected theme event",
+             "Window/app close is accepted only as clean process exit, not a post-close atlas or GPU receipt",
+         ]}
+@@ -529,16 +530,6 @@
+         ui.assert_answers()
+         passed("Resize back reuses original CPU-cache ImageId and actually reuploads it; local title/multiline controls stay exact", resize_back)
+ 
+-        before = ui.state()
+-        sequence = ui.seen_sequence
+-        ui.click("file-menu")
+-        ui.wait_state("actual File menu", lambda state: ui.node(state, "popup-menu") is not None)
+-        ui.press("Escape")
+-        after = ui.wait_state("actual canceled menu leaves Dossier mounted", lambda state:
+-            ui.node(state, "popup-menu") is None and ui.node(state, "dossier-form") is not None)
+-        ui.no_retirement(before, after, sequence)
+-        passed("Canceling the actual departure menu retains the mounted lease, all uploaded keys and local answers")
+-
+         # Fault is an explicit malformed owned disk copy, never a fabricated
+         # successful recovery/provider callback or a touched user manuscript.
+         recovery_path, _ = ui.wait_recovery("create", baseline["id"], 0,
+@@ -558,17 +549,6 @@
+         ui.retain_state("actual-refused-cancel", refused)
+         passed("Damaged owned recovery causes actual Cancel refusal and keeps its real uploaded keys/control value")
+ 
+-        before = ui.state()
+-        sequence = ui.seen_sequence
+-        ui.click("file-menu")
+-        ui.click_menu("Dossier & House context")
+-        refused = ui.wait_state("actual recovery-refused House departure", lambda state:
+-            ui.node(state, "popup-menu") is None and ui.node(state, "dossier-form") is not None
+-            and ui.node(state, "native-house") is None and ui.node(state, "dismiss-message") is not None
+-            and ui.node(state, "dismiss-message")["label"] == "Retry save")
+-        ui.no_retirement(before, refused, sequence)
+-        ui.retain_state("actual-refused-route", refused)
+-        passed("Actual File→House route refuses failed recovery before unmount/retirement; source and input remain intact")
+         temporary = recovery_path.with_name(recovery_path.name + ".native-proof-restore")
+         temporary.write_bytes(recovery_bytes)
+         os.replace(temporary, recovery_path)
+@@ -576,16 +556,29 @@
+ 
+         before = ui.state()
+         sequence = ui.seen_sequence
++        ui.click("dossier-exit")
++        departed = ui.wait_state("actual Cancel and completed marker retirement", lambda state:
++            ui.node(state, "dossier-form") is None
++            and state["dossierImageLifecycle"]["activeCount"] == 0
++            and state["dossierImageLifecycle"]["pendingCount"] == 0)
++        cancel_proof = ui.prove_retired(initial_ids, sequence, initial_uploaded)
++        ui.retain_state("actual-successful-cancel-retired", departed)
++        unchanged(ui.document()[1], baseline)
++        passed("Successful existing Dossier Cancel unmounts the form and retires every uploaded old key after the real marker", cancel_proof)
++
++        # File is an editor-header control, absent while Dossier is mounted.
++        # This route exercises navigation AFTER real Cancel, not a departure
++        # or refusal while the form owns live images.
+         ui.click("file-menu")
+         ui.click_menu("Dossier & House context")
+-        departed = ui.wait_state("actual mounted House and completed marker retirement", lambda state:
+-            ui.node(state, "native-house") is not None and ui.node(state, "dossier-form") is None
+-            and state["dossierImageLifecycle"]["activeCount"] == 0
+-            and state["dossierImageLifecycle"]["pendingCount"] == 0)
+-        route_proof = ui.prove_retired(initial_ids, sequence, initial_uploaded)
+-        ui.retain_state("actual-house-route-retired", departed)
++        house = ui.wait_state("actual editor File to House after Cancel", lambda state:
++            ui.node(state, "native-house") is not None and ui.node(state, "dossier-form") is None)
++        require(house["dossierImageLifecycle"]["activeCount"] == 0
++                and house["dossierImageLifecycle"]["pendingCount"] == 0,
++                "Editor navigation after Cancel unexpectedly revived a consumer")
++        ui.retain_state("actual-editor-house-after-cancel", house)
+         unchanged(ui.document()[1], baseline)
+-        passed("Successful existing House route actually unmounts the form and retires every uploaded old key after the real marker", route_proof)
++        passed("The actual editor File to House control navigates after cancellation without reviving a retired Dossier consumer")
+ 
+         ui.click("house-desk")
+         ui.click("create-dossier")

@@ -1,0 +1,22 @@
+{
+  "status": "completed",
+  "provider": "sakana",
+  "model": "fugu-max",
+  "reasoningEffort": "high",
+  "maxCompletionTokens": 20000,
+  "scope": "advisory-only; no product edits",
+  "inputSha256": "b9868277b92dff735093cbee6931c76ea71cd42be67097d7561be2fb9127e4d4",
+  "promptSha256": "2ac80c3adfaa886ce6db3f2eadbef9fb828ce9b12ee21f2841e455ac96f3163f",
+  "launcherSha256": "e5f06aa7c3c609b969b73bdb176c89f4a76f6f3889210a89594aa3b328b94a03",
+  "globalConfigModified": false,
+  "startedUnix": 1791228582.82796,
+  "exitCode": 0,
+  "response.txtSha256": "beab039f00b1419564cb0093936e6f13b0cff45ab159abf96b1a4ee991f84835",
+  "stderr.txtSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "responseJsonValid": true,
+  "assistantFinishReasons": [
+    "end_turn"
+  ],
+  "elapsedSeconds": 153.567,
+  "credentialRecord": "Private Skate resolution; credential data omitted from this retained copy"
+}

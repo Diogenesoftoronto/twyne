@@ -1,0 +1,21 @@
+--- a/src/linux/x11/window.rs
++++ b/src/linux/x11/window.rs
+@@ -875,6 +875,10 @@
+ impl Drop for X11Window {
+     fn drop(&mut self) {
+         let mut state = self.0.state.borrow_mut();
++        // The deferred close task can retain this state after the event loop
++        // stops. Release its focused input entity before GPUI flushes shutdown
++        // effects, but drop the handler only after releasing the state borrow.
++        let input_handler = state.input_handler.take();
+ 
+         if let Some(parent) = state.parent.as_ref() {
+             parent.state.borrow_mut().children.remove(&self.0.x_window);
+@@ -908,6 +912,7 @@
+         }
+ 
+         drop(state);
++        drop(input_handler);
+     }
+ }
+ 

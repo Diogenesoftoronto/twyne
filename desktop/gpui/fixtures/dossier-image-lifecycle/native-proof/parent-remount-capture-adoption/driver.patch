@@ -1,0 +1,12 @@
+--- desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/parent-actual-controls-adoption/check-native.py
++++ desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/parent-remount-capture-adoption/check-native.py
+@@ -358,6 +358,9 @@
+             return self.wait_state(description, lambda state:
+                 not state["dossierImageLifecycle"]["invalidationQueued"]
+                 and state["dossierImageLifecycle"]["pendingCount"] == 0
++                # A successful physical route click can precede its next capture.
++                # Await the actual form before asserting its mandatory hook.
++                and (active != "prepared" or self.node(state, "dossier-form") is not None)
+                 and (active is None or (prepared_mount_ready(state, expected_support) if active == "prepared"
+                      else state["dossierImageLifecycle"]["activeCount"] == active))
+                 and (ids is None or set(image_map(state["dossierImageLifecycle"])) == set(ids))

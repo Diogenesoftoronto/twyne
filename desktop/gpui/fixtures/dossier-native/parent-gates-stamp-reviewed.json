@@ -1,0 +1,49 @@
+{
+  "status": "pass",
+  "run": "2026-10-05T06:10:57.069966+00:00",
+  "output": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/dossier-stamp-workflow-6a5b32e702",
+  "acceptance": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/dossier-stamp-workflow-6a5b32e702/acceptance.json",
+  "acceptanceSha256": "c72f327c30f2bd4a669a85de80f2dfbbd95614b0f13ef4728c525f57bd2ed484",
+  "checks": [
+    "Actual imported copy preserves nonempty authored source, formatting, #let and exact whitespace",
+    "Unblurred final title survives actual Escape Cancel in exact create-scope recovery without filing",
+    "Actual local helper projects nonempty HTML through Write/Save while retaining authored source/body",
+    "Actual Create reopen restores the exact native input from the same recovery identity",
+    "All ten actual roman controls navigate the original questions and retain unblurred multiline recovery",
+    "Actual Send to press durably files Create and clears only its recovery; nonempty source/body/HTML stay exact",
+    "Same-base Refine Cancel/reopen restores actual pending title/goal and preserves the saved manuscript",
+    "Actual Refine filing updates brief metadata while canonical source/body/projected HTML/import bytes stay exact",
+    "Actual focused Ctrl-Q exits zero without entity leaks and durably retains the final unblurred textarea",
+    "Fresh actual process restores exact scoped draft and filed metadata with the same nonempty canonical manuscript",
+    "Second real Cancel/Ctrl-Q exits cleanly without altering the saved manuscript"
+  ],
+  "binarySha256": "eb9140901ef286468573d7036e1c7e6bc799705348511b0f0a3efcbfd26f90b1",
+  "helperSha256": "cc8144ceeb96cb519f026414aa332f35d54b33e5fb640d0c1076d85b3a39c9de",
+  "driverSha256": "a5bdb6b9b905667af78c7faa9f23532946570f48cc6e576b21dc7a6f3a737f27",
+  "testedBuildSourceHashes": {
+    "desktop/gpui/Cargo.toml": "d2fbf2769766b2a4758ef37c387fe8e146a25031f0448161def5e9fc3ba304eb",
+    "desktop/gpui/Cargo.lock": "0276cac861d2dde4235eaacad27917e826abfd3af2922a432f17e0c204fed7da",
+    "desktop/gpui/src/lib.rs": "65cb337bdd30c9ea7e481492ae98567517258a6db303ce9d2ca8a4352488c792",
+    "desktop/gpui/src/main.rs": "37f247da470fd19cdbd2450c9165f2239269b2be667320672a63d0b146a2c0e0",
+    "desktop/gpui/src/app.rs": "f5e49f1d4ee936b333c9bf52b4b7119d2468b1e9f2f84c3b88360dfe9e550ea9",
+    "desktop/gpui/src/app/math_source_coordinator.rs": "9a2b11a7b64828bb8fa4c6eed8ba3e41fea01eaf57fddba3ce50079dd8cceb2f",
+    "desktop/gpui/src/editor/view.rs": "aef8332e5b2915a479a7c7ffad2624897f38186f91e62cdeee5ced35eabf5b14",
+    "desktop/gpui/src/editor/view_math_source.rs": "139eca38cf52aab6d729e4e10fe8d5f79cd30cb8a61d995a5c6e498d54fe6674",
+    "desktop/gpui/src/editor/math_source_flow.rs": "dd9c351c85922a703aee9d2648a8b18d6e3d66beb37631d705a2fb60902ab373",
+    "desktop/gpui/src/editor/paragraph_flow.rs": "7c9ad7eae6e70970c7110949c59e8757dcbddf1d8e96ab51f53c4435526ec7e9",
+    "desktop/gpui/src/editor/view_comments.rs": "5f761d277fb68776b0d15afbc1a2e554a925fbb5b56edc1bf46212e4e0ccc911",
+    "desktop/gpui/src/editor/view_notes.rs": "c602ab7c392e7b3cf5b9fe03e779df52e51176ae30fe67245a196d7ed738208b",
+    "desktop/gpui/src/editor/view_pagination.rs": "0ad825e9b686f6ae1cdd99d41d950e2cad60cd0cb977814251800dc92487ab0f",
+    "desktop/gpui/src/editor/view_tests.rs": "27f6962097d7e6656700d919abb4ab61dde0bb8f01df840b27bffb0becb4f74c",
+    "desktop/gpui/src/dossier_view.rs": "45537aaf8ab2ebd3c258a21ad6b0c482b0131c0fc525fdbec2408e0e256bf8aa",
+    "desktop/gpui/src/dossier_paper.rs": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+    "desktop/gpui/src/dossier_stamp.rs": "02e148677556cf5db9a4f0b13aef4373171a93c6e34888e901a510b1a6376ed3",
+    "desktop/gpui/fixtures/dossier-stamp/outlines.json": "89df759aee3a8ccaeca831b79aa2580ace14bdb7679123d39e1db6acaecbd062"
+  },
+  "boundaries": [
+    "Actual isolated X11/XTEST workflow with integrated original-font rotated stamp and application equation coordinator/inline host",
+    "Eleven Create/Refine/recovery/filing and two clean process exits passed",
+    "This exact binary precedes the newly vendored multiply API and renderer lifecycle fix",
+    "No native/browser pixel parity, GPU multiply, provider/account, Proof/PDF or current Wayland claim"
+  ]
+}

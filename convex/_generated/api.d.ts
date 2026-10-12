@@ -45,6 +45,7 @@ import type * as liveVoice from "../liveVoice.js";
 import type * as lixBlobs from "../lixBlobs.js";
 import type * as lixRelay from "../lixRelay.js";
 import type * as mcp from "../mcp.js";
+import type * as native from "../native.js";
 import type * as personaNoteStreams from "../personaNoteStreams.js";
 import type * as posthog from "../posthog.js";
 import type * as profiles from "../profiles.js";
@@ -106,6 +107,7 @@ declare const fullApi: ApiFromModules<{
   lixBlobs: typeof lixBlobs;
   lixRelay: typeof lixRelay;
   mcp: typeof mcp;
+  native: typeof native;
   personaNoteStreams: typeof personaNoteStreams;
   posthog: typeof posthog;
   profiles: typeof profiles;

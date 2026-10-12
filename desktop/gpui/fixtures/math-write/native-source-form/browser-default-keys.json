@@ -1,0 +1,59 @@
+{
+  "scope": "Actual original Source NodeView in fresh headless Chrome on Linux; local fixture only",
+  "rows": [
+    {
+      "key": "Enter",
+      "before": "x",
+      "after": "x\n"
+    },
+    {
+      "key": "Shift+Enter",
+      "before": "x",
+      "after": "x\n"
+    },
+    {
+      "key": "Alt+Enter",
+      "before": "x",
+      "after": "x"
+    },
+    {
+      "key": "Alt+Shift+Enter",
+      "before": "x",
+      "after": "x"
+    },
+    {
+      "key": "Control+Shift+Enter",
+      "before": "x",
+      "after": "x"
+    },
+    {
+      "key": "Meta+Shift+Enter",
+      "before": "x",
+      "after": "x"
+    },
+    {
+      "key": "Control+Alt+Shift+Enter",
+      "before": "x",
+      "after": "x"
+    },
+    {
+      "key": "Meta+Alt+Shift+Enter",
+      "before": "x",
+      "after": "x"
+    },
+    {
+      "key": "Control+Meta+Shift+Enter",
+      "before": "x",
+      "after": "x"
+    },
+    {
+      "key": "Control+Meta+Alt+Shift+Enter",
+      "before": "x",
+      "after": "x"
+    }
+  ],
+  "canonicalUnchanged": true,
+  "sourceSha256": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb",
+  "sourceBundleSha256": "eb4262fd18077d6ff4a9474de3aafd46fd005bbf57ca40b3ee5671f27014ad0a",
+  "sourceRendererBundleSha256": "31d0ee6f5e7a4e7a88fd85e77889292cb56cc17e53da679a3450cae88128bc76"
+}

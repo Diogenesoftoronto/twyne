@@ -1,0 +1,52 @@
+{
+  "url": "http://localhost:5180/editor/",
+  "pageMode": "Source",
+  "compatMode": "CSS1Compat",
+  "html": "<select class=\"editor-page-navigation\" aria-label=\"Go to page\"><option value=\"0\">1 page</option><option value=\"1\">Page 1 of 1</option></select>",
+  "disabled": false,
+  "bounds": {
+    "x": 72.78125,
+    "y": 830,
+    "width": 71,
+    "height": 28,
+    "top": 830,
+    "right": 143.78125,
+    "bottom": 858,
+    "left": 72.78125
+  },
+  "selectedText": "1 page",
+  "style": {
+    "appearance": "auto",
+    "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+    "fontSize": "11px",
+    "fontWeight": "400",
+    "fontStyle": "normal",
+    "fontOpticalSizing": "auto",
+    "fontVariationSettings": "normal",
+    "letterSpacing": "normal",
+    "lineHeight": "normal",
+    "padding": "0px",
+    "border": "0px none rgb(74, 63, 51)",
+    "boxSizing": "border-box",
+    "height": "28px",
+    "width": "71px",
+    "minWidth": "0px",
+    "maxWidth": "128px",
+    "backgroundImage": "none",
+    "color": "rgb(74, 63, 51)",
+    "display": "block"
+  },
+  "parent": {
+    "className": "typst-statusbar editor-bottom-bar",
+    "bounds": {
+      "x": 2,
+      "y": 827,
+      "width": 1278,
+      "height": 33,
+      "top": 827,
+      "right": 1280,
+      "bottom": 860,
+      "left": 2
+    }
+  }
+}

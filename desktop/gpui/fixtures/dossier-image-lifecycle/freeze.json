@@ -1,0 +1,54 @@
+{
+  "status": "FROZEN_UNAPPLIED_PROPOSAL",
+  "atUtc": "2026-10-05T06:31:54.762967+00:00",
+  "registrationApplied": false,
+  "checks": {
+    "gitApplyCheck": "PASS",
+    "pythonSyntax": "PASS",
+    "rustfmtSyntax": "PASS",
+    "rustTestsAuthored": 13,
+    "rustTestsRun": false,
+    "cargoRun": false,
+    "nativeRun": false,
+    "gpuProof": false
+  },
+  "scope": "Per-window lease bookkeeping and conditional ordinary-frame CPU-scene/key retirement; not successful presentation or global GPU eviction",
+  "files": [
+    {
+      "path": "desktop/gpui/src/dossier_image_lifecycle.rs",
+      "sha256": "0e98b8d1bc1f3b977cfd9dcb8e83c2fb94fe30df1668ecb52f5c66621e44d775"
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-image-lifecycle/README.md",
+      "sha256": "8d18fefd4e03a6a08fe771251fd8e1c9e10f786d9e439c491a8587f2fdf3082f"
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-image-lifecycle/build-patch.py",
+      "sha256": "a843254db239875758228fb51bc88d15896bcca654f32d68f76239717f8b3e8b"
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-image-lifecycle/contract.json",
+      "sha256": "4af517fabcef8935adc49d521833c2eec6321de726d75a9023fdbfb5e7195d3d"
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-image-lifecycle/freeze.py",
+      "sha256": "23658b4f9fd738ecbead65cb6ea7bbe839e9bc6702316aa5082cf988b59b4d36"
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-image-lifecycle/integration.patch",
+      "sha256": "dabb586c87801bbfc3697f0033b030086fc40e470dbe39d1a12e3988553b8913"
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-image-lifecycle/lifecycle_tests.rs",
+      "sha256": "72ee7daf8c35c4018a2de119187804efad378df8af5f98d3929d4d2f95c2b966"
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-image-lifecycle/patch-base.json",
+      "sha256": "e2fb029e1cd9ddb65bc60192cbf6cca0eb5e50f5ce4313db4f92d106f8e4b0d1"
+    },
+    {
+      "path": "desktop/gpui/fixtures/dossier-image-lifecycle/source-pins.json",
+      "sha256": "add61a45318bc744a9a2f50dda6dc5f3b71ebc05730179b15d1b58ccaef82ebc"
+    }
+  ]
+}

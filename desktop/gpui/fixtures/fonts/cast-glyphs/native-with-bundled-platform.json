@@ -1,0 +1,1904 @@
+{
+  "renderer": "Actual current Linux Cosmic/Swash with registered bundled Twyne fonts",
+  "embeddedOnly": false,
+  "initialFontNames": [
+    "Adwaita Mono",
+    "Adwaita Sans",
+    "C059",
+    "Caladea",
+    "Cantarell",
+    "Carlito",
+    "Comfortaa",
+    "D050000L",
+    "Droid Arabic Kufi",
+    "Droid Sans",
+    "Droid Sans Armenian",
+    "Droid Sans Devanagari",
+    "Droid Sans Ethiopic",
+    "Droid Sans Fallback",
+    "Droid Sans Georgian",
+    "Droid Sans Hebrew",
+    "Droid Sans Japanese",
+    "Droid Sans Tamil",
+    "Droid Sans Thai",
+    "FiraCode Nerd Font",
+    "FiraCode Nerd Font Mono",
+    "FiraCode Nerd Font Propo",
+    "FreeSans",
+    "Inter",
+    "Inter Display",
+    "Inter Variable",
+    "JetBrainsMono Nerd Font",
+    "JetBrainsMono Nerd Font Mono",
+    "JetBrainsMono Nerd Font Propo",
+    "JetBrainsMonoNL Nerd Font",
+    "JetBrainsMonoNL Nerd Font Mono",
+    "JetBrainsMonoNL Nerd Font Propo",
+    "Jomolhari",
+    "Latin Modern Mono",
+    "Latin Modern Mono Caps",
+    "Latin Modern Mono Light",
+    "Latin Modern Mono Light Cond",
+    "Latin Modern Mono Prop",
+    "Latin Modern Mono Prop Light",
+    "Latin Modern Mono Slanted",
+    "Latin Modern Roman",
+    "Latin Modern Roman Caps",
+    "Latin Modern Roman Demi",
+    "Latin Modern Roman Dunhill",
+    "Latin Modern Roman Slanted",
+    "Latin Modern Roman Unslanted",
+    "Latin Modern Sans",
+    "Latin Modern Sans Demi Cond",
+    "Latin Modern Sans Quotation",
+    "Liberation Mono",
+    "Liberation Sans",
+    "Liberation Serif",
+    "Madan2",
+    "Nimbus Mono PS",
+    "Nimbus Roman",
+    "Nimbus Sans",
+    "Nimbus Sans Narrow",
+    "Noto Color Emoji",
+    "Noto Emoji",
+    "Noto Naskh Arabic",
+    "Noto Sans",
+    "Noto Sans Arabic",
+    "Noto Sans Armenian",
+    "Noto Sans Bengali",
+    "Noto Sans CJK HK",
+    "Noto Sans CJK JP",
+    "Noto Sans CJK KR",
+    "Noto Sans CJK SC",
+    "Noto Sans CJK TC",
+    "Noto Sans Canadian Aboriginal",
+    "Noto Sans Cherokee",
+    "Noto Sans Devanagari",
+    "Noto Sans Ethiopic",
+    "Noto Sans Georgian",
+    "Noto Sans Gothic",
+    "Noto Sans Gujarati",
+    "Noto Sans Gurmukhi",
+    "Noto Sans Hebrew",
+    "Noto Sans Kannada",
+    "Noto Sans Khmer",
+    "Noto Sans Lao",
+    "Noto Sans Math",
+    "Noto Sans Meetei Mayek",
+    "Noto Sans Mono",
+    "Noto Sans Mono CJK HK",
+    "Noto Sans Mono CJK JP",
+    "Noto Sans Mono CJK KR",
+    "Noto Sans Mono CJK SC",
+    "Noto Sans Mono CJK TC",
+    "Noto Sans NKo",
+    "Noto Sans Ol Chiki",
+    "Noto Sans Oriya",
+    "Noto Sans Sinhala",
+    "Noto Sans Symbols",
+    "Noto Sans Symbols 2",
+    "Noto Sans Syriac",
+    "Noto Sans Tamil",
+    "Noto Sans Telugu",
+    "Noto Sans Thaana",
+    "Noto Sans Thai",
+    "Noto Serif",
+    "Noto Serif Armenian",
+    "Noto Serif Bengali",
+    "Noto Serif CJK HK",
+    "Noto Serif CJK JP",
+    "Noto Serif CJK KR",
+    "Noto Serif CJK SC",
+    "Noto Serif CJK TC",
+    "Noto Serif Devanagari",
+    "Noto Serif Ethiopic",
+    "Noto Serif Georgian",
+    "Noto Serif Gujarati",
+    "Noto Serif Gurmukhi",
+    "Noto Serif Hebrew",
+    "Noto Serif Kannada",
+    "Noto Serif Khmer",
+    "Noto Serif Lao",
+    "Noto Serif Oriya",
+    "Noto Serif Sinhala",
+    "Noto Serif Tamil",
+    "Noto Serif Telugu",
+    "Noto Serif Thai",
+    "Open Sans",
+    "OpenSymbol",
+    "P052",
+    "Padauk",
+    "PakType Naskh Basic",
+    "PakType Naskh Basic Semi Wide",
+    "PakType Naskh Basic Wide",
+    "RIT Meera New",
+    "RIT Rachana",
+    "Red Hat Display",
+    "Red Hat Text",
+    "STIX Two Math",
+    "STIX Two Text",
+    "Source Code Pro",
+    "Standard Symbols PS",
+    "Symbola",
+    "Symbols Nerd Font",
+    "Symbols Nerd Font Mono",
+    "URW Bookman",
+    "URW Gothic",
+    "Vazirmatn",
+    "Z003"
+  ],
+  "boundary": "Direct actual selected glyph/run/raster proof; actual Cast UI/GPU painting, Chromium raster and other OS rendering are separate. All fonts are registered by theme::apply; embedded-only mode has no system fonts.",
+  "systemCandidates": [
+    "Adwaita Mono",
+    "DM Sans",
+    "Inter",
+    "Liberation Sans",
+    "Noto Sans Math"
+  ],
+  "rows": [
+    {
+      "request": "shipping-sans-automatic",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(2)",
+      "text": "♠",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 7.011199951171875,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4013,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 43,
+                "maskFnv1a64": "b5df5c3d593b31e5"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipping-sans-automatic",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(2)",
+      "text": "♥",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 7.772799968719482,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4018,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 8 px (device) × 8 px (device) } }",
+                "size": "Size { 8 px (device) × 8 px (device) }",
+                "byteCount": 64,
+                "nonzeroBytes": 46,
+                "maskFnv1a64": "d4a8e0ad9ef0b899"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipping-sans-automatic",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(2)",
+      "text": "♦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.664000034332275,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4019,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 34,
+                "maskFnv1a64": "e78ca434435f78da"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipping-sans-automatic",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(2)",
+      "text": "✦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.742968559265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(7)",
+          "glyphs": [
+            {
+              "id": 2830,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 22,
+                "maskFnv1a64": "e3757f793d975624"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipping-sans-automatic",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(2)",
+      "text": "♣",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 8.691200256347656,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4016,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 9 px (device) × 8 px (device) } }",
+                "size": "Size { 9 px (device) × 8 px (device) }",
+                "byteCount": 72,
+                "nonzeroBytes": 52,
+                "maskFnv1a64": "0817a22023f376cb"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "bundled-cast-helper",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(37)",
+      "text": "♠",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 5.949999809265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(30)",
+          "glyphs": [
+            {
+              "id": 2230,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 6 px (device) × 7 px (device) } }",
+                "size": "Size { 6 px (device) × 7 px (device) }",
+                "byteCount": 42,
+                "nonzeroBytes": 32,
+                "maskFnv1a64": "05594ecd2791ca65"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "bundled-cast-helper",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(37)",
+      "text": "♥",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 11.45156192779541,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(8)",
+          "glyphs": [
+            {
+              "id": 1867,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 11 px (device) × 10 px (device) } }",
+                "size": "Size { 11 px (device) × 10 px (device) }",
+                "byteCount": 110,
+                "nonzeroBytes": 72,
+                "maskFnv1a64": "f75d61b1f7348d0d"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "bundled-cast-helper",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(37)",
+      "text": "♦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 5.71484375,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(30)",
+          "glyphs": [
+            {
+              "id": 2233,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 6 px (device) × 7 px (device) } }",
+                "size": "Size { 6 px (device) × 7 px (device) }",
+                "byteCount": 42,
+                "nonzeroBytes": 28,
+                "maskFnv1a64": "9d4481a5c284bfa1"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "bundled-cast-helper",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(37)",
+      "text": "✦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.720000267028809,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(35)",
+          "glyphs": [
+            {
+              "id": 6836,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 7 px (device) } }",
+                "size": "Size { 7 px (device) × 7 px (device) }",
+                "byteCount": 49,
+                "nonzeroBytes": 23,
+                "maskFnv1a64": "dfdd3e979b0b310e"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "bundled-cast-helper",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(37)",
+      "text": "♣",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 7.349999904632568,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(30)",
+          "glyphs": [
+            {
+              "id": 2231,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 7 px (device) } }",
+                "size": "Size { 7 px (device) × 7 px (device) }",
+                "byteCount": 49,
+                "nonzeroBytes": 36,
+                "maskFnv1a64": "974139623d6fc9d2"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-Inter-first",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(41)",
+      "text": "♠",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 7.011199951171875,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4013,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 43,
+                "maskFnv1a64": "b5df5c3d593b31e5"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-Inter-first",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(41)",
+      "text": "♥",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 11.45156192779541,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(8)",
+          "glyphs": [
+            {
+              "id": 1867,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 11 px (device) × 10 px (device) } }",
+                "size": "Size { 11 px (device) × 10 px (device) }",
+                "byteCount": 110,
+                "nonzeroBytes": 72,
+                "maskFnv1a64": "f75d61b1f7348d0d"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-Inter-first",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(41)",
+      "text": "♦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.664000034332275,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4019,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 34,
+                "maskFnv1a64": "e78ca434435f78da"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-Inter-first",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(41)",
+      "text": "✦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.742968559265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(7)",
+          "glyphs": [
+            {
+              "id": 2830,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 22,
+                "maskFnv1a64": "e3757f793d975624"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-Inter-first",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(41)",
+      "text": "♣",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 8.691200256347656,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4016,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 9 px (device) × 8 px (device) } }",
+                "size": "Size { 9 px (device) × 8 px (device) }",
+                "byteCount": 72,
+                "nonzeroBytes": 52,
+                "maskFnv1a64": "0817a22023f376cb"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-exact-cast-chain",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(37)",
+      "text": "♠",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 5.949999809265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(30)",
+          "glyphs": [
+            {
+              "id": 2230,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 6 px (device) × 7 px (device) } }",
+                "size": "Size { 6 px (device) × 7 px (device) }",
+                "byteCount": 42,
+                "nonzeroBytes": 32,
+                "maskFnv1a64": "05594ecd2791ca65"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-exact-cast-chain",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(37)",
+      "text": "♥",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 11.45156192779541,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(8)",
+          "glyphs": [
+            {
+              "id": 1867,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 11 px (device) × 10 px (device) } }",
+                "size": "Size { 11 px (device) × 10 px (device) }",
+                "byteCount": 110,
+                "nonzeroBytes": 72,
+                "maskFnv1a64": "f75d61b1f7348d0d"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-exact-cast-chain",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(37)",
+      "text": "♦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 5.71484375,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(30)",
+          "glyphs": [
+            {
+              "id": 2233,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 6 px (device) × 7 px (device) } }",
+                "size": "Size { 6 px (device) × 7 px (device) }",
+                "byteCount": 42,
+                "nonzeroBytes": 28,
+                "maskFnv1a64": "9d4481a5c284bfa1"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-exact-cast-chain",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(37)",
+      "text": "✦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.720000267028809,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(35)",
+          "glyphs": [
+            {
+              "id": 6836,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 7 px (device) } }",
+                "size": "Size { 7 px (device) × 7 px (device) }",
+                "byteCount": 49,
+                "nonzeroBytes": 23,
+                "maskFnv1a64": "dfdd3e979b0b310e"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-exact-cast-chain",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(37)",
+      "text": "♣",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 7.349999904632568,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(30)",
+          "glyphs": [
+            {
+              "id": 2231,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 7 px (device) } }",
+                "size": "Size { 7 px (device) × 7 px (device) }",
+                "byteCount": 49,
+                "nonzeroBytes": 36,
+                "maskFnv1a64": "974139623d6fc9d2"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-symbols2",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(46)",
+      "text": "♠",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 8.153599739074707,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(45)",
+          "glyphs": [
+            {
+              "id": 1647,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 8 px (device) × 9 px (device) } }",
+                "size": "Size { 8 px (device) × 9 px (device) }",
+                "byteCount": 72,
+                "nonzeroBytes": 51,
+                "maskFnv1a64": "e07c9c196a2add10"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-symbols2",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(46)",
+      "text": "♥",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 8.288000106811523,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(45)",
+          "glyphs": [
+            {
+              "id": 1652,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 8 px (device) × 9 px (device) } }",
+                "size": "Size { 8 px (device) × 9 px (device) }",
+                "byteCount": 72,
+                "nonzeroBytes": 51,
+                "maskFnv1a64": "e5bfee71e80a8730"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-symbols2",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(46)",
+      "text": "♦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.787199974060059,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(45)",
+          "glyphs": [
+            {
+              "id": 1653,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 7 px (device) × 10 px (device) } }",
+                "size": "Size { 7 px (device) × 10 px (device) }",
+                "byteCount": 70,
+                "nonzeroBytes": 38,
+                "maskFnv1a64": "f9f7ef99efff0855"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-symbols2",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(46)",
+      "text": "✦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 9.743999481201172,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(45)",
+          "glyphs": [
+            {
+              "id": 369,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 10 px (device) × 10 px (device) } }",
+                "size": "Size { 10 px (device) × 10 px (device) }",
+                "byteCount": 100,
+                "nonzeroBytes": 46,
+                "maskFnv1a64": "a7181e7cb697dde5"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-symbols2",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(46)",
+      "text": "♣",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 9.811200141906738,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(45)",
+          "glyphs": [
+            {
+              "id": 1650,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 10 px (device) × 9 px (device) } }",
+                "size": "Size { 10 px (device) × 9 px (device) }",
+                "byteCount": 90,
+                "nonzeroBytes": 65,
+                "maskFnv1a64": "e84178c2b9aa3166"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-symbols",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(51)",
+      "text": "♠",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 7.011199951171875,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4013,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 43,
+                "maskFnv1a64": "b5df5c3d593b31e5"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-symbols",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(51)",
+      "text": "♥",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 7.772799968719482,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4018,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 8 px (device) × 8 px (device) } }",
+                "size": "Size { 8 px (device) × 8 px (device) }",
+                "byteCount": 64,
+                "nonzeroBytes": 46,
+                "maskFnv1a64": "d4a8e0ad9ef0b899"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-symbols",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(51)",
+      "text": "♦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.664000034332275,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4019,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 34,
+                "maskFnv1a64": "e78ca434435f78da"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-symbols",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(51)",
+      "text": "✦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.742968559265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(7)",
+          "glyphs": [
+            {
+              "id": 2830,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 22,
+                "maskFnv1a64": "e3757f793d975624"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "sans-with-symbols",
+      "primary": "DM Sans",
+      "requestedFontId": "FontId(51)",
+      "text": "♣",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 8.691200256347656,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4016,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 9 px (device) × 8 px (device) } }",
+                "size": "Size { 9 px (device) × 8 px (device) }",
+                "byteCount": 72,
+                "nonzeroBytes": 52,
+                "maskFnv1a64": "0817a22023f376cb"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "DejaVu Sans",
+      "unavailable": true
+    },
+    {
+      "request": "Noto Sans",
+      "primary": "Noto Sans",
+      "requestedFontId": "FontId(56)",
+      "text": "♠",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 7.011199951171875,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4013,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 43,
+                "maskFnv1a64": "b5df5c3d593b31e5"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Noto Sans",
+      "primary": "Noto Sans",
+      "requestedFontId": "FontId(56)",
+      "text": "♥",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 7.772799968719482,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4018,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 8 px (device) × 8 px (device) } }",
+                "size": "Size { 8 px (device) × 8 px (device) }",
+                "byteCount": 64,
+                "nonzeroBytes": 46,
+                "maskFnv1a64": "d4a8e0ad9ef0b899"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Noto Sans",
+      "primary": "Noto Sans",
+      "requestedFontId": "FontId(56)",
+      "text": "♦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.664000034332275,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4019,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 34,
+                "maskFnv1a64": "e78ca434435f78da"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Noto Sans",
+      "primary": "Noto Sans",
+      "requestedFontId": "FontId(56)",
+      "text": "✦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.742968559265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(7)",
+          "glyphs": [
+            {
+              "id": 2830,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 22,
+                "maskFnv1a64": "e3757f793d975624"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Noto Sans",
+      "primary": "Noto Sans",
+      "requestedFontId": "FontId(56)",
+      "text": "♣",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 8.691200256347656,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4016,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 9 px (device) × 8 px (device) } }",
+                "size": "Size { 9 px (device) × 8 px (device) }",
+                "byteCount": 72,
+                "nonzeroBytes": 52,
+                "maskFnv1a64": "0817a22023f376cb"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Liberation Sans",
+      "primary": "Liberation Sans",
+      "requestedFontId": "FontId(60)",
+      "text": "♠",
+      "sizePx": 11.2,
+      "primaryGlyph": 2230,
+      "advancePx": 5.949999809265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(60)",
+          "glyphs": [
+            {
+              "id": 2230,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 6 px (device) × 7 px (device) } }",
+                "size": "Size { 6 px (device) × 7 px (device) }",
+                "byteCount": 42,
+                "nonzeroBytes": 32,
+                "maskFnv1a64": "05594ecd2791ca65"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Liberation Sans",
+      "primary": "Liberation Sans",
+      "requestedFontId": "FontId(60)",
+      "text": "♥",
+      "sizePx": 11.2,
+      "primaryGlyph": 2232,
+      "advancePx": 6.650000095367432,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(60)",
+          "glyphs": [
+            {
+              "id": 2232,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 6 px (device) × 7 px (device) } }",
+                "size": "Size { 6 px (device) × 7 px (device) }",
+                "byteCount": 42,
+                "nonzeroBytes": 28,
+                "maskFnv1a64": "8d3b550a479fdaf2"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Liberation Sans",
+      "primary": "Liberation Sans",
+      "requestedFontId": "FontId(60)",
+      "text": "♦",
+      "sizePx": 11.2,
+      "primaryGlyph": 2233,
+      "advancePx": 5.71484375,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(60)",
+          "glyphs": [
+            {
+              "id": 2233,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 6 px (device) × 7 px (device) } }",
+                "size": "Size { 6 px (device) × 7 px (device) }",
+                "byteCount": 42,
+                "nonzeroBytes": 28,
+                "maskFnv1a64": "9d4481a5c284bfa1"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Liberation Sans",
+      "primary": "Liberation Sans",
+      "requestedFontId": "FontId(60)",
+      "text": "✦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.742968559265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(7)",
+          "glyphs": [
+            {
+              "id": 2830,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 22,
+                "maskFnv1a64": "e3757f793d975624"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Liberation Sans",
+      "primary": "Liberation Sans",
+      "requestedFontId": "FontId(60)",
+      "text": "♣",
+      "sizePx": 11.2,
+      "primaryGlyph": 2231,
+      "advancePx": 7.349999904632568,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(60)",
+          "glyphs": [
+            {
+              "id": 2231,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 7 px (device) } }",
+                "size": "Size { 7 px (device) × 7 px (device) }",
+                "byteCount": 49,
+                "nonzeroBytes": 36,
+                "maskFnv1a64": "974139623d6fc9d2"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Inter",
+      "primary": "Inter",
+      "requestedFontId": "FontId(62)",
+      "text": "♠",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 7.011199951171875,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4013,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 43,
+                "maskFnv1a64": "b5df5c3d593b31e5"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Inter",
+      "primary": "Inter",
+      "requestedFontId": "FontId(62)",
+      "text": "♥",
+      "sizePx": 11.2,
+      "primaryGlyph": 1867,
+      "advancePx": 11.45156192779541,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(62)",
+          "glyphs": [
+            {
+              "id": 1867,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 11 px (device) × 10 px (device) } }",
+                "size": "Size { 11 px (device) × 10 px (device) }",
+                "byteCount": 110,
+                "nonzeroBytes": 72,
+                "maskFnv1a64": "f75d61b1f7348d0d"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Inter",
+      "primary": "Inter",
+      "requestedFontId": "FontId(62)",
+      "text": "♦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.664000034332275,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4019,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 34,
+                "maskFnv1a64": "e78ca434435f78da"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Inter",
+      "primary": "Inter",
+      "requestedFontId": "FontId(62)",
+      "text": "✦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.742968559265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(7)",
+          "glyphs": [
+            {
+              "id": 2830,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 22,
+                "maskFnv1a64": "e3757f793d975624"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Inter",
+      "primary": "Inter",
+      "requestedFontId": "FontId(62)",
+      "text": "♣",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 8.691200256347656,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 4016,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 9 px (device) × 8 px (device) } }",
+                "size": "Size { 9 px (device) × 8 px (device) }",
+                "byteCount": 72,
+                "nonzeroBytes": 52,
+                "maskFnv1a64": "0817a22023f376cb"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Adwaita Mono",
+      "primary": "Adwaita Mono",
+      "requestedFontId": "FontId(84)",
+      "text": "♠",
+      "sizePx": 11.2,
+      "primaryGlyph": 2741,
+      "advancePx": 6.720000267028809,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(84)",
+          "glyphs": [
+            {
+              "id": 2741,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 39,
+                "maskFnv1a64": "1683fef9803401a9"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Adwaita Mono",
+      "primary": "Adwaita Mono",
+      "requestedFontId": "FontId(84)",
+      "text": "♥",
+      "sizePx": 11.2,
+      "primaryGlyph": 2746,
+      "advancePx": 6.720000267028809,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(84)",
+          "glyphs": [
+            {
+              "id": 2746,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 41,
+                "maskFnv1a64": "2f69af20ab0729d1"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Adwaita Mono",
+      "primary": "Adwaita Mono",
+      "requestedFontId": "FontId(84)",
+      "text": "♦",
+      "sizePx": 11.2,
+      "primaryGlyph": 2747,
+      "advancePx": 6.720000267028809,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(84)",
+          "glyphs": [
+            {
+              "id": 2747,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 9 px (device) } }",
+                "size": "Size { 7 px (device) × 9 px (device) }",
+                "byteCount": 63,
+                "nonzeroBytes": 36,
+                "maskFnv1a64": "72410f33c74d061f"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Adwaita Mono",
+      "primary": "Adwaita Mono",
+      "requestedFontId": "FontId(84)",
+      "text": "✦",
+      "sizePx": 11.2,
+      "primaryGlyph": 6836,
+      "advancePx": 6.720000267028809,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(84)",
+          "glyphs": [
+            {
+              "id": 6836,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 7 px (device) } }",
+                "size": "Size { 7 px (device) × 7 px (device) }",
+                "byteCount": 49,
+                "nonzeroBytes": 23,
+                "maskFnv1a64": "dfdd3e979b0b310e"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "Adwaita Mono",
+      "primary": "Adwaita Mono",
+      "requestedFontId": "FontId(84)",
+      "text": "♣",
+      "sizePx": 11.2,
+      "primaryGlyph": 2744,
+      "advancePx": 6.720000267028809,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(84)",
+          "glyphs": [
+            {
+              "id": 2744,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 34,
+                "maskFnv1a64": "0c85b81507901b41"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipped-Noto-Sans-Math",
+      "primary": "Noto Sans Math",
+      "requestedFontId": "FontId(86)",
+      "text": "♠",
+      "sizePx": 11.2,
+      "primaryGlyph": 3328,
+      "advancePx": 8.153599739074707,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(86)",
+          "glyphs": [
+            {
+              "id": 3328,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 8 px (device) × 9 px (device) } }",
+                "size": "Size { 8 px (device) × 9 px (device) }",
+                "byteCount": 72,
+                "nonzeroBytes": 49,
+                "maskFnv1a64": "e03a5b76f45e8967"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipped-Noto-Sans-Math",
+      "primary": "Noto Sans Math",
+      "requestedFontId": "FontId(86)",
+      "text": "♥",
+      "sizePx": 11.2,
+      "primaryGlyph": 3333,
+      "advancePx": 8.288000106811523,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(86)",
+          "glyphs": [
+            {
+              "id": 3333,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 8 px (device) × 8 px (device) } }",
+                "size": "Size { 8 px (device) × 8 px (device) }",
+                "byteCount": 64,
+                "nonzeroBytes": 49,
+                "maskFnv1a64": "89ec01cd27d5a1a8"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipped-Noto-Sans-Math",
+      "primary": "Noto Sans Math",
+      "requestedFontId": "FontId(86)",
+      "text": "♦",
+      "sizePx": 11.2,
+      "primaryGlyph": 3334,
+      "advancePx": 6.787199974060059,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(86)",
+          "glyphs": [
+            {
+              "id": 3334,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 7 px (device) × 10 px (device) } }",
+                "size": "Size { 7 px (device) × 10 px (device) }",
+                "byteCount": 70,
+                "nonzeroBytes": 38,
+                "maskFnv1a64": "f9f7ef99efff0855"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipped-Noto-Sans-Math",
+      "primary": "Noto Sans Math",
+      "requestedFontId": "FontId(86)",
+      "text": "✦",
+      "sizePx": 11.2,
+      "primaryGlyph": null,
+      "advancePx": 6.742968559265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(7)",
+          "glyphs": [
+            {
+              "id": 2830,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 22,
+                "maskFnv1a64": "e3757f793d975624"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipped-Noto-Sans-Math",
+      "primary": "Noto Sans Math",
+      "requestedFontId": "FontId(86)",
+      "text": "♣",
+      "sizePx": 11.2,
+      "primaryGlyph": 3331,
+      "advancePx": 9.811200141906738,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(86)",
+          "glyphs": [
+            {
+              "id": 3331,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 10 px (device) × 9 px (device) } }",
+                "size": "Size { 10 px (device) × 9 px (device) }",
+                "byteCount": 90,
+                "nonzeroBytes": 62,
+                "maskFnv1a64": "3d434b849eb79354"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipped-DejaVu-Sans-Mono",
+      "primary": "DejaVu Sans Mono",
+      "requestedFontId": "FontId(88)",
+      "text": "♠",
+      "sizePx": 11.2,
+      "primaryGlyph": 2735,
+      "advancePx": 6.742968559265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(88)",
+          "glyphs": [
+            {
+              "id": 2735,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 6 px (device) × 8 px (device) } }",
+                "size": "Size { 6 px (device) × 8 px (device) }",
+                "byteCount": 48,
+                "nonzeroBytes": 33,
+                "maskFnv1a64": "e2940a7ef2a02dae"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipped-DejaVu-Sans-Mono",
+      "primary": "DejaVu Sans Mono",
+      "requestedFontId": "FontId(88)",
+      "text": "♥",
+      "sizePx": 11.2,
+      "primaryGlyph": 2740,
+      "advancePx": 6.742968559265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(88)",
+          "glyphs": [
+            {
+              "id": 2740,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 41,
+                "maskFnv1a64": "f6fa7416e0b2ec5d"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipped-DejaVu-Sans-Mono",
+      "primary": "DejaVu Sans Mono",
+      "requestedFontId": "FontId(88)",
+      "text": "♦",
+      "sizePx": 11.2,
+      "primaryGlyph": 2741,
+      "advancePx": 6.742968559265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(88)",
+          "glyphs": [
+            {
+              "id": 2741,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 6 px (device) × 8 px (device) } }",
+                "size": "Size { 6 px (device) × 8 px (device) }",
+                "byteCount": 48,
+                "nonzeroBytes": 30,
+                "maskFnv1a64": "07847afe1ee4d040"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipped-DejaVu-Sans-Mono",
+      "primary": "DejaVu Sans Mono",
+      "requestedFontId": "FontId(88)",
+      "text": "✦",
+      "sizePx": 11.2,
+      "primaryGlyph": 2830,
+      "advancePx": 6.742968559265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(88)",
+          "glyphs": [
+            {
+              "id": 2830,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 22,
+                "maskFnv1a64": "e3757f793d975624"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": "shipped-DejaVu-Sans-Mono",
+      "primary": "DejaVu Sans Mono",
+      "requestedFontId": "FontId(88)",
+      "text": "♣",
+      "sizePx": 11.2,
+      "primaryGlyph": 2738,
+      "advancePx": 6.742968559265137,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(88)",
+          "glyphs": [
+            {
+              "id": 2738,
+              "index": 0,
+              "xPx": 0.0,
+              "isEmoji": false,
+              "nativeMask": {
+                "bounds": "Bounds { origin: Point { x: 0 px (device), y: -8 px (device) }, size: Size { 7 px (device) × 8 px (device) } }",
+                "size": "Size { 7 px (device) × 8 px (device) }",
+                "byteCount": 56,
+                "nonzeroBytes": 39,
+                "maskFnv1a64": "a742c2045ed23ff4"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
