@@ -295,6 +295,10 @@ test("Sentence room selects a real editor and saves the exact unapplied comparis
   );
   await expect(page.getByText(/^Saved /)).toBeVisible();
   await page.reload();
+  // Reload restores the editor through the same asynchronous hydration as initial opening.
+  await expect(manuscript(page)).toContainText(INSTRUMENT_SENTENCE, {
+    timeout: 60_000,
+  });
   await expect.poll(() => draftRoomText(page)).toBe(original);
   const reloaded = await savedRoomComments(page);
   expect(reloaded).toHaveLength(1);
