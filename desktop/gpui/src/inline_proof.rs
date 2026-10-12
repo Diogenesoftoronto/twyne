@@ -324,14 +324,17 @@ impl InlineProofRenderer {
         if let Some(cached) = self.cached_key(&key, request.generation, request.source.clone()) {
             return cached;
         }
-        if self
-            .state
-            .active
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |active| {
-                (active < MAX_CONCURRENT_RENDERS).then_some(active + 1)
-            })
-            .is_err()
-        {
+        #[allow(
+            deprecated,
+            reason = "Atomic::try_update requires Rust 1.95; this crate supports Rust 1.92"
+        )]
+        let admission =
+            self.state
+                .active
+                .fetch_update(Ordering::AcqRel, Ordering::Acquire, |active| {
+                    (active < MAX_CONCURRENT_RENDERS).then_some(active + 1)
+                });
+        if admission.is_err() {
             return AtomRenderResult {
                 source: request.source,
                 generation: request.generation,

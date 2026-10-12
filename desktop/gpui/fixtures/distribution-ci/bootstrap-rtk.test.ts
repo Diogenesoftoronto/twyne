@@ -5,6 +5,7 @@ import {
   mkdir,
   mkdtemp,
   readFile,
+  realpath,
   rm,
   symlink,
   truncate,
@@ -200,13 +201,40 @@ describe("portable RTK bootstrap guards (synthetic data; no archive download or 
       const b = await freshWorkspace(root);
       expect(a.root).not.toBe(b.root);
       expect(a.stage).not.toBe(b.stage);
-      expect(a.bin.startsWith(root)).toBe(true);
+      const canonicalRunner = await realpath(root);
+      const canonicalWorkspace = await realpath(a.root);
+      expect(dirname(canonicalWorkspace)).toBe(canonicalRunner);
+      expect(await realpath(a.bin)).toBe(join(canonicalWorkspace, "bin"));
       expect((await lstat(a.bin)).isDirectory()).toBe(true);
       expect((await lstat(a.extraction)).isDirectory()).toBe(true);
       await expect(lstat(a.stage)).rejects.toThrow();
       expect(await readFile(join(existing, "keep.txt"), "utf8")).toBe(
         "unrelated destination",
       );
+    }));
+
+  test("workspace placement follows canonical runner temp ancestors", async () =>
+    temporary(async (root) => {
+      const actual = join(root, "actual");
+      const runner = join(actual, "runner");
+      const alias = join(root, "alias");
+      await mkdir(runner, { recursive: true });
+      await symlink(
+        actual,
+        alias,
+        process.platform === "win32" ? "junction" : "dir",
+      );
+      const aliasedRunner = join(alias, "runner");
+      const workspace = await freshWorkspace(aliasedRunner);
+      const canonicalRunner = await realpath(aliasedRunner);
+      expect(canonicalRunner).toBe(await realpath(runner));
+      expect(dirname(await realpath(workspace.root))).toBe(canonicalRunner);
+      expect(await realpath(workspace.bin)).toBe(
+        join(await realpath(workspace.root), "bin"),
+      );
+      await expect(lstat(workspace.stage)).rejects.toThrow();
+      // A symlink at RUNNER_TEMP itself is still refused.
+      await expect(freshWorkspace(alias)).rejects.toThrow("real directory");
     }));
 
   test("invalid/symlink runner temp cannot redirect writes", async () =>

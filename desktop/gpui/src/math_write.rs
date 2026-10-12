@@ -923,14 +923,17 @@ impl MathWriteRenderer {
         {
             return result;
         }
-        if self
-            .state
-            .active
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |active| {
-                (active < MAX_CONCURRENT_RENDERS).then_some(active + 1)
-            })
-            .is_err()
-        {
+        #[allow(
+            deprecated,
+            reason = "Atomic::try_update requires Rust 1.95; this crate supports Rust 1.92"
+        )]
+        let admission =
+            self.state
+                .active
+                .fetch_update(Ordering::AcqRel, Ordering::Acquire, |active| {
+                    (active < MAX_CONCURRENT_RENDERS).then_some(active + 1)
+                });
+        if admission.is_err() {
             return MathWriteResult {
                 owner: request.owner,
                 request_id: request.request_id,
