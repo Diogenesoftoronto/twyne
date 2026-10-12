@@ -1,0 +1,17 @@
+I want these buttons at the top here fixed, take a screenshot once you are done. The problem? They have very little differentiatiation are too close together, don't fit with the other buttons, don't have  proper alignment with the text on the page and are too close the text there.
+
+[Attached image "image.png" is saved at: /home/diogenes/.t3/userdata/attachments/b532fe7e-9695-4de0-bfdb-2245f81beb48-dc59c470-18b9-4fdb-9f90-2460eddaf8f3.png]
+
+---
+
+buttons are all different sizes though and i think back to the desk should be the only button at theh top there with the other two on the on the othehr side of the page and below the editors there
+
+---
+
+should have some spacing here
+
+[Attached image "image.png" is saved at: /home/diogenes/.t3/userdata/attachments/b532fe7e-9695-4de0-bfdb-2245f81beb48-b96ffcbc-93fb-4d50-9d7b-07a23105263c.png]
+
+---
+
+the new editor should be able to get a setable image but i don't see that option.
