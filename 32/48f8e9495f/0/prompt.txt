@@ -1,0 +1,15 @@
+i want i much nicer persona card and colour code that uses the faces of the personas as a center piece. right now the persons are these tiny card faces that aren't really central they don't really animate when they speak don't change just static images and also they each have pretty generic ways that they right i want to change that make them have their own quirks when writing so someone can tell who it is from a glance. I also think the gpt live or live conversation component to be designed far better. at the moment it just feels like a afterthought and its all confusing with text everywhere in that card. Make voice seem fluid and easy in this application.
+
+---
+
+<task-notification>
+<task-id>beetk5fyx</task-id>
+<tool-use-id>toolu_016zskKe3gQpVkLhA1zKcr1B</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/da51cb76-872d-4310-b076-1e3e36bfa67b/tasks/beetk5fyx.output</output-file>
+<status>failed</status>
+<summary>Background command "Run full unit test suite" failed with exit code 143</summary>
+</task-notification>
+
+---
+
+hey just stop with the typechecking move on wiithout the tests
