@@ -1,0 +1,8 @@
+{
+  "tool_use_id": "01a12e9b-e68c-7ba1-a213-740b4d68e345",
+  "agent_id": "01a12e9b-e68c-7ba1-a213-740b4d68e345",
+  "subagent_type": "worker",
+  "started_at": "2026-10-12T01:40:53.17877622-04:00",
+  "completed_at": "2026-10-17T15:06:11.920832092-04:00",
+  "transcript_unavailable_reason": "transcript path unresolvable"
+}
