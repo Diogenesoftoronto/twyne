@@ -436,6 +436,16 @@ export const EDITOR_COMMANDS = [
     surfaces: REFERENCE_ONLY,
   },
   {
+    id: "navigate.selection-actions",
+    label: "Selection actions",
+    description:
+      "Move to the actions for the selected text. Arrow keys move along them; Escape returns to the text.",
+    group: "navigation",
+    searchTerms: ["toolbar", "selection", "keyboard", "menu"],
+    availability: "selection",
+    surfaces: REFERENCE_ONLY,
+  },
+  {
     id: "view.shortcuts",
     label: "Keyboard shortcuts",
     description: "Open the searchable shortcut reference.",

@@ -678,6 +678,18 @@ export default component$(() => {
     );
   });
 
+  // Sections render only once settings load, after the router has already
+  // looked for a link's #anchor, so a deep link scrolls here instead.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    if (!track(() => store.loaded)) return;
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (!id) return;
+    requestAnimationFrame(() =>
+      document.getElementById(id)?.scrollIntoView({ block: "start" }),
+    );
+  });
+
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup }) => {
     const unsubscribe = onModelDownload(BROWSER_TTS_PROVIDER_ID, (state) => {

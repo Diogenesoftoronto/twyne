@@ -6,6 +6,7 @@ import {
   type ApplicationErrorToastDetail,
 } from "../../utils/application-toast";
 import { ApplicationNotice } from "./application-notice";
+import { GlobalConnectivityBanner } from "./global-connectivity-banner";
 
 interface ToastEntry extends ApplicationErrorToastDetail {
   id: string;
@@ -87,10 +88,9 @@ export const GlobalApplicationToasts = component$(() => {
     { strategy: "document-ready" },
   );
 
-  if (store.items.length === 0) return null;
-
   return (
     <aside class="application-toast-region" aria-label="Application messages">
+      <GlobalConnectivityBanner />
       {store.items.map((item) => {
         const recovery = recoveryLink(item.error);
         return (

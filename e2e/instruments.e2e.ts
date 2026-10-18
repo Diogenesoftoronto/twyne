@@ -10,7 +10,7 @@ const manuscript = (page: Page) => page.locator(".ProseMirror").first();
 const bench = (page: Page) => page.locator(".sentence-bench");
 const benchHost = (page: Page) =>
   page.locator(
-    ".in-flow-rail:has(.sentence-bench), .in-flow-popover:has(.sentence-bench)",
+    ".in-flow-rail:has(.sentence-bench), .in-flow-dock:has(.sentence-bench)",
   );
 const threads = (page: Page) =>
   page.getByRole("complementary", { name: "Threads", exact: true });
@@ -97,9 +97,7 @@ async function selectPassage(page: Page, text: string) {
 }
 async function openBench(page: Page, text = INSTRUMENT_SENTENCE) {
   await selectPassage(page, text);
-  await page
-    .getByRole("button", { name: "Sentence bench", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Rework", exact: true }).click();
   await expect(bench(page)).toBeVisible();
 }
 async function draftText(page: Page) {
@@ -268,7 +266,8 @@ test("Threads uses real spans, removes a repeat, undoes and closes with Escape",
   await seed(page);
   const original = await draftText(page);
   await selectPassage(page, INSTRUMENT_REPEAT);
-  await page.getByRole("button", { name: "Threads", exact: true }).click();
+  await page.getByRole("button", { name: "More", exact: false }).click();
+  await page.getByRole("menuitem", { name: "Threads", exact: true }).click();
   await expect(threads(page)).toBeVisible();
   const repeat = threads(page)
     .locator("li")
@@ -291,7 +290,8 @@ test("Threads uses real spans, removes a repeat, undoes and closes with Escape",
   await undo(page);
   await expect.poll(() => draftText(page)).toBe(original);
   await selectPassage(page, INSTRUMENT_REPEAT);
-  await page.getByRole("button", { name: "Threads", exact: true }).click();
+  await page.getByRole("button", { name: "More", exact: false }).click();
+  await page.getByRole("menuitem", { name: "Threads", exact: true }).click();
   await expect(threads(page)).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(threads(page)).toHaveCount(0);
@@ -303,7 +303,7 @@ test("Threads uses real spans, removes a repeat, undoes and closes with Escape",
           !!active &&
           (active.matches(".ProseMirror") ||
             (active instanceof HTMLButtonElement &&
-              active.textContent?.trim() === "Threads"))
+              active.textContent?.trim().startsWith("More")))
         );
       }),
     )
@@ -325,7 +325,8 @@ test("sentence and thread controls remain reachable on a narrow viewport", async
     "sentence-bench-mobile-390.png",
   );
   await selectPassage(page, INSTRUMENT_REPEAT);
-  await page.getByRole("button", { name: "Threads", exact: true }).click();
+  await page.getByRole("button", { name: "More", exact: false }).click();
+  await page.getByRole("menuitem", { name: "Threads", exact: true }).click();
   await expect(threads(page)).toBeVisible();
   const box = await threads(page).boundingBox();
   expect(box!.x).toBeGreaterThanOrEqual(0);
@@ -374,7 +375,8 @@ test("@demo complete sentence and real span revision in a readable offline take"
   await undo(take);
   await hold("Undo restores the original wording.");
   await selectPassage(take, INSTRUMENT_REPEAT);
-  await take.getByRole("button", { name: "Threads", exact: true }).click();
+  await take.getByRole("button", { name: "More", exact: false }).click();
+  await take.getByRole("menuitem", { name: "Threads", exact: true }).click();
   const repeat = threads(take)
     .locator("li")
     .filter({ hasText: "Repeated wording" });

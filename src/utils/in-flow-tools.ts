@@ -81,6 +81,8 @@ export interface ActiveTool {
   notice?: string;
   /** Saved tool this was opened from, if any. */
   savedId?: string;
+  /** The writer asked for this tool; false when the tracker opened it. */
+  requested?: boolean;
 }
 
 export interface InFlowSnapshot {

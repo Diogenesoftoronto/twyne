@@ -676,7 +676,7 @@ export const CommentsPanel = component$((props: CommentsPanelProps) => {
 
       <div class="shrink-0 px-4 py-3 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
         <p class="panel-prose text-[var(--color-ink-light)]">
-          Select a passage, then choose <strong>Add margin</strong>. Your note
+          Select a passage, then choose <strong>Comment</strong>. Your note
           opens beside the text and appears here once placed.
         </p>
       </div>

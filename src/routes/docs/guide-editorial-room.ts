@@ -93,7 +93,7 @@ export const EDITORIAL_GUIDES = {
       {
         title: "Open the anchored thread",
         instruction:
-          "Click the coloured mark beside a passage to open its note. The quoted phrase identifies the anchor. To make a new note, select a passage and choose Add margin, write the note, then Place note. In an existing writer note, type into Reply as the writer.",
+          "Click the coloured mark beside a passage to open its note. The quoted phrase identifies the anchor. To make a new note, select a passage and choose Comment, write the note, then Place note. In an existing writer note, type into Reply as the writer.",
         image: `${assets}marginalia-anchor.webp`,
         alt: "A coloured manuscript anchor for the road forgot the sea entirely beside its actual writer-note card, quoted anchor, reply draft, Resolve and Reply controls.",
         width: 760,

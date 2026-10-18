@@ -93,7 +93,7 @@ export const JudgementModelSettings = component$<{
   const urlInvalid = !!endpointUrl.trim() && !normalizeEndpointUrl(endpointUrl);
 
   return (
-    <section class="folio p-5">
+    <section id="judgement-model" class="folio p-5 scroll-mt-6">
       <h2
         class="text-base font-semibold mb-1"
         style={{ fontFamily: "var(--font-display)" }}

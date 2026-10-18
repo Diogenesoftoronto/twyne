@@ -236,40 +236,20 @@ export function clearStartingMaterial(): void {
   }
 }
 
+/**
+ * The first page of a fresh folio. The brief lives in the dossier, where the
+ * room reads it; the manuscript only receives the writer's title so the page
+ * is theirs from the first keystroke.
+ */
 export function buildStarterDocument(answers: ProjectInterviewAnswers): string {
-  const normalized = normalizeInterviewAnswers(answers);
-  const title = escapeHtml(normalized.workingTitle);
-
-  return `
-    <h1>${title}</h1>
-    <p><strong>Anti-tabula rasa brief</strong>: this draft starts with context, not emptiness.</p>
-    <h2>Working context</h2>
-    <ul>
-      <li><strong>Format:</strong> ${escapeHtml(normalized.format)}</li>
-      <li><strong>Audience:</strong> ${escapeHtml(normalized.audience)}</li>
-      <li><strong>Goal:</strong> ${escapeHtml(normalized.goal)}</li>
-      <li><strong>Tone:</strong> ${escapeHtml(normalized.tone)}</li>
-      <li><strong>Constraints:</strong> ${escapeHtml(normalized.constraints)}</li>
-      <li><strong>Success signal:</strong> ${escapeHtml(normalized.successSignal)}</li>
-    </ul>
-    <h2>Starter prompt</h2>
-    <blockquote>
-      <p>${escapeHtml(normalized.goal)}</p>
-    </blockquote>
-    <p>Begin the draft here. The room will use the brief above as the anchor.</p>
-  `.trim();
+  return titleHeading(answers);
 }
 
 export function buildImportedMaterialDocument(
   answers: ProjectInterviewAnswers,
   raw: string,
-  filename?: string,
+  _filename?: string,
 ): string {
-  const normalized = normalizeInterviewAnswers(answers);
-  const title = escapeHtml(normalized.workingTitle);
-  const sourceLabel = filename?.trim()
-    ? `Imported from ${escapeHtml(filename.trim())}`
-    : "Imported material";
   const paragraphs = raw
     .trim()
     .split(/\n{2,}/)
@@ -278,11 +258,15 @@ export function buildImportedMaterialDocument(
     )
     .join("\n");
 
-  return `
-    <h1>${title}</h1>
-    <p><strong>${sourceLabel}</strong>: this material was brought into the room during onboarding.</p>
-    ${paragraphs}
-  `.trim();
+  return `${titleHeading(answers)}\n${paragraphs}`.trim();
+}
+
+function titleHeading(answers: ProjectInterviewAnswers): string {
+  const title = answers.workingTitle.trim();
+  if (!title || title === DEFAULT_INTERVIEW_ANSWERS.workingTitle) {
+    return "<p></p>";
+  }
+  return `<h1>${escapeHtml(title)}</h1><p></p>`;
 }
 
 export function summarizeBrief(brief: ProjectBrief | null): string {

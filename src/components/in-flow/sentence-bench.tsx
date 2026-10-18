@@ -18,7 +18,6 @@ import {
   type SentenceCandidate,
 } from "../../utils/sentence-bench";
 import styles from "./sentence-bench.css?inline";
-import { InstrumentArt } from "../instruments/instrument-art";
 import { InstrumentRoom } from "../instruments/instrument-room";
 import {
   InstrumentMotion,
@@ -40,6 +39,20 @@ interface BenchSession {
   message: string;
   modelBusy: boolean;
   modelWords: SentenceCandidate[];
+  /** Disclosures the writer opened; a replaced instance keeps them open. */
+  paragraphOpen: boolean;
+  roomOpen: boolean;
+}
+
+// The collapsed context keeps one sentence on each side of the working wording.
+const SENTENCE_PATTERN = /[^.!?]+[.!?]+["'”’)]*\s*|[^.!?]+$/g;
+function lastSentence(text: string): string {
+  const parts = text.trim().match(SENTENCE_PATTERN) ?? [];
+  return parts.length > 1 ? (parts.at(-1)?.trim() ?? text) : text;
+}
+function firstSentence(text: string): string {
+  const parts = text.trim().match(SENTENCE_PATTERN) ?? [];
+  return parts.length > 1 ? (parts[0]?.trim() ?? text) : text;
 }
 
 // Checked candidate updates can replace the renderer's component instance.
@@ -61,6 +74,8 @@ function benchSession(toolId: string, props: SentenceLabProps): BenchSession {
     message: "",
     modelBusy: false,
     modelWords: [],
+    paragraphOpen: false,
+    roomOpen: false,
   };
   if (typeof window !== "undefined") {
     benchSessions.set(toolId, session);
@@ -117,6 +132,11 @@ export const SentenceBench = component$<{
         ),
       ),
   ];
+  const contextTrimmed =
+    (!!props.context?.before &&
+      lastSentence(props.context.before) !== props.context.before) ||
+    (!!props.context?.after &&
+      firstSentence(props.context.after) !== props.context.after);
   const words = sentenceWords(props.sentence);
   const alternatives = wordAlternatives(
     props.sentence,
@@ -146,9 +166,6 @@ export const SentenceBench = component$<{
       class="in-flow-body sentence-bench"
       data-sentence-bench={props.sentenceId ?? "selection"}
     >
-      <InstrumentMotion state="open">
-        <InstrumentArt kind="sentence-bench" size="compact" />
-      </InstrumentMotion>
       <nav aria-label="Sentence bench sections" class="sentence-bench-tabs">
         {[
           ["rewrite", "Rewrite"],
@@ -217,7 +234,7 @@ export const SentenceBench = component$<{
                     </span>
                   </span>
                 </button>
-                <p class="sentence-bench-note">
+                <p class="sentence-bench-note sentence-bench-checks">
                   {candidate.grammar === "checked"
                     ? "Harper checked"
                     : candidate.grammar === "pending"
@@ -226,10 +243,8 @@ export const SentenceBench = component$<{
                   {candidate.meaning
                     ? ` · ${candidate.meaning.model} meaning ${candidate.meaning.probability.toFixed(2)}`
                     : " · meaning unverified"}
+                  {candidate.caution ? ` · ${candidate.caution}` : ""}
                 </p>
-                {candidate.caution && (
-                  <p class="sentence-bench-note">{candidate.caution}</p>
-                )}
                 <button
                   type="button"
                   class="sentence-bench-link"
@@ -475,7 +490,14 @@ export const SentenceBench = component$<{
           Working wording
         </label>
         {props.context?.before && (
-          <p class="sentence-bench-context">{props.context.before}</p>
+          <p
+            id={`sentence-bench-before-${toolId}`}
+            class="sentence-bench-context"
+          >
+            {state.paragraphOpen
+              ? props.context.before
+              : lastSentence(props.context.before)}
+          </p>
         )}
         <textarea
           id={`sentence-bench-working-${toolId}`}
@@ -489,7 +511,27 @@ export const SentenceBench = component$<{
           }}
         />
         {props.context?.after && (
-          <p class="sentence-bench-context">{props.context.after}</p>
+          <p
+            id={`sentence-bench-after-${toolId}`}
+            class="sentence-bench-context"
+          >
+            {state.paragraphOpen
+              ? props.context.after
+              : firstSentence(props.context.after)}
+          </p>
+        )}
+        {contextTrimmed && (
+          <button
+            type="button"
+            class="sentence-bench-link"
+            aria-expanded={state.paragraphOpen}
+            aria-controls={`sentence-bench-before-${toolId} sentence-bench-after-${toolId}`}
+            onClick$={() => {
+              state.paragraphOpen = !state.paragraphOpen;
+            }}
+          >
+            {state.paragraphOpen ? "Hide paragraph" : "Show paragraph"}
+          </button>
         )}
         {state.working !== props.sentence && (
           <p class="sentence-bench-preview">
@@ -540,45 +582,58 @@ export const SentenceBench = component$<{
           </p>
         )}
       </section>
-      <InstrumentRoom
-        context={{
-          instrument: "sentence",
-          key: JSON.stringify([
-            toolId,
-            props.sentence,
-            state.working,
-            state.tab,
-          ]),
-          source: props.sentence,
-          proposal: state.working,
-          question:
-            {
-              rewrite:
-                "What might this wording lose or strengthen in its context?",
-              words:
-                "Does this word choice fit this use and preserve the intended nuance?",
-              place:
-                "What should guide this sentence's position among its neighbours?",
-              hear: "How does this wording's rhythm read aloud beside its neighbours?",
-            }[state.tab] ??
-            "What would you attend to in this sentence and its proposed wording?",
-          detail: [
-            `Active pane: ${state.tab}`,
-            props.context?.before ? `Before: ${props.context.before}` : "",
-            props.context?.after ? `After: ${props.context.after}` : "",
-          ]
-            .filter(Boolean)
-            .join("\n"),
+      <details
+        class="sentence-bench-room"
+        open={state.roomOpen}
+        onToggle$={(_, el) => {
+          state.roomOpen = el.open;
         }}
-        disabled={props.stale || filling || state.applying}
-        onAsk$={async (request) =>
-          (await inFlowController()?.askRoom(request, toolId)) ?? {
-            ok: false,
-            message:
-              "This sentence bench is no longer connected to the manuscript. Reopen it before asking an editor.",
-          }
-        }
-      />
+      >
+        <summary>Ask an editor about this wording</summary>
+        {/* Mounted only while open: a closed disclosure has no box, so the
+            room's visible-task would never load its cast. */}
+        {state.roomOpen && (
+          <InstrumentRoom
+            context={{
+              instrument: "sentence",
+              key: JSON.stringify([
+                toolId,
+                props.sentence,
+                state.working,
+                state.tab,
+              ]),
+              source: props.sentence,
+              proposal: state.working,
+              question:
+                {
+                  rewrite:
+                    "What might this wording lose or strengthen in its context?",
+                  words:
+                    "Does this word choice fit this use and preserve the intended nuance?",
+                  place:
+                    "What should guide this sentence's position among its neighbours?",
+                  hear: "How does this wording's rhythm read aloud beside its neighbours?",
+                }[state.tab] ??
+                "What would you attend to in this sentence and its proposed wording?",
+              detail: [
+                `Active pane: ${state.tab}`,
+                props.context?.before ? `Before: ${props.context.before}` : "",
+                props.context?.after ? `After: ${props.context.after}` : "",
+              ]
+                .filter(Boolean)
+                .join("\n"),
+            }}
+            disabled={props.stale || filling || state.applying}
+            onAsk$={async (request) =>
+              (await inFlowController()?.askRoom(request, toolId)) ?? {
+                ok: false,
+                message:
+                  "This sentence bench is no longer connected to the manuscript. Reopen it before asking an editor.",
+              }
+            }
+          />
+        )}
+      </details>
     </div>
   );
 });

@@ -9,13 +9,10 @@
   overflow: auto;
   overscroll-behavior: contain;
 }
-/* The fallback host used to subtract no space for its top offset. A complete
- * bench needs a bounded sheet so its working copy and use control are reachable. */
-.in-flow-popover:has(.sentence-bench) {
-  top: auto !important;
-  bottom: 2rem;
+/* In the narrow dock the bench is a bounded sheet, so its working copy and
+ * use control stay reachable. */
+.in-flow-dock:has(.sentence-bench) {
   max-height: 55dvh;
-  overscroll-behavior: contain;
 }
 .sentence-bench-tabs {
   display: flex;
@@ -138,4 +135,21 @@
   .sentence-bench .in-flow-actions {
     flex-wrap: wrap;
   }
+}
+.sentence-bench-room {
+  border-top: 1px solid var(--color-paper-3);
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+}
+.sentence-bench-room > summary {
+  font: 0.75rem var(--font-sans);
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+.sentence-bench-room > summary:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+.sentence-bench .sentence-bench-checks {
+  opacity: 0.7;
 }

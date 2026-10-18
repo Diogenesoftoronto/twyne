@@ -63,7 +63,8 @@ export const DocumentSpine = component$<{ zen: boolean; readOnly?: boolean }>(
         let snap: LivingDeskSnapshot = livingDeskSnapshot();
 
         const compute = () => {
-          if (document.documentElement.hasAttribute("data-flow")) {
+          const flow = document.documentElement.getAttribute("data-flow");
+          if (flow === "flow" || flow === "settling") {
             state.visible = false;
             return;
           }

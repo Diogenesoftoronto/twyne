@@ -56,12 +56,18 @@ import {
   type MarginSlotDetail,
   type OpenMarginThreadDetail,
 } from "../../utils/margin-surface";
+import {
+  ARCHIVE_WIDTH,
+  dockRight,
+  marginGeometry,
+  MARGIN_GUTTER,
+  ROOM_CARD_WIDTH,
+} from "../../utils/margin-geometry";
 import { Icon } from "../ui/icon";
 import { PersonaMasthead } from "../personas/persona-portrait";
 
-const ROOM_WIDTH = 268;
-const ARCHIVE_WIDTH = 212;
-const GUTTER = 28;
+const ROOM_WIDTH = ROOM_CARD_WIDTH;
+const GUTTER = MARGIN_GUTTER;
 /** The editor's conversation card is this wide when there is room for it. */
 const THREAD_WIDTH = 340;
 /** Before the unfolded card has rendered, assume it is about this tall. */
@@ -113,6 +119,10 @@ interface SurfaceState {
   width: number;
   height: number;
   dockBottom: number;
+  /** Dock mode: offset from the viewport's right edge, level with the page. */
+  dockRight: number;
+  /** Dock mode: explicit open/closed; null follows the conductor's mode. */
+  dockOpen: boolean | null;
   drafts: Record<string, string>;
   busy: Record<string, boolean>;
   notices: Record<string, string>;
@@ -195,6 +205,8 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       width: 0,
       height: 0,
       dockBottom: 80,
+      dockRight: 16,
+      dockOpen: null,
       drafts: {},
       busy: {},
       notices: {},
@@ -271,8 +283,10 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           );
           const rightRoom = scrollerRect.right - canvasRect.right;
           const leftRoom = canvasRect.left - scrollerRect.left;
-          state.room = rightRoom >= ROOM_WIDTH + GUTTER + 8 ? "rail" : "dock";
-          state.archive = leftRoom >= ARCHIVE_WIDTH + GUTTER + 8;
+          const geometry = marginGeometry(rightRoom, leftRoom);
+          state.dockRight = dockRight(window.innerWidth, scrollerRect.right);
+          state.room = geometry.right;
+          state.archive = geometry.archiveFits;
 
           const items = itemsToShow();
           const caret = controller?.cursorTop();
@@ -1085,12 +1099,17 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
         </div>
       ) : null;
 
+    const dockVars = {
+      "--flow-dock-bottom": `${state.dockBottom}px`,
+      "--flow-dock-right": `${state.dockRight}px`,
+    };
+
     if (quiet)
       return (
         <div
           ref={root}
           class="flow-surface"
-          style={{ "--flow-dock-bottom": `${state.dockBottom}px` }}
+          style={dockVars}
           data-mode={state.mode}
           data-quiet
           aria-label="Held margin notes"
@@ -1102,12 +1121,15 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
     const room = state.placed.filter((p) => p.side === "room");
     const archive = state.placed.filter((p) => p.side === "archive");
     const waiting = state.held > 0 && state.enabled && state.mode !== "flow";
+    // The dock starts as a chip; "stuck" is when the conductor deliberately
+    // offers its single best thing, so that one opens.
+    const dockOpen = state.dockOpen ?? state.mode === "stuck";
 
     return (
       <div
         ref={root}
         class="flow-surface"
-        style={{ "--flow-dock-bottom": `${state.dockBottom}px` }}
+        style={dockVars}
         data-mode={state.mode}
         aria-label="Margin notes and connections"
       >
@@ -1180,15 +1202,41 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
         ) : (
           room.length > 0 && (
             <div
-              class="flow-dock"
+              class={["flow-dock", { "is-collapsed": !dockOpen }]}
               role="complementary"
               aria-label="From the margin"
             >
-              {card({ ...room[0], top: 0 })}
-              {room.length + state.held > 1 && (
-                <p class="flow-dock__more">
-                  {room.length + state.held - 1} more when there's room
-                </p>
+              {dockOpen ? (
+                <>
+                  <button
+                    type="button"
+                    class="flow-dock__fold"
+                    onClick$={() => {
+                      state.dockOpen = false;
+                    }}
+                  >
+                    Collapse
+                  </button>
+                  <div class="flow-dock__body">
+                    {card({ ...room[0], top: 0 })}
+                  </div>
+                  {room.length + state.held > 1 && (
+                    <p class="flow-dock__more">
+                      {room.length + state.held - 1} more when there's room
+                    </p>
+                  )}
+                </>
+              ) : (
+                <button
+                  type="button"
+                  class="flow-dock__chip"
+                  onClick$={() => {
+                    state.dockOpen = true;
+                  }}
+                >
+                  <span>{room.length + state.held} from the room</span>
+                  <b>Open</b>
+                </button>
               )}
             </div>
           )
