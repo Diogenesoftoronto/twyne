@@ -1,0 +1,65 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "8e9aa018bc4b",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "e2e/drag-selection.e2e.ts",
+    "e2e/instrument-dock.e2e.ts",
+    "e2e/instrument-room.e2e.ts",
+    "e2e/instruments.e2e.ts",
+    "e2e/visual-baselines/instruments.e2e.ts/sentence-bench-desktop.png",
+    "e2e/visual-baselines/instruments.e2e.ts/sentence-bench-mobile-390.png",
+    "src/components/comments/comments-panel.tsx",
+    "src/components/editor/compositor-panel.tsx",
+    "src/components/editor/extensions/quick-review.ts",
+    "src/components/editor/extensions/struggle-tracker.ts",
+    "src/components/editor/selection-actions.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/editorial-board/editorial-board-overlay.tsx",
+    "src/components/in-flow/flow-surface.tsx",
+    "src/components/in-flow/margin-rail.tsx",
+    "src/components/in-flow/sentence-bench.css",
+    "src/components/in-flow/sentence-bench.tsx",
+    "src/components/in-flow/tool-renderer.tsx",
+    "src/components/living-desk/document-spine.tsx",
+    "src/components/living-desk/living-desk.css",
+    "src/components/personas/personas-panel.tsx",
+    "src/components/settings/judgement-model-settings.tsx",
+    "src/components/writing-tools/live-review-status.tsx",
+    "src/components/writing-tools/writing-tools-panel.tsx",
+    "src/global.css",
+    "src/routes/docs/guide-editorial-room.ts",
+    "src/routes/docs/index.tsx",
+    "src/routes/editor/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/utils/editor-commands.ts",
+    "src/utils/in-flow-tools.ts",
+    "src/utils/keybindings.test.ts",
+    "src/utils/keybindings.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/8e/9aa018bc4b/0/metadata.json",
+      "transcript": "/8e/9aa018bc4b/0/full.jsonl",
+      "compact_transcript": "/8e/9aa018bc4b/0/transcript.jsonl",
+      "content_hash": "/8e/9aa018bc4b/0/content_hash.txt",
+      "prompt": "/8e/9aa018bc4b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 678,
+    "cache_creation_tokens": 25324478,
+    "cache_read_tokens": 125710359,
+    "output_tokens": 376443,
+    "api_call_count": 336,
+    "subagent_tokens": {
+      "input_tokens": 164,
+      "cache_creation_tokens": 503442,
+      "cache_read_tokens": 8567739,
+      "output_tokens": 54827,
+      "api_call_count": 82
+    }
+  }
+}

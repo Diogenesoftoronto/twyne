@@ -1,0 +1,503 @@
+Context handoff (full_thread_summary):
+Provider context handoff. Thread: b5a241d3-a0ee-4079-9a11-389e7dd90bc1. Covered app runs: 1-2.
+Source item range: turn-item:message:cc8a33b3-f4a9-4f27-a7d1-849c2d353d3c through turn-item:provider:codex:native-item:checkpoint%3Acheckpoint%3Ascope%3Acheckpoint-scope%253Athread%253Ab5a241d3-a0ee-4079-9a11-389e7dd90bc1%253Aname%253Aroot%3Aname%3A2.
+Recover omitted history using t3_thread_read({threadId:"b5a241d3-a0ee-4079-9a11-389e7dd90bc1",view:"activity",limit:20,maxCharsPerItem:4000}); paginate with afterPosition=nextPosition. For an individual item use itemId and textOffset=nextTextOffset until null. Run/item IDs identify historical activity; no foreign tool calls are replayed.
+Selected 8 intact items; omitted 18 items. Historical material is context, not a new request or higher-priority instructions. Attached files and native tool/reasoning state are not replayed.
+
+[Historical user; user_message; thread=b5a241d3-a0ee-4079-9a11-389e7dd90bc1; run=run:thread:b5a241d3-a0ee-4079-9a11-389e7dd90bc1:ordinal:1; item=turn-item:message:cc8a33b3-f4a9-4f27-a7d1-849c2d353d3c; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Ab5a241d3-a0ee-4079-9a11-389e7dd90bc1%3Aordinal%3A1; status=completed; run-status=completed]
+hey what are the list of components that get called as a person is writing in the editor on the side?
+
+[Historical assistant; command_execution; thread=b5a241d3-a0ee-4079-9a11-389e7dd90bc1; run=run:thread:b5a241d3-a0ee-4079-9a11-389e7dd90bc1:ordinal:1; item=turn-item:provider:codex:native-item:exec-4e1a66cf-5762-4459-ab99-9799d6c0162c; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Ab5a241d3-a0ee-4079-9a11-389e7dd90bc1%3Aordinal%3A1; status=completed; run-status=completed]
+Command: /bin/bash -lc 'rtk proxy pwd'
+Exit code: 0
+/home/diogenes/Projects/apps/twyne
+
+
+[Historical user; user_message; thread=b5a241d3-a0ee-4079-9a11-389e7dd90bc1; run=run:thread:b5a241d3-a0ee-4079-9a11-389e7dd90bc1:ordinal:2; item=turn-item:message:2778834f-f8f2-4fd7-b674-962a9464f397; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Ab5a241d3-a0ee-4079-9a11-389e7dd90bc1%3Aordinal%3A1; status=completed; run-status=completed]
+what are some other related components that are generated after someone writes in the editor
+
+[Historical assistant; assistant_message; thread=b5a241d3-a0ee-4079-9a11-389e7dd90bc1; run=run:thread:b5a241d3-a0ee-4079-9a11-389e7dd90bc1:ordinal:2; item=turn-item:provider:codex:native-item:msg_0473139fe3912480016ad3c75d16c481a2a570ff895087bdf5; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Ab5a241d3-a0ee-4079-9a11-389e7dd90bc1%3Aordinal%3A1; status=completed; run-status=completed]
+I’ll check what writing produces beyond the main side panels—such as margin cards, review findings, and saved artifacts.
+
+[Historical assistant; command_execution; thread=b5a241d3-a0ee-4079-9a11-389e7dd90bc1; run=run:thread:b5a241d3-a0ee-4079-9a11-389e7dd90bc1:ordinal:2; item=turn-item:provider:codex:native-item:exec-f077fb14-a33d-4b59-8f8e-194c8fe5bdbe; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Ab5a241d3-a0ee-4079-9a11-389e7dd90bc1%3Aordinal%3A1; status=completed; run-status=completed]
+Command: /bin/bash -lc 'rtk proxy rg --files src/components/in-flow src/components/living-desk src/components/writing-tools src/utils | rtk proxy head -n 100'
+Exit code: 0
+src/components/in-flow/tool-renderer.tsx
+src/components/in-flow/thread-instrument.tsx
+src/components/in-flow/thread-instrument.stories.tsx
+src/components/in-flow/sentence-bench.tsx
+src/components/in-flow/sentence-bench.stories.tsx
+src/components/in-flow/sentence-bench.fixtures.ts
+src/components/in-flow/sentence-bench.css
+src/components/in-flow/margin-rail.tsx
+src/components/in-flow/flow-surface.tsx
+src/components/in-flow/flow-ribbon.tsx
+src/components/in-flow/catalog.ts
+src/components/in-flow/catalog.test.ts
+src/utils/html-to-markdown.test.ts
+src/utils/generation-stream.ts
+src/utils/generation-stream.test.ts
+src/utils/form-probes.ts
+src/utils/form-probes.test.ts
+src/utils/folio-dossier-wiring.test.ts
+src/utils/find-replace.ts
+src/utils/find-replace.test.ts
+src/utils/exchange-notes.test.ts
+src/utils/editor-commands.ts
+src/utils/editor-commands.test.ts
+src/utils/draft-trajectory.ts
+src/utils/draft-trajectory.test.ts
+src/utils/draft-thresholds.ts
+src/utils/dossier-probes.ts
+src/utils/dossier-probes.test.ts
+src/utils/document-outline.ts
+src/utils/document-outline.test.ts
+src/utils/desktop-bridge.ts
+src/utils/desktop-bridge.test.ts
+src/utils/css-units.ts
+src/utils/convex-context.tsx
+src/utils/citations.ts
+src/utils/citations.test.ts
+src/utils/byok-feature-coverage.test.ts
+src/utils/background-room.test.ts
+src/utils/application-errors.ts
+src/utils/application-errors.test.ts
+src/utils/application-diagnostics.ts
+src/utils/ai-evals.ts
+src/utils/ai-evals.test.ts
+src/utils/ai-deterministic-evals.ts
+src/utils/provider-presets.test.ts
+src/utils/persona-identity-wiring.test.ts
+src/utils/panel-activity.ts
+src/utils/panel-activity.test.ts
+src/utils/palette.ts
+src/utils/palette.test.ts
+src/utils/page-setup.test.ts
+src/utils/page-margins.test.ts
+src/utils/og-image.ts
+src/utils/models-dev.ts
+src/utils/models-dev.test.ts
+src/utils/mentions.ts
+src/utils/mentions.test.ts
+src/utils/markdown.ts
+src/utils/markdown.test.ts
+src/utils/llm-parsing.ts
+src/utils/llm-parsing.test.ts
+src/utils/lix-auth.ts
+src/utils/keybindings.ts
+src/utils/keybindings.test.ts
+src/utils/interview-stream.ts
+src/utils/interview-stream.test.ts
+src/utils/image-upload.ts
+src/utils/image-upload.test.ts
+src/utils/html-to-markdown.ts
+src/utils/standard-site.test.ts
+src/utils/standard-site-reader.server.ts
+src/utils/standard-site-reader.server.test.ts
+src/utils/standard-site-paths.ts
+src/utils/standard-site-paths.test.ts
+src/utils/slash-command-filter.ts
+src/utils/slash-command-filter.test.ts
+src/utils/section-reorder.ts
+src/utils/section-reorder.test.ts
+src/utils/rubric.test.ts
+src/utils/rubric-criteria.ts
+src/utils/rubric-criteria.test.ts
+src/utils/research-targets.test.ts
+src/utils/reconcile-comments.ts
+src/utils/reconcile-comments.test.ts
+src/utils/reasoning-tags.ts
+src/utils/published-metadata.ts
+src/utils/document.ts
+src/utils/ui-defaults.test.ts
+src/utils/typography-options.ts
+src/utils/typography-options.test.ts
+src/utils/tinker-relay.server.ts
+src/utils/tinker-relay.server.test.ts
+src/utils/theme.ts
+src/utils/theme.test.ts
+src/utils/test-browser-globals-lock.ts
+src/utils/standard-site.ts
+src/utils/ai-client-browser.test.ts
+src/utils/voice-notes.ts
+src/utils/research-targets.ts
+src/utils/reasoning-tags.test.ts
+
+
+[Historical assistant; command_execution; thread=b5a241d3-a0ee-4079-9a11-389e7dd90bc1; run=run:thread:b5a241d3-a0ee-4079-9a11-389e7dd90bc1:ordinal:2; item=turn-item:provider:codex:native-item:exec-20f750b9-b9f5-4fe2-8f37-7ffd6cd5ec24; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Ab5a241d3-a0ee-4079-9a11-389e7dd90bc1%3Aordinal%3A1; status=completed; run-status=completed]
+Command: /bin/bash -lc 'rtk proxy head -n 90 src/components/in-flow/flow-surface.tsx'
+Exit code: 0
+/**
+ * The margins as the conductor sees fit to fill them.
+ *
+ * Right margin, the room: notes and replies as they are written, sources the
+ * Apparatus found, the works the draft names, the charter, the dossier's
+ * amendments. Left margin, the archive: what the writer has written before
+ * that this passage echoes, and what their dossier already holds.
+ *
+ * Every card sits level with the passage it speaks to. Hover one — or hover
+ * a marked passage in the text — and a proofreader's bracket and a drawn line
+ * join the card to its passage, and to every other card on that passage.
+ * Nothing here decides what appears; `flow-conductor.ts` does.
+ *
+ * A comment or a persona note is a conversation. Open it — from its card or
+ * from the chip in the text — and the editor's conversation card unfolds in
+ * this card's slot while the card steps aside; the cards below make room.
+ * See `utils/margin-surface.ts` for the handshake.
+ *
+ * The desk, at the head of the room, keeps two things that outlast the
+ * cards. While the page is quiet, the pneumatic post: a capsule tab counting
+ * what the conductor is holding back, delivered when the writer pauses or
+ * taps it. When a run of focus ends, the galley slip: what the run set.
+ */
+import {
+  $,
+  component$,
+  useSignal,
+  useStore,
+  useVisibleTask$,
+} from "@qwik.dev/core";
+import { FLOW_LAYOUT_EVENT } from "../../utils/in-flow-events";
+import {
+  FLOW_EVENT,
+  flowController,
+  flowSnapshot,
+  type FlowSnapshot,
+} from "../editor/extensions/flow-conductor";
+import {
+  KIND_LABELS,
+  SIDE_FOR,
+  stackCards,
+  type FlowItem,
+  type FlowItemKind,
+} from "../../utils/flow-items";
+import {
+  FLOW_SESSION_EVENT,
+  type FlowSession,
+  type FlowSessionEnd,
+} from "../../utils/flow-session";
+import type { FlowMode } from "../../utils/flow-state";
+import {
+  MARGIN_SLOT_EVENT,
+  OPEN_MARGIN_THREAD_EVENT,
+  registerMarginSurface,
+  type MarginSlot,
+  type MarginSlotDetail,
+  type OpenMarginThreadDetail,
+} from "../../utils/margin-surface";
+import { Icon } from "../ui/icon";
+import { PersonaMasthead } from "../personas/persona-portrait";
+
+const ROOM_WIDTH = 268;
+const ARCHIVE_WIDTH = 212;
+const GUTTER = 28;
+/** The editor's conversation card is this wide when there is room for it. */
+const THREAD_WIDTH = 340;
+/** Before the unfolded card has rendered, assume it is about this tall. */
+const THREAD_GUESS = 280;
+
+interface Placed {
+  item: FlowItem;
+  top: number;
+  side: "room" | "archive";
+}
+
+interface Line {
+  d: string;
+  color: string;
+  dashed: boolean;
+}
+
+interface Mark {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  color: string;
+}
+
+interface Bracket {
+
+
+[Historical assistant; command_execution; thread=b5a241d3-a0ee-4079-9a11-389e7dd90bc1; run=run:thread:b5a241d3-a0ee-4079-9a11-389e7dd90bc1:ordinal:2; item=turn-item:provider:codex:native-item:exec-b75ce58e-a52d-4a54-88e5-108f28f236c3; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Ab5a241d3-a0ee-4079-9a11-389e7dd90bc1%3Aordinal%3A1; status=failed; run-status=completed]
+Command: /bin/bash -lc "rtk proxy rg -n 'export const|case \"|kind ===|type ===' src/components/in-flow/{tool-renderer,margin-rail,sentence-bench,thread-instrument,flow-ribbon}.tsx src/utils/writing-tools-contract.ts src/utils/flow-items.ts"
+Exit code: 2
+rg: src/utils/writing-tools-contract.ts: No such file or directory (os error 2)
+src/components/in-flow/flow-ribbon.tsx:34:export const FlowRibbon = component$(() => {
+src/components/in-flow/margin-rail.tsx:61:export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
+src/components/in-flow/sentence-bench.tsx:73:export const SentenceBench = component$<{
+src/components/in-flow/sentence-bench.tsx:134:        part.kind === "removed" ? (
+src/components/in-flow/sentence-bench.tsx:136:        ) : part.kind === "added" ? (
+src/components/in-flow/thread-instrument.tsx:26:export const ThreadsInstrument = component$<{
+src/components/in-flow/tool-renderer.tsx:23:    case "RhythmStrip":
+src/components/in-flow/tool-renderer.tsx:28:    case "ClaimCheck":
+src/components/in-flow/tool-renderer.tsx:30:    case "ReaderQuestions":
+src/components/in-flow/tool-renderer.tsx:37:export const ToolRenderer = component$<{ tool: ActiveTool }>(({ tool }) => {
+src/components/in-flow/tool-renderer.tsx:40:    case "SentenceLab":
+src/components/in-flow/tool-renderer.tsx:49:    case "RhythmStrip":
+src/components/in-flow/tool-renderer.tsx:51:    case "ClaimCheck":
+src/components/in-flow/tool-renderer.tsx:53:    case "ReaderQuestions":
+src/utils/flow-items.ts:33:export const SIDE_FOR: Record<FlowItemKind, FlowSide> = {
+src/utils/flow-items.ts:45:export const KIND_LABELS: Record<FlowItemKind, string> = {
+src/utils/flow-items.ts:184:      if (item.kind === "way-in" && context.mode !== "stuck") {
+src/utils/flow-items.ts:189:        item.kind === "way-in" &&
+src/utils/flow-items.ts:202:    case "flow":
+src/utils/flow-items.ts:203:    case "settling":
+src/utils/flow-items.ts:204:    case "away":
+src/utils/flow-items.ts:218:    case "stuck": {
+src/utils/flow-items.ts:220:        ranked.find((r) => r.item.kind === "way-in") ??
+
+
+[Historical assistant; assistant_message; thread=b5a241d3-a0ee-4079-9a11-389e7dd90bc1; run=run:thread:b5a241d3-a0ee-4079-9a11-389e7dd90bc1:ordinal:2; item=turn-item:provider:codex:native-item:msg_0473139fe3912480016ad3c762adb481a2896768b597e467cc; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Ab5a241d3-a0ee-4079-9a11-389e7dd90bc1%3Aordinal%3A1; status=completed; run-status=completed]
+Yes—beyond the sidebar panels, writing can produce these **contextual components around the manuscript**:
+
+- **Sentence Lab / `SentenceBench`** — alternative wordings, comparisons with your attempts, word choices, sentence placement, and read-aloud.
+- **`RhythmStrip`** — sentence-length bars showing the paragraph’s rhythm.
+- **`ClaimCheck`** — a key claim with slots for the supporting evidence it needs.
+- **`ReaderQuestions`** — questions a reader might have about the passage.
+
+Those are the four explicitly defined generated tool types in the [in-flow catalog](/home/diogenes/Projects/apps/twyne/src/components/in-flow/catalog.ts:137). The model can add sentence variants and reader questions; other content is seeded from the draft.
+
+There are also related surfaces:
+
+- **`FlowSurface` margin cards** — editorial notes and replies, discovered sources, referenced works, dossier material, and echoes of previous writing. It also shows held-back suggestions and a summary after a focused writing session. [Source](/home/diogenes/Projects/apps/twyne/src/components/in-flow/flow-surface.tsx:1)
+- **`LivingDeskPanel` and `DocumentSpine`** — evolving findings, document assessment, and navigation alongside the draft.
+- **`PersonaNotePanel`** — expands an editor’s note into a conversation.
+- **`SuggestionPanel`** — presents a proposed revision.
+- **`ThreadsInstrument`** — a dedicated interface for manuscript threads.
+
+These are existing UI components populated from the writing and analysis; which ones appear depends on context and the writer’s actions.
+
+User message:
+I want you to review  the panels and flow here. What are the issues with the current user experience? What needs  polish what works?
+
+---
+
+polish these, use sonnet at low or medium for most tasks and review the rest
+
+---
+
+<task-notification>
+<task-id>aa882c9dc1329090a</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/2a13dcae-f7b6-4086-b45c-4b7202355290/tasks/aa882c9dc1329090a.output</output-file>
+<status>completed</status>
+<summary>Agent "Fix Living Desk hidden-by-flow bug" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Files changed: `living-desk.css` and `document-spine.tsx`.
+
+1. **Hiding the desk.** The panel and spine now hide only when `data-flow` is "flow" or "settling" (`html:is([data-flow="flow"], [data-flow="settling"])`). The spine's `compute` in `document-spine.tsx` uses the same check, so all three places agree. "working" and "stuck" show them. The MutationObserver on `data-flow` is unchanged.
+2. **Left padding.** The 22rem reserved padding is released under the same selector, so only in "flow" and "settling".
+3. **Spine open button.** `.ld-spine__cap` gets a `::before` pseudo-element that extends the hit area to about 24×30px. A `::after` "The piece" label shows on hover and `:focus-visible`, in the typewriter font and the muted ink colour. `aria-label` and `title` are unchanged.
+4. **Tests.** I grepped for `ld-spine`, `ld-panel`, `data-flow` and `living-desk`; two test files matched, and I ran both. `living-desk.test.ts` and `entity-instrument.test.ts` give 21 pass, 0 fail. No wiring test asserted on the old selectors.
+
+Uncertain: the hover label is placed with `right: calc(100% + 0.375rem)` on a button that is already shifted left by `translateX(-100%)`. It should sit left of the button, but I haven't seen it in a browser. Please check that it doesn't clip at the viewport edge.
+
+No failures from other agents' work.</result>
+<usage><subagent_tokens>96999</subagent_tokens><tool_uses>4</tool_uses><duration_ms>34286</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>aa2adde776243ba34</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/2a13dcae-f7b6-4086-b45c-4b7202355290/tasks/aa2adde776243ba34.output</output-file>
+<status>completed</status>
+<summary>Agent "Board persistence, masthead, drawer order" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>All three tasks are done, in `src/routes/editor/index.tsx` only. I ran no tests, because `grep` found no references in `tests` or `e2e` to anything I changed. I also did no browser or typecheck run, so the masthead height is untested.
+
+- **Task 1:** `onManuscriptFocus$` now returns early unless `window.matchMedia("(max-width: 720px)").matches`. The Board and `setVisiblePanel` therefore only close in the narrow layout where the Board covers the manuscript. Otherwise the Board stays open.
+- **Task 2:** the masthead controls div is now `flex-shrink-0 whitespace-nowrap`, and the dateline is `whitespace-nowrap`. The "Refine dossier" / "Create dossier" label sits in a span that is `hidden min-[1280px]:inline`, so below 1280px the button is icon-only. It keeps its `title` and I added an `aria-label`. No `global.css` edits were needed.
+- **Task 3:** I moved `ProjectBriefCard` below the folio list and the divider after it, so the order is folios, divider, dossier card, divider, Room of Editors. `project-brief-card.tsx` is unchanged.
+
+**Uncertain:** the 1280px breakpoint is not tied to Board state, so the label is also hidden at 1024 with the Board closed. That is slightly more aggressive than "when space is tight", but it avoids a CSS dependency on the Board. It also means 1440 is unchanged, but I haven't confirmed the masthead stays under ~100px at 1024.
+
+No failures that I'd attribute to other agents.</result>
+<usage><subagent_tokens>103725</subagent_tokens><tool_uses>12</tool_uses><duration_ms>36444</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a52ad24be12e51514</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/2a13dcae-f7b6-4086-b45c-4b7202355290/tasks/a52ad24be12e51514.output</output-file>
+<status>completed</status>
+<summary>Agent "Compact Editorial Board tabs and naming" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>All six tasks are done. The five wiring tests that read these files pass (24 tests, 0 fail); I did not run the full suite, `tsc`, or a browser.
+
+**Files changed**
+- `src/components/editorial-board/editorial-board-overlay.tsx`
+- `src/components/personas/personas-panel.tsx`
+- `src/global.css` (Editorial Board selectors only)
+
+**By task**
+1. **Tab strip:** the six tabs are now one row (`repeat(6, 1fr)`), with a small numeral above each label. Labels no longer truncate, and the badge sits in the tab's top-right corner. I estimate about 40px tall. Active border, accents and focus ring are unchanged. In the ≤720px rule I shrank the label font to 0.58rem so "Marginalia" should still fit, but I haven't seen it.
+2. **Close button:** now 30px, borderless and transparent, with a light hover tint. `aria-label` is unchanged.
+3. **Escape:** an `onKeyDown$` on the aside closes the Board and focuses the masthead toggle. It skips when `defaultPrevented` is set, when focus is outside the Board, or when the target is inside a menu, dialog, listbox, combobox, select or open popup.
+4. **Naming:** the Cast panel heading is now "The Cast". The folio · format line is unchanged.
+5. **Helper text:** I added title attributes to the three buttons and the background-room status line. Below "Run full analysis" there is a new muted italic line: "Notes: a short remark each. Edits: sentence rewrites to accept. Analysis: a full memo each." This matches the code: notes call `requestFeedback`, edits call `markUpDraft`, analysis calls `expandAnalysis`.
+6. **Greps:** the only affected test is `src/utils/citation-ui-wiring.test.ts`, which checks the close `aria-label` and still passes. No e2e references turned up.
+
+**Uncertain**
+- The Escape handler can't confirm that `defaultPrevented` is still accurate by the time Qwik's lazy handler runs.
+- Check the tab widths at 464px and at 390px in the browser.
+
+**`workspace-preview.tsx`:** no change needed. It uses `BOARD_TABS` and the existing tab classes, and I didn't touch `board-tabs.ts`.
+
+I saw no failures from other agents.</result>
+<usage><subagent_tokens>116311</subagent_tokens><tool_uses>22</tool_uses><duration_ms>79756</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>af1f236a861b5739e</task-id>
+<tool-use-id>toolu_013hiE6hb7jg1XGWtLWDtctr</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/2a13dcae-f7b6-4086-b45c-4b7202355290/tasks/af1f236a861b5739e.output</output-file>
+<status>completed</status>
+<summary>Agent "Show actionable review status visibly" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>The live-review notice is done. Idle states still render only the sr-only span. I didn't run it in a browser.
+
+**Files changed**
+- `src/components/writing-tools/live-review-status.tsx`
+- `src/components/editor/extensions/quick-review.ts`
+- `src/global.css` (only the `.live-review-status` block, adding `--notice`, `__action` and `__dismiss`)
+
+**Per task**
+1. A problem state (quick review unavailable, or live review paused/offline/unavailable) shows a one-line notice only after it has lasted 2 s. It has muted ink, 11px type, a 24px minimum height and an × dismiss button. Dismissal lasts for the session and resets when the folio changes. "Catch up shortly" never shows.
+2. `quick-review.ts` now adds a backward-compatible `reason` to the event detail. It comes from `response.error` ("unconfigured" or "signed out") or falls back to "unavailable". For the first two, the notice adds a "Set up a model" link to `/settings/`.
+3. The notice keeps the `.live-review-status` class, so the flow fade still applies.
+4. There is a single polite `role=status` span, so a status change is announced once.
+5. The only affected unit test, `src/components/editor/extensions/quick-review.test.ts`, passes (2/2).
+
+**Uncertain**
+- The old e2e `e2e/drag-selection.e2e.ts:145` expects a visible `.live-review-status` row and Pause/Resume buttons. The idle row was already hidden, so that test was already stale and I didn't touch it.
+- `/settings/` is a guess from other links in `src`; I didn't confirm it opens on the model tab.</result>
+<usage><subagent_tokens>103966</subagent_tokens><tool_uses>15</tool_uses><duration_ms>44428</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>acac3fb782ffc0309</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/2a13dcae-f7b6-4086-b45c-4b7202355290/tasks/acac3fb782ffc0309.output</output-file>
+<status>completed</status>
+<summary>Agent "Compact Sentence Bench margin card" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>The Sentence Bench is now much shorter on first view, with every capability kept. I ran only `src/utils/sentence-bench.test.ts` (6 pass, 0 fail), so the layout is unchecked in a browser, and `tsc` and the e2e suite have not been run.
+
+**Files changed**
+- `src/components/in-flow/sentence-bench.tsx`
+- `src/components/in-flow/sentence-bench.css`
+- `e2e/instrument-room.e2e.ts`
+
+**Per item**
+1. I removed the `InstrumentArt` illustration and its import from the bench. `InstrumentArt` itself is untouched.
+2. Each candidate's verification line and caution now render as one muted line, for example "Harper checked · meaning unverified · Removing emphasis…". The diff and provenance chip are unchanged.
+3. The surrounding paragraph shows one sentence before and one after the textarea. A "Show paragraph" / "Hide paragraph" button reveals the full text. It has `aria-expanded` and `aria-controls`, and appears only when something was actually trimmed. The textarea, "Use this wording" and "Keep original" are unchanged.
+4. `InstrumentRoom` is wrapped in a closed `&lt;details class="sentence-bench-room"&gt;` titled "Ask an editor about this wording". Everything inside it, including the charges disclosure, is unchanged.
+5. The disclosures use native `&lt;details&gt;`/`&lt;summary&gt;` or a real button with `aria-expanded`. The existing region labels are kept.
+6. In `e2e/instrument-room.e2e.ts`, `openSentence` now opens "Ask an editor about this wording" before returning the invitation. I left the toolbar-click step alone. Stories and fixtures needed no change: the offline, settled and stale states still render, and the paragraph trim applies to them automatically.
+
+**Not done**
+- `e2e/instruments.e2e.ts` is unchanged. It never touches the Ask the room block, and I found no assertion on the paragraph text. The "Harper checked" assertion still passes, since that text is still rendered.
+- The sentence-splitting helpers in `sentence-bench.tsx` use a simple punctuation regex, so abbreviations like "Dr." can split early. This only affects the collapsed preview.
+
+I saw no failures that belong to other in-flight agents.</result>
+<usage><subagent_tokens>112167</subagent_tokens><tool_uses>13</tool_uses><duration_ms>83752</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a36178ead66678d1a</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/2a13dcae-f7b6-4086-b45c-4b7202355290/tasks/a36178ead66678d1a.output</output-file>
+<status>completed</status>
+<summary>Agent "Simplify selection toolbar to verbs" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>The selection toolbar is now one row of plain verbs, and the "Add margin" rename and the e2e updates are done. I didn't run the e2e tests or a typecheck; they're for you to run. The only unit test I ran was `marginalia-wiring.test.ts` (9 pass, 0 fail).
+
+**Files changed**
+- `src/components/editor/selection-actions.tsx`
+- the `.selection-actions` block of `src/global.css`
+- `src/components/comments/comments-panel.tsx`
+- `src/components/editor/compositor-panel.tsx`
+- `src/routes/docs/guide-editorial-room.ts` and `src/routes/docs/index.tsx`
+- `e2e/instruments.e2e.ts`, `e2e/instrument-room.e2e.ts`, `e2e/instrument-dock.e2e.ts`
+
+**By task**
+1. **Toolbar row:** it reads Rework (Alternatives for a single word, with the title you gave), Find sources, Comment, Ask an editor ▾, More ▾ and ×. More holds Hear it read, Threads, Scene bench and Task desk, under the same conditions as before. The quote line is gone; the selected text stays in the aria-label and as a title tooltip.
+2. **Menus:** the two popovers are mutually exclusive, with `role=menu`/`menuitem` and `aria-expanded` on the triggers. Escape closes an open menu without dismissing the toolbar or the selection; it works through a capture-phase listener that only exists while a menu is open. I skipped arrow-key navigation because focus stays in the editor, so it wasn't cheap.
+3. **Props:** the interface is unchanged.
+4. **Naming:** "Add margin" is now "Comment" in the compositor label and aria-label, the comments-panel empty state, and both docs strings. The docs sentence about the toolbar's buttons is reworded to match.
+5. **e2e:**
+   - Sentence bench clicks now use Rework.
+   - Threads, Scene bench and Task desk clicks go through More and then `menuitem`.
+   - The focus-return checks in `instruments.e2e.ts` and `instrument-dock.e2e.ts` now accept a button whose text starts with "More", or the ProseMirror editor.
+
+**Uncertain**
+- The focus-return checks assume focus lands on More or the editor after a dock closes. The browser run should confirm that.
+- `instrument-room.e2e.ts` line 46 had been edited by another lane; I changed only the button name there.
+- I didn't change the CSS `max-width`; the row may wrap on very narrow screens.
+
+I didn't see any failures that belong to other agents.</result>
+<usage><subagent_tokens>120582</subagent_tokens><tool_uses>18</tool_uses><duration_ms>111212</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>af5dd8c415e52cb76</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/2a13dcae-f7b6-4086-b45c-4b7202355290/tasks/af5dd8c415e52cb76.output</output-file>
+<status>completed</status>
+<summary>Agent "Unify margin geometry and narrow dock" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>All six tasks are done. The unit tests pass, and nothing was checked in a browser or with `tsc`.
+
+**Files changed**
+- New: `src/utils/margin-geometry.ts` and `src/utils/margin-geometry.test.ts`.
+- Edited: `margin-rail.tsx`, `flow-surface.tsx`, `struggle-tracker.ts`, `src/utils/in-flow-tools.ts` (added `requested?` on `ActiveTool`), `src/global.css` (in-flow, dock and desk selectors plus the narrow-desk `body:has` rule), and `e2e/instruments.e2e.ts` line 13.
+- I did not edit `e2e/flow-surface.e2e.ts`. It only asserts `.flow-dock` is hidden at 390px, which still holds.
+
+**Per task**
+1. **Shared geometry:** `marginGeometry(right, left)` returns rail or dock, `archiveFits`, `shelfFits` and `toolWidth` (clamped 268 to 296). A rail needs 304px of right margin, which is now the breakpoint for both systems. A `dockRight()` helper is there too.
+2. **Docks:** The under-the-passage popover is gone, replaced by `.in-flow-dock`. A tracker-opened tool shows as a chip ("tool name · Open"). A writer-requested tool opens expanded, capped at 60vh, scrolling internally, with a Collapse button. `requested` is `!opts.auto`, and `auto: true` is set only at the two automatic open sites (the evaluate path and the moved-sentence offer). `FlowSurface`'s dock now starts as a chip ("N from the room · Open") and opens by default only when the conductor's mode is "stuck". It has its own Collapse button.
+3. **Anchoring:** Both docks set `right` from the scroller's rect through CSS variables (`--in-flow-dock-right`, `--flow-dock-right`). The `body:has(...)` rule now names `.in-flow-dock`. The flow dock's slip-hiding rule now fires whenever the flow dock exists, not only when it holds a card.
+4. **Conductor deference:** `struggle-tracker.ts` imports `flowSnapshot` from `./flow-conductor`; there was no import cycle. Neither automatic path (struggle evaluate, moved-sentence offer) opens a tool while the conductor is enabled and its mode is "flow" or "settling".
+5. **Chrome and strings:** The close button is at least 24×24. "Your tools" is now "Saved tools", "Keep this tool" is "Save this tool", and "In Your tools" is "Saved". The notices read "Saved to your tools." and "From Saved tools: …", and the storage error now says "Couldn't save it". While nothing is saved, the shelf is a plain `div` with no label, so there is no empty landmark.
+6. **Selectors:** No test or e2e file asserted on the changed strings or classes except the `e2e/instruments.e2e.ts` host locator, which I updated.
+
+**Tests:** `margin-geometry.test.ts` passes (6 tests). `struggle-tracker.test.ts` plus `flow-conductor.test.ts` pass (32 tests). A bare `src/...` path also matched stale copies under `artifacts/`, one of which fails on a missing module. Use `./src/...` paths to avoid that.
+
+**Deferred**
+- `sentence-bench.css` (out of scope) still has a dead `.in-flow-popover:has(.sentence-bench)` rule. It should become `.in-flow-dock .in-flow-card`, or just go.
+- The comment text in `tool-renderer.tsx` line 19 still says "Keep this tool".</result>
+<usage><subagent_tokens>146804</subagent_tokens><tool_uses>26</tool_uses><duration_ms>203990</duration_ms></usage>
+</task-notification>
+
+---
+
+fix the open issues
+
+---
+
+<task-notification>
+<task-id>bx8j1zvee</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/2a13dcae-f7b6-4086-b45c-4b7202355290/tasks/bx8j1zvee.output</output-file>
+<status>killed</status>
+<summary>Background command "Start Twyne dev server on port 5174" was stopped after reaching its background time limit</summary>
+<note>If the work in progress still needs it, start it again with `run_in_background` and a longer `timeout`. If it already had the longest `timeout` allowed, do not restart it. Either way, report that it was stopped.</note>
+</task-notification>
+
+---
+
+run your e2e testss pls
