@@ -3,7 +3,7 @@
   "checkpoint_id": "8e9aa018bc4b",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 4,
+  "checkpoints_count": 7,
   "files_touched": [
     "e2e/drag-selection.e2e.ts",
     "e2e/instrument-dock.e2e.ts",
@@ -27,13 +27,17 @@
     "src/components/living-desk/living-desk.css",
     "src/components/personas/personas-panel.tsx",
     "src/components/settings/judgement-model-settings.tsx",
+    "src/components/ui/global-application-toasts.tsx",
+    "src/components/ui/global-connectivity-banner.tsx",
     "src/components/writing-tools/live-review-status.tsx",
     "src/components/writing-tools/writing-tools-panel.tsx",
     "src/global.css",
+    "src/root.tsx",
     "src/routes/docs/guide-editorial-room.ts",
     "src/routes/docs/index.tsx",
     "src/routes/editor/index.tsx",
     "src/routes/settings/index.tsx",
+    "src/utils/anti-tabula-rasa.ts",
     "src/utils/editor-commands.ts",
     "src/utils/in-flow-tools.ts",
     "src/utils/keybindings.test.ts",
@@ -46,14 +50,21 @@
       "compact_transcript": "/8e/9aa018bc4b/0/transcript.jsonl",
       "content_hash": "/8e/9aa018bc4b/0/content_hash.txt",
       "prompt": "/8e/9aa018bc4b/0/prompt.txt"
+    },
+    {
+      "metadata": "/8e/9aa018bc4b/1/metadata.json",
+      "transcript": "/8e/9aa018bc4b/1/full.jsonl",
+      "compact_transcript": "/8e/9aa018bc4b/1/transcript.jsonl",
+      "content_hash": "/8e/9aa018bc4b/1/content_hash.txt",
+      "prompt": "/8e/9aa018bc4b/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 678,
-    "cache_creation_tokens": 25324478,
-    "cache_read_tokens": 125710359,
-    "output_tokens": 376443,
-    "api_call_count": 336,
+    "input_tokens": 870,
+    "cache_creation_tokens": 26276992,
+    "cache_read_tokens": 140384973,
+    "output_tokens": 437801,
+    "api_call_count": 430,
     "subagent_tokens": {
       "input_tokens": 164,
       "cache_creation_tokens": 503442,
