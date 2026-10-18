@@ -1,0 +1,17 @@
+hey i have a problem with the particulars portion of the form, I noticed that clicking the answer for some of them doesn't work and I also noticed that the particulars should be drafting before you get to them so they already have questionsn ready. also just answer these local questions doesn't have a good UX for signalling that action was taken when the form has updated, for example the side pannel for theh working copy dodesnnt gets truncated in a way that makes it difficult to see  theh update and there is not any effect caused by the button that gives the user the feedback they need. we need to show that the answer button worked, that the option in  pick one was selected and show the current selection.
+
+---
+
+Continue where you left off.
+
+---
+
+so they actually do work and update there just isn't great ux on feedback for that
+
+---
+
+i also see that there is only one question in the first place that is drafted with the particulars, is that there in the api call or are there supposed to be more  than one question created or are the questions variablel.
+
+---
+
+let's integrate jev into the form more, get better detail on the responses, feedback as to whether an answer has been given adequantely or whether some answer needs to be stronger, essentially scored answer on the brief and an immediate display of that feedback. same with the interview too. A bit like an advance version of figuring out if a password is good or not. just with questions in brief. with both the form and conversation format.

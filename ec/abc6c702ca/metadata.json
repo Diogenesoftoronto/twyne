@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "ecabc6c702ca",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "src/components/brief/answer-strength.tsx",
+    "src/components/brief/dossier-preview.tsx",
+    "src/components/brief/use-brief-strength.ts",
+    "src/components/onboarding/anti-tabula-rasa.tsx",
+    "src/components/onboarding/conversational-interview.tsx",
+    "src/components/onboarding/probe-input.tsx",
+    "src/utils/brief-coach.ts",
+    "src/utils/brief-strength.test.ts",
+    "src/utils/brief-strength.ts",
+    "src/utils/form-probes.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ec/abc6c702ca/0/metadata.json",
+      "transcript": "/ec/abc6c702ca/0/full.jsonl",
+      "compact_transcript": "/ec/abc6c702ca/0/transcript.jsonl",
+      "content_hash": "/ec/abc6c702ca/0/content_hash.txt",
+      "prompt": "/ec/abc6c702ca/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 188,
+    "cache_creation_tokens": 950038,
+    "cache_read_tokens": 14285700,
+    "output_tokens": 60802,
+    "api_call_count": 92
+  }
+}
