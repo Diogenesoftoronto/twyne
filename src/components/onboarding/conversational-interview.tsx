@@ -4,6 +4,7 @@ import {
   useSignal,
   $,
   type PropFunction,
+  useComputed$,
   useVisibleTask$,
 } from "@qwik.dev/core";
 import {
@@ -33,6 +34,12 @@ import { DossierFolio } from "./dossier-folio";
 import { DossierTopBar } from "./dossier-top-bar";
 import type { DossierFilingState } from "../../utils/dossier-filing";
 import { DossierPreview } from "../brief/dossier-preview";
+import { AnswerStrength } from "../brief/answer-strength";
+import {
+  briefStrengthViews,
+  useBriefStrength,
+} from "../brief/use-brief-strength";
+import { quickFieldStrength, weakestField } from "../../utils/brief-strength";
 import type { BriefEdition } from "../../utils/brief-history";
 import { ApplicationNotice } from "../ui/application-notice";
 import type { AppError } from "../../types/application-errors";
@@ -293,6 +300,18 @@ export const ConversationalInterview = component$(
     const inputRef = useSignal<HTMLTextAreaElement>();
     const scrollerRef = useSignal<HTMLDivElement>();
     const clientSig = useConvexClient();
+    // The brief as the room currently has it — the synthesis under review, or
+    // the running draft it infers while the writer talks.
+    const liveAnswers = useComputed$(
+      () =>
+        ({
+          ...EMPTY_ANSWERS,
+          ...(store.synthesis
+            ? store.synthesis.brief
+            : (store.liveDraft?.brief ?? {})),
+        }) as ProjectInterviewAnswers,
+    );
+    const strength = useBriefStrength(liveAnswers);
 
     /**
      * Kick the conversation off with the AI's opening question.
@@ -337,6 +356,15 @@ export const ConversationalInterview = component$(
         ];
       }
       store.pendingWriterText = writerText;
+      // A turn that isn't shown (a retry, or a stage direction like "show me
+      // what you have") still has to reach the model. A retry's text is
+      // already the last message; a direction travels without joining the
+      // transcript.
+      const last = store.messages[store.messages.length - 1];
+      const outgoing: InterviewMessage[] =
+        last?.author === "writer" && last.text === writerText
+          ? store.messages
+          : [...store.messages, { author: "writer", text: writerText }];
       store.loading = true;
       store.error = null;
       store.streaming = {
@@ -353,7 +381,7 @@ export const ConversationalInterview = component$(
         if (hasByok && settings) {
           const clientResult = await runClientInterviewTurn(
             {
-              messages: store.messages,
+              messages: outgoing,
               mode: props.mode,
               currentBrief: props.initialBrief ?? null,
               startingMaterial: props.initialMaterial ?? null,
@@ -392,7 +420,7 @@ export const ConversationalInterview = component$(
             result = (await clientSig.value.action(
               (api as any).agents.runInterviewTurn,
               {
-                messages: store.messages,
+                messages: outgoing,
                 mode: props.mode,
                 currentBrief: props.initialBrief ?? null,
                 startingMaterial: props.initialMaterial ?? null,
@@ -522,6 +550,22 @@ export const ConversationalInterview = component$(
       store.error = null;
     });
 
+    /**
+     * Ask the room to dig into the answer Jev graded weakest. The diagnosis
+     * travels as a stage direction so the interviewer's next question is
+     * about the real gap, not a generic follow-up.
+     */
+    const pressOnField = $(async (field: keyof ProjectInterviewAnswers) => {
+      if (store.loading || store.synthesis) return;
+      const view =
+        briefStrengthViews(liveAnswers.value, strength)[field] ??
+        quickFieldStrength(field, liveAnswers.value[field] ?? "");
+      await runTurn(
+        `(the writer wants to strengthen the ${FIELD_LABELS[field].toLowerCase()} — it reads as ${view.label.toLowerCase()}: ${view.diagnosis.toLowerCase()}.${view.hint ? ` ${view.hint}` : ""} Ask one sharp question that would fix exactly that.)`,
+        false,
+      );
+    });
+
     const requestSynthesis = $(async () => {
       if (store.loading) return;
       // The writer can ask for the dossier at any point. We just
@@ -579,6 +623,9 @@ export const ConversationalInterview = component$(
       store.draft = "";
     });
 
+    const strengths = briefStrengthViews(liveAnswers.value, strength);
+    const weakest = weakestField(strengths, FIELD_ORDER);
+
     const livePanel = store.synthesis
       ? { brief: store.synthesis.brief, confidence: store.synthesis.confidence }
       : store.liveDraft;
@@ -633,6 +680,9 @@ export const ConversationalInterview = component$(
                 store.synthesis ? "Ready for review" : "Filling as you talk"
               }
               fieldTone={buildFieldTone(store.synthesis ?? store.liveDraft)}
+              strengths={strengths}
+              strengthReading={strength.reading}
+              briefSufficiency={strength.sufficiency}
             />
             <p
               class="mt-2.5 border-t border-[var(--color-paper-3)] pt-2 text-[0.68rem] leading-5 text-[var(--color-ink-muted)]"
@@ -887,6 +937,13 @@ export const ConversationalInterview = component$(
                                         fontFamily: "var(--font-serif)",
                                       }}
                                     />
+                                    <AnswerStrength
+                                      strength={quickFieldStrength(
+                                        field,
+                                        store.draft,
+                                      )}
+                                      quickOnly
+                                    />
                                     <div class="flex items-center gap-2">
                                       <button
                                         onClick$={() => applyEdit(field)}
@@ -927,9 +984,19 @@ export const ConversationalInterview = component$(
                                         fontFamily: "var(--font-typewriter)",
                                       }}
                                     >
-                                      Edit
+                                      {value &&
+                                      (strengths[field]?.level ?? 4) < 3
+                                        ? "Strengthen"
+                                        : "Edit"}
                                     </button>
                                   </div>
+                                )}
+                                {!isEditing && value && strengths[field] && (
+                                  <AnswerStrength
+                                    strength={strengths[field]!}
+                                    reading={strength.reading[field]}
+                                    quickOnly={strength.unavailable}
+                                  />
                                 )}
                               </dd>
                             </div>
@@ -1009,6 +1076,31 @@ export const ConversationalInterview = component$(
                         onRecovery$={props.onUseForm$ ? useForm : undefined}
                         onDismiss$={dismissError}
                       />
+                    </div>
+                  )}
+                  {weakest && !store.loading && !store.activeProbe && (
+                    <div class="mb-2.5 flex items-start gap-3 rounded-[2px] border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-3 py-2">
+                      <div class="min-w-0 flex-1">
+                        <p
+                          class="text-[0.6rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Weakest answer · {FIELD_LABELS[weakest]}
+                        </p>
+                        <AnswerStrength
+                          strength={strengths[weakest]!}
+                          reading={strength.reading[weakest]}
+                          quickOnly={strength.unavailable}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick$={() => pressOnField(weakest)}
+                        class="focus-ring mt-0.5 shrink-0 rounded-full border border-[var(--color-vermilion)] px-3 py-1 text-[0.7rem] text-[var(--color-vermilion)] hover:bg-[var(--color-vermilion)] hover:text-[var(--color-paper)]"
+                        style={{ fontFamily: "var(--font-display)" }}
+                      >
+                        Ask me about it
+                      </button>
                     </div>
                   )}
                   {/* Speaking an answer fills the box rather than sending it —

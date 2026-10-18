@@ -1,5 +1,6 @@
 import { currentModelLocale } from "../../i18n/model-language";
 import {
+  useComputed$,
   component$,
   $,
   useStore,
@@ -15,6 +16,11 @@ import type {
 } from "../../types";
 import { isAnswered, upsertProbe } from "../../utils/dossier-probes";
 import { ProbeInput } from "./probe-input";
+import { AnswerStrength } from "../brief/answer-strength";
+import {
+  briefStrengthViews,
+  useBriefStrength,
+} from "../brief/use-brief-strength";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { loadAiSettingsFromIdb } from "../../utils/idb";
@@ -31,6 +37,7 @@ import {
   FORM_PROBE_COUNT,
   mergeFormProbesWithLimit,
   mergeProviderFormProbes,
+  probeDraftKey,
   requireFormProbe,
 } from "../../utils/form-probes";
 import type { AppError } from "../../types/application-errors";
@@ -169,6 +176,17 @@ const STEPS: InterviewStep[] = [
   },
 ];
 
+const PARTICULARS_STEP = STEPS.findIndex((entry) => entry.kind === "probes");
+
+/**
+ * Particulars are drafted from the landing question onward, so the
+ * questions are waiting when the writer turns the page instead of loading
+ * while they watch.
+ */
+function draftsParticulars(index: number): boolean {
+  return index >= PARTICULARS_STEP - 1;
+}
+
 /**
  * Word count of the pasted starting material.
  *
@@ -269,6 +287,11 @@ export const AntiTabulaRasa = component$(
       probesAnswersKey: string;
       /** True once we've tried, so re-entering the step doesn't re-ask. */
       probesRequested: boolean;
+      /** Latest draft request; older in-flight drafts drop their results. */
+      probesGeneration: number;
+      /** The Particular just answered, stamped in the working copy. */
+      recentProbeId: string | null;
+      recentProbeRevision: number;
     }>({
       step: 0,
       answers: {
@@ -286,9 +309,16 @@ export const AntiTabulaRasa = component$(
       probesSource: null,
       probesAnswersKey: "",
       probesRequested: false,
+      probesGeneration: 0,
+      recentProbeId: null,
+      recentProbeRevision: 0,
     });
     const clientSig = useConvexClient();
     const auth = useAuth();
+    // Spread so a per-field write (`store.answers[field] = …`) still reads as
+    // a new brief to the strength meter.
+    const liveAnswers = useComputed$(() => ({ ...store.answers }));
+    const strength = useBriefStrength(liveAnswers);
 
     const textareaRef = useSignal<HTMLTextAreaElement>();
     const draftReady = useSignal(!draftScope);
@@ -357,7 +387,7 @@ export const AntiTabulaRasa = component$(
           store.importedFilename = saved?.importedFilename ?? "";
           store.step = saved?.step ?? 0;
           store.probesRequested = store.probes.length > 0;
-          store.probesAnswersKey = JSON.stringify(store.answers);
+          store.probesAnswersKey = probeDraftKey(store.answers);
           store.submitting = false;
           draftIdentityInitialized.value = true;
           draftReady.value = true;
@@ -422,13 +452,20 @@ export const AntiTabulaRasa = component$(
      * any provider request starts. A configured provider may replace the
      * unanswered fallbacks with sharper questions, but failure is visible and
      * retryable rather than leaving the Particulars department empty.
+     *
+     * Drafting starts a step early (see `draftsParticulars`), so a newer
+     * request supersedes an older one still in flight instead of racing it.
      */
     const loadProbes = $(async (force: boolean) => {
-      const answersKey = JSON.stringify(store.answers);
+      const answersKey = probeDraftKey(store.answers);
+      // A restored draft or refined brief can carry fewer than a full set
+      // (often just the one Particular it answered); top it up rather than
+      // treating the earlier request as the last word.
       if (
         !force &&
         store.probesRequested &&
-        store.probesAnswersKey === answersKey
+        store.probesAnswersKey === answersKey &&
+        store.probes.length >= FORM_PROBE_COUNT
       ) {
         return;
       }
@@ -443,6 +480,9 @@ export const AntiTabulaRasa = component$(
       );
       store.probesRequested = true;
       store.probesAnswersKey = answersKey;
+      const generation = ++store.probesGeneration;
+      const current = () => generation === store.probesGeneration;
+      const draftAnswers = { ...store.answers };
       store.probesLoading = true;
       store.probesError = null;
       store.probesSource = "local";
@@ -460,19 +500,20 @@ export const AntiTabulaRasa = component$(
         // Three sequential turns, each seeing the ones before, so the
         // interviewer doesn't ask the same question three ways.
         for (let i = 0; i < FORM_PROBE_COUNT; i++) {
-          const messages = buildFormProbeMessages(store.answers, collected);
+          if (!current()) return;
+          const messages = buildFormProbeMessages(draftAnswers, collected);
           if (useByok) {
             const client = await runClientInterviewTurn(
               { messages, mode: "first-run", currentBrief: null },
               useByok,
             );
             if (!client.ok) {
-              store.probesError = client.error;
+              if (current()) store.probesError = client.error;
               break;
             }
             const checked = requireFormProbe(client.value);
             if (!checked.ok) {
-              store.probesError = checked.error;
+              if (current()) store.probesError = checked.error;
               break;
             }
             collected.push(checked.value);
@@ -489,11 +530,12 @@ export const AntiTabulaRasa = component$(
               );
               const checked = requireFormProbe(result);
               if (!checked.ok) {
-                store.probesError = checked.error;
+                if (current()) store.probesError = checked.error;
                 break;
               }
               collected.push(checked.value);
             } catch (error) {
+              if (!current()) return;
               store.probesError = normalizeApplicationError(error, {
                 source: "convex",
                 metadata: {
@@ -506,6 +548,7 @@ export const AntiTabulaRasa = component$(
           }
         }
 
+        if (!current()) return;
         if (collected.length > 0) {
           store.probes = mergeProviderFormProbes(
             store.probes,
@@ -515,6 +558,7 @@ export const AntiTabulaRasa = component$(
           store.probesSource = "provider";
         }
       } catch (err) {
+        if (!current()) return;
         reportApplicationDiagnostic("twyne:form:load-probes", err, {
           feature: "interview",
           operation: "form-probes",
@@ -526,12 +570,15 @@ export const AntiTabulaRasa = component$(
           },
         });
       } finally {
-        store.probesLoading = false;
-        void persistDraft();
+        if (current()) {
+          store.probesLoading = false;
+          void persistDraft();
+        }
       }
     });
 
     const step = STEPS[store.step];
+    const strengths = briefStrengthViews(store.answers, strength);
     if (!step) return null;
     const progress = Math.round(((store.step + 1) / STEPS.length) * 100);
 
@@ -582,9 +629,10 @@ export const AntiTabulaRasa = component$(
       const next = currentStep + 1;
       store.step = next;
       void persistDraft();
-      // Fetch the follow-ups as the writer arrives, not on mount — they are
-      // derived from answers that don't exist until this point.
-      if (STEPS[next]?.kind === "probes") {
+      // Draft the follow-ups a step early, not on mount — they are derived
+      // from answers that don't exist until the brief is nearly filed, and
+      // starting on the landing question means they're ready on arrival.
+      if (draftsParticulars(next)) {
         void loadProbes(false);
       }
     });
@@ -623,7 +671,7 @@ export const AntiTabulaRasa = component$(
       if (index < 0 || index >= STEPS.length || index === store.step) return;
       store.step = index;
       void persistDraft();
-      if (STEPS[index]?.kind === "probes") {
+      if (draftsParticulars(index)) {
         void loadProbes(false);
       }
     });
@@ -654,7 +702,33 @@ export const AntiTabulaRasa = component$(
 
     const answerFormProbe = $((answered: DossierProbe) => {
       store.probes = upsertProbe(store.probes, answered);
+      store.recentProbeId = answered.id;
+      store.recentProbeRevision++;
       void persistDraft();
+      // The working copy scrolls on its own; bring the stamped row into view
+      // there without moving the leaf the writer is answering in.
+      requestAnimationFrame(() => {
+        const row = document.querySelector<HTMLElement>(
+          `[data-probe-row="${CSS.escape(answered.id)}"]`,
+        );
+        const column = row?.closest<HTMLElement>(".folio-column");
+        if (!row || !column) return;
+        const rowBox = row.getBoundingClientRect();
+        const columnBox = column.getBoundingClientRect();
+        if (rowBox.top >= columnBox.top && rowBox.bottom <= columnBox.bottom)
+          return;
+        column.scrollTo({
+          top:
+            column.scrollTop +
+            rowBox.top -
+            columnBox.top -
+            columnBox.height / 2 +
+            rowBox.height / 2,
+          behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+            ? "auto"
+            : "smooth",
+        });
+      });
     });
 
     const readDraft = $(async () => {
@@ -754,6 +828,11 @@ export const AntiTabulaRasa = component$(
               probes={store.probes}
               attachments={store.attachments}
               editions={briefEditions}
+              strengths={strengths}
+              strengthReading={strength.reading}
+              briefSufficiency={strength.sufficiency}
+              recentProbeId={store.recentProbeId}
+              recentProbeRevision={store.recentProbeRevision}
               activeField={STEPS[store.step]?.field}
               existingMaterialWords={countWords(store.existingMaterial)}
               mode={mode}
@@ -919,6 +998,13 @@ export const AntiTabulaRasa = component$(
                         rows={step.rows || 4}
                         class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-3 text-base leading-7 text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic focus:border-[var(--color-vermilion)] focus:outline-none"
                         style="font-family: var(--font-serif); border-radius: 2px;"
+                      />
+                    )}
+                    {step.field && strengths[step.field] && (
+                      <AnswerStrength
+                        strength={strengths[step.field]!}
+                        reading={strength.reading[step.field]}
+                        quickOnly={strength.unavailable}
                       />
                     )}
                     {step.kind === "import" && (

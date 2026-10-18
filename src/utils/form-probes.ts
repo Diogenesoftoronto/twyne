@@ -6,6 +6,17 @@ import { isAnswered } from "./dossier-probes";
 
 export const FORM_PROBE_COUNT = 3;
 
+/**
+ * Staleness key for a Particulars draft. The questions are drafted ahead,
+ * while the writer is still on the landing question, so that answer is
+ * left out: rewording the last field shouldn't throw away questions that
+ * are already on the page and make the writer wait for new ones.
+ */
+export function probeDraftKey(answers: ProjectInterviewAnswers): string {
+  const { successSignal: _drafting, ...settled } = answers;
+  return JSON.stringify(settled);
+}
+
 function compact(value: string, fallback: string, max = 72): string {
   const normalized = value.replace(/\s+/g, " ").trim() || fallback;
   return normalized.length <= max

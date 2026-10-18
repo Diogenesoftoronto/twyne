@@ -7,6 +7,8 @@ import type {
 } from "../../types";
 import { isAnswered, probeAnswerText } from "../../utils/dossier-probes";
 import type { BriefEdition } from "../../utils/brief-history";
+import { STRONG_ENOUGH, type StrengthView } from "../../utils/brief-strength";
+import { AnswerStrength } from "./answer-strength";
 
 const FIELD_LABELS: Record<keyof ProjectInterviewAnswers, string> = {
   workingTitle: "Working title",
@@ -49,6 +51,16 @@ interface DossierPreviewProps {
   /** Replaces the working-title masthead — the conversation names its own state. */
   headline?: string;
   editions?: BriefEdition[];
+  /** Live answer strength per field; omitted, the working copy shows no meter. */
+  strengths?: Partial<Record<keyof ProjectInterviewAnswers, StrengthView>>;
+  /** Fields Jev is reading right now. */
+  strengthReading?: Partial<Record<keyof ProjectInterviewAnswers, boolean>>;
+  /** Jev's probability that a stranger could write the piece from this brief. */
+  briefSufficiency?: number | null;
+  /** The Particular the writer just answered; its row stamps and scrolls into view. */
+  recentProbeId?: string | null;
+  /** Bumped per answer so repeated answers to one Particular replay the stamp. */
+  recentProbeRevision?: number;
   onJumpToField$?: PropFunction<(field: keyof ProjectInterviewAnswers) => void>;
   onReadDraft$?: PropFunction<() => void>;
   onApplyObservation$?: PropFunction<(index: number) => void>;
@@ -84,6 +96,14 @@ export const DossierPreview = component$((props: DossierPreviewProps) => {
         FIELD_ORDER.filter((field) => answers[field].trim().length > 0).length,
     ),
   );
+  // Editions are a record of what was filed, not something to grade live.
+  const strengths = selectedEdition ? undefined : props.strengths;
+  const graded = strengths
+    ? FIELD_ORDER.filter((field) => answers[field].trim()).map(
+        (field) => strengths[field]!,
+      )
+    : [];
+  const strongCount = graded.filter((v) => v.level >= STRONG_ENOUGH).length;
   const hasReview = props.draftReview !== undefined || !!props.onReadDraft$;
   const observations = props.draftReview?.observations ?? [];
 
@@ -160,6 +180,34 @@ export const DossierPreview = component$((props: DossierPreviewProps) => {
         </details>
       )}
 
+      {strengths && graded.length > 0 && (
+        <div
+          class="mt-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 border-y border-[var(--color-paper-3)] py-1.5 text-[0.6rem] tracking-[0.12em] uppercase text-[var(--color-ink-muted)]"
+          style={{ fontFamily: "var(--font-typewriter)" }}
+          role="status"
+        >
+          <span>
+            Brief strength ·{" "}
+            <span class="text-[var(--color-ink)]">
+              {strongCount} of {graded.length}
+            </span>{" "}
+            answers carrying weight
+          </span>
+          {props.briefSufficiency != null && (
+            <span title="Jev's estimate that a writer who has never met you could write this piece from the brief alone.">
+              Stranger could write it ·{" "}
+              <span class="text-[var(--color-ink)]">
+                {props.briefSufficiency >= 0.7
+                  ? "likely"
+                  : props.briefSufficiency >= 0.4
+                    ? "maybe"
+                    : "not yet"}
+              </span>
+            </span>
+          )}
+        </div>
+      )}
+
       <dl class="mt-3 grid gap-1.5 sm:grid-cols-2">
         {FIELD_ORDER.map((field) => {
           const active = !selectedEdition && props.activeField === field;
@@ -175,7 +223,16 @@ export const DossierPreview = component$((props: DossierPreviewProps) => {
                     aria-hidden="true"
                   />
                 )}
-                {FIELD_LABELS[field]}
+                <span class="min-w-0 truncate">{FIELD_LABELS[field]}</span>
+                {strengths?.[field] && value.trim() && (
+                  <span class="ml-auto shrink-0 normal-case">
+                    <AnswerStrength
+                      strength={strengths[field]!}
+                      reading={props.strengthReading?.[field]}
+                      variant="compact"
+                    />
+                  </span>
+                )}
               </dt>
               <dd
                 class="mt-0.5 text-[0.76rem] leading-[1.35] text-[var(--color-ink-light)] break-words"
@@ -243,46 +300,52 @@ export const DossierPreview = component$((props: DossierPreviewProps) => {
         </div>
         {probes.length > 0 ? (
           <ol class="mt-1 space-y-0.5">
-            {probes.map((probe, index) => (
-              <li
-                key={probe.id}
-                class="flex gap-1.5 text-[0.7rem] leading-[1.4] text-[var(--color-ink-light)]"
-                style={{ fontFamily: "var(--font-serif)" }}
-                title={
-                  isAnswered(probe)
-                    ? `${probe.prompt} — ${probeAnswerText(probe)}`
-                    : probe.prompt
-                }
-              >
-                <span
-                  class="shrink-0 text-[var(--color-vermilion)]"
-                  style={{ fontFamily: "var(--font-typewriter)" }}
+            {probes.map((probe, index) => {
+              const recent = props.recentProbeId === probe.id;
+              return (
+                <li
+                  key={
+                    recent
+                      ? `${probe.id}:${props.recentProbeRevision ?? 0}`
+                      : probe.id
+                  }
+                  data-probe-row={probe.id}
+                  class={[
+                    "flex gap-1.5 text-[0.7rem] leading-[1.4] text-[var(--color-ink-light)]",
+                    recent && "probe-filed-flash",
+                  ]}
+                  style={{ fontFamily: "var(--font-serif)" }}
                 >
-                  {index + 1}.
-                </span>
-                <span class="min-w-0 truncate">
-                  {isAnswered(probe) ? (
-                    <>
-                      <span class="text-[var(--color-ink-muted)]">
-                        {probe.prompt}
-                      </span>{" "}
-                      <span class="text-[var(--color-ink)]">
-                        {probeAnswerText(probe)}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span class="text-[var(--color-ink-muted)]">
-                        {probe.prompt}
-                      </span>{" "}
-                      <span class="italic text-[var(--color-ink-muted)]">
-                        Awaiting an answer.
-                      </span>
-                    </>
-                  )}
-                </span>
-              </li>
-            ))}
+                  <span
+                    class="shrink-0 text-[var(--color-vermilion)]"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    {isAnswered(probe) ? "✓" : `${index + 1}.`}
+                  </span>
+                  <span class="min-w-0">
+                    {isAnswered(probe) ? (
+                      <>
+                        <span class="line-clamp-2 text-[var(--color-ink-muted)]">
+                          {probe.prompt}
+                        </span>
+                        <span class="block text-[var(--color-ink)]">
+                          {probeAnswerText(probe)}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span class="text-[var(--color-ink-muted)]">
+                          {probe.prompt}
+                        </span>{" "}
+                        <span class="italic text-[var(--color-ink-muted)]">
+                          Awaiting an answer.
+                        </span>
+                      </>
+                    )}
+                  </span>
+                </li>
+              );
+            })}
           </ol>
         ) : (
           <p
