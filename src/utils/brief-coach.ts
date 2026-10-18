@@ -40,7 +40,7 @@ import {
  * the answer *excludes* anything: a brief answer that rules nothing out cannot
  * be failed by any draft, and a criterion no draft can fail is not a criterion.
  */
-const SUFFICIENCY_LEVELS = [
+export const SUFFICIENCY_LEVELS = [
   "Missing — there is nothing usable here",
   "Vague — this could describe almost any piece",
   "Partial — a direction, but the key decision is still open",
@@ -49,7 +49,7 @@ const SUFFICIENCY_LEVELS = [
 ];
 
 /** The seven interview fields, with what each is actually for. */
-const FIELD_PROMPTS: Record<keyof ProjectInterviewAnswers, string> = {
+export const FIELD_PROMPTS: Record<keyof ProjectInterviewAnswers, string> = {
   workingTitle:
     "the working title — whether it says what the piece is about, rather than gesturing at a topic",
   format:
