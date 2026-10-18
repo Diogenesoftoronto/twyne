@@ -1364,18 +1364,6 @@ body {
 .selection-actions--below {
   transform: translateX(-50%);
 }
-.selection-actions__quote {
-  overflow: hidden;
-  padding: 0.35rem 0.55rem;
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--color-paper-3) 76%, transparent);
-  color: var(--color-ink-muted);
-  font-family: var(--font-serif);
-  font-size: 0.72rem;
-  font-style: italic;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .selection-actions__row {
   display: flex;
   align-items: stretch;
@@ -1386,9 +1374,8 @@ body {
     color-mix(in srgb, var(--color-paper-3) 72%, transparent);
   color: var(--color-ink-light);
   font-family: var(--font-typewriter);
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
   white-space: nowrap;
 }
 .selection-actions__row > button:hover:not(:disabled) {
@@ -1424,6 +1411,12 @@ body {
   background: color-mix(in srgb, var(--color-paper) 95%, transparent);
   box-shadow: 0 0.65rem 1.8rem rgba(32, 25, 16, 0.22);
   backdrop-filter: blur(14px);
+}
+.selection-actions__more {
+  width: min(11rem, calc(100vw - 1rem));
+}
+.selection-actions__more > button {
+  grid-template-columns: minmax(0, 1fr);
 }
 .selection-actions__personas > p {
   padding: 0.45rem 0.6rem;
@@ -1931,6 +1924,23 @@ body {
 .press {
   animation: presswobble 4s ease-in-out infinite;
   display: inline-block;
+}
+
+/* The editor masthead's wordmark gives way to the Board: smaller, then gone,
+   rather than overflowing its column. Unlayered like .press, which a utility
+   class could not override. */
+.masthead-wordmark {
+  font-size: 2rem;
+}
+@container (max-width: 10rem) {
+  .masthead-wordmark {
+    font-size: 1.5rem;
+  }
+}
+@container (max-width: 7.5rem) {
+  .masthead-wordmark {
+    display: none;
+  }
 }
 
 /* Editorial button — a small set, hot-press feel */
@@ -2652,6 +2662,142 @@ body {
   }
   100% {
     background: color-mix(in srgb, var(--note-color) 11%, transparent);
+  }
+}
+
+/* Answer strength: the brief's password meter. Four notches, Vague → Sharp;
+   colour follows the level so a glance reads it before the label does. */
+.answer-strength {
+  --strength: var(--color-paper-3);
+  font-family: var(--font-typewriter);
+}
+.answer-strength[data-level="1"] { --strength: var(--color-vermilion); }
+.answer-strength[data-level="2"] { --strength: var(--color-mustard); }
+.answer-strength[data-level="3"] { --strength: var(--color-cobalt); }
+.answer-strength[data-level="4"] { --strength: var(--color-accent-green); }
+.answer-strength__notches {
+  display: inline-flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.answer-strength__notch {
+  display: block;
+  width: 22px;
+  height: 4px;
+  border-radius: 1px;
+  background: var(--color-paper-3);
+  transition: background-color 0.25s ease;
+}
+.answer-strength__notch[data-lit] {
+  background: var(--strength);
+}
+.answer-strength[data-reading] .answer-strength__notches {
+  animation: gentle-pulse 1.4s ease-in-out infinite;
+}
+.answer-strength__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.answer-strength__label {
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--strength);
+}
+.answer-strength[data-level="0"] .answer-strength__label {
+  color: var(--color-ink-muted);
+}
+.answer-strength__label--stamp {
+  animation: probe-filed-receipt 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.answer-strength__source {
+  margin-left: auto;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.answer-strength__note {
+  margin-top: 0.35rem;
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--color-ink-light);
+}
+.answer-strength__diagnosis {
+  color: var(--color-ink-muted);
+}
+.answer-strength__hint {
+  color: var(--color-ink);
+}
+.answer-strength--full {
+  margin-top: 0.6rem;
+  border-left: 2px solid var(--strength);
+  padding: 0.35rem 0 0.35rem 0.6rem;
+  transition: border-color 0.25s ease;
+}
+.answer-strength--compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.answer-strength--compact .answer-strength__notch {
+  width: 9px;
+  height: 3px;
+}
+.answer-strength--compact .answer-strength__label {
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+}
+@media (prefers-reduced-motion: reduce) {
+  .answer-strength__label--stamp,
+  .answer-strength[data-reading] .answer-strength__notches {
+    animation: none;
+  }
+  .answer-strength__notch,
+  .answer-strength--full {
+    transition: none;
+  }
+}
+
+/* A Particular just filed: the working-copy row takes a strike of
+   highlighter, and the receipt under the control stamps in. */
+.probe-filed-flash {
+  border-radius: 2px;
+  animation: probe-filed-flash 1.8s ease-out;
+}
+@keyframes probe-filed-flash {
+  0%,
+  30% {
+    background: color-mix(in srgb, var(--color-mustard) 34%, transparent);
+    box-shadow: -3px 0 0 var(--color-vermilion);
+  }
+  100% {
+    background: transparent;
+    box-shadow: -3px 0 0 transparent;
+  }
+}
+.probe-filed-receipt {
+  animation: probe-filed-receipt 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes probe-filed-receipt {
+  from {
+    opacity: 0;
+    transform: translateY(3px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .probe-filed-flash {
+    animation: none;
+    box-shadow: -3px 0 0 var(--color-vermilion);
+  }
+  .probe-filed-receipt {
+    animation: none;
   }
 }
 
@@ -4419,18 +4565,20 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 1.875rem;
+  height: 1.875rem;
   flex: 0 0 auto;
-  border: 1px solid color-mix(in srgb, var(--color-paper-3) 76%, transparent);
+  border: 0;
+  border-radius: 2px;
   color: var(--color-ink-muted);
-  background: color-mix(in srgb, var(--color-paper) 45%, transparent);
+  background: transparent;
   font-family: var(--font-typewriter);
+  font-size: 1.1rem;
   line-height: 1;
 }
 .editorial-overlay__close:hover {
   color: var(--color-ink);
-  border-color: var(--color-ink-muted);
+  background: color-mix(in srgb, var(--color-paper-3) 45%, transparent);
 }
 .editorial-overlay-card {
   overflow: hidden;
@@ -4507,38 +4655,38 @@ a {
   display: grid;
   min-width: 0;
   flex: 1;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 .editorial-board-context {
   position: relative;
   min-width: 0;
-  padding: 0.5rem 0.35rem 0.45rem;
+  padding: 0.35rem 0.1rem 0.3rem;
   border-right: 1px solid
     color-mix(in srgb, var(--color-paper-3) 60%, transparent);
   border-bottom: 2px solid transparent;
   color: var(--color-ink-muted);
-  text-align: left;
+  text-align: center;
 }
 .editorial-board-context > span {
   display: block;
   font-family: var(--font-typewriter);
-  font-size: 0.56rem;
-  letter-spacing: 0.16em;
+  font-size: 0.5rem;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  opacity: 0.8;
 }
 .editorial-board-context > strong {
   display: block;
-  overflow: hidden;
   margin-top: 0.05rem;
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 500;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .editorial-board-context > small {
   position: absolute;
-  top: 0.35rem;
-  right: 0.35rem;
+  top: 0.15rem;
+  right: 0.15rem;
   display: inline-flex;
   min-width: 1rem;
   height: 1rem;
@@ -4739,7 +4887,7 @@ a {
   }
   .editorial-board-context > strong {
     font-family: var(--font-typewriter);
-    font-size: 0.62rem;
+    font-size: 0.58rem;
   }
 }
 
@@ -6123,6 +6271,28 @@ a {
   color: var(--color-vermilion-2);
   min-height: 2rem;
 }
+.live-review-status--notice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 1.5rem;
+  padding-block: 0;
+  border-bottom: 0;
+  background: transparent;
+  font-size: 0.6875rem;
+}
+.live-review-status__action {
+  color: var(--color-vermilion-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font: 0.6875rem/1.4 var(--font-sans);
+}
+.live-review-status__dismiss {
+  margin-left: auto;
+  color: inherit;
+  font: 0.875rem/1 var(--font-sans);
+  padding: 0 0.25rem;
+}
 .live-review-status__detail {
   max-width: 70ch;
   padding: 0.4rem 0 0.6rem;
@@ -6271,11 +6441,62 @@ a {
     color-mix(in srgb, var(--color-cobalt) 55%, transparent);
   pointer-events: none;
 }
-.in-flow-popover {
+/* Narrow fallback: a dock in the manuscript column's corner, never over the
+   passage. Collapsed it is one small chip; expanded it scrolls inside. */
+.in-flow-dock {
   position: fixed;
+  right: var(--in-flow-dock-right, 16px);
+  bottom: var(--in-flow-dock-bottom, 16px);
   z-index: var(--z-dropdown);
-  max-height: calc(100dvh - 24px);
-  overflow: auto;
+  max-width: calc(100vw - 32px);
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+.in-flow-dock.is-collapsed {
+  width: auto !important;
+  align-items: flex-end;
+}
+.in-flow-dock > .in-flow-card {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.in-flow-dock__fold {
+  align-self: flex-end;
+  padding: 0.1rem 0.4rem;
+  border: 0;
+  background: none;
+  color: var(--color-ink-muted);
+  font: 0.64rem var(--font-typewriter);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.in-flow-dock__fold:hover,
+.in-flow-dock__chip:hover {
+  color: var(--color-ink);
+}
+.in-flow-dock__chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--color-paper-3);
+  border-left: 3px solid var(--color-cobalt);
+  border-radius: 2px;
+  background: var(--color-paper);
+  color: var(--color-ink-light);
+  font: 0.8125rem var(--font-serif);
+  cursor: pointer;
+  box-shadow: 0 8px 24px -16px rgb(0 0 0 / 0.35);
+}
+.in-flow-dock__chip b {
+  font: 0.64rem var(--font-typewriter);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-cobalt);
 }
 .in-flow-card {
   display: flex;
@@ -6320,6 +6541,9 @@ a {
   color: var(--color-ink-muted);
 }
 .in-flow-card__close {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
   border: 0;
   background: none;
   color: var(--color-ink-muted);
@@ -6616,7 +6840,7 @@ a {
 }
 @media print {
   .in-flow-rails,
-  .in-flow-popover {
+  .in-flow-dock {
     display: none !important;
   }
   .twyne-in-flow-span,
@@ -7188,14 +7412,59 @@ a {
 }
 .flow-dock {
   position: fixed;
-  right: 16px;
+  right: var(--flow-dock-right, 16px);
   bottom: var(--flow-dock-bottom, calc(4.5rem + env(safe-area-inset-bottom)));
   z-index: var(--z-dropdown);
   width: min(300px, calc(100vw - 32px));
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
   pointer-events: auto;
+}
+.flow-dock.is-collapsed {
+  width: auto;
+  align-items: flex-end;
+}
+.flow-dock__body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .flow-dock .flow-card {
   position: relative;
+}
+.flow-dock__fold {
+  align-self: flex-end;
+  padding: 0.1rem 0.4rem;
+  border: 0;
+  background: none;
+  color: var(--color-ink-muted);
+  font: 0.64rem var(--font-typewriter);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.flow-dock__fold:hover,
+.flow-dock__chip:hover {
+  color: var(--color-ink);
+}
+.flow-dock__chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 999px;
+  background: var(--color-paper);
+  color: var(--color-ink-light);
+  font: 0.75rem var(--font-typewriter);
+  cursor: pointer;
+}
+.flow-dock__chip b {
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-cobalt);
 }
 .flow-dock__more {
   margin: 0.3rem 0 0;
@@ -7275,7 +7544,7 @@ a {
 }
 .flow-desk--dock {
   position: fixed;
-  inset: auto 16px
+  inset: auto var(--flow-dock-right, 16px)
     var(--flow-dock-bottom, calc(4.5rem + env(safe-area-inset-bottom))) auto;
   width: min(320px, calc(100vw - 32px));
   z-index: var(--z-dropdown);
@@ -7289,7 +7558,7 @@ a {
   justify-content: flex-end;
 }
 /* Relevant help has the corner before the receipt for a finished run. */
-.flow-surface:has(.flow-dock .flow-card) .flow-desk--dock .flow-desk__bottom {
+.flow-surface:has(.flow-dock) .flow-desk--dock .flow-desk__bottom {
   display: none;
 }
 
@@ -7785,7 +8054,7 @@ a {
 body:has(
     .manuscript-comment-card,
     .in-flow-rail,
-    .in-flow-popover,
+    .in-flow-dock,
     .twyne-quick-review-card,
     .selection-actions,
     [role="dialog"]

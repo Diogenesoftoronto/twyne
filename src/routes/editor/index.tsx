@@ -1146,26 +1146,6 @@ export default component$(() => {
             </div>
 
             <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-              <ProjectBriefCard
-                brief={store.brief}
-                editions={store.briefEditions}
-                onStartInterview$={$(() => {
-                  if (!store.activeFolioId) return;
-                  void nav(
-                    store.brief
-                      ? `/dossier/refine/?folio=${encodeURIComponent(store.activeFolioId)}`
-                      : `/dossier/create/?folio=${encodeURIComponent(store.activeFolioId)}`,
-                  );
-                })}
-              />
-
-              <div
-                class="ornament-divider"
-                style="font-family: var(--font-display);"
-              >
-                ❦
-              </div>
-
               <div class="space-y-1">
                 {store.folios.map((folio, idx) => {
                   const active = store.activeFolioId === folio.id;
@@ -1251,6 +1231,28 @@ export default component$(() => {
                 ❦
               </div>
 
+              {/* The filed dossier sits below the folios so switching folios
+                  never needs a scroll. */}
+              <ProjectBriefCard
+                brief={store.brief}
+                editions={store.briefEditions}
+                onStartInterview$={$(() => {
+                  if (!store.activeFolioId) return;
+                  void nav(
+                    store.brief
+                      ? `/dossier/refine/?folio=${encodeURIComponent(store.activeFolioId)}`
+                      : `/dossier/create/?folio=${encodeURIComponent(store.activeFolioId)}`,
+                  );
+                })}
+              />
+
+              <div
+                class="ornament-divider"
+                style="font-family: var(--font-display);"
+              >
+                ❦
+              </div>
+
               <Link
                 href="/personas/"
                 class="w-full text-left px-3 py-2.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring block"
@@ -1296,7 +1298,8 @@ export default component$(() => {
                 class="w-full text-left px-3 py-2.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring block"
                 style="font-family: var(--font-display); border-radius: 2px;"
               >
-                <span class="dept-label block">Writing tools</span>
+                {/* Opens the Board's Tools tab, so it carries the tab's name. */}
+                <span class="dept-label block">Tools</span>
                 Grammar, revisions, voice, and evidence
               </button>
 
@@ -1458,24 +1461,31 @@ export default component$(() => {
                 </svg>
               </button>
 
-              <div class="flex-1 flex flex-col items-center">
-                <p class="dept-label">An Anti-Tabula-Rasa Quarterly</p>
+              {/* When the Board narrows the column, the kicker and dateline
+                  step aside, then the wordmark shrinks and finally steps
+                  aside too, so the masthead never wraps taller or overflows. */}
+              <div class="@container flex-1 min-w-0 flex flex-col items-center">
+                <p class="dept-label @max-[16.5rem]:hidden">
+                  An Anti-Tabula-Rasa Quarterly
+                </p>
                 <a
                   href="/"
-                  class="press leading-none mt-0.5 ink-bleed"
-                  style="font-family: var(--font-display); font-weight: 700; font-size: 2rem; letter-spacing: 0.06em; color: var(--color-ink); text-decoration: none;"
+                  class="masthead-wordmark press leading-none mt-0.5 ink-bleed"
+                  style="font-family: var(--font-display); font-weight: 700; letter-spacing: 0.06em; color: var(--color-ink); text-decoration: none;"
                 >
                   TWYNE
                 </a>
                 <p
-                  class="mt-1 text-[10px] text-[var(--color-ink-muted)] tracking-wider"
+                  class="mt-1 max-w-full truncate text-[10px] text-[var(--color-ink-muted)] tracking-wider @max-[18.25rem]:hidden"
                   style="font-family: var(--font-typewriter);"
                 >
                   {editorialDateline()}
                 </p>
               </div>
 
-              <div class="flex items-center gap-2">
+              {/* Wraps rather than sliding under the Board when the column is
+                  narrower than the controls. */}
+              <div class="flex flex-wrap items-center justify-end gap-2 whitespace-nowrap">
                 <button
                   onClick$={$(() => {
                     if (!store.activeFolioId) return;
@@ -1487,9 +1497,12 @@ export default component$(() => {
                   })}
                   class={`btn-paper hidden sm:inline-flex items-center gap-1.5${store.hydrated && store.activeFolioId && !store.brief ? " dossier-action-pending" : ""}`}
                   title={store.brief ? "Refine dossier" : "Create dossier"}
+                  aria-label={store.brief ? "Refine dossier" : "Create dossier"}
                 >
                   <Icon name={store.brief ? "edit" : "folder"} size={16} />
-                  {store.brief ? "Refine dossier" : "Create dossier"}
+                  <span class="hidden min-[1280px]:inline">
+                    {store.brief ? "Refine dossier" : "Create dossier"}
+                  </span>
                 </button>
                 <FolioMenu
                   brief={store.brief}
@@ -1651,6 +1664,9 @@ export default component$(() => {
                   }
                 }}
                 onManuscriptFocus$={() => {
+                  // The Board stays open while writing, except where it
+                  // covers the manuscript (same breakpoint as global.css).
+                  if (!window.matchMedia("(max-width: 720px)").matches) return;
                   store.rightPanelOpen = false;
                   setVisiblePanel(null);
                 }}

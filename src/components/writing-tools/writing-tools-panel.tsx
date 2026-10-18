@@ -40,7 +40,7 @@ export const WritingToolsPanel = component$<{
       <ReviewControls />
       <nav
         class="flex shrink-0 border-b border-[var(--color-paper-3)]"
-        aria-label="Writing tools"
+        aria-label="Tools sections"
       >
         {(["writing", "grammar"] as const).map((tab) => (
           <button

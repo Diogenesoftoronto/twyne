@@ -43,6 +43,7 @@ export const EDITOR_KEYBINDINGS = [
   { commandId: "navigate.find", shortcut: "Mod-f" },
   { commandId: "navigate.replace", shortcut: "Mod-h" },
   { commandId: "navigate.outline", shortcut: "Mod-Shift-o" },
+  { commandId: "navigate.selection-actions", shortcut: "Alt-F10" },
   { commandId: "view.shortcuts", shortcut: "Mod-/" },
   { commandId: "view.shortcuts", shortcut: "Mod-Shift-/" },
   { commandId: "history.undo", shortcut: "Mod-z" },

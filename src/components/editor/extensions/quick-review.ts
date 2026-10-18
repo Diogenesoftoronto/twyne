@@ -73,10 +73,10 @@ export function startQuickReview(
   let enabled = false;
   let popover: HTMLElement | null = null;
   const cache = new Map<string, { label: string; tentative: boolean } | null>();
-  const notify = (label: string, detail = "") =>
+  const notify = (label: string, detail = "", reason = "") =>
     window.dispatchEvent(
       new CustomEvent("twyne:quick-review", {
-        detail: { folioId, label, detail },
+        detail: { folioId, label, detail, reason },
       }),
     );
   const clear = () => {
@@ -271,7 +271,7 @@ export function startQuickReview(
       if (!current()) return;
       const answer = response.answers?.attention as SystemOneAnswer | undefined;
       if (!response.ok || !isChoice(answer) || !OPTIONS.includes(answer.choice))
-        throw new Error("unavailable");
+        throw new Error(response.error ?? "unavailable");
       const finding =
         answer.choice === OPTIONS[0]
           ? null
@@ -284,10 +284,14 @@ export function startQuickReview(
       cache.set(cacheKey, finding);
       if (cache.size > 48) cache.delete(cache.keys().next().value!);
       draw(from, to, finding);
-    } catch {
+    } catch (error) {
       backOffSystemOne();
       if (current())
-        notify("Quick review unavailable; writing is saved as usual");
+        notify(
+          "Quick review unavailable; writing is saved as usual",
+          "",
+          error instanceof Error ? error.message : "unavailable",
+        );
     } finally {
       running = false;
       if (pending && !stopped) schedule();

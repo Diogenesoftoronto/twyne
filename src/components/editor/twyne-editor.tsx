@@ -72,7 +72,10 @@ import {
   loadEditorViewPreferences,
   saveEditorViewPreferences,
 } from "../../utils/editor-view-preferences";
-import { SelectionActions } from "./selection-actions";
+import {
+  FOCUS_SELECTION_ACTIONS_EVENT,
+  SelectionActions,
+} from "./selection-actions";
 import { InstrumentDock } from "../instruments/instrument-dock";
 import { ThreadsInstrument } from "../in-flow/thread-instrument";
 import { openInstrumentDock } from "../../utils/instrument-dock";
@@ -3738,6 +3741,9 @@ export const TwyneEditor = component$(
           break;
         case "navigate.outline":
           store.showOutline = true;
+          break;
+        case "navigate.selection-actions":
+          window.dispatchEvent(new CustomEvent(FOCUS_SELECTION_ACTIONS_EVENT));
           break;
         case "view.shortcuts":
           store.showShortcutDialog = true;

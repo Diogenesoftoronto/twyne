@@ -80,6 +80,26 @@ export const EditorialBoardOverlay = component$<EditorialBoardOverlayProps>(
         ]}
         aria-label="The Editorial Board"
         aria-hidden={!props.open}
+        onKeyDown$={(event, el) => {
+          if (event.key !== "Escape" || event.defaultPrevented) return;
+          const target = event.target as Element | null;
+          // Only act while focus is inside the board, and leave open menus,
+          // dialogs, and pickers to handle their own Escape.
+          if (!target || !el.contains(target)) return;
+          if (
+            target.closest(
+              '[role="menu"], [role="dialog"], [role="alertdialog"], [role="listbox"], [role="combobox"], dialog[open], select, [aria-expanded="true"][aria-haspopup]',
+            )
+          ) {
+            return;
+          }
+          props.onClose$();
+          document
+            .querySelector<HTMLElement>(
+              '[aria-label="Toggle the editorial board panel"]',
+            )
+            ?.focus();
+        }}
       >
         <div class="editorial-overlay__topline">
           <p class="dept-label">The Editorial Board</p>

@@ -182,7 +182,8 @@
   .manuscript-scroller[data-living-desk-open] {
     padding-inline-start: 22rem;
   }
-  html[data-flow] .manuscript-scroller[data-living-desk-open] {
+  html:is([data-flow="flow"], [data-flow="settling"])
+    .manuscript-scroller[data-living-desk-open] {
     padding-inline-start: 0;
   }
 }
@@ -714,9 +715,33 @@ button.ld-inline {
 .ld-spine__cap[aria-pressed="true"] {
   border-color: var(--color-ink);
 }
+/* Invisible hit area, at least 24px square. */
+.ld-spine__cap::before {
+  content: "";
+  position: absolute;
+  inset: -0.3125rem -0.5rem;
+}
+.ld-spine__cap::after {
+  content: "The piece";
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 0.375rem);
+  transform: translateY(-50%);
+  white-space: nowrap;
+  color: var(--color-ink-muted, var(--color-ink));
+  font: 0.6875rem/1 var(--font-typewriter, var(--font-mono, monospace));
+  letter-spacing: 0.04em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+.ld-spine__cap:hover::after,
+.ld-spine__cap:focus-visible::after {
+  opacity: 1;
+}
 
-html[data-flow] .ld-spine,
-html[data-flow] .ld-panel {
+html:is([data-flow="flow"], [data-flow="settling"]) .ld-spine,
+html:is([data-flow="flow"], [data-flow="settling"]) .ld-panel {
   display: none;
 }
 

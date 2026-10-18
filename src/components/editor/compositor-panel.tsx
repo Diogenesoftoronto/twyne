@@ -814,13 +814,13 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
           >
             <button
               title="Add a note beside the selected passage"
-              aria-label="Add margin note"
+              aria-label="Comment on selection"
               disabled={!store.hasSelection}
               onClick$={() => runCommand("addComment")}
               class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <Icon name={COMPOSITOR_ICONS.comment} size={16} />
-              <span class="compositor-tool-label">Add margin</span>
+              <span class="compositor-tool-label">Comment</span>
             </button>
           </div>
 

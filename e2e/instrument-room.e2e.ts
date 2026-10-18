@@ -43,7 +43,10 @@ async function openSentence(page: Page, source = INSTRUMENT_SENTENCE) {
   await selectRoomPassage(page, source);
   await page
     .getByRole("toolbar", { name: /^Actions for/ })
-    .getByRole("button", { name: "Sentence bench", exact: true })
+    .getByRole("button", { name: "Rework", exact: true })
+    .click();
+  await page
+    .getByText("Ask an editor about this wording", { exact: true })
     .click();
   const invitation = room(page);
   await expect(
@@ -55,8 +58,9 @@ async function openThreads(page: Page) {
   await selectRoomPassage(page, INSTRUMENT_REPEAT);
   await page
     .getByRole("toolbar", { name: /^Actions for/ })
-    .getByRole("button", { name: "Threads", exact: true })
+    .getByRole("button", { name: "More", exact: false })
     .click();
+  await page.getByRole("menuitem", { name: "Threads", exact: true }).click();
   const connection = page
     .getByRole("complementary", { name: "Threads", exact: true })
     .locator("li")
@@ -74,7 +78,10 @@ async function openScene(page: Page) {
   await selectRoomPassage(page, SCENE_SOURCE);
   await page
     .getByRole("toolbar", { name: /^Actions for/ })
-    .getByRole("button", { name: "Scene bench", exact: true })
+    .getByRole("button", { name: "More", exact: false })
+    .click();
+  await page
+    .getByRole("menuitem", { name: "Scene bench", exact: true })
     .click();
   await expect(
     page.getByRole("dialog", { name: "Writing instruments", exact: true }),

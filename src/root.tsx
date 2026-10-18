@@ -6,7 +6,6 @@ import { ConvexProvider } from "./utils/convex-context";
 import { AuthProvider } from "./utils/auth-context";
 import { PostHogProvider } from "./utils/posthog-context";
 import { installLixAuthInterceptor } from "./utils/lix-auth";
-import { GlobalConnectivityBanner } from "./components/ui/global-connectivity-banner";
 import { GlobalApplicationToasts } from "./components/ui/global-application-toasts";
 import { GlobalSpeechPlayer } from "./components/ui/global-speech-player";
 import { LiveVoiceDesk } from "./components/ui/live-voice-desk";
@@ -97,7 +96,6 @@ export default component$<{
           initialLocale={props.initialLocale ?? "en"}
           initialPreference={props.initialPreference ?? "auto"}
         >
-          <GlobalConnectivityBanner />
           <GlobalApplicationToasts />
           <ConvexProvider url={convexUrl}>
             <AuthProvider>

@@ -137,26 +137,44 @@ async function selectedTextPoint(page: Page) {
 }
 
 test.describe("dragging a selection", () => {
-  test("review controls remain usable on a phone with the board closed", async ({
+  test("review can be paused on a phone, and the pause survives a reload", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 780 });
+    // A writer who has left Zen sees the masthead and its Board toggle.
+    await page.addInitScript(() =>
+      localStorage.setItem(
+        "twyne:editor:view:v1",
+        JSON.stringify({ zenMode: false, compositorOpen: false }),
+      ),
+    );
     await openEditor(page, "<p>A short draft.</p>");
-    const status = page.locator(".live-review-status");
-    await expect(status).toBeVisible();
-    const box = await status.boundingBox();
+    const notNow = page.getByRole("button", { name: "Not now", exact: true });
+    if (await notNow.isVisible()) await notNow.click();
+    // An idle review keeps no row above the text; its switch lives in the
+    // Board's Tools tab.
+    await expect(page.locator(".live-review-status")).toHaveCount(0);
+    const openTools = async () => {
+      await page
+        .getByRole("button", { name: "Toggle the editorial board panel" })
+        .click();
+      await page
+        .getByRole("complementary", { name: "The Editorial Board" })
+        .getByRole("button", { name: /^Tools/ })
+        .click();
+    };
+    const review = page.getByRole("switch", { name: /Automatic review/ });
+    await openTools();
+    await expect(review).toHaveAttribute("aria-checked", "true");
+    const box = await review.boundingBox();
     expect(box!.x).toBeGreaterThanOrEqual(0);
     expect(box!.x + box!.width).toBeLessThanOrEqual(390);
-    await page
-      .getByRole("button", { name: "Pause review", exact: true })
-      .click();
-    await expect(
-      page.getByRole("button", { name: "Resume review", exact: true }),
-    ).toBeVisible();
+    await review.click();
+    await expect(review).toHaveAttribute("aria-checked", "false");
     await page.reload();
-    await expect(
-      page.getByRole("button", { name: "Resume review", exact: true }),
-    ).toBeVisible();
+    await expect(page.locator(".ProseMirror")).toBeVisible({ timeout: 20_000 });
+    await openTools();
+    await expect(review).toHaveAttribute("aria-checked", "false");
     await page.screenshot({ path: "/tmp/twyne-live-review-mobile.png" });
   });
 

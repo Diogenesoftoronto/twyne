@@ -1935,7 +1935,7 @@ export const PersonasPanel = component$(
                   class="truncate text-lg text-[var(--color-ink)]"
                   style="font-family: var(--font-display); font-weight: 600;"
                 >
-                  The Room of Editors
+                  The Cast
                 </h2>
                 <p
                   class="mt-0.5 truncate text-[0.7rem] text-[var(--color-ink-light)]"
@@ -2035,6 +2035,7 @@ export const PersonasPanel = component$(
                   onClick$={requestFeedback}
                   disabled={store.isGenerating}
                   class="convene-btn"
+                  title="Every editor reads the draft and leaves a short note."
                 >
                   {store.isGenerating ? (
                     <span class="flex items-center justify-center gap-2">
@@ -2051,6 +2052,7 @@ export const PersonasPanel = component$(
                     onClick$={markUpDraft}
                     disabled={store.isMarkingUp || store.isGenerating}
                     class="markup-btn"
+                    title="Editors propose rewrites of specific sentences for you to accept or reject."
                   >
                     {store.isMarkingUp ? (
                       <span class="room-btn-title">Proposing…</span>
@@ -2080,6 +2082,13 @@ export const PersonasPanel = component$(
                       ? "❡ Open full analysis ↗"
                       : "❡ Run full analysis ↗"}
                 </button>
+                <p
+                  class="mt-0.5 text-[10px] leading-snug text-[var(--color-ink-muted)]"
+                  style="font-family: var(--font-serif); font-style: italic;"
+                >
+                  Notes: a short remark each. Edits: sentence rewrites to
+                  accept. Analysis: a full memo each.
+                </p>
               </div>
 
               {/* ── The room reading in the background ──
@@ -2092,6 +2101,7 @@ export const PersonasPanel = component$(
                     class="mt-1 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em] text-[var(--color-ink-muted)]"
                     style="font-family: var(--font-typewriter);"
                     role="status"
+                    title="The room also reads on its own as you write, and leaves passing notes."
                   >
                     <span
                       aria-hidden="true"

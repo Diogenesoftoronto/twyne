@@ -62,6 +62,7 @@ import {
   saveWritingToolsNotebook,
 } from "../../../utils/writing-tools-storage";
 import { checkGrammar, isEnglishLanguage } from "../../../utils/grammar";
+import { flowSnapshot } from "./flow-conductor";
 import { toolSpec } from "../../in-flow/catalog";
 import {
   checkSentenceCandidates,
@@ -310,7 +311,12 @@ export function startInFlowTools(
       });
       activities.set(pos, { ...activity, attempts, rewrites });
     }
-    if (enabled && !active && !threadInstrumentSnapshot().open) {
+    if (
+      enabled &&
+      !active &&
+      !threadInstrumentSnapshot().open &&
+      !conductorHoldsPage()
+    ) {
       const moved = ledger.entries.find(
         (e) =>
           !e.retired &&
@@ -328,6 +334,7 @@ export function startInFlowTools(
           sentenceIndex: siblings.findIndex((e) => e.id === moved.id),
           reason: `You've tried this sentence in ${moved.placements.length} positions.`,
           section: "place",
+          auto: true,
         });
       }
     }
@@ -645,6 +652,11 @@ export function startInFlowTools(
     }
   };
 
+  const conductorHoldsPage = () => {
+    const flow = flowSnapshot();
+    return flow.enabled && (flow.mode === "flow" || flow.mode === "settling");
+  };
+
   const evaluate = async () => {
     if (stopped || !enabled || running || editor.isDestroyed) return;
     if (!editor.isEditable || document.hidden) return;
@@ -667,6 +679,8 @@ export function startInFlowTools(
     dirty.clear();
     publish({ active, ticks: ticks() });
     if (active || threadInstrumentSnapshot().open) return;
+    // The conductor has decided the page should be left alone.
+    if (conductorHoldsPage()) return;
 
     const block = cursorBlock();
     if (!block) return;
@@ -712,6 +726,7 @@ export function startInFlowTools(
       sentenceIndex: reading.sentenceIndex,
       reason: hint?.reason ?? "This looked like a good moment for it.",
       tentative: classification.tentative,
+      auto: true,
     });
   };
 
@@ -729,6 +744,8 @@ export function startInFlowTools(
       saved?: SavedTool;
       section?: "rewrite" | "words" | "place" | "hear";
       word?: string;
+      /** The tracker opened this by itself; the writer did not ask. */
+      auto?: boolean;
     },
   ) => {
     const node = editor.state.doc.nodeAt(blockPos);
@@ -816,6 +833,7 @@ export function startInFlowTools(
       status: "filling",
       tentative: opts.tentative ?? false,
       savedId: opts.saved?.id,
+      requested: !opts.auto,
     };
     highlight = null;
     preview = null;
@@ -1355,7 +1373,7 @@ export function startInFlowTools(
         setActive({
           ...active,
           savedId: saved.id,
-          notice: "Kept in Your tools.",
+          notice: "Saved to your tools.",
         });
     },
     async research(claim) {
@@ -1383,7 +1401,7 @@ export function startInFlowTools(
       if (!block) return;
       open(tool.kind, block.pos, {
         activity: activities.get(block.pos),
-        reason: `From Your tools: ${tool.name}.`,
+        reason: `From Saved tools: ${tool.name}.`,
         saved: tool,
       });
     },

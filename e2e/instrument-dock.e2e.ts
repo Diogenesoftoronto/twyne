@@ -95,7 +95,10 @@ async function openScene(page: Page, text = FIRST) {
   await selectPassage(page, text);
   await page
     .getByRole("toolbar", { name: /^Actions for/ })
-    .getByRole("button", { name: "Scene bench", exact: true })
+    .getByRole("button", { name: "More", exact: false })
+    .click();
+  await page
+    .getByRole("menuitem", { name: "Scene bench", exact: true })
     .click();
   await expect(dock(page)).toBeVisible();
   await expect(
@@ -273,8 +276,9 @@ test("signed-out Task desk retains the selected passage and disables queue and a
   await selectPassage(page);
   await page
     .getByRole("toolbar", { name: /^Actions for/ })
-    .getByRole("button", { name: "Task desk", exact: true })
+    .getByRole("button", { name: "More", exact: false })
     .click();
+  await page.getByRole("menuitem", { name: "Task desk", exact: true }).click();
   const tasks = dock(page).getByRole("region", {
     name: "Task desk",
     exact: true,
@@ -416,7 +420,7 @@ test("390px dock stays centered and contained, retains focus and closes back to 
           !!active &&
           (active.matches(".ProseMirror") ||
             (active instanceof HTMLButtonElement &&
-              active.textContent?.trim() === "Scene bench"))
+              active.textContent?.trim().startsWith("More")))
         );
       }),
     )
@@ -431,7 +435,7 @@ test("390px dock stays centered and contained, retains focus and closes back to 
           !!active &&
           (active.matches(".ProseMirror") ||
             (active instanceof HTMLButtonElement &&
-              active.textContent?.trim() === "Scene bench"))
+              active.textContent?.trim().startsWith("More")))
         );
       }),
     )

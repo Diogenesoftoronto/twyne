@@ -75,6 +75,14 @@ describe("keybinding registry", () => {
     expect(shortcutHints("view.shortcuts", "mac")).toEqual(["⌘/", "⌘⇧/"]);
   });
 
+  test("Alt+F10 reaches the selection actions, the usual toolbar key", () => {
+    expect(chordMatches({ key: "F10", altKey: true }, "Alt-F10")).toBe(true);
+    expect(chordMatches({ key: "F10" }, "Alt-F10")).toBe(false);
+    expect(shortcutHints("navigate.selection-actions", "windows")).toEqual([
+      "Alt+F10",
+    ]);
+  });
+
   test("list rows use command metadata as their only label source", () => {
     const row = keybindingList("mac").find(
       (entry) => entry.commandId === "insert.page-break",

@@ -3,12 +3,14 @@
  *
  * Right margin: the one live tool, pinned level with the passage it is about
  * and joined to it by a hairline, so it reads as a note on *that* passage.
- * Left margin: "Your tools" — the tools the writer kept — and a faint tick
+ * Left margin: "Saved tools" — the tools the writer saved — and a faint tick
  * beside each paragraph they have been working hard at.
  *
  * Both rails sit inside the page canvas, so they scroll with the page. When
  * the window is too narrow to give a margin room, the rails step aside: the
- * tool opens as a card under its passage instead and the shelf folds away.
+ * tool goes to a dock in the corner of the manuscript column (the same corner
+ * the flow surface uses) and the shelf folds away. A tool the tracker opened
+ * by itself waits there as a chip; one the writer asked for opens in full.
  */
 import {
   $,
@@ -32,12 +34,13 @@ import {
   SAVED_TOOLS_EVENT,
   type SavedTool,
 } from "../../utils/saved-tools";
+import {
+  dockRight,
+  marginGeometry,
+  ROOM_CARD_WIDTH,
+} from "../../utils/margin-geometry";
 import { TOOL_LABELS } from "../../utils/struggle-signals";
 import { configFor, ToolRenderer } from "./tool-renderer";
-
-const CARD_WIDTH = 296;
-const RAIL_GAP = 28;
-const SHELF_WIDTH = 176;
 
 interface RailState {
   active: ActiveTool | null;
@@ -47,11 +50,14 @@ interface RailState {
   anchorTop: number;
   anchorHeight: number;
   ticks: number[];
-  mode: "rail" | "popover";
+  mode: "rail" | "dock";
   shelf: boolean;
-  /** Popover mode: fixed viewport position. */
-  popLeft: number;
-  popTop: number;
+  toolWidth: number;
+  /** Dock mode: offsets from the viewport edge, level with the manuscript. */
+  dockRight: number;
+  dockBottom: number;
+  /** Dock mode: the tool is shown in full rather than as a chip. */
+  dockOpen: boolean;
   saved: SavedTool[];
   naming: boolean;
   name: string;
@@ -69,8 +75,10 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
       ticks: [],
       mode: "rail",
       shelf: true,
-      popLeft: 0,
-      popTop: 0,
+      toolWidth: ROOM_CARD_WIDTH,
+      dockRight: 16,
+      dockBottom: 16,
+      dockOpen: false,
       saved: [],
       naming: false,
       name: "",
@@ -93,8 +101,15 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
           const scrollerRect = scroller.getBoundingClientRect();
           const right = scrollerRect.right - canvasRect.right;
           const left = canvasRect.left - scrollerRect.left;
-          state.mode = right >= CARD_WIDTH + RAIL_GAP + 8 ? "rail" : "popover";
-          state.shelf = left >= SHELF_WIDTH + RAIL_GAP;
+          const geometry = marginGeometry(right, left);
+          state.mode = geometry.right;
+          state.shelf = geometry.shelfFits;
+          state.toolWidth = geometry.toolWidth;
+          state.dockRight = dockRight(window.innerWidth, scrollerRect.right);
+          state.dockBottom = Math.max(
+            16,
+            window.innerHeight - scrollerRect.bottom + 12,
+          );
 
           const controller = inFlowController();
           const rect = state.active ? controller?.anchorRect() : null;
@@ -102,14 +117,6 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
             state.anchorTop = rect.top - canvasRect.top;
             state.anchorHeight = rect.height;
             state.cardTop = Math.max(0, state.anchorTop - 6);
-            state.popLeft = Math.max(
-              12,
-              Math.min(rect.left, window.innerWidth - CARD_WIDTH - 12),
-            );
-            state.popTop = Math.max(
-              12,
-              Math.min(rect.bottom + 10, window.innerHeight - 120),
-            );
           } else {
             state.cardTop = null;
           }
@@ -121,6 +128,9 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
       };
 
       const onSnapshot = (detail: InFlowSnapshot) => {
+        // A new tool starts open only if the writer asked for it.
+        if (detail.active?.id !== state.active?.id)
+          state.dockOpen = !!detail.active?.requested;
         // Plain copies only: the snapshot is shared module state.
         state.active = detail.active
           ? (JSON.parse(JSON.stringify(detail.active)) as ActiveTool)
@@ -146,11 +156,6 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
       window.addEventListener(SAVED_TOOLS_EVENT, onSaved);
       window.addEventListener("twyne:content", measure);
       window.addEventListener("resize", measure);
-      // The popover is fixed to the viewport, so it must follow a scroll.
-      const onScroll = () => {
-        if (state.active && state.mode === "popover") measure();
-      };
-      scroller.addEventListener("scroll", onScroll, { passive: true });
       const observer = new ResizeObserver(measure);
       observer.observe(canvas);
       observer.observe(scroller);
@@ -160,7 +165,6 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
         window.removeEventListener(SAVED_TOOLS_EVENT, onSaved);
         window.removeEventListener("twyne:content", measure);
         window.removeEventListener("resize", measure);
-        scroller.removeEventListener("scroll", onScroll);
         observer.disconnect();
       });
     });
@@ -174,13 +178,15 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
         state.naming = false;
         state.keepError = "";
       } catch {
-        state.keepError = "Couldn't keep it — storage refused the write.";
+        state.keepError = "Couldn't save it — storage refused the write.";
       }
     });
 
     if (props.zen || props.readOnly) return <div ref={root} hidden />;
 
     const tool = state.active;
+    // The shelf is a landmark only while it holds saved tools.
+    const Shelf = state.saved.length > 0 ? "aside" : "div";
     const card = tool && (
       <article
         class={[
@@ -221,7 +227,7 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
         {tool.notice && <p class="in-flow-card__notice">{tool.notice}</p>}
         <footer class="in-flow-card__foot">
           {tool.savedId ? (
-            <span class="in-flow-quiet">In Your tools</span>
+            <span class="in-flow-quiet">Saved</span>
           ) : state.naming ? (
             <div class="in-flow-row">
               <input
@@ -255,7 +261,7 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
               }}
               title="Save this tool, as you've set it up, to reuse on any passage"
             >
-              Keep this tool
+              Save this tool
             </button>
           )}
           {state.keepError && (
@@ -268,15 +274,27 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
     );
 
     return (
-      <div ref={root} class="in-flow-rails" aria-live="polite">
+      <div
+        ref={root}
+        class="in-flow-rails"
+        aria-live="polite"
+        style={{
+          "--in-flow-dock-right": `${state.dockRight}px`,
+          "--in-flow-dock-bottom": `${state.dockBottom}px`,
+        }}
+      >
         {state.shelf && (
-          <aside class="in-flow-shelf" aria-label="Your tools">
+          <Shelf
+            class="in-flow-shelf"
+            aria-label={state.saved.length > 0 ? "Saved tools" : undefined}
+          >
             {/* The shelf appears once there is something on it; an empty
                 placeholder would only push the writer's echoes down the
-                margin. A tool card's "Keep this tool" introduces it. */}
+                margin, and an empty landmark is noise. A tool card's
+                "Save this tool" introduces it. */}
             {state.saved.length > 0 && (
               <div class="in-flow-shelf__inner">
-                <p class="in-flow-label">Your tools</p>
+                <p class="in-flow-label">Saved tools</p>
                 <ul class="in-flow-shelf__list">
                   {state.saved.map((saved) => (
                     <li key={saved.id}>
@@ -310,7 +328,7 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
                 aria-hidden="true"
               />
             ))}
-          </aside>
+          </Shelf>
         )}
 
         {tool && state.cardTop !== null && state.mode === "rail" && (
@@ -324,23 +342,48 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
             />
             <div
               class="in-flow-rail"
-              style={{ top: `${state.cardTop}px`, width: `${CARD_WIDTH}px` }}
+              style={{
+                top: `${state.cardTop}px`,
+                width: `${state.toolWidth}px`,
+              }}
             >
               {card}
             </div>
           </>
         )}
 
-        {tool && state.cardTop !== null && state.mode === "popover" && (
+        {tool && state.mode === "dock" && (
           <div
-            class="in-flow-popover"
-            style={{
-              left: `${state.popLeft}px`,
-              top: `${state.popTop}px`,
-              width: `${CARD_WIDTH}px`,
-            }}
+            class={["in-flow-dock", { "is-collapsed": !state.dockOpen }]}
+            style={{ width: `${state.toolWidth}px` }}
           >
-            {card}
+            {state.dockOpen ? (
+              <>
+                <button
+                  type="button"
+                  class="in-flow-dock__fold"
+                  onClick$={() => {
+                    state.dockOpen = false;
+                  }}
+                  aria-label={`Collapse ${TOOL_LABELS[tool.kind]}`}
+                >
+                  Collapse
+                </button>
+                {card}
+              </>
+            ) : (
+              <button
+                type="button"
+                class="in-flow-dock__chip"
+                onClick$={() => {
+                  state.dockOpen = true;
+                }}
+                aria-label={`Open ${TOOL_LABELS[tool.kind]}`}
+              >
+                <span>{TOOL_LABELS[tool.kind]}</span>
+                <b>Open</b>
+              </button>
+            )}
           </div>
         )}
       </div>

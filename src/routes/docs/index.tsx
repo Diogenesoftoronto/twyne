@@ -574,10 +574,10 @@ export default component$(() => {
               </p>
               <p class="manual-p">
                 Select text in the manuscript to open the tools that belong to
-                it. A word offers Word alternatives; a passage offers Sentence
-                bench, Hear, Threads, Scene bench and Task desk. The Compositor
-                also opens Task desk from Review. Close a tool or press Escape
-                to return to the page.
+                it. A word offers Alternatives; a passage offers Rework, with
+                Hear it read, Threads, Scene bench and Task desk under More. The
+                Compositor also opens Task desk from Review. Close a tool or
+                press Escape to return to the page.
               </p>
               <ChapterIllustrations chapter="writing-instruments" />
               <h3 id="sentence-bench" class="manual-h3">
@@ -865,7 +865,7 @@ export default component$(() => {
               </p>
               <ChapterIllustrations chapter="marginalia" />
               <p class="manual-p">
-                Select any passage in the manuscript and click "Add margin" to
+                Select any passage in the manuscript and click "Comment" to
                 pencil a margin note. Comments are folio-scoped — they travel
                 with the draft, not the global state. Each comment can have
                 replies, and you can ask any editor to weigh in by clicking "Ask

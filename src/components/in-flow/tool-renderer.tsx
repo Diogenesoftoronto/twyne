@@ -16,7 +16,7 @@ import type {
   RhythmStripProps,
 } from "./catalog";
 
-/** What "Keep this tool" should remember about the tool as the writer left it. */
+/** What "Save this tool" should remember about the tool as the writer left it. */
 export function configFor(tool: ActiveTool): SavedToolConfig {
   const element = tool.spec.elements.tool;
   switch (element.type) {
