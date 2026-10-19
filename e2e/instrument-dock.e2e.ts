@@ -199,9 +199,10 @@ test("saved scene ideas and media briefs remain proposals with no provider reque
     "Writer-proposed additions (not facts from the manuscript):",
   );
   expect(await brief.inputValue()).toContain(IDEA);
-  await expect(scene(page)).toContainText(
-    "Media generation is not connected to this instrument.",
-  );
+  await expect(scene(page)).toContainText("Scene pictures are off.");
+  await expect(
+    scene(page).getByRole("button", { name: "Generate picture", exact: true }),
+  ).toBeDisabled();
   await capture(page, info, "02-scene-proposal-and-local-brief");
   await close(page);
   await openScene(page);
