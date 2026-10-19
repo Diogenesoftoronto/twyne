@@ -39,6 +39,13 @@ function color(raw: string): string | null {
   return `rgb(${channels.join(", ")})`;
 }
 
+/** Tiptap renders code blocks as `<pre><code class="language-xyz">`. */
+function codeLanguage(pre: HTMLElement): string {
+  const cls = pre.querySelector("code")?.getAttribute("class") ?? "";
+  const match = /(?:^|\s)language-([\w+#.-]+)/.exec(cls);
+  return match?.[1] ?? "";
+}
+
 /** Never interpolate manuscript text as executable Typst markup. */
 export function serializeTypst(payload: ExportPayload): TypstDocument {
   const dom = new DOMParser().parseFromString(payload.html, "text/html");
@@ -209,8 +216,10 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
       return `#image(${typstString(path)}, width: ${width}%, alt: ${typstString(el.getAttribute("alt") ?? "")})`;
     }
     if (tag === "table") return table(el as HTMLTableElement);
-    if (tag === "pre")
-      return `#raw(${typstString(el.textContent ?? "")}, block: true)\n`;
+    if (tag === "pre") {
+      const lang = codeLanguage(el);
+      return `#raw(${typstString(el.textContent ?? "")}, ${lang ? `lang: ${typstString(lang)}, ` : ""}block: true)\n`;
+    }
     if (tag === "code") return `#raw(${typstString(el.textContent ?? "")})`;
     if (tag === "br") return "#linebreak()";
     if (tag === "hr") return "#line(length: 100%)\n";
@@ -294,7 +303,7 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
   const title =
     dom.body.firstElementChild?.tagName === "H1"
       ? ""
-      : `#heading(level: 1)[${text(payload.title)}]\n`;
+      : `#title[${text(payload.title)}]\n`;
   return {
     source: [
       "// Exported from Twyne. Editing this file does not change your saved folio.",

@@ -25,6 +25,13 @@ export const TYPST_EDITORIAL_STYLES = `
   #block(above: 0pt, below: 0pt, it.body)
   #block(above: 9pt, below: 0pt, text(font: "DejaVu Sans Mono", size: 12pt, fill: rgb("#c1272d"), "✦"))
 ]
+#show title: set text(font: ("Libre Baskerville", "Libertinus Serif"), weight: 700, size: 30pt, tracking: -0.01em)
+#show title: set par(justify: false, leading: 0.4em, spacing: 0.45em)
+#show title: it => block(sticky: true, width: 100%, above: 48pt, below: 24pt)[
+  #set align(center)
+  #block(above: 0pt, below: 0pt, it.body)
+  #block(above: 9pt, below: 0pt, text(font: "DejaVu Sans Mono", size: 12pt, fill: rgb("#c1272d"), "✦"))
+]
 #show heading.where(level: 2): set text(size: 18pt)
 #show heading.where(level: 2): set block(sticky: true, above: 36pt, below: 16pt)
 #show heading.where(level: 3): set text(font: ("DM Sans", "DM Sans 9pt"), size: 9pt, tracking: 0.32em, fill: rgb("#c1272d"))

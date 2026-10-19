@@ -638,4 +638,20 @@ describe("Typst serializer with the real bundled compiler", () => {
       else Reflect.deleteProperty(globalThis, "window");
     }
   });
+  test("keeps a code block's language and emits the title as a native title", async () => {
+    const withLang = serializeTypst({
+      title: "Snippets",
+      html: '<pre><code class="language-ts">const a = 1;</code></pre><pre><code>plain</code></pre>',
+      layout: DEFAULT_LAYOUT,
+    });
+    expect(withLang.source).toContain(
+      '#raw("const a = 1;", lang: "ts", block: true)',
+    );
+    expect(withLang.source).toContain('#raw("plain", block: true)');
+    expect(withLang.source).toContain('#title[#text("Snippets")]');
+    expect(withLang.source).toContain('#set document(title: "Snippets")');
+    expect(withLang.source).not.toContain("#heading(level: 1)");
+    const rendered = (await compile(withLang.source)).join("");
+    expect(rendered).toContain("Snippets");
+  });
 });
