@@ -186,6 +186,7 @@ import {
   startLivingDesk,
 } from "./extensions/living-desk";
 import { PageBreakNode } from "./extensions/page-break-node";
+import { EditorialRoles } from "./extensions/editorial-roles";
 import { RawTypst, RawTypstInline } from "./extensions/raw-typst";
 import { TypstWorkspace } from "./typst-workspace";
 import { ParagraphFormat } from "./extensions/paragraph-format";
@@ -1273,6 +1274,7 @@ export const TwyneEditor = component$(
             SectionReorder,
             ParagraphFormat,
             PageBreakNode,
+            ...EditorialRoles,
             RawTypst,
             RawTypstInline,
           ],
@@ -3706,6 +3708,30 @@ export const TwyneEditor = component$(
 
       const editor = store.editor;
       switch (commandId) {
+        case "role.subtitle":
+          editor?.chain().focus().toggleSubtitle().run();
+          break;
+        case "role.kicker":
+          editor?.chain().focus().toggleKicker().run();
+          break;
+        case "role.standfirst":
+          editor?.chain().focus().toggleStandfirst().run();
+          break;
+        case "role.epigraph":
+          editor?.chain().focus().toggleEpigraph().run();
+          break;
+        case "role.scene-break":
+          editor?.chain().focus().setSceneBreak().run();
+          break;
+        case "role.abstract":
+          editor?.chain().focus().toggleAbstract().run();
+          break;
+        case "role.character-cue":
+          editor?.chain().focus().toggleCharacterCue().run();
+          break;
+        case "role.stage-direction":
+          editor?.chain().focus().toggleStageDirection().run();
+          break;
         case "insert.image":
           store.showImageInput = true;
           break;

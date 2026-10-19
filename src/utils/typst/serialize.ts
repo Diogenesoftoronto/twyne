@@ -2,6 +2,13 @@ import type { ExportPayload } from "../exchange";
 import { formatCitation } from "../bibliography";
 import { typstPageSetup } from "./theme";
 import { typstDecorations } from "./decorative-assets";
+import {
+  EPIGRAPH_FUNCTION,
+  SCENE_BREAK_FUNCTION,
+  SCENE_BREAK_STYLES,
+  TEXT_ROLE_FUNCTIONS,
+  type SceneBreakStyleName,
+} from "./roles";
 
 /** Outbound bridge only. HTML remains authoritative until source editing can round-trip. */
 export interface TypstDocument {
@@ -182,6 +189,17 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
       ["script", "style", "template", "input", "button", "label"].includes(tag)
     )
       return "";
+    const role = el.getAttribute("data-role");
+    if (role === "scene-break") {
+      const style = el.getAttribute("data-style") as SceneBreakStyleName;
+      return `#${SCENE_BREAK_FUNCTION}(style: ${typstString(SCENE_BREAK_STYLES.includes(style) ? style : "ornament")})\n`;
+    }
+    if (role === "epigraph") {
+      const attribution = el.getAttribute("data-attribution") ?? "";
+      return `#${EPIGRAPH_FUNCTION}(${attribution ? `attribution: [${text(attribution)}]` : ""})[${children(el)}]\n`;
+    }
+    if (role && TEXT_ROLE_FUNCTIONS[role])
+      return `#${TEXT_ROLE_FUNCTIONS[role]}[${children(el)}]\n`;
     const kind = el.getAttribute("data-type");
     if (kind === "page-break" || el.hasAttribute("data-page-break"))
       return "#pagebreak()\n";

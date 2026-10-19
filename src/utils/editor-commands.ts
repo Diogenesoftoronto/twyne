@@ -28,6 +28,11 @@ export interface EditorCommandContext {
   hasDocument?: boolean;
   paginationActive?: boolean;
   readOnly?: boolean;
+  /**
+   * Command ids the active piece type (kit) enables. Only commands marked
+   * `kitGated` consult it; when omitted nothing is hidden.
+   */
+  kitCommands?: readonly string[];
 }
 
 export type EditorCommandAvailability =
@@ -50,7 +55,7 @@ export type EditorCommandSurface =
 
 export interface SlashCommandMetadata {
   /** Label used for grouping in the slash menu. */
-  group: "Write" | "Structure" | "Insert" | "Review";
+  group: "Write" | "Structure" | "Insert" | "Review" | "Piece";
   /** Extra fuzzy-search words that do not belong in the visible label. */
   keywords?: readonly string[];
   /** Lower values sort first within a group. */
@@ -66,6 +71,8 @@ export interface EditorCommandDefinition {
   availability: EditorCommandAvailability;
   surfaces: readonly EditorCommandSurface[];
   slash?: SlashCommandMetadata;
+  /** Only offered when the active kit lists this command in its `roles`. */
+  kitGated?: boolean;
 }
 
 const TOOLBAR_AND_REFERENCE = ["toolbar", "shortcut-dialog", "manual"] as const;
@@ -172,10 +179,10 @@ export const EDITOR_COMMANDS = [
     label: "Heading 2",
     description: "Turn the current block into a second-level heading.",
     group: "structure",
-    searchTerms: ["subtitle", "h2"],
+    searchTerms: ["h2"],
     availability: "editable",
     surfaces: INSERT_SURFACES,
-    slash: { group: "Structure", order: 20, keywords: ["h2", "subtitle"] },
+    slash: { group: "Structure", order: 20, keywords: ["h2"] },
   },
   {
     id: "paragraph.heading-3",
@@ -581,6 +588,105 @@ export const EDITOR_COMMANDS = [
       keywords: ["remove", "drop", "get rid of"],
     },
   },
+  {
+    id: "role.subtitle",
+    label: "Subtitle",
+    description: "Set the current block as the piece's subtitle.",
+    group: "structure",
+    searchTerms: ["subtitle", "subhead"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    kitGated: true,
+    slash: { group: "Piece", order: 10, keywords: ["deck","strapline"] },
+  },
+  {
+    id: "role.kicker",
+    label: "Kicker",
+    description: "Set the current block as a small label above the headline.",
+    group: "structure",
+    searchTerms: ["kicker", "eyebrow"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    kitGated: true,
+    slash: { group: "Piece", order: 20, keywords: ["eyebrow","overline"] },
+  },
+  {
+    id: "role.standfirst",
+    label: "Standfirst",
+    description: "Set the current block as the introductory standfirst.",
+    group: "structure",
+    searchTerms: ["standfirst", "dek", "lede"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    kitGated: true,
+    slash: { group: "Piece", order: 30, keywords: ["intro","dek","lede"] },
+  },
+  {
+    id: "role.epigraph",
+    label: "Epigraph",
+    description: "Set the current block as an epigraph quotation.",
+    group: "structure",
+    searchTerms: ["epigraph", "motto"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    kitGated: true,
+    slash: { group: "Piece", order: 40, keywords: ["quote","motto"] },
+  },
+  {
+    id: "role.scene-break",
+    label: "Scene break",
+    description: "Insert an ornament, rule, or gap between scenes.",
+    group: "structure",
+    searchTerms: ["scene", "break", "divider"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    kitGated: true,
+    slash: { group: "Piece", order: 50, keywords: ["section","divider","ornament"] },
+  },
+  {
+    id: "role.abstract",
+    label: "Abstract",
+    description: "Set the current block as the paper's abstract.",
+    group: "structure",
+    searchTerms: ["abstract", "summary"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    kitGated: true,
+    slash: { group: "Piece", order: 60, keywords: ["summary","paper"] },
+  },
+  {
+    id: "role.character-cue",
+    label: "Character cue",
+    description: "Set the current block as a speaker's name in a play.",
+    group: "structure",
+    searchTerms: ["character", "cue", "speaker"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    kitGated: true,
+    slash: { group: "Piece", order: 70, keywords: ["speaker","play","dialogue"] },
+  },
+  {
+    id: "role.stage-direction",
+    label: "Stage direction",
+    description: "Set the current block as a parenthetical stage direction.",
+    group: "structure",
+    searchTerms: ["stage", "direction", "parenthetical"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    kitGated: true,
+    slash: { group: "Piece", order: 80, keywords: ["play","action"] },
+  },
+  {
+    id: "code.highlight-lines",
+    label: "Highlight code lines",
+    description: "Choose which lines of the code block to highlight.",
+    group: "structure",
+    searchTerms: ["highlight", "lines", "code"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    kitGated: true,
+    slash: { group: "Piece", order: 90, keywords: ["code","lines","emphasis"] },
+  },
 ] as const satisfies readonly EditorCommandDefinition[];
 
 export type EditorCommandId = (typeof EDITOR_COMMANDS)[number]["id"];
@@ -609,6 +715,12 @@ export function isEditorCommandAvailable(
   command: EditorCommandDefinition,
   context: EditorCommandContext = {},
 ): boolean {
+  if (
+    command.kitGated &&
+    context.kitCommands &&
+    !context.kitCommands.includes(command.id)
+  )
+    return false;
   switch (command.availability) {
     case "always":
       return true;

@@ -654,4 +654,25 @@ describe("Typst serializer with the real bundled compiler", () => {
     const rendered = (await compile(withLang.source)).join("");
     expect(rendered).toContain("Snippets");
   });
+  test("compiles every editorial role without diagnostics", async () => {
+    const html = [
+      '<div data-role="kicker">Dispatch</div>',
+      '<div data-role="subtitle">A quiet subtitle</div>',
+      '<div data-role="standfirst">Standfirst words</div>',
+      '<div data-role="epigraph" data-attribution="Ovid">Epigraph words</div>',
+      '<div data-role="epigraph">No attribution</div>',
+      "<p>Body.</p>",
+      '<div data-role="scene-break" data-style="ornament"></div>',
+      '<div data-role="scene-break" data-style="rule"></div>',
+      '<div data-role="scene-break" data-style="space"></div>',
+      '<div data-role="abstract">Abstract words</div>',
+      '<div data-role="character-cue">Hamlet</div>',
+      '<div data-role="stage-direction">exits</div>',
+    ].join("");
+    const out = (
+      await compile(serializeTypst({ title: "Roles", html }).source)
+    ).join("");
+    for (const word of ["Dispatch", "quiet subtitle", "Epigraph words", "HAMLET"])
+      expect(out.toLowerCase()).toContain(word.toLowerCase());
+  });
 });
