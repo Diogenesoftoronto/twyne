@@ -29,7 +29,7 @@ import {
   SCENE_PICTURE_BUDGET_MICROS,
   SCENE_READING_BUDGET_MICROS,
 } from "../src/utils/scene-media-credit";
-import { SCENE_READING_SYSTEM } from "../src/utils/scene-bench";
+import { SCENE_READING_SYSTEM } from "../src/utils/scene-media-contract";
 import { createAiTraceId } from "../src/utils/ai-deterministic-evals";
 import {
   utcDayFromTimestamp,
