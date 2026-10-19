@@ -18,8 +18,7 @@ describe("CodeBlockLines", () => {
   test("setCodeHighlightLines stores, renders and re-parses the attribute", async () => {
     await withEditor(
       {
-        content:
-          '<pre><code class="language-ts">a\nb\nc\nd</code></pre>',
+        content: '<pre><code class="language-ts">a\nb\nc\nd</code></pre>',
       },
       ({ editor, html }) => {
         editor.commands.setTextSelection(2);

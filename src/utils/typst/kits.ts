@@ -57,7 +57,8 @@ export const KITS: Record<KitId, Kit> = {
   paper: {
     id: "paper",
     label: "Paper",
-    description: "Numbered headings, an abstract, and a compact scholarly text.",
+    description:
+      "Numbered headings, an abstract, and a compact scholarly text.",
     roles: [...SHARED_ROLES, "role.abstract"],
     typstStyles: `
 #set text(font: ("Libertinus Serif", "Lora"), size: 11pt)

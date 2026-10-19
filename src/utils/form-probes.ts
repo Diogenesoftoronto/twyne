@@ -13,7 +13,8 @@ export const FORM_PROBE_COUNT = 3;
  * are already on the page and make the writer wait for new ones.
  */
 export function probeDraftKey(answers: ProjectInterviewAnswers): string {
-  const { successSignal: _drafting, ...settled } = answers;
+  const { successSignal: drafting, ...settled } = answers;
+  void drafting;
   return JSON.stringify(settled);
 }
 

@@ -9,6 +9,7 @@
     "strict": true,
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
+    "jsxImportSource": "@qwik.dev/core",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
 
@@ -20,6 +21,6 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["./**/*"],
+  "include": ["./**/*", "../src/types/*.d.ts", "../src/qwik-v2-compat.d.ts"],
   "exclude": ["./_generated"]
 }

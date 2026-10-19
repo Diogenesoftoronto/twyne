@@ -248,8 +248,9 @@ export function buildStarterDocument(answers: ProjectInterviewAnswers): string {
 export function buildImportedMaterialDocument(
   answers: ProjectInterviewAnswers,
   raw: string,
-  _filename?: string,
+  filename?: string,
 ): string {
+  void filename;
   const paragraphs = raw
     .trim()
     .split(/\n{2,}/)

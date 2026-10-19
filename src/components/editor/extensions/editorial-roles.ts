@@ -29,7 +29,11 @@ const TEXT_ROLES: readonly TextRole[] = [
   { name: "standfirst", role: "standfirst", command: "Standfirst" },
   { name: "abstract", role: "abstract", command: "Abstract" },
   { name: "characterCue", role: "character-cue", command: "CharacterCue" },
-  { name: "stageDirection", role: "stage-direction", command: "StageDirection" },
+  {
+    name: "stageDirection",
+    role: "stage-direction",
+    command: "StageDirection",
+  },
 ];
 
 declare module "@tiptap/core" {

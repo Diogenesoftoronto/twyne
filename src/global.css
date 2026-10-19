@@ -1009,7 +1009,9 @@ body {
   user-select: none;
 }
 
-.twyne-editor .ProseMirror .twyne-role-scene-break[data-style="ornament"]::before {
+.twyne-editor
+  .ProseMirror
+  .twyne-role-scene-break[data-style="ornament"]::before {
   content: "✦✦✦";
 }
 
@@ -2785,10 +2787,18 @@ body {
   --strength: var(--color-paper-3);
   font-family: var(--font-typewriter);
 }
-.answer-strength[data-level="1"] { --strength: var(--color-vermilion); }
-.answer-strength[data-level="2"] { --strength: var(--color-mustard); }
-.answer-strength[data-level="3"] { --strength: var(--color-cobalt); }
-.answer-strength[data-level="4"] { --strength: var(--color-accent-green); }
+.answer-strength[data-level="1"] {
+  --strength: var(--color-vermilion);
+}
+.answer-strength[data-level="2"] {
+  --strength: var(--color-mustard);
+}
+.answer-strength[data-level="3"] {
+  --strength: var(--color-cobalt);
+}
+.answer-strength[data-level="4"] {
+  --strength: var(--color-accent-green);
+}
 .answer-strength__notches {
   display: inline-flex;
   gap: 3px;
