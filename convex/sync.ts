@@ -136,9 +136,10 @@ export const putFolioContent = mutation({
     html: v.string(),
     format: v.optional(v.union(v.literal("html"), v.literal("typst"))),
     typstSource: v.optional(v.string()),
+    kit: v.optional(v.union(v.literal("essay"), v.literal("technical"), v.literal("paper"), v.literal("play"))),
   },
   returns: v.id("folioContent"),
-  handler: async (ctx, { folioId, html, format, typstSource }) => {
+  handler: async (ctx, { folioId, html, format, typstSource, kit }) => {
     const userId = await requireIdentity(ctx);
     const existing = await ctx.db
       .query("folioContent")
@@ -156,6 +157,7 @@ export const putFolioContent = mutation({
         html,
         format,
         typstSource,
+        kit,
         updatedAt: now,
       });
       return existing._id;
@@ -166,6 +168,7 @@ export const putFolioContent = mutation({
       html,
       format,
       typstSource,
+      kit,
       updatedAt: now,
     });
   },
@@ -618,6 +621,7 @@ export const pushAll = mutation({
           html: v.string(),
           format: v.optional(v.union(v.literal("html"), v.literal("typst"))),
           typstSource: v.optional(v.string()),
+          kit: v.optional(v.union(v.literal("essay"), v.literal("technical"), v.literal("paper"), v.literal("play"))),
         }),
       ),
     ),
@@ -755,6 +759,7 @@ export const pushAll = mutation({
             html: fc.html,
             format: fc.format,
             typstSource: fc.typstSource,
+            kit: fc.kit,
             updatedAt: now,
           });
         } else {
@@ -764,6 +769,7 @@ export const pushAll = mutation({
             html: fc.html,
             format: fc.format,
             typstSource: fc.typstSource,
+            kit: fc.kit,
             updatedAt: now,
           });
         }
@@ -1015,6 +1021,7 @@ export const pullAll = query({
         html: fc.html,
         format: fc.format,
         typstSource: fc.typstSource,
+        kit: fc.kit,
         updatedAt: fc.updatedAt,
       })),
       // Null still means "this user has no persona record at all", which is

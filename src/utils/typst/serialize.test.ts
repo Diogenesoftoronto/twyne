@@ -675,4 +675,15 @@ describe("Typst serializer with the real bundled compiler", () => {
     for (const word of ["Dispatch", "quiet subtitle", "Epigraph words", "HAMLET"])
       expect(out.toLowerCase()).toContain(word.toLowerCase());
   });
+  test("kits: essay output is unchanged and every kit compiles cleanly", async () => {
+    const html =
+      '<h2>Section</h2><p>Body text.</p><pre><code class="language-ts">let a = 1;</code></pre><div data-role="abstract">Abs</div><div data-role="character-cue">Ann</div>';
+    const base = serializeTypst({ title: "K", html }).source;
+    expect(serializeTypst({ title: "K", html, kit: "essay" }).source).toBe(base);
+    for (const kit of ["essay", "technical", "paper", "play"] as const) {
+      const source = serializeTypst({ title: "K", html, kit }).source;
+      if (kit !== "essay") expect(source).not.toBe(base);
+      expect((await compile(source)).join("")).toContain("Body text.");
+    }
+  });
 });

@@ -187,6 +187,13 @@ import {
 } from "./extensions/living-desk";
 import { PageBreakNode } from "./extensions/page-break-node";
 import { EditorialRoles } from "./extensions/editorial-roles";
+import { resolveKit, type KitId } from "../../utils/typst/kits";
+import {
+  FOLIO_CONTENT_SAVED,
+  loadFolioContentSnapshotFromIdb,
+  saveFolioKitToIdb,
+  type FolioContentSavedDetail,
+} from "../../utils/idb";
 import { RawTypst, RawTypstInline } from "./extensions/raw-typst";
 import { TypstWorkspace } from "./typst-workspace";
 import { ParagraphFormat } from "./extensions/paragraph-format";
@@ -369,6 +376,7 @@ export const TwyneEditor = component$(
       canRedo: false,
       activeFolioId: activeFolioId ?? "",
       layout: activeFolio?.layout ?? DEFAULT_LAYOUT,
+      kit: "essay" as KitId,
       headerText: activeFolio?.header ?? "",
       footerText: activeFolio?.footer ?? "",
       showLayout: false,
@@ -3305,6 +3313,12 @@ export const TwyneEditor = component$(
       window.dispatchEvent(new CustomEvent("twyne:layout", { detail: next }));
     });
 
+    const changeKit = $(async (kit: KitId) => {
+      if (readOnly || !store.activeFolioId) return;
+      store.kit = kit;
+      await saveFolioKitToIdb(store.activeFolioId, kit);
+    });
+
     /**
      * How wide the ruler should be. On a paginated canvas the ruler describes
      * the sheet, so its markers land on the real page margins; in continuous
@@ -3795,6 +3809,20 @@ export const TwyneEditor = component$(
         void runRegistryCommand((event as CustomEvent<EditorCommandId>).detail);
       };
       window.addEventListener("twyne:editor-shortcut", runShortcut);
+      // The piece type lives beside the manuscript, so follow both the first
+      // read and any later save (local choice or remote sync).
+      const followKit = (event: Event) => {
+        const detail = (event as CustomEvent<FolioContentSavedDetail>).detail;
+        if (detail?.folioId === store.activeFolioId)
+          store.kit = resolveKit(detail.kit).id;
+      };
+      window.addEventListener(FOLIO_CONTENT_SAVED, followKit);
+      if (store.activeFolioId)
+        void loadFolioContentSnapshotFromIdb(store.activeFolioId).then(
+          (snapshot) => {
+            store.kit = resolveKit(snapshot?.kit).id;
+          },
+        );
       const followZenChoice = (event: Event) => {
         const detail = (event as CustomEvent<{ on?: boolean; source?: string }>)
           .detail;
@@ -3820,6 +3848,7 @@ export const TwyneEditor = component$(
       );
       cleanup(() => {
         window.removeEventListener("twyne:editor-shortcut", runShortcut);
+        window.removeEventListener(FOLIO_CONTENT_SAVED, followKit);
         window.removeEventListener("twyne:zen-mode", followZenChoice);
       });
     });
@@ -3935,6 +3964,7 @@ export const TwyneEditor = component$(
               onTextCase$={applyTextCase}
               onReadAloud$={readAloud}
               onLayoutChange$={emitLayout}
+              onKitChange$={changeKit}
               onChromeTextChange$={updateChromeText}
               onSavePdf$={saveAsPdf}
             />
@@ -4069,6 +4099,7 @@ export const TwyneEditor = component$(
                 canRedo: store.canRedo,
                 hasDocument: true,
                 paginationActive: store.paginationActive,
+                kitCommands: resolveKit(store.kit).roles,
               }}
               onSelect$={selectSlashCommand}
               onClose$={() => {

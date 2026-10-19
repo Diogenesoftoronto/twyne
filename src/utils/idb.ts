@@ -49,6 +49,7 @@ import {
   reconcileTypstSource,
 } from "./typst/document";
 import { clearCrashMirror, readCrashMirror } from "./crash-mirror";
+import type { KitId } from "./typst/kits";
 import { withResidentHallmarks } from "./personas";
 
 const DB_NAME = "twyne";
@@ -75,6 +76,8 @@ export interface FolioContentSnapshot {
   html: string;
   format?: "html" | "typst";
   typstSource?: string;
+  /** Piece type; undefined means "essay". */
+  kit?: KitId;
   updatedAt: number;
 }
 
@@ -578,6 +581,7 @@ export async function saveFolioContentToIdb(
     folioId,
     html,
     format: "typst",
+    ...(previous?.kit ? { kit: previous.kit } : {}),
     typstSource:
       previous?.typstSource !== undefined
         ? previous.html === html
@@ -606,6 +610,7 @@ export async function recoverFolioContentFromCrashMirror(
       folioId,
       html,
       format: "typst",
+      ...(previous?.kit ? { kit: previous.kit } : {}),
       typstSource:
         previous?.typstSource !== undefined
           ? reconcileTypstSource(previous.typstSource, html)
@@ -648,6 +653,7 @@ export async function saveFolioTypstToIdb(
         folioId,
         html: html ?? typstToHtml(source),
         format: "typst",
+        ...(previous?.kit ? { kit: previous.kit } : {}),
         typstSource: source,
         updatedAt:
           previous?.typstSource === source ? previous.updatedAt : Date.now(),
@@ -686,6 +692,27 @@ export async function saveFolioContentSnapshotToIdb(
         },
       }),
     );
+}
+
+/** Choose the piece type. "essay" is stored as absence, like a fresh folio. */
+export async function saveFolioKitToIdb(
+  folioId: string,
+  kit: KitId,
+): Promise<void> {
+  await updateFolioContent(folioId, (previous) => {
+    const { kit: _old, ...rest } = previous ?? {
+      folioId,
+      html: "",
+      format: "typst" as const,
+      typstSource: htmlToTypst(""),
+      updatedAt: 0,
+    };
+    return {
+      ...rest,
+      ...(kit === "essay" ? {} : { kit }),
+      updatedAt: Date.now(),
+    };
+  });
 }
 
 export async function deleteFolioContentFromIdb(

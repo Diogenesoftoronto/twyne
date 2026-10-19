@@ -9,6 +9,7 @@ import type { ExportPayload } from "../exchange";
 import { typstString } from "./string";
 import { typstDecorations } from "./decorative-assets";
 import { pageBorderTileCounts } from "../page-ornaments";
+import { kitStyles } from "./kits";
 
 /** Editorial proof styling, including the exported paper colour. */
 export const TYPST_EDITORIAL_STYLES = `
@@ -328,6 +329,7 @@ export function typstPageSetup(
     `#set document(title: ${typstString(payload.title)})`,
     initialStyles,
     TYPST_EDITORIAL_STYLES,
+    ...(kitStyles(payload.kit) ? [kitStyles(payload.kit)] : []),
     frameStyles,
     `#set columns(gutter: ${resolveColumnGap(layout) * 12}pt)`,
     `#set page(width: ${page.widthIn}in, height: ${page.heightIn}in, columns: ${resolveColumns(layout)}, margin: (${margin}), fill: rgb("#fbf6e7"), background: ${background}, header-ascent: 20%, footer-descent: 20%, header: [${header ? `#set text(font: "Special Elite", size: 8pt, fill: rgb("#4a3f33"))\n#set par(justify: false)\n${furniture(`#text(${typstString(header)})`)}` : ""}], footer: [${footer ? `#set text(font: "Special Elite", size: 8pt, fill: rgb("#4a3f33"))\n#set par(justify: false)\n${footer}` : ""}])`,

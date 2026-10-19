@@ -1,3 +1,4 @@
+import type { KitId } from "./typst/kits";
 import { htmlToTypst, typstToHtml } from "./typst/document";
 /**
  * Export and import for the manuscript. Each format is intentionally
@@ -560,6 +561,8 @@ export interface ExportPayload {
   html: string;
   /** Canonical manuscript source; HTML is its projection for legacy consumers. */
   typstSource?: string;
+  /** Piece type; undefined is the essay kit. */
+  kit?: KitId;
   brief?: ProjectBrief | null;
   folios?: Folio[];
   /** Layout of the active folio, drives export/print margins + width. */

@@ -32,6 +32,7 @@ import { ColorPicker } from "../ui/color-picker";
 import { Icon } from "../ui/icon";
 import { SpeechTransport } from "../ui/speech-transport";
 import type { EditorPanelState } from "./editor-state";
+import { KITS, KIT_IDS, type KitId } from "../../utils/typst/kits";
 import { MANUSCRIPT_READING_ID } from "./manuscript-panel";
 import { SyncDot } from "./sync-indicator";
 import { openLiveVoice } from "../../utils/live-voice-workspace";
@@ -60,6 +61,7 @@ interface CompositorPanelProps {
   onTextCase$: PropFunction<(mode: TextCase) => void>;
   onReadAloud$: PropFunction<() => void>;
   onLayoutChange$: PropFunction<(next: LayoutSettings) => void>;
+  onKitChange$: PropFunction<(kit: KitId) => void>;
   onChromeTextChange$: PropFunction<
     (kind: "header" | "footer", value: string) => void
   >;
@@ -1036,6 +1038,30 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
                   <h2>Page layout</h2>
                   <p>Paper, columns, ornaments, and running heads.</p>
                 </header>
+
+                <fieldset
+                  class="layout-section disabled:opacity-60"
+                  disabled={props.readOnly}
+                >
+                  <legend>Piece type</legend>
+                  <select
+                    class="layout-select w-full mb-1"
+                    aria-label="Piece type"
+                    value={store.kit}
+                    onChange$={(_, element) =>
+                      props.onKitChange$(element.value as KitId)
+                    }
+                  >
+                    {KIT_IDS.map((id) => (
+                      <option key={id} value={id} selected={store.kit === id}>
+                        {KITS[id].label}
+                      </option>
+                    ))}
+                  </select>
+                  <p class="mb-3 text-[0.7rem] text-[var(--color-ink-light)]">
+                    {KITS[store.kit]?.description}
+                  </p>
+                </fieldset>
 
                 <fieldset
                   class="layout-section disabled:opacity-60"

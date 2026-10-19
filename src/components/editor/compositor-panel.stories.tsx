@@ -193,6 +193,9 @@ const RibbonPreview = component$<RibbonStoryProps>((props) => {
           store.layout = value;
           action.value = "Page layout updated";
         }}
+        onKitChange$={(kit) => {
+          store.kit = kit;
+        }}
         onChromeTextChange$={(kind, value) => {
           if (kind === "header") store.headerText = value;
           else store.footerText = value;
