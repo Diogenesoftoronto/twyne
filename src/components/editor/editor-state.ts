@@ -1,3 +1,4 @@
+import type { KitId } from "../../utils/typst/kits";
 import type { NoSerialize, PropFunction, Signal } from "@qwik.dev/core";
 import type { Editor } from "@tiptap/core";
 import type {
@@ -140,6 +141,8 @@ export interface EditorStore {
   canRedo: boolean;
   activeFolioId: string;
   layout: LayoutSettings;
+  /** Piece type of the active folio; selects the role set and Typst styles. */
+  kit: KitId;
   headerText: string;
   footerText: string;
   showLayout: boolean;

@@ -490,6 +490,7 @@ async function loadSnapshotSection(
           html: content?.html ?? "",
           format: content?.format,
           typstSource: content?.typstSource,
+          ...(content?.kit ? { kit: content.kit } : {}),
           updatedAt: content?.updatedAt ?? 0,
         });
       }
@@ -626,11 +627,12 @@ function buildPushPayload(snap: LocalSnapshot) {
     briefs: snap.briefs,
     folios: snap.folios,
     folioContent: snap.folioContent.map(
-      ({ folioId, html, format, typstSource }) => ({
+      ({ folioId, html, format, typstSource, kit }) => ({
         folioId,
         html,
         ...(format !== undefined ? { format } : {}),
         ...(typstSource !== undefined ? { typstSource } : {}),
+        ...(kit !== undefined ? { kit } : {}),
       }),
     ),
     customPersonas: snap.customPersonas,

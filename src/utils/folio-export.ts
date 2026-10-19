@@ -110,8 +110,12 @@ export async function buildFolioExportPayload(
 
   const typstSource =
     req.typstSource ?? (await readActiveFolioTypstSource(req.folioId, html));
+  const kit = req.folioId
+    ? (await loadFolioContentSnapshotFromIdb(req.folioId))?.kit
+    : undefined;
   return {
     typstSource,
+    ...(kit ? { kit } : {}),
     title: req.folioName || "Untitled",
     html,
     brief: req.brief ?? undefined,

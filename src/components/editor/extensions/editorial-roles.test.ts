@@ -5,7 +5,11 @@ import { withEditor } from "../test-harness";
 import { EditorialRoles } from "./editorial-roles";
 import { serializeTypst } from "../../../utils/typst/serialize";
 import { htmlToTypst, typstToHtml } from "../../../utils/typst/document";
-import { getEditorCommand } from "../../../utils/editor-commands";
+import {
+  getEditorCommand,
+  getSlashCommands,
+} from "../../../utils/editor-commands";
+import { KITS } from "../../../utils/typst/kits";
 import { DEFAULT_LAYOUT } from "../../../types";
 
 const dom = new JSDOM("", { url: "https://twyne.test/" });
@@ -139,5 +143,26 @@ describe("editorial roles", () => {
     expect(getEditorCommand("paragraph.heading-2")?.searchTerms).not.toContain(
       "subtitle",
     );
+  });
+  test("the slash menu only offers Piece commands the active kit enables", () => {
+    const ids = (kit: keyof typeof KITS) =>
+      getSlashCommands("", { kitCommands: KITS[kit].roles })
+        .filter((c) => c.slash?.group === "Piece")
+        .map((c) => c.id);
+    expect(ids("essay")).toEqual([
+      "role.subtitle",
+      "role.kicker",
+      "role.standfirst",
+      "role.epigraph",
+      "role.scene-break",
+    ]);
+    expect(ids("paper")).toContain("role.abstract");
+    expect(ids("paper")).not.toContain("role.character-cue");
+    expect(ids("play")).toContain("role.stage-direction");
+    expect(ids("technical")).toContain("code.highlight-lines");
+    // Without a kit in context nothing is hidden.
+    expect(
+      getSlashCommands("", {}).filter((c) => c.slash?.group === "Piece"),
+    ).toHaveLength(9);
   });
 });
