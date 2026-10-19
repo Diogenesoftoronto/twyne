@@ -6,6 +6,7 @@ import { CommentMark } from "./extensions/comment-mark";
 import { PersonaNoteMark } from "./extensions/persona-note-mark";
 import { SuggestionMark } from "./extensions/suggestion-mark";
 import { PageBreakNode } from "./extensions/page-break-node";
+import { CodeBlockLines } from "./extensions/code-block-lines";
 
 /**
  * Tiptap + JSDOM test harness. The project's editor mounts inside a
@@ -44,7 +45,8 @@ export interface WithEditorOptions {
  * `pagination-geometry.ts`, and its DOM behaviour in the Playwright suite.
  */
 export const projectExtensions = [
-  StarterKit,
+  StarterKit.configure({ codeBlock: false }),
+  CodeBlockLines,
   CommentMark,
   PersonaNoteMark,
   SuggestionMark,

@@ -126,6 +126,8 @@ export interface EditorStore {
   selectedImage: ImageNodeAttributes | null;
   imageUploadError: string | null;
   showMermaidInput: boolean;
+  /** Ranges being edited for the active code block; null when closed. */
+  codeLinesInput: string | null;
   mermaidSource: string;
   noteInputKind: "endnote" | "footnote" | null;
   noteText: string;

@@ -14,7 +14,7 @@ import { exportTypst } from "./export";
 import { prepareTypstAssets } from "./render-assets";
 import { createTypstRenderer } from "@myriaddreamin/typst.ts/renderer";
 import { applyTypstPageSetup, splitProofPages } from "./client";
-import { htmlToTypst } from "./document";
+import { htmlToTypst, typstToHtml } from "./document";
 import { ILLUMINATED_INITIAL_ARTWORK } from "../illuminated-initials";
 import { typstDecorations } from "./decorative-assets";
 
@@ -684,6 +684,33 @@ describe("Typst serializer with the real bundled compiler", () => {
       const source = serializeTypst({ title: "K", html, kit }).source;
       if (kit !== "essay") expect(source).not.toBe(base);
       expect((await compile(source)).join("")).toContain("Body text.");
+    }
+  });
+  test("technical kit renders numbered, highlighted code through twyne-code", async () => {
+    const html =
+      '<pre data-highlight-lines="2-3"><code class="language-ts">let a = 1;\nlet b = 2;\nlet c = 3;</code></pre>';
+    const technical = serializeTypst({ title: "C", html, kit: "technical" });
+    expect(technical.source).toContain(
+      '#twyne-code(lang: "ts", highlight: (2, 3), numbered: true, "let a = 1;',
+    );
+    const essay = serializeTypst({ title: "C", html });
+    expect(essay.source).not.toContain("#twyne-code(");
+    expect(essay.source).toContain('#raw("let a = 1;');
+    for (const source of [technical.source, essay.source])
+      expect((await compile(source)).join("")).toContain("let b = 2;");
+  });
+
+  test("native source keeps code language and highlight through the node bridge", async () => {
+    const html =
+      '<pre data-highlight-lines="2"><code class="language-ts">let a = 1;\nlet b = 2;</code></pre>';
+    const source = htmlToTypst(html);
+    expect(source).toContain("data-twyne-code");
+    expect(typstToHtml(source)).toContain('data-highlight-lines="2"');
+    expect(typstToHtml(source)).not.toContain("data-twyne-code");
+    for (const kit of ["essay", "technical"] as const) {
+      const payload = { title: "N", html, kit, typstSource: source };
+      const out = await compile(applyTypstPageSetup(source, payload));
+      expect(out.join("")).toContain("let b = 2;");
     }
   });
 });

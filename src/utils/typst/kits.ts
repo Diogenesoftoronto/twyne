@@ -50,6 +50,7 @@ export const KITS: Record<KitId, Kit> = {
 #set text(font: ("DM Sans", "DM Sans 9pt"), size: 12pt)
 #show raw.where(block: true): set text(fill: rgb("#1f1b16"), size: 10.5pt)
 #show raw.where(block: true): set block(width: 100%, fill: rgb("#f4efe3"), stroke: 0.6pt + rgb("#ddd0b1"), inset: (x: 1em, y: 0.7em), radius: 2pt, above: 0.9em, below: 0.9em)
+#let twyne-code-numbered = true
 `.trim(),
     vendoredPackages: [],
   },

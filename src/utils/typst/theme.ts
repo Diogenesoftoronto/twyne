@@ -103,6 +103,17 @@ export const TYPST_EDITORIAL_STYLES = `
   #set par(justify: false)
   #text(style: "italic")[(#body)]
 ]
+#let twyne-code-numbered = false
+#let twyne-code(lang: none, highlight: (), numbered: false, body) = {
+  show raw.line: it => {
+    let marked = highlight.contains(it.number)
+    block(width: 100%, above: 0pt, below: 0pt, breakable: false, fill: if marked { rgb("#e8c547").transparentize(65%) } else { none }, outset: (x: 1.25em), {
+      if numbered { box(width: 2.2em, align(right, text(fill: rgb("#8a7f6a"), size: 0.85em, str(it.number)))); h(0.9em) }
+      it.body
+    })
+  }
+  raw(body, lang: lang, block: true)
+}
 #let twyne-opening-seen = state("twyne-editorial-opening", false)
 #let twyne-opening-depth = state("twyne-editorial-depth", 0)
 #let twyne-nested(body) = {
