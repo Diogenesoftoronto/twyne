@@ -33,6 +33,12 @@ import {
 import { getCachedAiSettings } from "../../utils/ai-orchestrator";
 import { resolveFeatureConfig } from "../../utils/ai-client";
 import {
+  describeScenePictures,
+  generateScenePicture,
+  readScenePicture,
+  type ScenePictureCapability,
+} from "../../utils/scene-media";
+import {
   useAuth,
   hasAuthenticatedConvexIdentity,
 } from "../../utils/auth-context";
@@ -78,6 +84,7 @@ export const InstrumentDock = component$<InstrumentDockProps>((props) => {
   const capabilities = useStore<{
     judgement?: SceneProviderCapability;
     narration?: SceneProviderCapability;
+    pictures?: ScenePictureCapability;
     error: string;
   }>({ error: "" });
   useStyles$(`
@@ -189,6 +196,11 @@ export const InstrumentDock = component$<InstrumentDockProps>((props) => {
         unavailableReason:
           "Choose a narration provider in Settings or sign in to hear this passage.",
       };
+      const pictures = await describeScenePictures(settings, {
+        client: client.value ?? null,
+        signedIn,
+      });
+      if (!disposed) capabilities.pictures = pictures;
     };
     if (open) void refresh();
     window.addEventListener("twyne:ai-settings-saved", refresh);
@@ -348,6 +360,36 @@ export const InstrumentDock = component$<InstrumentDockProps>((props) => {
                         signedIn: hasAuthenticatedConvexIdentity(auth.value),
                       });
                     }}
+                    pictures={capabilities.pictures}
+                    onPicture$={async (passage, mode, proposals) => {
+                      const settings = await getCachedAiSettings();
+                      const picture = await generateScenePicture({
+                        passage,
+                        mode,
+                        proposals,
+                        settings,
+                        client: client.value ?? null,
+                      });
+                      // The wallet just moved; keep the low-credit warning honest.
+                      if (capabilities.pictures?.source === "twyne")
+                        capabilities.pictures = await describeScenePictures(
+                          settings,
+                          {
+                            client: client.value ?? null,
+                            signedIn: hasAuthenticatedConvexIdentity(
+                              auth.value,
+                            ),
+                          },
+                        );
+                      return picture;
+                    }}
+                    onReadPicture$={async (picture) =>
+                      readScenePicture(
+                        picture,
+                        await getCachedAiSettings(),
+                        client.value ?? null,
+                      )
+                    }
                   />
                 </>
               ) : (

@@ -39,6 +39,11 @@ const CHECKOUT_ENABLED =
   import.meta.env.PUBLIC_NOTORGANIC_TWYNE_PRO_V2_ENABLED === "true";
 
 import { TWYNE_CREDIT_PACKS } from "../../../convex/lib/providerCheckout";
+import {
+  creditPurchaseAction,
+  purchaseWaitlistUrl,
+  type PurchaseWalletStatus,
+} from "../../utils/purchase-waitlist";
 
 const FREE_FEATURES = [
   "The full editorial room — personas, rubric, citations",
@@ -67,6 +72,15 @@ export default component$(() => {
   const busy = useSignal(false);
   const error = useSignal<AppError | null>(null);
   const availablePacks = useSignal<string[]>([]);
+  const walletStatus = useSignal<PurchaseWalletStatus>("idle");
+  const creditAvailability = useComputed$(() =>
+    creditPurchaseAction(
+      auth.value.loading,
+      !!auth.value.user,
+      walletStatus.value,
+      availablePacks.value.length > 0,
+    ),
+  );
   const creditError = useSignal<string | null>(null);
   const providerPlanActive = useSignal(false);
   const checkoutReturnStatus = useSignal<CheckoutReturnStatus | null>(null);
@@ -78,8 +92,10 @@ export default component$(() => {
     const search = track(() => location.url.search);
     providerPlanActive.value = false;
     availablePacks.value = [];
+    walletStatus.value = "idle";
     checkoutReturnStatus.value = null;
     if (!client || !userId) return;
+    walletStatus.value = "loading";
 
     let disposed = false;
     const isCurrent = () =>
@@ -90,6 +106,7 @@ export default component$(() => {
     const updateWallet = (wallet: unknown) => {
       providerPlanActive.value = hasCurrentTwynePlan(wallet);
       availablePacks.value = availableCreditPacks(wallet);
+      walletStatus.value = "ready";
     };
 
     if (isCheckoutReturn(search)) {
@@ -99,6 +116,7 @@ export default component$(() => {
         onWallet: updateWallet,
         onStatus: (status) => {
           checkoutReturnStatus.value = status;
+          if (status === "unavailable") walletStatus.value = "error";
         },
       });
       cleanup(stop);
@@ -112,6 +130,7 @@ export default component$(() => {
         if (isCurrent()) {
           providerPlanActive.value = false;
           availablePacks.value = [];
+          walletStatus.value = "error";
         }
       });
   });
@@ -271,22 +290,47 @@ export default component$(() => {
           spent at the selected model’s rate.
         </p>
         <div class="mt-5 flex flex-wrap gap-3">
-          {TWYNE_CREDIT_PACKS.map((pack) => (
-            <button
-              key={pack.id}
-              onClick$={() => buyCredits(pack.id)}
-              disabled={busy.value || !availablePacks.value.includes(pack.id)}
-              class="btn-press min-h-11 rounded border border-[var(--color-rule)] bg-[var(--color-paper)] px-5 py-3 text-sm text-[var(--color-ink)] disabled:opacity-60"
-            >
-              Add ${pack.usd} credit
-            </button>
-          ))}
+          {TWYNE_CREDIT_PACKS.map((pack) =>
+            creditAvailability.value === "loading" ||
+            creditAvailability.value === "unavailable" ? (
+              <button
+                key={pack.id}
+                disabled
+                class="btn-press min-h-11 rounded border border-[var(--color-rule)] bg-[var(--color-paper)] px-5 py-3 text-sm text-[var(--color-ink)] disabled:opacity-60"
+              >
+                {creditAvailability.value === "loading"
+                  ? "Checking credit availability…"
+                  : "Wallet unavailable"}
+              </button>
+            ) : availablePacks.value.includes(pack.id) ? (
+              <button
+                key={pack.id}
+                onClick$={() => buyCredits(pack.id)}
+                disabled={busy.value}
+                class="btn-press min-h-11 rounded border border-[var(--color-rule)] bg-[var(--color-paper)] px-5 py-3 text-sm text-[var(--color-ink)] disabled:opacity-60"
+              >
+                Add ${pack.usd} credit
+              </button>
+            ) : (
+              <a
+                key={pack.id}
+                href={purchaseWaitlistUrl("credits", pack.id)}
+                class="btn-press min-h-11 rounded border border-[var(--color-rule)] bg-[var(--color-paper)] px-5 py-3 text-sm text-[var(--color-ink)]"
+              >
+                Join waitlist for ${pack.usd} credit
+              </a>
+            ),
+          )}
         </div>
         <p class="mt-3 text-sm text-[var(--color-ink-light)]">
           USD, before tax.{" "}
-          {availablePacks.value.length > 0
-            ? "Requires a linked Not Organic account. Credit appears after payment is confirmed."
-            : "Credit checkout is being configured. No payment is taken while these options are unavailable."}{" "}
+          {creditAvailability.value === "loading"
+            ? "Checking your wallet before showing purchase options."
+            : creditAvailability.value === "unavailable"
+              ? "We couldn't check your wallet. Open your wallet or reload to try again."
+              : availablePacks.value.length > 0
+                ? "Requires a linked Not Organic account. Credit appears after payment is confirmed."
+                : "Join the Not Organic waitlist to buy credits when access opens. No payment is taken."}{" "}
           Purchased credit does not grant separate subscription features.
         </p>
         {busy.value && (
@@ -364,28 +408,37 @@ export default component$(() => {
               </li>
             ))}
           </ul>
-          <button
-            onClick$={subscribe}
-            disabled={
-              busy.value ||
-              checkoutReturnStatus.value === "checking" ||
-              providerPlanActive.value ||
-              !CHECKOUT_ENABLED
-            }
-            class="btn-press mt-8 inline-block rounded bg-[var(--color-vermilion)] px-5 py-2 text-sm text-[var(--color-paper)] disabled:opacity-60"
-          >
-            {providerPlanActive.value
-              ? "Pro is active"
-              : !CHECKOUT_ENABLED
-                ? "New subscriptions available soon"
-                : busy.value
-                  ? "Starting checkout…"
-                  : "Subscribe to Pro"}
-          </button>
+          {!CHECKOUT_ENABLED && !providerPlanActive.value ? (
+            <a
+              href={purchaseWaitlistUrl("subscription", TWYNE_PRO_PLAN.id)}
+              class="btn-press mt-8 inline-block rounded bg-[var(--color-vermilion)] px-5 py-2 text-sm text-[var(--color-paper)]"
+            >
+              Join the Pro waitlist
+            </a>
+          ) : (
+            <button
+              onClick$={subscribe}
+              disabled={
+                busy.value ||
+                checkoutReturnStatus.value === "checking" ||
+                providerPlanActive.value ||
+                !CHECKOUT_ENABLED
+              }
+              class="btn-press mt-8 inline-block rounded bg-[var(--color-vermilion)] px-5 py-2 text-sm text-[var(--color-paper)] disabled:opacity-60"
+            >
+              {providerPlanActive.value
+                ? "Pro is active"
+                : !CHECKOUT_ENABLED
+                  ? "New subscriptions available soon"
+                  : busy.value
+                    ? "Starting checkout…"
+                    : "Subscribe to Pro"}
+            </button>
+          )}
           <p class="mt-3 text-sm text-[var(--color-ink-light)]">
             {CHECKOUT_ENABLED
               ? "Uses your Not Organic account. Your wallet confirms payment and credit availability."
-              : "We’re finishing hosted billing setup. You can keep writing for free; no payment is taken here."}
+              : "Register your interest through Not Organic. You can keep writing for free; joining the waitlist does not start a subscription."}
           </p>
           {providerPlanActive.value && (
             <p class="mt-3 text-sm" role="status">

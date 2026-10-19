@@ -969,7 +969,9 @@ export type AiFeature =
   | "research-extract"
   | "interview-turn"
   | "dossier-check"
-  | "in-flow-tool";
+  | "in-flow-tool"
+  | "scene-image"
+  | "scene-reading";
 
 export type WriterExperienceLevel =
   | "emerging"
@@ -1159,6 +1161,20 @@ export interface AiSettings {
   showProviderTags: boolean;
   /** Which model answers Twyne's typed judgements. Absent = Twyne's hosted Jev. */
   judgement?: JudgementSettings;
+  /** Scene Bench pictures. Absent = off: generation spends credit, so it is opt-in. */
+  sceneMedia?: SceneMediaSettings;
+}
+
+/**
+ * Scene Bench image generation.
+ *
+ *   twyne     Twyne's hosted image model, spending the writer's monthly credit
+ *   provider  one of the writer's own providers, routed through the
+ *             `scene-image` (picture) and `scene-reading` (comparison) features
+ */
+export interface SceneMediaSettings {
+  enabled: boolean;
+  source: "twyne" | "provider";
 }
 
 /**

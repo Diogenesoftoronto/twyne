@@ -20,6 +20,7 @@ import {
  */
 
 import {
+  generateImage,
   generateText,
   stepCountIs,
   streamText,
@@ -267,6 +268,7 @@ export function providerSupportsFeature(
   feature: AiFeature,
   provider?: AiProviderConfig,
 ): boolean {
+  if (feature === "scene-image") return supportsSceneImage(type);
   return VOICE_FEATURES.has(feature)
     ? supportsVoiceFeature(
         type,
@@ -274,6 +276,27 @@ export function providerSupportsFeature(
         provider,
       )
     : !isVoiceOnlyProvider(type);
+}
+
+/** Providers that expose an image-generation endpoint the AI SDK can call. */
+function supportsSceneImage(type: AiProviderConfig["type"]): boolean {
+  return (
+    type === "openai" ||
+    type === "google" ||
+    type === "openai-compatible" ||
+    type === "openrouter"
+  );
+}
+
+/** The writer's catalogued image model, else a sensible model for the provider. */
+function defaultSceneImageModel(provider: AiProviderConfig): string {
+  const catalogued = Object.entries(provider.modelModalities ?? {}).find(
+    ([, modalities]) => modalities.output.includes("image"),
+  )?.[0];
+  if (catalogued) return catalogued;
+  if (provider.type === "openai") return "gpt-image-1-mini";
+  if (provider.type === "google") return "imagen-4.0-fast-generate-001";
+  return provider.defaultModel;
 }
 
 async function createModel(
@@ -527,6 +550,7 @@ function defaultModelForFeature(
   ) {
     return provider.defaultModel;
   }
+  if (feature === "scene-image") return defaultSceneImageModel(provider);
   if (
     feature === "voice-narration" &&
     (provider.type === "openai" || isOpenAiCompatibleProvider(provider.type))
@@ -568,6 +592,7 @@ function defaultTemperature(feature: AiFeature): number {
       return 0.2;
     case "research-web-search":
     case "research-extract":
+    case "scene-reading":
       return 0.2;
     default:
       return 0.4;
@@ -3720,6 +3745,140 @@ export async function runClientDossierAmend(
  * tool catalog's JSONL streaming contract) and parses the output; this only
  * resolves the writer's provider for the feature and tracks the call.
  */
+/* ── Scene Bench pictures ───────────────────────────────────────── */
+
+export interface ScenePictureResult {
+  base64: string;
+  mediaType: string;
+  provider: string;
+  model: string;
+}
+
+async function createImageModel(config: AiProviderConfig, modelId: string) {
+  if (config.type === "google") {
+    const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
+    return createGoogleGenerativeAI({
+      apiKey: config.apiKey,
+      fetch: providerFetch,
+    }).image(modelId);
+  }
+  const { createOpenAI } = await import("@ai-sdk/openai");
+  return createOpenAI({
+    apiKey: config.apiKey || "local",
+    fetch: providerFetch,
+    ...(config.type === "openai" ? {} : { baseURL: config.baseUrl }),
+  }).image(modelId);
+}
+
+/**
+ * One picture on the writer's own provider. Returns null when no provider can
+ * draw; provider errors propagate so the bench can show what went wrong.
+ */
+export async function runClientScenePicture(
+  prompt: string,
+  settings: AiSettings,
+  signal?: AbortSignal,
+): Promise<ScenePictureResult | null> {
+  const resolved = resolveFeatureConfig(settings, "scene-image");
+  if (!resolved || !resolved.model) return null;
+  const traceId = createAiTraceId("scene-image");
+  const folioId = await loadActiveFolioIdFromIdb();
+  const usageBase = {
+    traceId,
+    attempt: 1,
+    source: clientUsageSourceForProvider(resolved.provider),
+    feature: "scene-image" as const,
+    provider: resolved.provider.type,
+    model: resolved.model,
+    folioId: folioId ?? undefined,
+    editorialActionId: `${traceId}:action`,
+    requestSent: true,
+  };
+  try {
+    const { image } = await generateImage({
+      model: await createImageModel(resolved.provider, resolved.model),
+      prompt,
+      n: 1,
+      maxRetries: 0,
+      abortSignal: signal,
+    });
+    await settleClientUsage({ ...usageBase, outcome: "completed" });
+    return {
+      base64: image.base64,
+      mediaType: image.mediaType || "image/png",
+      provider: resolved.provider.name,
+      model: resolved.model,
+    };
+  } catch (error) {
+    await settleClientUsage({ ...usageBase, outcome: "failed" });
+    throw error;
+  }
+}
+
+/** Shows the picture to the writer's vision model and returns its raw answer. */
+export async function runClientSceneReading(
+  request: {
+    system: string;
+    prompt: string;
+    image: { base64: string; mediaType: string };
+  },
+  settings: AiSettings,
+  signal?: AbortSignal,
+): Promise<string | null> {
+  const resolved = resolveFeatureConfig(settings, "scene-reading");
+  if (!resolved) return null;
+  const model = await createModel(resolved.provider, resolved.model);
+  if (!model) return null;
+  const traceId = createAiTraceId("scene-reading");
+  const folioId = await loadActiveFolioIdFromIdb();
+  const usageBase = {
+    traceId,
+    attempt: 1,
+    source: clientUsageSourceForProvider(resolved.provider),
+    feature: "scene-reading" as const,
+    provider: resolved.provider.type,
+    model: resolved.model,
+    folioId: folioId ?? undefined,
+    editorialActionId: `${traceId}:action`,
+    requestSent: true,
+  };
+  try {
+    const result = await generateText({
+      model,
+      system: request.system,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: request.prompt },
+            {
+              type: "image",
+              image: request.image.base64,
+              mediaType: request.image.mediaType,
+            },
+          ],
+        },
+      ],
+      temperature: resolved.temperature,
+      maxRetries: 0,
+      abortSignal: signal,
+    });
+    await settleClientUsage({
+      ...usageBase,
+      outcome: "completed",
+      usage: {
+        inputTokens: result.usage.inputTokens,
+        outputTokens: result.usage.outputTokens,
+      },
+    });
+    return result.text;
+  } catch (error) {
+    await settleClientUsage({ ...usageBase, outcome: "failed" });
+    reportApplicationDiagnostic("twyne:ai-client:scene-reading", error);
+    return null;
+  }
+}
+
 export async function runClientInFlowTool(
   request: {
     system: string;

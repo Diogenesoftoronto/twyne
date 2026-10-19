@@ -210,11 +210,20 @@ export function searchModelsDevModels(
 
 export function modelsDevModelsForFeature(
   models: ModelsDevModel[],
-  feature: "language" | "voice-narration" | "voice-transcription",
+  feature:
+    | "language"
+    | "voice-narration"
+    | "voice-transcription"
+    | "scene-image"
+    | "scene-reading",
 ): ModelsDevModel[] {
   const matches = models.filter((model) => {
     const input = model.modalities?.input ?? [];
     const output = model.modalities?.output ?? [];
+    if (feature === "scene-image") return output.includes("image");
+    if (feature === "scene-reading") {
+      return input.includes("image") && output.includes("text");
+    }
     if (feature === "voice-narration") {
       return input.includes("text") && output.includes("audio");
     }

@@ -156,6 +156,12 @@ export const RATE_LIMITS = {
    * and no honest dictation flow needs more than one every five seconds.
    */
   voiceTranscribe: { limit: 12, windowMs: 60_000 },
+  /**
+   * Scene Bench pictures and their comparisons: 6 per minute per user. This
+   * guards against a runaway loop, not against spending: the wallet balance
+   * is the only limit on how many pictures a writer makes.
+   */
+  scenePicture: { limit: 6, windowMs: 60_000 },
   /** Room of editors feedback: 30 per minute per user. */
   agentFeedback: { limit: 30, windowMs: 60_000 },
   /** Suggested rewrite: 30 per minute per user. */

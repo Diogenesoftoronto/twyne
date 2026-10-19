@@ -5,6 +5,7 @@ import { Link, type DocumentHead } from "@qwik.dev/router";
 import { ApplicationNotice } from "../../components/ui/application-notice";
 import { LanguageSettings } from "../../components/settings/language-settings";
 import { JudgementModelSettings } from "../../components/settings/judgement-model-settings";
+import { SceneMediaSettingsPanel } from "../../components/settings/scene-media-settings";
 import { useGT } from "gt-qwik";
 import { translate } from "gt-qwik/runtime";
 import { SearchableModelSelect } from "../../components/ui/searchable-model-select";
@@ -20,6 +21,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import type {
   AiSettings,
   JudgementSettings,
+  SceneMediaSettings,
   AiProviderConfig,
   AiFeature,
   AiFeatureOverride,
@@ -271,6 +273,8 @@ const FEATURE_LABELS: Record<AiFeature, string> = {
   "interview-turn": "Conversational Interview",
   "dossier-check": "Read My Draft",
   "in-flow-tool": "In-flow Tools",
+  "scene-image": "Scene Pictures",
+  "scene-reading": "Scene Picture Comparison",
 };
 
 const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
@@ -303,6 +307,10 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
     "Cross-references the dossier against the current draft and surfaces where the draft has outgrown the brief.",
   "in-flow-tool":
     "Fills the small tools that appear in the margin while you write: sentence variants and reader questions.",
+  "scene-image":
+    "Draws a selected passage in Scene Bench when you choose your own models under Scene Pictures. Needs a model that outputs images.",
+  "scene-reading":
+    "Compares a Scene Bench picture with its passage. Needs a model that can see images.",
 };
 
 function providerMetaFor(type: AiProviderConfig["type"]) {
@@ -400,7 +408,10 @@ function catalogModelsForProvider(
     : findModelsDevProvider(catalog, provider);
   const catalogModels = modelsDevModelsForFeature(
     catalogProvider?.models ?? [],
-    feature === "voice-narration" || feature === "voice-transcription"
+    feature === "voice-narration" ||
+      feature === "voice-transcription" ||
+      feature === "scene-image" ||
+      feature === "scene-reading"
       ? feature
       : "language",
   );
@@ -1023,6 +1034,11 @@ export default component$(() => {
     );
     (window as { __twyneJudgementSave?: number }).__twyneJudgementSave =
       window.setTimeout(() => void persist(), 500);
+  });
+
+  const setSceneMedia = $((next: SceneMediaSettings) => {
+    store.settings = { ...store.settings, sceneMedia: next };
+    void persist();
   });
 
   const removeProvider = $((id: string) => {
@@ -3978,6 +3994,12 @@ export default component$(() => {
             <JudgementModelSettings
               value={store.settings.judgement}
               onChange$={setJudgement}
+            />
+
+            {/* ── Scene pictures ── */}
+            <SceneMediaSettingsPanel
+              value={store.settings.sceneMedia}
+              onChange$={setSceneMedia}
             />
 
             {/* ── Apparatus ── */}
