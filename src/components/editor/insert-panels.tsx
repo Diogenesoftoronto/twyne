@@ -36,11 +36,15 @@ interface InsertPanelsProps {
   noteKind: NoteKind | null;
   mermaidOpen: boolean;
   imageOpen: boolean;
+  /** Ranges currently highlighted in the code block, or null when closed. */
+  codeLinesOpen?: string | null;
   imageUrl: string;
   imageUploadAvailable: boolean;
   imageUploadError: string | null;
   onCancelNote$: PropFunction<() => void>;
   onConfirmNote$: PropFunction<(value: string) => void>;
+  onCancelCodeLines$?: PropFunction<() => void>;
+  onConfirmCodeLines$?: PropFunction<(value: string) => void>;
   onCancelMermaid$: PropFunction<() => void>;
   onConfirmMermaid$: PropFunction<(value: string) => void>;
   onChooseImage$: PropFunction<() => void>;
@@ -92,6 +96,22 @@ export const InsertPanels = component$<InsertPanelsProps>((props) => {
         previewLabel="Diagram preview"
         onCancel$={props.onCancelMermaid$}
         onConfirm$={props.onConfirmMermaid$}
+      />
+
+      <TextModal
+        open={props.codeLinesOpen != null}
+        kicker="Code"
+        title="Highlight lines"
+        description="List the lines to highlight, counted from 1 — for example 3,5-7. Leave empty to clear."
+        inputLabel="Lines"
+        placeholder="3,5-7"
+        helpText="Cmd/Ctrl + Enter to apply · Esc to cancel"
+        rows={1}
+        minHeightRem={3}
+        initialValue={props.codeLinesOpen ?? ""}
+        submitLabel="Highlight"
+        onCancel$={() => props.onCancelCodeLines$?.()}
+        onConfirm$={(value) => props.onConfirmCodeLines$?.(value)}
       />
 
       {props.imageOpen && (

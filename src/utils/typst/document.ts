@@ -1,5 +1,6 @@
 import { typstString } from "./string";
 import { typstCodeMatches } from "./syntax";
+import { parseLineRanges } from "../code-lines";
 import {
   EPIGRAPH_FUNCTION,
   ROLE_BY_FUNCTION,
@@ -214,6 +215,17 @@ export function htmlToTypst(html: string): string {
             )
           : 1,
       );
+    }
+    if (tag === "pre") {
+      // The native `pre` renderer re-typesets this plain text with its language
+      // and highlighted lines; the attributes never reach the HTML again.
+      attrs["data-twyne-code"] = el.textContent ?? "";
+      const lang = /(?:^|\s)language-([\w+#.-]+)/.exec(
+        el.querySelector("code")?.getAttribute("class") ?? "",
+      )?.[1];
+      if (lang) attrs["data-twyne-lang"] = lang;
+      const lines = parseLineRanges(el.getAttribute("data-highlight-lines"));
+      if (lines.length) attrs["data-twyne-highlight"] = lines.join(",");
     }
     let body = Array.from(el.childNodes)
       .map((n) => visit(n, depth + 1))
@@ -491,6 +503,9 @@ function parseWrapper(
   delete (attributes as Record<string, unknown>)["data-twyne-columns"];
   delete (attributes as Record<string, unknown>)["data-twyne-column-widths"];
   delete (attributes as Record<string, unknown>)["data-twyne-caption"];
+  delete (attributes as Record<string, unknown>)["data-twyne-code"];
+  delete (attributes as Record<string, unknown>)["data-twyne-lang"];
+  delete (attributes as Record<string, unknown>)["data-twyne-highlight"];
   return {
     html: element(tagName, attributes as Record<string, unknown>, body),
     end,

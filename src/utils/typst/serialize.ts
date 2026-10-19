@@ -2,6 +2,7 @@ import type { ExportPayload } from "../exchange";
 import { formatCitation } from "../bibliography";
 import { typstPageSetup } from "./theme";
 import { typstDecorations } from "./decorative-assets";
+import { parseLineRanges } from "../code-lines";
 import {
   EPIGRAPH_FUNCTION,
   SCENE_BREAK_FUNCTION,
@@ -236,6 +237,10 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
     if (tag === "table") return table(el as HTMLTableElement);
     if (tag === "pre") {
       const lang = codeLanguage(el);
+      if (payload.kit === "technical") {
+        const lines = parseLineRanges(el.getAttribute("data-highlight-lines"));
+        return `#twyne-code(${lang ? `lang: ${typstString(lang)}, ` : ""}highlight: (${lines.join(", ")}${lines.length === 1 ? "," : ""}), numbered: true, ${typstString(el.textContent ?? "")})\n`;
+      }
       return `#raw(${typstString(el.textContent ?? "")}, ${lang ? `lang: ${typstString(lang)}, ` : ""}block: true)\n`;
     }
     if (tag === "code") return `#raw(${typstString(el.textContent ?? "")})`;

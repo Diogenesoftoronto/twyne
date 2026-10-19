@@ -187,6 +187,7 @@ import {
 } from "./extensions/living-desk";
 import { PageBreakNode } from "./extensions/page-break-node";
 import { EditorialRoles } from "./extensions/editorial-roles";
+import { CodeBlockLines } from "./extensions/code-block-lines";
 import { resolveKit, type KitId } from "../../utils/typst/kits";
 import {
   FOLIO_CONTENT_SAVED,
@@ -361,6 +362,7 @@ export const TwyneEditor = component$(
       selectedImage: null,
       imageUploadError: null,
       showMermaidInput: false,
+      codeLinesInput: null,
       mermaidSource: "",
       noteInputKind: null,
       noteText: "",
@@ -1202,6 +1204,8 @@ export const TwyneEditor = component$(
           extensions: [
             StarterKit.configure({
               heading: { levels: [1, 2, 3] },
+              // Replaced by CodeBlockLines, which adds highlighted lines.
+              codeBlock: false,
               // Configured explicitly below so there is one extension name
               // and one command surface for each feature.
               link: false,
@@ -1283,6 +1287,7 @@ export const TwyneEditor = component$(
             ParagraphFormat,
             PageBreakNode,
             ...EditorialRoles,
+            CodeBlockLines,
             RawTypst,
             RawTypstInline,
           ],
@@ -3722,6 +3727,12 @@ export const TwyneEditor = component$(
 
       const editor = store.editor;
       switch (commandId) {
+        case "code.highlight-lines":
+          if (editor?.isActive("codeBlock"))
+            store.codeLinesInput =
+              (editor.getAttributes("codeBlock").highlightLines as string) ??
+              "";
+          break;
         case "role.subtitle":
           editor?.chain().focus().toggleSubtitle().run();
           break;
@@ -4058,6 +4069,15 @@ export const TwyneEditor = component$(
                   return;
                 }
                 await runCommand("insertNote");
+              }}
+              codeLinesOpen={store.codeLinesInput}
+              onCancelCodeLines$={() => {
+                store.codeLinesInput = null;
+                store.editor?.commands.focus();
+              }}
+              onConfirmCodeLines$={(value) => {
+                store.editor?.chain().focus().setCodeHighlightLines(value).run();
+                store.codeLinesInput = null;
               }}
               onCancelMermaid$={() => {
                 store.showMermaidInput = false;
