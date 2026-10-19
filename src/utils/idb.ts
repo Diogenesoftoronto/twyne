@@ -700,13 +700,14 @@ export async function saveFolioKitToIdb(
   kit: KitId,
 ): Promise<void> {
   await updateFolioContent(folioId, (previous) => {
-    const { kit: _old, ...rest } = previous ?? {
+    const { kit: oldKit, ...rest } = previous ?? {
       folioId,
       html: "",
       format: "typst" as const,
       typstSource: htmlToTypst(""),
       updatedAt: 0,
     };
+    void oldKit;
     return {
       ...rest,
       ...(kit === "essay" ? {} : { kit }),

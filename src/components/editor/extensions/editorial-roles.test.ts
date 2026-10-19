@@ -85,7 +85,7 @@ describe("editorial roles", () => {
       expect(typst(saved)).toContain(
         '#twyne-epigraph(attribution: [#text("Ovid")])[#text("Quote")]',
       );
-      expect(typstToHtml('#twyne-epigraph(attribution: [Ovid])[Quote]')).toBe(
+      expect(typstToHtml("#twyne-epigraph(attribution: [Ovid])[Quote]")).toBe(
         '<div data-role="epigraph" data-attribution="Ovid">Quote</div>',
       );
     });
@@ -105,9 +105,7 @@ describe("editorial roles", () => {
         const saved = html();
         editor.commands.setContent(saved);
         expect(html()).toBe(saved);
-        expect(typst(saved)).toContain(
-          `#twyne-scene-break(style: "${style}")`,
-        );
+        expect(typst(saved)).toContain(`#twyne-scene-break(style: "${style}")`);
         expect(typstToHtml(`#twyne-scene-break(style: "${style}")`)).toBe(
           `<div data-role="scene-break" data-style="${style}"></div>`,
         );

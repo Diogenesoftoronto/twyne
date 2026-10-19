@@ -4076,7 +4076,11 @@ export const TwyneEditor = component$(
                 store.editor?.commands.focus();
               }}
               onConfirmCodeLines$={(value) => {
-                store.editor?.chain().focus().setCodeHighlightLines(value).run();
+                store.editor
+                  ?.chain()
+                  .focus()
+                  .setCodeHighlightLines(value)
+                  .run();
                 store.codeLinesInput = null;
               }}
               onCancelMermaid$={() => {

@@ -597,7 +597,7 @@ export const EDITOR_COMMANDS = [
     availability: "editable",
     surfaces: INSERT_SURFACES,
     kitGated: true,
-    slash: { group: "Piece", order: 10, keywords: ["deck","strapline"] },
+    slash: { group: "Piece", order: 10, keywords: ["deck", "strapline"] },
   },
   {
     id: "role.kicker",
@@ -608,7 +608,7 @@ export const EDITOR_COMMANDS = [
     availability: "editable",
     surfaces: INSERT_SURFACES,
     kitGated: true,
-    slash: { group: "Piece", order: 20, keywords: ["eyebrow","overline"] },
+    slash: { group: "Piece", order: 20, keywords: ["eyebrow", "overline"] },
   },
   {
     id: "role.standfirst",
@@ -619,7 +619,7 @@ export const EDITOR_COMMANDS = [
     availability: "editable",
     surfaces: INSERT_SURFACES,
     kitGated: true,
-    slash: { group: "Piece", order: 30, keywords: ["intro","dek","lede"] },
+    slash: { group: "Piece", order: 30, keywords: ["intro", "dek", "lede"] },
   },
   {
     id: "role.epigraph",
@@ -630,7 +630,7 @@ export const EDITOR_COMMANDS = [
     availability: "editable",
     surfaces: INSERT_SURFACES,
     kitGated: true,
-    slash: { group: "Piece", order: 40, keywords: ["quote","motto"] },
+    slash: { group: "Piece", order: 40, keywords: ["quote", "motto"] },
   },
   {
     id: "role.scene-break",
@@ -641,7 +641,11 @@ export const EDITOR_COMMANDS = [
     availability: "editable",
     surfaces: INSERT_SURFACES,
     kitGated: true,
-    slash: { group: "Piece", order: 50, keywords: ["section","divider","ornament"] },
+    slash: {
+      group: "Piece",
+      order: 50,
+      keywords: ["section", "divider", "ornament"],
+    },
   },
   {
     id: "role.abstract",
@@ -652,7 +656,7 @@ export const EDITOR_COMMANDS = [
     availability: "editable",
     surfaces: INSERT_SURFACES,
     kitGated: true,
-    slash: { group: "Piece", order: 60, keywords: ["summary","paper"] },
+    slash: { group: "Piece", order: 60, keywords: ["summary", "paper"] },
   },
   {
     id: "role.character-cue",
@@ -663,7 +667,11 @@ export const EDITOR_COMMANDS = [
     availability: "editable",
     surfaces: INSERT_SURFACES,
     kitGated: true,
-    slash: { group: "Piece", order: 70, keywords: ["speaker","play","dialogue"] },
+    slash: {
+      group: "Piece",
+      order: 70,
+      keywords: ["speaker", "play", "dialogue"],
+    },
   },
   {
     id: "role.stage-direction",
@@ -674,7 +682,7 @@ export const EDITOR_COMMANDS = [
     availability: "editable",
     surfaces: INSERT_SURFACES,
     kitGated: true,
-    slash: { group: "Piece", order: 80, keywords: ["play","action"] },
+    slash: { group: "Piece", order: 80, keywords: ["play", "action"] },
   },
   {
     id: "code.highlight-lines",
@@ -685,7 +693,11 @@ export const EDITOR_COMMANDS = [
     availability: "editable",
     surfaces: INSERT_SURFACES,
     kitGated: true,
-    slash: { group: "Piece", order: 90, keywords: ["code","lines","emphasis"] },
+    slash: {
+      group: "Piece",
+      order: 90,
+      keywords: ["code", "lines", "emphasis"],
+    },
   },
 ] as const satisfies readonly EditorCommandDefinition[];
 

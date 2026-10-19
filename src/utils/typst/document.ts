@@ -384,9 +384,9 @@ function roleCall(s: string): string | null {
   const name = /^#(twyne-[a-z-]+)/.exec(s)?.[1];
   if (
     !name ||
-    !(name in ROLE_BY_FUNCTION) &&
+    (!(name in ROLE_BY_FUNCTION) &&
       name !== EPIGRAPH_FUNCTION &&
-      name !== SCENE_BREAK_FUNCTION
+      name !== SCENE_BREAK_FUNCTION)
   )
     return null;
   let i = 1 + name.length;

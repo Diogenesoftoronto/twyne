@@ -136,7 +136,14 @@ export const putFolioContent = mutation({
     html: v.string(),
     format: v.optional(v.union(v.literal("html"), v.literal("typst"))),
     typstSource: v.optional(v.string()),
-    kit: v.optional(v.union(v.literal("essay"), v.literal("technical"), v.literal("paper"), v.literal("play"))),
+    kit: v.optional(
+      v.union(
+        v.literal("essay"),
+        v.literal("technical"),
+        v.literal("paper"),
+        v.literal("play"),
+      ),
+    ),
   },
   returns: v.id("folioContent"),
   handler: async (ctx, { folioId, html, format, typstSource, kit }) => {
@@ -621,7 +628,14 @@ export const pushAll = mutation({
           html: v.string(),
           format: v.optional(v.union(v.literal("html"), v.literal("typst"))),
           typstSource: v.optional(v.string()),
-          kit: v.optional(v.union(v.literal("essay"), v.literal("technical"), v.literal("paper"), v.literal("play"))),
+          kit: v.optional(
+            v.union(
+              v.literal("essay"),
+              v.literal("technical"),
+              v.literal("paper"),
+              v.literal("play"),
+            ),
+          ),
         }),
       ),
     ),
