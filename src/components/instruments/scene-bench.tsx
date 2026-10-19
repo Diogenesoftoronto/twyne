@@ -14,10 +14,13 @@ import {
   createSceneInventory,
   createSceneJudgementRequest,
   createSceneMediaBrief,
+  loadScenePicture,
   loadSceneProposals,
   resolveSceneJudgement,
+  saveScenePicture,
   saveSceneProposals,
   SCENE_DIMENSIONS,
+  SCENE_PICTURE_MODES,
   SCENE_TENSION_LABELS,
   sceneSnapshotMatches,
   scenePassageKey,
@@ -27,10 +30,18 @@ import {
   type SceneDimension,
   type SceneMedium,
   type ScenePassage,
+  type ScenePicture,
+  type ScenePictureMode,
+  type SceneReadingItem,
   type SceneProposal,
   type SceneSpan,
 } from "../../utils/scene-bench";
 import { useSpeechPlayer } from "../../utils/use-speech-player";
+import type { ScenePictureCapability } from "../../utils/scene-media";
+import {
+  lowCreditWarning,
+  SCENE_CREDIT_WARNING,
+} from "../../utils/scene-media-credit";
 import { InstrumentArt, InstrumentRule } from "./instrument-art";
 import { InstrumentMotion, InstrumentMotionPart } from "./instrument-motion";
 import styles from "./scene-bench.css?inline";
@@ -66,7 +77,42 @@ export interface SceneBenchProps {
       passage: ScenePassage,
     ) => Promise<InstrumentRoomResult>
   >;
+  pictures?: ScenePictureCapability;
+  /** Draws the passage. Only called after the writer presses Generate. */
+  onPicture$?: QRL<
+    (
+      passage: ScenePassage,
+      mode: ScenePictureMode,
+      proposals: SceneProposal[],
+    ) => Promise<ScenePicture>
+  >;
+  /** Compares a picture with its passage; null when no reading came back. */
+  onReadPicture$?: QRL<
+    (picture: ScenePicture) => Promise<ScenePicture["reading"]>
+  >;
 }
+
+const READING_GROUPS: ReadonlyArray<{
+  status: SceneReadingItem["status"];
+  title: string;
+  hint: string;
+}> = [
+  {
+    status: "contradicted",
+    title: "Contradicts the page",
+    hint: "The picture disagrees with what you wrote. A reader could make the same mistake.",
+  },
+  {
+    status: "invented",
+    title: "Left to the reader",
+    hint: "The page doesn't say. Every reader fills these in differently.",
+  },
+  {
+    status: "sourced",
+    title: "Taken from the page",
+    hint: "Details your words already put in the reader's mind.",
+  },
+];
 
 function canRequest(capability: SceneProviderCapability | undefined): boolean {
   return (
@@ -96,6 +142,32 @@ export const SceneBench = component$<SceneBenchProps>((props) => {
     brief: "",
     briefPassage: null as ScenePassage | null,
     copied: false,
+    pictureMode: "literal" as ScenePictureMode,
+    picture: null as ScenePicture | null,
+    picturing: false,
+    readingPicture: false,
+    pictureMessage: "",
+  });
+
+  // A picture belongs to one selection and one mode; show the saved one, if any.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async ({ track, cleanup }) => {
+    const snapshot = track(() => inventory.value);
+    const mode = track(() => ui.pictureMode);
+    let disposed = false;
+    cleanup(() => {
+      disposed = true;
+    });
+    ui.picture = null;
+    ui.pictureMessage = "";
+    if (snapshot.status !== "ready") return;
+    try {
+      const stored = await loadScenePicture(snapshot.passage, mode);
+      if (!disposed && sceneSnapshotMatches(snapshot, props.passage))
+        ui.picture = stored;
+    } catch {
+      // A missing picture is the ordinary case; nothing to report.
+    }
   });
 
   // Load only when the selected passage changes; this is not a keystroke listener.
@@ -552,15 +624,266 @@ export const SceneBench = component$<SceneBenchProps>((props) => {
             )}
           </section>
 
+          <section class="scene-bench__section" aria-label="Picture the scene">
+            <h3>See it as a reader might</h3>
+            <p class="scene-bench__method">
+              A picture stands in for the image in a reader's mind. Compare it
+              with your page to see what the passage gives them and what they
+              have to supply.
+            </p>
+            <fieldset class="scene-bench__modes">
+              <legend>Picture</legend>
+              {SCENE_PICTURE_MODES.map((mode) => (
+                <label key={mode.id}>
+                  <input
+                    type="radio"
+                    name="scene-picture-mode"
+                    value={mode.id}
+                    checked={ui.pictureMode === mode.id}
+                    onChange$={() => {
+                      ui.pictureMode = mode.id;
+                    }}
+                  />
+                  <span>
+                    {mode.label}
+                    <small>{mode.hint}</small>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+            {!props.pictures?.enabled ? (
+              <p class="scene-bench__method">
+                Scene pictures are off. Generating spends credit or your
+                provider's image charges, so turn it on yourself in{" "}
+                <a href="/settings#scene-pictures">Settings → Scene Pictures</a>
+                .
+              </p>
+            ) : !canRequest(props.pictures) || !props.onPicture$ ? (
+              <p class="scene-bench__method">
+                {props.pictures.unavailableReason ??
+                  "No image model is connected here."}
+              </p>
+            ) : (
+              <>
+                <p class="scene-bench__method">
+                  Sends this passage
+                  {ui.pictureMode === "imagined" && proposals.length
+                    ? " and your saved ideas"
+                    : ""}{" "}
+                  to {props.pictures.destination}. {props.pictures.costLabel}.
+                </p>
+                {props.pictures.source === "twyne" && (
+                  <p class="scene-bench__credit">{SCENE_CREDIT_WARNING}</p>
+                )}
+                {props.pictures.availableMicros !== undefined &&
+                  lowCreditWarning(props.pictures.availableMicros) && (
+                    <p class="scene-bench__credit" role="status">
+                      {lowCreditWarning(props.pictures.availableMicros)}{" "}
+                      <a href="/pricing">Add credit</a>
+                    </p>
+                  )}
+              </>
+            )}
+            <div class="scene-bench__actions">
+              <button
+                type="button"
+                disabled={
+                  ui.picturing ||
+                  !props.pictures?.enabled ||
+                  !canRequest(props.pictures) ||
+                  !props.onPicture$
+                }
+                onClick$={async () => {
+                  if (
+                    ui.picturing ||
+                    !props.onPicture$ ||
+                    !props.pictures?.enabled ||
+                    !canRequest(props.pictures)
+                  )
+                    return;
+                  const passage = { ...props.passage };
+                  const mode = ui.pictureMode;
+                  ui.picturing = true;
+                  ui.pictureMessage = "";
+                  let picture: ScenePicture;
+                  try {
+                    picture = await props.onPicture$(passage, mode, [
+                      ...proposals,
+                    ]);
+                  } catch (error) {
+                    ui.pictureMessage =
+                      error instanceof Error && error.message
+                        ? error.message
+                        : "The picture could not be generated.";
+                    return;
+                  } finally {
+                    ui.picturing = false;
+                  }
+                  const current = () =>
+                    sceneSnapshotMatches({ passage }, props.passage) &&
+                    ui.pictureMode === mode;
+                  if (!current()) return;
+                  ui.picture = picture;
+                  await saveScenePicture(picture).catch(() => undefined);
+                  if (!props.onReadPicture$) return;
+                  ui.readingPicture = true;
+                  try {
+                    const reading = await props.onReadPicture$(picture);
+                    if (!current()) return;
+                    if (!reading) {
+                      ui.pictureMessage =
+                        "The comparison didn't come back. The picture is still here to look at.";
+                      return;
+                    }
+                    ui.picture = { ...picture, reading };
+                    await saveScenePicture(ui.picture).catch(() => undefined);
+                  } catch {
+                    if (current())
+                      ui.pictureMessage =
+                        "The comparison didn't come back. The picture is still here to look at.";
+                  } finally {
+                    ui.readingPicture = false;
+                  }
+                }}
+              >
+                {ui.picturing
+                  ? "Drawing the scene…"
+                  : ui.picture
+                    ? "Generate another picture"
+                    : "Generate picture"}
+              </button>
+            </div>
+            {ui.pictureMessage && (
+              <p class="scene-bench__notice" role="status">
+                {ui.pictureMessage}
+              </p>
+            )}
+            {ui.picture && (
+              <figure class="scene-bench__picture">
+                <img
+                  src={`data:${ui.picture.mediaType};base64,${ui.picture.base64}`}
+                  alt={`A ${ui.pictureMode === "literal" ? "literal" : "reader's"} picture of the selected passage`}
+                  width={512}
+                  height={512}
+                />
+                <figcaption class="scene-bench__method">
+                  {ui.picture.destination} · {ui.picture.model}. Saved on this
+                  device for this selection.{" "}
+                  <a
+                    href={`data:${ui.picture.mediaType};base64,${ui.picture.base64}`}
+                    download={`scene-${ui.pictureMode}.${ui.picture.mediaType.split("/")[1] ?? "png"}`}
+                  >
+                    Download
+                  </a>
+                </figcaption>
+              </figure>
+            )}
+            {ui.readingPicture && (
+              <p class="scene-bench__method" role="status">
+                Comparing the picture with your page…
+              </p>
+            )}
+            {ui.picture?.reading &&
+              READING_GROUPS.map((group) => {
+                const items = ui.picture!.reading!.items.filter(
+                  (item) => item.status === group.status,
+                );
+                if (!items.length) return null;
+                return (
+                  <div
+                    key={group.status}
+                    class="scene-bench__reading-group"
+                    data-reading-status={group.status}
+                  >
+                    <h4>{group.title}</h4>
+                    <p class="scene-bench__method">{group.hint}</p>
+                    <ul class="scene-bench__ideas">
+                      {items.map((item, i) => {
+                        const kept = proposals.some(
+                          (p) => p.text === item.detail,
+                        );
+                        return (
+                          <li key={`${i}:${item.detail}`}>
+                            <strong>
+                              {
+                                SCENE_DIMENSIONS.find(
+                                  ({ id }) => id === item.dimension,
+                                )?.label
+                              }
+                            </strong>
+                            <p>{item.detail}</p>
+                            {item.source && (
+                              <blockquote>{item.source}</blockquote>
+                            )}
+                            {group.status !== "sourced" && (
+                              <button
+                                type="button"
+                                disabled={
+                                  kept ||
+                                  ui.saving ||
+                                  !ui.notesReady ||
+                                  proposals.length >= 12
+                                }
+                                onClick$={async () => {
+                                  const passage = { ...props.passage };
+                                  if (
+                                    ui.saving ||
+                                    !ui.notesReady ||
+                                    ui.notesKey !== scenePassageKey(passage) ||
+                                    ui.proposals.length >= 12
+                                  )
+                                    return;
+                                  const next: SceneProposal[] = [
+                                    ...ui.proposals,
+                                    {
+                                      dimension: item.dimension,
+                                      text: item.detail.slice(0, 600),
+                                      origin: "writer",
+                                    },
+                                  ];
+                                  ui.saving = true;
+                                  try {
+                                    await saveSceneProposals(passage, next);
+                                    if (
+                                      sceneSnapshotMatches(
+                                        { passage },
+                                        props.passage,
+                                      )
+                                    ) {
+                                      ui.proposals = next;
+                                      ui.removedIdeas = null;
+                                      ui.brief = "";
+                                      ui.noteMessage =
+                                        "Kept as an idea. The manuscript is unchanged.";
+                                    }
+                                  } catch {
+                                    ui.noteMessage =
+                                      "The idea could not be saved locally.";
+                                  } finally {
+                                    ui.saving = false;
+                                  }
+                                }}
+                              >
+                                {kept ? "Kept as an idea" : "Keep as an idea"}
+                              </button>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              })}
+          </section>
+
           <section
             class="scene-bench__section"
             aria-label="Prepare a media brief"
           >
-            <h3>Explore an image, sound, or movement</h3>
+            <h3>Take a brief to another tool</h3>
             <p class="scene-bench__method">
-              Media generation is not connected to this instrument. Preparing a
-              brief stays on this device, sends nothing, and incurs no
-              generation charge.
+              For sound, movement, or an image tool of your own. Preparing a
+              brief stays on this device, sends nothing, and costs nothing.
             </p>
             <div class="scene-bench__actions">
               {(["image", "sound", "motion"] as const).map((medium) => (

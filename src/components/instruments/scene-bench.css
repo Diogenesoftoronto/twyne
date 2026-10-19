@@ -188,6 +188,53 @@
 .scene-bench__reading .instrument-art__rule {
   margin-block-end: 0.75rem;
 }
+.scene-bench__modes {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+  padding: 0;
+  border: 0;
+}
+.scene-bench__modes legend {
+  padding: 0;
+  margin-block-end: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.scene-bench__modes label {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  cursor: pointer;
+}
+.scene-bench__modes small {
+  display: block;
+  color: var(--color-ink-light);
+  font-size: 0.75rem;
+}
+.scene-bench__credit {
+  margin-block: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-inline-start: 2px solid var(--color-crimson);
+  background: var(--color-paper-2);
+  font-size: 0.75rem;
+}
+.scene-bench__picture {
+  margin: 1rem 0 0;
+}
+.scene-bench__picture img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  border: 1px solid var(--color-paper-3);
+}
+.scene-bench__reading-group h4 {
+  margin: 1rem 0 0;
+  font-size: 0.875rem;
+}
+.scene-bench__reading-group[data-reading-status="contradicted"] h4 {
+  color: var(--color-crimson);
+}
 .scene-bench__brief {
   margin-block-start: 1rem;
 }

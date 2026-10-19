@@ -471,6 +471,229 @@ export function createSceneMediaBrief(
     .join("\n\n");
 }
 
+/**
+ * A picture is a stand-in for a reader's mental image. "literal" draws only
+ * what the page states, so silence shows up as blank space; "imagined" lets the
+ * model fill gaps the way a reader would, so its inventions mark what the
+ * writer left open.
+ */
+export type ScenePictureMode = "literal" | "imagined";
+export const SCENE_PICTURE_MODES: ReadonlyArray<{
+  id: ScenePictureMode;
+  label: string;
+  hint: string;
+}> = [
+  {
+    id: "literal",
+    label: "Only what's written",
+    hint: "Blank or plain areas show where the passage gives a reader nothing.",
+  },
+  {
+    id: "imagined",
+    label: "As a reader fills it in",
+    hint: "Anything the model invents is a detail you left to the reader.",
+  },
+];
+
+/** Image endpoints cap prompt length; the excerpt is the bulk of it. */
+export const MAX_SCENE_PICTURE_EXCERPT = 3_000;
+
+function unidentifiedDimensions(inventory: SceneInventory): string[] {
+  return SCENE_DIMENSIONS.filter(
+    ({ id }) => !inventory.dimensions[id].length,
+  ).map(({ label }) => label.toLowerCase());
+}
+
+function pictureExcerpt(text: string): string {
+  return text.length > MAX_SCENE_PICTURE_EXCERPT
+    ? `${text.slice(0, MAX_SCENE_PICTURE_EXCERPT)}…`
+    : text;
+}
+
+/** The image prompt. Writer ideas only enter the imagined reading. */
+export function createScenePicturePrompt(
+  inventory: SceneInventory,
+  mode: ScenePictureMode,
+  proposals: readonly SceneProposal[] = [],
+): string | null {
+  if (inventory.status !== "ready") return null;
+  const missing = unidentifiedDimensions(inventory);
+  const ideas =
+    mode === "imagined"
+      ? proposals
+          .filter((p) => p.origin === "writer" && p.text.trim())
+          .map(
+            (p) =>
+              `- ${SCENE_DIMENSIONS.find(({ id }) => id === p.dimension)?.label ?? "Idea"}: ${p.text.trim()}`,
+          )
+      : [];
+  return [
+    "A single still frame showing the mental picture a reader forms from this passage of fiction. No text, captions, lettering, borders, or panels.",
+    mode === "literal"
+      ? "Depict only what the passage states. Do not add people, objects, weather, colours, light sources, or setting details the passage does not name. Where the passage is silent, leave that part of the frame plain, neutral grey, and featureless, so the gaps stay visible."
+      : "Depict the scene as an attentive reader would imagine it. Keep every stated detail exactly as written, and fill what the passage leaves open with plausible, specific choices.",
+    `Passage:\n${pictureExcerpt(inventory.passage.text)}`,
+    missing.length
+      ? `The passage gives no clear cue for: ${missing.join(", ")}.`
+      : "",
+    ideas.length
+      ? `The writer is considering these additions:\n${ideas.join("\n")}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+export type SceneReadingStatus = "sourced" | "invented" | "contradicted";
+export interface SceneReadingItem {
+  dimension: SceneDimension;
+  detail: string;
+  status: SceneReadingStatus;
+  /** Exact passage text, kept only when it really appears in the passage. */
+  source?: string;
+}
+export interface SceneReading {
+  items: SceneReadingItem[];
+}
+
+export const SCENE_READING_SYSTEM = `You compare a picture with the passage of fiction it was drawn from, so a writer can see what a reader would have to supply.
+
+List the concrete details visible in the picture. For each one, decide:
+- "sourced": the passage states it. Quote the exact passage words in "source".
+- "invented": the passage does not state it; the picture filled a gap.
+- "contradicted": the picture conflicts with the passage. Quote the passage words it conflicts with in "source".
+
+Each detail belongs to one dimension: place, time, light, sound, movement, or tension (a character's want, obstacle, or risk). Sound can only be inferred from visible sources.
+
+Answer with JSON only, no prose:
+{"items":[{"dimension":"light","detail":"a single oil lamp on the table","status":"invented"}]}
+
+List at most 16 items. Keep each detail under 20 words. Prefer the details a writer could act on.`;
+
+export function createSceneReadingPrompt(
+  inventory: SceneInventory,
+  mode: ScenePictureMode,
+): string | null {
+  if (inventory.status !== "ready") return null;
+  return [
+    mode === "literal"
+      ? "The picture was asked to show only what the passage states; anything else it shows is the model's own assumption."
+      : "The picture was asked to fill gaps the way a reader would.",
+    `Passage:\n${inventory.passage.text}`,
+  ].join("\n\n");
+}
+
+const READING_STATUSES = new Set<string>([
+  "sourced",
+  "invented",
+  "contradicted",
+]);
+const MAX_READING_ITEMS = 16;
+
+/** Tolerates code fences and surrounding prose; drops anything malformed. */
+export function parseSceneReading(
+  raw: string,
+  passage: ScenePassage,
+): SceneReading | null {
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  if (start < 0 || end <= start) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw.slice(start, end + 1));
+  } catch {
+    return null;
+  }
+  const list = (parsed as { items?: unknown })?.items;
+  if (!Array.isArray(list)) return null;
+  const items: SceneReadingItem[] = [];
+  for (const entry of list) {
+    if (items.length >= MAX_READING_ITEMS) break;
+    if (!entry || typeof entry !== "object") continue;
+    const { dimension, detail, status, source } = entry as Record<
+      string,
+      unknown
+    >;
+    if (
+      typeof dimension !== "string" ||
+      !SCENE_DIMENSIONS.some(({ id }) => id === dimension) ||
+      typeof status !== "string" ||
+      !READING_STATUSES.has(status) ||
+      typeof detail !== "string" ||
+      !detail.trim()
+    )
+      continue;
+    const quote =
+      typeof source === "string" &&
+      source.trim() &&
+      passage.text.includes(source.trim())
+        ? source.trim().slice(0, 300)
+        : undefined;
+    items.push({
+      dimension: dimension as SceneDimension,
+      detail: detail.trim().slice(0, 300),
+      // A claimed source that is not in the passage is not evidence.
+      status:
+        status === "sourced" && !quote
+          ? "invented"
+          : (status as SceneReadingStatus),
+      ...(quote ? { source: quote } : {}),
+    });
+  }
+  return { items };
+}
+
+export interface ScenePicture {
+  passage: ScenePassage;
+  mode: ScenePictureMode;
+  mediaType: string;
+  base64: string;
+  destination: string;
+  model: string;
+  createdAt: number;
+  reading: SceneReading | null;
+}
+
+function validPicture(value: unknown): value is ScenePicture {
+  if (!value || typeof value !== "object") return false;
+  const p = value as Partial<ScenePicture>;
+  return (
+    !!p.passage &&
+    (p.mode === "literal" || p.mode === "imagined") &&
+    typeof p.mediaType === "string" &&
+    p.mediaType.startsWith("image/") &&
+    typeof p.base64 === "string" &&
+    p.base64.length > 0 &&
+    typeof p.destination === "string" &&
+    typeof p.model === "string" &&
+    typeof p.createdAt === "number"
+  );
+}
+
+function pictureKey(passage: ScenePassage, mode: ScenePictureMode): string {
+  return `scene-bench:picture:${mode}:${scenePassageKey(passage)}`;
+}
+
+/** Pictures stay on this device, tied to the exact selection they were drawn from. */
+export async function loadScenePicture(
+  passage: ScenePassage,
+  mode: ScenePictureMode,
+): Promise<ScenePicture | null> {
+  const { loadMetaFromIdb } = await import("./idb");
+  const stored = await loadMetaFromIdb<unknown>(pictureKey(passage, mode));
+  return validPicture(stored) &&
+    stored.mode === mode &&
+    sceneSnapshotMatches(stored, passage)
+    ? stored
+    : null;
+}
+
+export async function saveScenePicture(picture: ScenePicture): Promise<void> {
+  if (!validPicture(picture)) throw new Error("Invalid scene picture");
+  const { saveMetaToIdb } = await import("./idb");
+  await saveMetaToIdb(pictureKey(picture.passage, picture.mode), picture);
+}
+
 export function sceneSpeechId(passage: ScenePassage): string {
   return `scene:${scenePassageKey(passage)}`;
 }
