@@ -63,6 +63,45 @@ export const TYPST_EDITORIAL_STYLES = `
 #show footnote.entry: set text(size: 0.85em, fill: rgb("#4a3f33"))
 #set footnote.entry(separator: line(length: 30%, stroke: 0.6pt + rgb("#ddd0b1")))
 #set line(stroke: 0.6pt + rgb("#ddd0b1"))
+#let twyne-subtitle(body) = block(width: 100%, above: 0pt, below: 24pt)[
+  #set align(center)
+  #set par(justify: false, leading: 0.5em)
+  #text(font: ("Lora", "Libertinus Serif"), size: 17pt, style: "italic", fill: rgb("#4a3f33"), body)
+]
+#let twyne-kicker(body) = block(sticky: true, width: 100%, above: 0pt, below: 10pt)[
+  #set par(justify: false)
+  #text(font: ("DM Sans", "DM Sans 9pt"), size: 10pt, weight: 700, tracking: 0.2em, fill: rgb("#c1272d"), smallcaps(body))
+]
+#let twyne-standfirst(body) = block(width: 100%, above: 0pt, below: 22pt)[
+  #set par(justify: false, leading: 0.7em)
+  #text(font: ("Lora", "Libertinus Serif"), size: 16.5pt, fill: rgb("#1f1b16"), body)
+]
+#let twyne-epigraph(attribution: none, body) = block(width: 100%, above: 1.2em, below: 1.6em, inset: (left: 3em, right: 1em))[
+  #set par(justify: false, leading: 0.6em)
+  #set text(style: "italic", size: 0.92em, fill: rgb("#4a3f33"))
+  #body
+  #if attribution != none { align(right, text(style: "normal", size: 0.85em)[— #attribution]) }
+]
+#let twyne-scene-break(style: "ornament") = block(width: 100%, above: 1.6em, below: 1.6em, breakable: false, {
+  if style == "rule" { align(center, line(length: 25%)) }
+  else if style == "space" { v(2.5em) }
+  else { align(center, text(font: "DejaVu Sans Mono", size: 12pt, fill: rgb("#c1272d"), tracking: 0.6em, "✦✦✦")) }
+})
+#let twyne-abstract(body) = block(width: 100%, above: 0pt, below: 24pt, inset: (x: 2.5em))[
+  #set par(justify: true, leading: 0.65em)
+  #set text(size: 0.9em)
+  #align(center, text(font: ("DM Sans", "DM Sans 9pt"), size: 0.8em, weight: 700, tracking: 0.2em, upper[Abstract]))
+  #v(0.4em)
+  #body
+]
+#let twyne-cue(body) = block(sticky: true, width: 100%, above: 1.4em, below: 0pt)[
+  #set par(justify: false)
+  #align(center, upper(body))
+]
+#let twyne-direction(body) = block(width: 100%, above: 0.4em, below: 0.4em, inset: (left: 3em))[
+  #set par(justify: false)
+  #text(style: "italic")[(#body)]
+]
 #let twyne-opening-seen = state("twyne-editorial-opening", false)
 #let twyne-opening-depth = state("twyne-editorial-depth", 0)
 #let twyne-nested(body) = {
@@ -194,6 +233,18 @@ export const TYPST_MANUSCRIPT_STYLES = `
   } } else if tag == "pre" {
     block(width: 100%, fill: rgb("#1f1b16"), inset: (x: 1.25em, y: 1em), radius: 2pt,
       text(font: "DejaVu Sans Mono", size: 10.5pt, fill: rgb("#f4ecd8"), body))
+  } else if tag == "div" and json.decode(attributes).at("data-role", default: "") != "" {
+    let a = json.decode(attributes)
+    let role = a.at("data-role")
+    if role == "subtitle" { twyne-subtitle(body) }
+    else if role == "kicker" { twyne-kicker(body) }
+    else if role == "standfirst" { twyne-standfirst(body) }
+    else if role == "abstract" { twyne-abstract(body) }
+    else if role == "character-cue" { twyne-cue(body) }
+    else if role == "stage-direction" { twyne-direction(body) }
+    else if role == "scene-break" { twyne-scene-break(style: a.at("data-style", default: "ornament")) }
+    else if role == "epigraph" { twyne-epigraph(attribution: if a.at("data-attribution", default: "") == "" { none } else { a.at("data-attribution") }, body) }
+    else { twyne-unstyled-node(tag, attributes, body) }
   } else if tag == "th" or tag == "td" {
     let a = json.decode(attributes)
     if not a.keys().contains("data-cell-border-color") { a.insert("data-cell-border-color", "#ddd0b1") }

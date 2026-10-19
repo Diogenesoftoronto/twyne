@@ -1,5 +1,11 @@
 import { typstString } from "./string";
 import { typstCodeMatches } from "./syntax";
+import {
+  EPIGRAPH_FUNCTION,
+  ROLE_BY_FUNCTION,
+  SCENE_BREAK_FUNCTION,
+  SCENE_BREAK_STYLES,
+} from "./roles";
 
 /** A bounded, non-evaluating bridge. Unknown syntax is an editable opaque atom. */
 const MAX_SOURCE = 5_000_000;
@@ -357,6 +363,72 @@ function balanced(s: string, start: number): number {
   }
   throw new Error("Unterminated delimiter");
 }
+/**
+ * Recognise a whole top-level editorial-role call (`#twyne-subtitle[…]`, …).
+ * Anything that is not exactly one such call, or that has arguments we do not
+ * understand, throws so the caller keeps it as an opaque Typst block.
+ */
+function roleCall(s: string): string | null {
+  const name = /^#(twyne-[a-z-]+)/.exec(s)?.[1];
+  if (
+    !name ||
+    !(name in ROLE_BY_FUNCTION) &&
+      name !== EPIGRAPH_FUNCTION &&
+      name !== SCENE_BREAK_FUNCTION
+  )
+    return null;
+  let i = 1 + name.length;
+  let args = "";
+  if (s[i] === "(") {
+    const close = balanced(s, i);
+    args = s.slice(i + 1, close - 1).trim();
+    i = close;
+  }
+  let body = "";
+  if (name !== SCENE_BREAK_FUNCTION) {
+    if (s[i] !== "[") throw new Error("Expected role content");
+    const close = balanced(s, i);
+    body = s.slice(i + 1, close - 1);
+    i = close;
+  }
+  if (s.slice(i).trim() !== "") throw new Error("Trailing role content");
+  if (name === SCENE_BREAK_FUNCTION) {
+    const m = /^style:\s*("(?:[^"\\]|\\.)*")$/.exec(args);
+    const style = m ? quoted(m[1], 0).value : "ornament";
+    if (args && !m) throw new Error("Unsupported scene break arguments");
+    if (!(SCENE_BREAK_STYLES as readonly string[]).includes(style))
+      throw new Error("Unknown scene break style");
+    return element(
+      "div",
+      { "data-role": "scene-break", "data-style": style },
+      "",
+    );
+  }
+  if (name === EPIGRAPH_FUNCTION) {
+    const attributes: Record<string, string> = { "data-role": "epigraph" };
+    if (args) {
+      const m = /^attribution:\s*\[/.exec(args);
+      if (!m) throw new Error("Unsupported epigraph arguments");
+      const open = m[0].length - 1;
+      if (balanced(args, open) !== args.length)
+        throw new Error("Unsupported epigraph arguments");
+      const rendered = parseInline(args.slice(open + 1, -1));
+      if (rendered.includes("<")) throw new Error("Rich attribution");
+      attributes["data-attribution"] = rendered
+        .replace(/&quot;/g, '"')
+        .replace(/&gt;/g, ">")
+        .replace(/&lt;/g, "<")
+        .replace(/&amp;/g, "&");
+    }
+    return element("div", attributes, parseInline(body, 1));
+  }
+  if (args) throw new Error("Unsupported role arguments");
+  return element(
+    "div",
+    { "data-role": ROLE_BY_FUNCTION[name] },
+    parseInline(body, 1),
+  );
+}
 interface Piece {
   source: string;
   html: string;
@@ -605,7 +677,9 @@ function pieces(source: string): Piece[] {
     let html: string;
     try {
       const heading = /^(={1,6})\s+([\s\S]*)$/.exec(s);
-      if (heading)
+      const role = roleCall(s);
+      if (role) html = role;
+      else if (heading)
         html = `<h${heading[1].length}>${parseInline(heading[2])}</h${heading[1].length}>`;
       else if (
         /^[-+]\s/.test(s) &&
