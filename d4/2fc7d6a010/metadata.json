@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "d42fc7d6a010",
+  "strategy": "manual-commit",
+  "branch": "feat/editorial-roles-and-kits",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/utils/typst/kits.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d4/2fc7d6a010/0/metadata.json",
+      "transcript": "/d4/2fc7d6a010/0/full.jsonl",
+      "compact_transcript": "/d4/2fc7d6a010/0/transcript.jsonl",
+      "content_hash": "/d4/2fc7d6a010/0/content_hash.txt",
+      "prompt": "/d4/2fc7d6a010/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 574569,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 12882176,
+    "output_tokens": 39470,
+    "api_call_count": 69,
+    "subagent_tokens_complete": false
+  }
+}
