@@ -1,0 +1,67 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "f472ccb1b439",
+  "session_id": "0a363bde-a0ec-4ff2-98a8-cf97cc3b392a",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-19T01:52:41.301320637Z",
+  "branch": "feat/editorial-roles-and-kits",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/components/editor/extensions/editorial-roles.test.ts",
+    "src/components/editor/extensions/editorial-roles.ts",
+    "src/components/editor/twyne-editor.tsx",
+    "src/global.css",
+    "src/utils/editor-commands.ts",
+    "src/utils/typst/document.ts",
+    "src/utils/typst/roles.ts",
+    "src/utils/typst/serialize.test.ts",
+    "src/utils/typst/serialize.ts",
+    "src/utils/typst/theme.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "2e85ad09b919",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 66,
+    "cache_creation_tokens": 426740,
+    "cache_read_tokens": 5377440,
+    "output_tokens": 29953,
+    "api_call_count": 33
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-19T01:52:41.260901104Z",
+    "agent_lines": 760,
+    "agent_removed": 4,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 760,
+    "total_lines_changed": 764,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 780,
+      "user_lines_removed": 8,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "convex/sceneMedia.ts": 324,
+        "src/routes/pricing/index.tsx": 15,
+        "src/types/index.ts": 17,
+        "src/utils/ai-client.ts": 159,
+        "src/utils/purchase-waitlist.ts": 6,
+        "src/utils/scene-bench.ts": 219,
+        "src/utils/scene-media-credit.ts": 38,
+        "src/utils/usage-domain.ts": 2
+      },
+      "user_removed_per_file": {
+        "src/routes/pricing/index.tsx": 7,
+        "src/types/index.ts": 1
+      }
+    }
+  ]
+}

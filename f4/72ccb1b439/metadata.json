@@ -3,10 +3,16 @@
   "checkpoint_id": "f472ccb1b439",
   "strategy": "manual-commit",
   "branch": "feat/editorial-roles-and-kits",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
+    "src/components/editor/extensions/editorial-roles.test.ts",
     "src/components/editor/extensions/editorial-roles.ts",
+    "src/components/editor/twyne-editor.tsx",
+    "src/global.css",
+    "src/utils/editor-commands.ts",
+    "src/utils/typst/document.ts",
     "src/utils/typst/roles.ts",
+    "src/utils/typst/serialize.test.ts",
     "src/utils/typst/serialize.ts",
     "src/utils/typst/theme.ts"
   ],
@@ -17,14 +23,21 @@
       "compact_transcript": "/f4/72ccb1b439/0/transcript.jsonl",
       "content_hash": "/f4/72ccb1b439/0/content_hash.txt",
       "prompt": "/f4/72ccb1b439/0/prompt.txt"
+    },
+    {
+      "metadata": "/f4/72ccb1b439/1/metadata.json",
+      "transcript": "/f4/72ccb1b439/1/full.jsonl",
+      "compact_transcript": "/f4/72ccb1b439/1/transcript.jsonl",
+      "content_hash": "/f4/72ccb1b439/1/content_hash.txt",
+      "prompt": "/f4/72ccb1b439/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 559669,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 10004096,
-    "output_tokens": 32713,
-    "api_call_count": 59,
+    "input_tokens": 559735,
+    "cache_creation_tokens": 426740,
+    "cache_read_tokens": 15381536,
+    "output_tokens": 62666,
+    "api_call_count": 92,
     "subagent_tokens_complete": false
   }
 }

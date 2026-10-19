@@ -1,0 +1,45 @@
+Act as the implementation sub-agent for this task.
+
+Repository: /home/diogenes/Projects/apps/twyne (Tiptap editor + Typst export, Convex backend). Read CLAUDE.md and convex/_generated/ai/guidelines.md before touching anything under convex/. Work on a new branch `feat/editorial-roles-and-kits` off main. Commit in logical steps (do not push). Do not run the full test suite or repeated full `tsc` runs; use targeted vitest files and a single `npx tsc --noEmit` at the end.
+
+## Background (already researched, do not redo)
+
+- Twyne's bundled Typst compiler (`@myriaddreamin/typst.ts` 0.7.0) is Typst 0.14.x. The native `title` element exists. There is NO package registry wired into `src/utils/typst/compiler.worker.ts`; only `compiler.addSource("/main.typ", …)` and `compiler.mapShadow(path, bytes)` are used. `#import "@preview/…"` will fail. Vendoring a package means shadowing its files into the virtual FS.
+- Editorial Typst styles live in `src/utils/typst/theme.ts` (`TYPST_EDITORIAL_STYLES`). HTML→Typst serialization is `src/utils/typst/serialize.ts`. The Typst source ↔ HTML bridge is `src/utils/typst/document.ts`. Unknown Typst becomes an opaque `rawTypst` node (`src/components/editor/extensions/raw-typst.ts`).
+- The command registry is `src/utils/editor-commands.ts`; slash menu groups are "Structure", "Write", "Insert", "Review". `/subtitle` currently just aliases Heading 2 (`paragraph.heading-2` searchTerms/keywords).
+- Layout types (columns 1|2|3, columnGap) are in `src/types/index.ts`. Document persistence fields `format` and `typstSource` exist in `src/utils/idb.ts`, `src/utils/convex-sync.ts`, `convex/schema.ts`, `convex/sync.ts`.
+- Serializer bug: `src/utils/typst/serialize.ts` around line 212 emits `#raw(text)` for `<pre>` and drops the language, so exported code blocks are never syntax highlighted.
+
+## Deliverables, in order. Finish each before the next.
+
+### 1. Quick wins
+a. Code block language in export: carry Tiptap's codeBlock `language` attribute (check how it renders to HTML, typically `<pre><code class="language-xyz">`) through to `#raw(…, lang: "xyz", block: true)`. Keep the no-language path unchanged. Make sure the Typst-source→HTML bridge in document.ts round-trips the lang back onto the code block if it parses raw blocks at all.
+b. Document title: where serialize.ts emits the document title as `#heading(level: 1)[…]` (see the export payload path near the bottom of serialize.ts), switch to `#title[…]` plus `#set document(title: …)`. Add a `#show title:` rule in theme.ts that reproduces the current level‑1 title look (size 30pt, Libre Baskerville, tracking, spacing). Confirm the compile still works by running whatever existing Typst compile/export test exists (grep for tests referencing `serialize` or `export`), or by a small vitest that serializes a fixture and asserts the `#title` output. Level 1 headings remain available for sections.
+
+### 2. Shared editorial roles (Tiptap nodes + Typst)
+Add block nodes in `src/components/editor/extensions/editorial-roles.ts` (one file, one Tiptap Node each): `subtitle`, `kicker`, `standfirst`, `epigraph` (with optional `attribution` child or attribute), `sceneBreak` (atom, attribute `style: "ornament" | "rule" | "space"`). Each must:
+- Render in the editor with its own class (`twyne-role-subtitle` etc.) and sensible default CSS in the editor stylesheet (find where `.twyne-raw-typst` or heading styles are defined and add next to them). Keep it tasteful and consistent with the existing editorial look.
+- parseHTML/renderHTML with `data-role="…"` so HTML persistence and sync are unaffected.
+- Serialize to Typst in serialize.ts as named functions defined in theme.ts: `#twyne-subtitle[…]`, `#twyne-kicker[…]`, `#twyne-standfirst[…]`, `#twyne-epigraph(attribution: […])[…]`, `#twyne-scene-break(style: "ornament")`. Define those functions in `TYPST_EDITORIAL_STYLES` with typography in keeping with the existing rules (DM Sans small caps for kicker, larger Lora for standfirst, italic indented epigraph with right-aligned attribution, centered ornament/rule/space for scene break).
+- Round-trip from Typst source back to the HTML nodes in document.ts, following how existing constructs (e.g. heading, quote, footnote) are recognised there. If a role cannot be recognised it must at least fall back to rawTypst without crashing.
+- Register commands in editor-commands.ts under a new slash group "Piece" (ids `role.subtitle`, `role.kicker`, `role.standfirst`, `role.epigraph`, `role.scene-break`). Remove "subtitle" from the Heading 2 searchTerms/keywords. Wire the commands wherever the other paragraph commands are executed (grep for `paragraph.heading-2` to find the dispatcher in twyne-editor.tsx / slash-command.ts).
+- Add a vitest file `editorial-roles.test.ts` next to the extension covering: insert each role via command, HTML round-trip, Typst serialization string for each.
+
+### 3. Kit selection
+- Add `kit?: "essay" | "technical" | "paper" | "play"` to the document type (find where `format`/`typstSource` live in the document type and add alongside; default/undefined means "essay", which must produce byte-identical Typst to today except for the title and lang changes from step 1). Persist it through idb, convex-sync, convex/schema.ts (optional field, use `v.optional(v.union(v.literal(...)))`), and convex/sync.ts the same way `format` is handled.
+- Create `src/utils/typst/kits.ts` exporting a `KITS` record: `{ id, label, description, roles: string[] (command ids enabled), typstStyles: string (appended after TYPST_EDITORIAL_STYLES), vendoredPackages: {path, url}[] (empty for now) }`. Essay kit = empty extras. Technical, paper, play kits = define now with typstStyles that at least adjust defaults (technical: DM Sans body, tighter raw block styling with a light background and 10.5pt mono; paper: 11pt Libertinus body, numbered headings, smaller margins via `#set page`; play: Courier-like via DejaVu Sans Mono, centred headings). Roles lists: all kits include the shared roles; technical additionally enables codeBlock-related commands; paper enables an `abstract` role; play enables `characterCue` and `stageDirection` roles. Implement `abstract`, `characterCue`, `stageDirection` as three more nodes in editorial-roles.ts with matching Typst functions (`#twyne-abstract`, `#twyne-cue`, `#twyne-direction`) and commands `role.abstract`, `role.character-cue`, `role.stage-direction`.
+- Slash menu / toolbar: filter "Piece" group commands by the active document's kit roles. Find how commands are filtered by `availability`/`surfaces` and add a kit filter there rather than special-casing the menu.
+- UI: add a "Piece type" select to the existing document/layout settings panel (grep for where `columns` or page setup is edited in src/components/editor) with the four kits and their descriptions.
+- Export: wherever TYPST_EDITORIAL_STYLES is injected into the compiled source, append the active kit's typstStyles.
+
+### 4. Technical kit: code highlighting (no external package for now)
+Using only native Typst 0.14 `raw` (zebraw/codly are NOT available offline; do not add a registry):
+- Add a `highlightLines` attribute (string like "3,5-7") to the codeBlock extension (extend the existing CodeBlock node; check if lowlight/code-block-lowlight is used).
+- A small inline control in the code block node view or a slash/toolbar command `code.highlight-lines` that prompts for the ranges (reuse whatever prompt/dialog pattern the editor already uses for link URLs or image width).
+- In theme.ts define `#twyne-code(lang: none, highlight: (), body)` that renders the raw block with line numbers and fills highlighted lines, using `show raw.line:` inside the function. Serialize technical-kit code blocks through it; other kits keep plain `#raw`.
+- Editor CSS: highlighted lines get a subtle background in Write view too.
+
+## Verification and handoff
+- Targeted tests: the new `editorial-roles.test.ts`, plus `slash-command.test.ts`, `formatting-suite.test.ts`, and any existing serialize/export test. Then one `npx tsc --noEmit`.
+- If a Typst compile smoke test harness exists (grep for `compiler.worker` or `runWithWorld` in tests), compile one fixture per kit and confirm no diagnostics. If none exists, say so rather than inventing one.
+- Report: files changed, commits made, test output summary, anything from the list you could not finish and why. Do not push and do not open a PR.
