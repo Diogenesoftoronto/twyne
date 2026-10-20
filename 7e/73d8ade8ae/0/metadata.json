@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "7e73d8ade8ae",
+  "session_id": "01a1571d-03e6-7110-8e7c-0c841f44bb04",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-20T05:34:43.466301475Z",
+  "branch": "feat/editorial-roles-and-kits",
+  "checkpoints_count": 13,
+  "save_step_count": 1,
+  "files_touched": [
+    "README.md",
+    "src/components/editor/extensions/flow-conductor.ts",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/in-flow/flow-surface.tsx",
+    "src/global.css"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6.1-sol",
+  "turn_id": "7dce21fe9aa8",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 1449493,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 55922304,
+    "output_tokens": 195479,
+    "api_call_count": 289
+  },
+  "session_metrics": {
+    "turn_count": 13
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-20T05:34:43.262047118Z",
+    "agent_lines": 315,
+    "agent_removed": 23,
+    "human_added": 1771,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2086,
+    "total_lines_changed": 2242,
+    "agent_percentage": 15.075825156110614,
+    "metric_version": 2
+  }
+}
