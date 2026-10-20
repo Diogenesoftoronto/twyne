@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "3f502d99b3df",
+  "strategy": "manual-commit",
+  "branch": "feat/editorial-roles-and-kits",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "convex/lib/rateLimit.ts",
+    "convex/sceneMedia.ts",
+    "src/components/instruments/instrument-dock.tsx",
+    "src/components/instruments/scene-bench.css",
+    "src/components/instruments/scene-bench.tsx",
+    "src/components/settings/scene-media-settings.tsx",
+    "src/routes/pricing/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/types/index.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/models-dev.ts",
+    "src/utils/purchase-waitlist.test.ts",
+    "src/utils/purchase-waitlist.ts",
+    "src/utils/scene-bench.ts",
+    "src/utils/scene-media-credit.ts",
+    "src/utils/scene-media.test.ts",
+    "src/utils/scene-media.ts",
+    "src/utils/usage-domain.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3f/502d99b3df/0/metadata.json",
+      "transcript": "/3f/502d99b3df/0/full.jsonl",
+      "compact_transcript": "/3f/502d99b3df/0/transcript.jsonl",
+      "content_hash": "/3f/502d99b3df/0/content_hash.txt",
+      "prompt": "/3f/502d99b3df/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 581806,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 15585920,
+    "output_tokens": 42098,
+    "api_call_count": 78,
+    "subagent_tokens": {
+      "input_tokens": 12153,
+      "cache_creation_tokens": 0,
+      "cache_read_tokens": 432128,
+      "output_tokens": 737,
+      "api_call_count": 5
+    },
+    "subagent_tokens_complete": true
+  }
+}
