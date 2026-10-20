@@ -3,12 +3,34 @@
   "checkpoint_id": "bfc5d9ed7ebb",
   "strategy": "manual-commit",
   "branch": "feat/editorial-roles-and-kits",
-  "checkpoints_count": 13,
+  "checkpoints_count": 17,
   "files_touched": [
     "docs/manual-visuals.md",
+    "public/assets/manual/narration/account-and-live.m4a",
+    "public/assets/manual/narration/apparatus.m4a",
+    "public/assets/manual/narration/byok.m4a",
+    "public/assets/manual/narration/dossier.m4a",
+    "public/assets/manual/narration/flow.m4a",
+    "public/assets/manual/narration/folios.m4a",
+    "public/assets/manual/narration/getting-started.m4a",
+    "public/assets/manual/narration/house.m4a",
+    "public/assets/manual/narration/manuscript-tools.m4a",
+    "public/assets/manual/narration/marginalia.m4a",
+    "public/assets/manual/narration/privacy.m4a",
+    "public/assets/manual/narration/room.m4a",
+    "public/assets/manual/narration/rubric.m4a",
+    "public/assets/manual/narration/the-piece.m4a",
+    "public/assets/manual/narration/writing-instruments.m4a",
+    "scripts/gen-manual-narration.ts",
     "src/routes/docs/guide-editorial-room.ts",
     "src/routes/docs/guide-your-work.ts",
-    "src/routes/docs/index.tsx"
+    "src/routes/docs/index.tsx",
+    "src/routes/docs/manual-narration-script.ts",
+    "src/routes/docs/manual-narration.generated.json",
+    "src/routes/docs/manual-narration.test.ts",
+    "src/routes/docs/manual-narration.tsx",
+    "src/routes/docs/manual.css",
+    "src/routes/help/review/index.tsx"
   ],
   "sessions": [
     {
@@ -17,13 +39,20 @@
       "compact_transcript": "/bf/c5d9ed7ebb/0/transcript.jsonl",
       "content_hash": "/bf/c5d9ed7ebb/0/content_hash.txt",
       "prompt": "/bf/c5d9ed7ebb/0/prompt.txt"
+    },
+    {
+      "metadata": "/bf/c5d9ed7ebb/1/metadata.json",
+      "transcript": "/bf/c5d9ed7ebb/1/full.jsonl",
+      "compact_transcript": "/bf/c5d9ed7ebb/1/transcript.jsonl",
+      "content_hash": "/bf/c5d9ed7ebb/1/content_hash.txt",
+      "prompt": "/bf/c5d9ed7ebb/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1449493,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 55922304,
-    "output_tokens": 195479,
-    "api_call_count": 289
+    "input_tokens": 1449999,
+    "cache_creation_tokens": 1554045,
+    "cache_read_tokens": 121046739,
+    "output_tokens": 373679,
+    "api_call_count": 539
   }
 }
