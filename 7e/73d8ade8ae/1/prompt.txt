@@ -1,0 +1,17 @@
+[Twyne_UX_Improvement_Brief.docx](docs/Twyne_UX_Improvement_Brief.docx) I need these issues resolved
+
+---
+
+the important thing for me is the autonomy that the application has, I want it to do things without the user having to direct everything, waiting for the user to click a button is not what I want for this app, of course there is optionality there but the default is autonomous fluid action.
+
+---
+
+update docs
+
+---
+
+i think i would like the sections to be voiced as well so you can listen to them. too. I think with this fiction morgan as the subject here.
+
+---
+
+deploy
