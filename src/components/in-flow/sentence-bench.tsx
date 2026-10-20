@@ -1,8 +1,10 @@
 import {
+  $,
   component$,
   useSignal,
   useStore,
   useStyles$,
+  useTask$,
   useVisibleTask$,
 } from "@qwik.dev/core";
 import type { SentenceLabProps } from "./catalog";
@@ -40,6 +42,7 @@ interface BenchSession {
   modelBusy: boolean;
   modelWords: SentenceCandidate[];
   /** Disclosures the writer opened; a replaced instance keeps them open. */
+  contextOpen: boolean;
   paragraphOpen: boolean;
   roomOpen: boolean;
 }
@@ -55,13 +58,25 @@ function firstSentence(text: string): string {
   return parts.length > 1 ? (parts[0]?.trim() ?? text) : text;
 }
 
+const SECTIONS = [
+  ["rewrite", "Rewrite"],
+  ["words", "Words"],
+  ["place", "Place"],
+  ["hear", "Hear"],
+] as const;
+
 // Checked candidate updates can replace the renderer's component instance.
-// Keep the writer's unfinished choices with this tool session, not that instance.
+// Keep the writer's unfinished choices with this tool session, not that
+// instance. Each instance owns its own store and copies its changes back
+// here: a store shared between instances keeps the replaced instance's
+// subscriptions, and every choice then renders one click late.
 // This is browser-only, bounded, and a new tool ID starts a fresh working copy.
 const benchSessions = new Map<string, BenchSession>();
 function benchSession(toolId: string, props: SentenceLabProps): BenchSession {
   const previous = typeof window !== "undefined" && benchSessions.get(toolId);
-  if (previous && previous.sentence === props.sentence) return previous;
+  // Work in flight belongs to the instance that started it.
+  if (previous && previous.sentence === props.sentence)
+    return { ...previous, applying: false, modelBusy: false };
   const session: BenchSession = {
     sentence: props.sentence,
     working: props.sentence,
@@ -74,6 +89,7 @@ function benchSession(toolId: string, props: SentenceLabProps): BenchSession {
     message: "",
     modelBusy: false,
     modelWords: [],
+    contextOpen: false,
     paragraphOpen: false,
     roomOpen: false,
   };
@@ -82,8 +98,11 @@ function benchSession(toolId: string, props: SentenceLabProps): BenchSession {
     while (benchSessions.size > 8)
       benchSessions.delete(benchSessions.keys().next().value!);
   }
-  return session;
+  return { ...session };
 }
+
+const signedDelta = (n: number) =>
+  `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n)} word${Math.abs(n) === 1 ? "" : "s"}`;
 
 export const SentenceBench = component$<{
   props: SentenceLabProps;
@@ -93,6 +112,12 @@ export const SentenceBench = component$<{
   useStyles$(styles);
   const wordPackReady = useSignal(false);
   const state = useStore<BenchSession>(benchSession(toolId, props));
+  useTask$(({ track }) => {
+    const next = track(() => ({ ...state, modelWords: [...state.modelWords] }));
+    if (typeof window === "undefined") return;
+    const kept = benchSessions.get(toolId);
+    if (kept && kept.sentence === next.sentence) Object.assign(kept, next);
+  });
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup }) => {
     let alive = true;
@@ -132,11 +157,12 @@ export const SentenceBench = component$<{
         ),
       ),
   ];
+  const before = props.context?.before ?? "";
+  const after = props.context?.after ?? "";
   const contextTrimmed =
-    (!!props.context?.before &&
-      lastSentence(props.context.before) !== props.context.before) ||
-    (!!props.context?.after &&
-      firstSentence(props.context.after) !== props.context.after);
+    (!!before && lastSentence(before) !== before) ||
+    (!!after && firstSentence(after) !== after);
+  const changed = state.working !== props.sentence;
   const words = sentenceWords(props.sentence);
   const alternatives = wordAlternatives(
     props.sentence,
@@ -161,18 +187,155 @@ export const SentenceBench = component$<{
       )}
     </span>
   );
+  /** Provenance and caveats stay one deliberate click away. */
+  const About = ({ label, lines }: { label: string; lines: string[] }) => (
+    <details class="sentence-bench-about">
+      <summary>{label}</summary>
+      <ul>
+        {lines.map((line, i) => (
+          <li key={i}>{line}</li>
+        ))}
+      </ul>
+    </details>
+  );
+  const choose = $((text: string) => {
+    state.typing = false;
+    state.working = text;
+    state.message = "";
+  });
   return (
     <div
       class="in-flow-body sentence-bench"
       data-sentence-bench={props.sentenceId ?? "selection"}
     >
+      {props.stale && (
+        <p class="sentence-bench-notice" role="status">
+          This sentence changed. Reopen the bench before using a wording or
+          moving it.
+        </p>
+      )}
+      <section
+        class="sentence-bench-working"
+        aria-label="Working sentence in context"
+      >
+        <label class="in-flow-label" for={`sentence-bench-working-${toolId}`}>
+          Working wording
+        </label>
+        {state.contextOpen && before && (
+          <p
+            id={`sentence-bench-before-${toolId}`}
+            class="sentence-bench-context"
+          >
+            {state.paragraphOpen ? before : lastSentence(before)}
+          </p>
+        )}
+        <textarea
+          id={`sentence-bench-working-${toolId}`}
+          class="in-flow-textarea sentence-bench-textarea"
+          rows={3}
+          value={state.working}
+          onInput$={(_, el) => {
+            state.typing = true;
+            state.working = el.value;
+            state.message = "";
+          }}
+        />
+        {state.contextOpen && after && (
+          <p
+            id={`sentence-bench-after-${toolId}`}
+            class="sentence-bench-context"
+          >
+            {state.paragraphOpen ? after : firstSentence(after)}
+          </p>
+        )}
+        {changed && (
+          <p
+            class="sentence-bench-preview"
+            aria-label="Changes from the original"
+          >
+            <Diff text={state.working} />
+          </p>
+        )}
+        <div class="sentence-bench-actions">
+          <button
+            type="button"
+            class="btn-press"
+            disabled={
+              props.stale ||
+              state.applying ||
+              !completeSentence(state.working) ||
+              !changed
+            }
+            onClick$={async () => {
+              state.applying = true;
+              state.message = "";
+              try {
+                const used = await inFlowController()?.applyVariant(
+                  state.working.trim(),
+                );
+                if (!used)
+                  state.message =
+                    "The wording could not be used. Check the bench notice and try again.";
+              } catch {
+                state.message =
+                  "The wording could not be checked. Try again or reopen the bench.";
+              } finally {
+                state.applying = false;
+              }
+            }}
+          >
+            {state.applying ? "Checking…" : "Use this wording"}
+          </button>
+          <button
+            type="button"
+            class="btn-paper in-flow-mini"
+            disabled={!changed}
+            onClick$={() => {
+              choose(props.sentence);
+              inFlowController()?.previewVariant(null);
+            }}
+          >
+            Keep original
+          </button>
+          {(before || after) && (
+            <button
+              type="button"
+              class="sentence-bench-link"
+              aria-expanded={state.contextOpen}
+              onClick$={() => {
+                state.contextOpen = !state.contextOpen;
+              }}
+            >
+              {state.contextOpen ? "Hide context" : "Context"}
+            </button>
+          )}
+          {state.contextOpen && contextTrimmed && (
+            <button
+              type="button"
+              class="sentence-bench-link"
+              aria-expanded={state.paragraphOpen}
+              aria-controls={`sentence-bench-before-${toolId} sentence-bench-after-${toolId}`}
+              onClick$={() => {
+                state.paragraphOpen = !state.paragraphOpen;
+              }}
+            >
+              {state.paragraphOpen ? "Less" : "Whole paragraph"}
+            </button>
+          )}
+        </div>
+        {changed && !completeSentence(state.working) && (
+          <p class="sentence-bench-hint" role="status">
+            Finish the wording with sentence punctuation before using it.
+          </p>
+        )}
+        {state.message && (
+          <p class="sentence-bench-notice" role="status">
+            {state.message}
+          </p>
+        )}
+      </section>
       <nav aria-label="Sentence bench sections" class="sentence-bench-tabs">
-        {[
-          ["rewrite", "Rewrite"],
-          ["words", "Words"],
-          ["place", "Place"],
-          ["hear", "Hear"],
-        ].map(([id, label]) => (
+        {SECTIONS.map(([id, label]) => (
           <button
             type="button"
             key={id}
@@ -180,6 +343,7 @@ export const SentenceBench = component$<{
             class={state.tab === id ? "is-on" : ""}
             onClick$={() => {
               state.tab = id;
+              state.message = "";
               inFlowController()?.previewVariant(null);
             }}
           >
@@ -187,15 +351,11 @@ export const SentenceBench = component$<{
           </button>
         ))}
       </nav>
-      {props.stale && (
-        <p class="sentence-bench-notice" role="status">
-          This sentence changed. Reopen the bench before using a wording or
-          moving it.
-        </p>
-      )}
       {state.tab === "rewrite" && (
-        <section aria-label="Complete sentence alternatives">
-          <p class="in-flow-label">Complete wordings</p>
+        <section
+          aria-label="Complete sentence alternatives"
+          class="sentence-bench-pane"
+        >
           <ol class="in-flow-list sentence-bench-candidates">
             {candidates.map((candidate) => (
               <li key={candidate.id}>
@@ -205,11 +365,8 @@ export const SentenceBench = component$<{
                     "in-flow-choice",
                     { "in-flow-choice--on": state.working === candidate.text },
                   ]}
-                  onClick$={() => {
-                    state.typing = false;
-                    state.working = candidate.text;
-                    state.message = "";
-                  }}
+                  aria-pressed={state.working === candidate.text}
+                  onClick$={() => choose(candidate.text)}
                   onMouseEnter$={() =>
                     inFlowController()?.previewVariant(candidate.text)
                   }
@@ -218,83 +375,85 @@ export const SentenceBench = component$<{
                     inFlowController()?.previewVariant(candidate.text)
                   }
                   onBlur$={() => inFlowController()?.previewVariant(null)}
-                  aria-label={`Compare ${candidate.operation}: ${candidate.text}`}
+                  aria-label={`Try ${candidate.operation}: ${candidate.text}`}
                 >
                   <Diff text={candidate.text} />
-                  <span class="sentence-bench-facts">
-                    <span class="sentence-bench-chip">
-                      {candidate.source === "text-model"
-                        ? "text model"
-                        : candidate.source}
-                    </span>
-                    <span>{candidate.operation}</span>
-                    <span>
-                      {candidate.wordDelta > 0 ? "+" : ""}
-                      {candidate.wordDelta} words
-                    </span>
+                  <span class="sentence-bench-meta">
+                    {candidate.source !== "rule" && (
+                      <span class="sentence-bench-chip">
+                        {candidate.source === "text-model"
+                          ? "model"
+                          : candidate.source}
+                      </span>
+                    )}
+                    {candidate.operation} · {signedDelta(candidate.wordDelta)}
                   </span>
                 </button>
-                <p class="sentence-bench-note sentence-bench-checks">
-                  {candidate.grammar === "checked"
-                    ? "Harper checked"
-                    : candidate.grammar === "pending"
-                      ? "Grammar check pending"
-                      : "Grammar check unavailable"}
-                  {candidate.meaning
-                    ? ` · ${candidate.meaning.model} meaning ${candidate.meaning.probability.toFixed(2)}`
-                    : " · meaning unverified"}
-                  {candidate.caution ? ` · ${candidate.caution}` : ""}
-                </p>
                 <button
                   type="button"
-                  class="sentence-bench-link"
+                  class="sentence-bench-side"
                   aria-pressed={state.compare === candidate.text}
+                  aria-label={`Compare alongside the original: ${candidate.operation}`}
                   onClick$={() => {
                     state.compare =
                       state.compare === candidate.text ? "" : candidate.text;
                   }}
                 >
-                  Compare alongside
+                  Compare
                 </button>
               </li>
             ))}
           </ol>
           {filling && (
-            <p class="sentence-bench-note" role="status">
+            <p class="sentence-bench-hint" role="status">
               Checking complete alternatives…
             </p>
           )}
           {!candidates.length && !filling && (
-            <p class="sentence-bench-note">
-              No safe rule change for this sentence. Try a word below, move it,
-              hear it, or edit a complete wording.
+            <p class="sentence-bench-hint">
+              No safe rule change for this sentence. Try Words, Place or Hear,
+              or edit the wording above.
             </p>
+          )}
+          {candidates.length > 0 && (
+            <About
+              label="How these were checked"
+              lines={candidates.map(
+                (candidate) =>
+                  `${candidate.operation}: ${
+                    candidate.grammar === "checked"
+                      ? "Harper checked"
+                      : candidate.grammar === "pending"
+                        ? "grammar check pending"
+                        : "grammar check unavailable"
+                  }${
+                    candidate.meaning
+                      ? `, ${candidate.meaning.model} meaning ${candidate.meaning.probability.toFixed(2)}`
+                      : ", meaning unverified"
+                  }${candidate.caution ? `. ${candidate.caution}` : "."}`,
+              )}
+            />
           )}
         </section>
       )}
       {state.tab === "words" && (
-        <section aria-label="Word alternatives">
-          <p class="in-flow-label">Choose a word</p>
+        <section aria-label="Word alternatives" class="sentence-bench-pane">
           <p class="sentence-bench-word-line">
             {words.map((word) => (
               <span key={word.from}>
                 <button
                   type="button"
-                  disabled={!word.available && !wordPackReady.value}
                   aria-pressed={state.wordFrom === word.from}
                   class={{
                     "is-repeated": repeated(word.word) > 1,
                     "is-on": state.wordFrom === word.from,
                   }}
-                  title={
-                    word.available
-                      ? `${repeated(word.word)} use${repeated(word.word) === 1 ? "" : "s"} in this paragraph; show alternatives`
-                      : `${repeated(word.word)} use${repeated(word.word) === 1 ? "" : "s"}; no bundled alternatives`
-                  }
+                  title={`${repeated(word.word)} use${repeated(word.word) === 1 ? "" : "s"} in this paragraph`}
                   onClick$={() => {
                     state.wordFrom = word.from;
                     state.wordTo = word.to;
                     state.modelWords = [];
+                    state.message = "";
                   }}
                 >
                   {word.word}
@@ -302,35 +461,44 @@ export const SentenceBench = component$<{
               </span>
             ))}
           </p>
-          <p class="sentence-bench-note">
-            Underlined words repeat in this paragraph. The bundled thesaurus
-            offers possible meanings; it does not rank fit.
-          </p>
+          {state.wordFrom < 0 ? (
+            <p class="sentence-bench-hint" role="status">
+              Pick a word. Dotted words repeat in this paragraph.
+            </p>
+          ) : !alternatives.length ? (
+            <p class="sentence-bench-hint" role="status">
+              No bundled alternatives for “
+              {props.sentence.slice(state.wordFrom, state.wordTo)}”.
+              {wordPackReady.value
+                ? " Try on-device alternatives."
+                : " Edit the wording above, or add word alternatives in Preferences."}
+            </p>
+          ) : null}
           <ol class="in-flow-list">
             {alternatives.map((choice) => (
               <li key={choice.replacement}>
                 <button
                   type="button"
-                  class="in-flow-choice"
-                  onClick$={() => {
-                    state.working = choice.sentence;
-                    state.message = "";
-                  }}
+                  class={[
+                    "in-flow-choice",
+                    {
+                      "in-flow-choice--on": state.working === choice.sentence,
+                    },
+                  ]}
+                  aria-pressed={state.working === choice.sentence}
+                  onClick$={() => choose(choice.sentence)}
                   onMouseEnter$={() =>
                     inFlowController()?.previewVariant(choice.sentence)
                   }
                   onMouseLeave$={() => inFlowController()?.previewVariant(null)}
+                  onFocus$={() =>
+                    inFlowController()?.previewVariant(choice.sentence)
+                  }
+                  onBlur$={() => inFlowController()?.previewVariant(null)}
                 >
                   <Diff text={choice.sentence} />
-                  <span class="sentence-bench-facts">
-                    <span class="sentence-bench-chip">thesaurus</span>
-                    <span>{choice.nuance}</span>
-                  </span>
+                  <span class="sentence-bench-meta">{choice.nuance}</span>
                 </button>
-                <p class="sentence-bench-note">
-                  May change meaning. Harper checks the full sentence before
-                  use.
-                </p>
               </li>
             ))}
           </ol>
@@ -375,50 +543,57 @@ export const SentenceBench = component$<{
               <li key={candidate.id}>
                 <button
                   type="button"
-                  class="in-flow-choice"
-                  onClick$={() => {
-                    state.typing = false;
-                    state.working = candidate.text;
-                  }}
+                  class={[
+                    "in-flow-choice",
+                    {
+                      "in-flow-choice--on": state.working === candidate.text,
+                    },
+                  ]}
+                  aria-pressed={state.working === candidate.text}
+                  onClick$={() => choose(candidate.text)}
                   onMouseEnter$={() =>
                     inFlowController()?.previewVariant(candidate.text)
                   }
                   onMouseLeave$={() => inFlowController()?.previewVariant(null)}
+                  title={`${candidate.likelihood?.model ?? "On-device model"} · Harper checked · meaning unverified`}
                 >
                   <Diff text={candidate.text} />
-                  <span class="sentence-bench-facts">
+                  <span class="sentence-bench-meta">
                     <span class="sentence-bench-chip">on-device</span>
-                    <span>
-                      Word likelihood{" "}
-                      {candidate.likelihood?.probability.toFixed(3)}
-                    </span>
+                    likelihood {candidate.likelihood?.probability.toFixed(3)}
                   </span>
                 </button>
-                <p class="sentence-bench-note">
-                  {candidate.likelihood?.model} · Harper checked · meaning
-                  unverified.
-                </p>
               </li>
             ))}
           </ol>
+          <About
+            label="About word choices"
+            lines={[
+              "The bundled thesaurus offers possible meanings; it does not rank fit.",
+              "A word can change the meaning. Harper checks the whole sentence before it is used.",
+              ...(state.modelWords.length
+                ? [
+                    `On-device predictions come from ${state.modelWords[0]?.likelihood?.model ?? "a local model"}; their meaning is unverified.`,
+                  ]
+                : []),
+            ]}
+          />
         </section>
       )}
       {state.tab === "place" && (
-        <section aria-label="Sentence placement choices">
-          <p class="in-flow-label">Read another position</p>
-          <p class="sentence-bench-note">
-            These are neighbouring slots, by rule. Their fit has not been
-            judged.
-          </p>
+        <section
+          aria-label="Sentence placement choices"
+          class="sentence-bench-pane"
+        >
           <ol class="in-flow-list">
             {(props.placements ?? []).map((slot) => (
               <li key={slot.id} class="sentence-bench-slot">
+                <p class="sentence-bench-meta">{slot.reason}</p>
                 <p class="sentence-bench-context">
                   {slot.before && <span>{slot.before} </span>}
                   <strong>{props.sentence}</strong>
                   {slot.after && <span> {slot.after}</span>}
                 </p>
-                <p class="sentence-bench-note">{slot.reason}</p>
                 <button
                   type="button"
                   class="btn-paper in-flow-mini"
@@ -434,25 +609,41 @@ export const SentenceBench = component$<{
               </li>
             ))}
           </ol>
-          {!props.placements?.length && (
-            <p class="sentence-bench-note">
+          {props.placements?.length ? (
+            <About
+              label="About positions"
+              lines={[
+                "These are neighbouring slots, chosen by rule. Their fit has not been judged.",
+                "Moving keeps the sentence's marks; one undo puts it back.",
+              ]}
+            />
+          ) : (
+            <p class="sentence-bench-hint">
               Add another complete sentence to compare positions.
             </p>
           )}
         </section>
       )}
       {state.tab === "hear" && (
-        <section aria-label="Hear the sentence in context">
-          <p class="in-flow-label">Listen in context</p>
-          <p class="sentence-bench-note">
-            Reads the preceding sentence, this wording, and the following
-            sentence through your narration player. Local speech works when its
-            voice is installed.
+        <section
+          aria-label="Hear the sentence in context"
+          class="sentence-bench-pane"
+        >
+          <p class="sentence-bench-hint">
+            The sentence before, this wording, then the one after.
           </p>
           <SpeechTransport
             id={`sentence-bench-${toolId}`}
             playLabel="Hear this wording in context"
-            onPlay$={() => inFlowController()?.hearVariant(state.working)}
+            onPlay$={() => {
+              state.message = "";
+              if (!state.working.trim()) {
+                state.message = "Enter a wording to hear it in context.";
+              } else if (!inFlowController()?.hearVariant(state.working)) {
+                state.message =
+                  "This bench is no longer connected to the manuscript. Reopen it to hear the wording.";
+              }
+            }}
           />
         </section>
       )}
@@ -466,7 +657,6 @@ export const SentenceBench = component$<{
             aria-label="Candidate comparison"
             class="sentence-bench-comparison"
           >
-            <p class="in-flow-label">Alongside</p>
             <InstrumentMotionPart part="source">
               <p>
                 <span class="sentence-bench-chip">original</span>
@@ -475,113 +665,32 @@ export const SentenceBench = component$<{
             </InstrumentMotionPart>
             <InstrumentMotionPart part="alternative">
               <p>
-                <span class="sentence-bench-chip">comparison</span>
+                <span class="sentence-bench-chip">alternative</span>
                 <Diff text={state.compare} />
               </p>
             </InstrumentMotionPart>
+            <div class="sentence-bench-actions">
+              <button
+                type="button"
+                class="btn-paper in-flow-mini"
+                disabled={state.working === state.compare}
+                onClick$={() => choose(state.compare)}
+              >
+                Try this one
+              </button>
+              <button
+                type="button"
+                class="sentence-bench-link"
+                onClick$={() => {
+                  state.compare = "";
+                }}
+              >
+                Close comparison
+              </button>
+            </div>
           </section>
         </InstrumentMotion>
       )}
-      <section
-        class="sentence-bench-working"
-        aria-label="Working sentence in context"
-      >
-        <label class="in-flow-label" for={`sentence-bench-working-${toolId}`}>
-          Working wording
-        </label>
-        {props.context?.before && (
-          <p
-            id={`sentence-bench-before-${toolId}`}
-            class="sentence-bench-context"
-          >
-            {state.paragraphOpen
-              ? props.context.before
-              : lastSentence(props.context.before)}
-          </p>
-        )}
-        <textarea
-          id={`sentence-bench-working-${toolId}`}
-          class="in-flow-textarea"
-          rows={3}
-          value={state.working}
-          onInput$={(_, el) => {
-            state.typing = true;
-            state.working = el.value;
-            state.message = "";
-          }}
-        />
-        {props.context?.after && (
-          <p
-            id={`sentence-bench-after-${toolId}`}
-            class="sentence-bench-context"
-          >
-            {state.paragraphOpen
-              ? props.context.after
-              : firstSentence(props.context.after)}
-          </p>
-        )}
-        {contextTrimmed && (
-          <button
-            type="button"
-            class="sentence-bench-link"
-            aria-expanded={state.paragraphOpen}
-            aria-controls={`sentence-bench-before-${toolId} sentence-bench-after-${toolId}`}
-            onClick$={() => {
-              state.paragraphOpen = !state.paragraphOpen;
-            }}
-          >
-            {state.paragraphOpen ? "Hide paragraph" : "Show paragraph"}
-          </button>
-        )}
-        {state.working !== props.sentence && (
-          <p class="sentence-bench-preview">
-            <Diff text={state.working} />
-          </p>
-        )}
-        <div class="in-flow-actions">
-          <button
-            type="button"
-            class="btn-press"
-            disabled={
-              props.stale ||
-              state.applying ||
-              !completeSentence(state.working) ||
-              state.working === props.sentence
-            }
-            onClick$={async () => {
-              state.applying = true;
-              const used = await inFlowController()?.applyVariant(
-                state.working.trim(),
-              );
-              state.applying = false;
-              if (!used)
-                state.message =
-                  "The wording could not be used. Check the bench notice and try again.";
-            }}
-          >
-            {state.applying ? "Checking…" : "Use this wording"}
-          </button>
-          <button
-            type="button"
-            class="btn-paper in-flow-mini"
-            disabled={state.working === props.sentence}
-            onClick$={() => {
-              state.working = props.sentence;
-              inFlowController()?.previewVariant(null);
-            }}
-          >
-            Keep original
-          </button>
-        </div>
-        <p class="sentence-bench-note">
-          Use a complete sentence. Undo restores the wording or position.
-        </p>
-        {state.message && (
-          <p class="sentence-bench-notice" role="status">
-            {state.message}
-          </p>
-        )}
-      </section>
       <details
         class="sentence-bench-room"
         open={state.roomOpen}
@@ -589,7 +698,7 @@ export const SentenceBench = component$<{
           state.roomOpen = el.open;
         }}
       >
-        <summary>Ask an editor about this wording</summary>
+        <summary>Ask an editor</summary>
         {/* Mounted only while open: a closed disclosure has no box, so the
             room's visible-task would never load its cast. */}
         {state.roomOpen && (
@@ -617,8 +726,8 @@ export const SentenceBench = component$<{
                 "What would you attend to in this sentence and its proposed wording?",
               detail: [
                 `Active pane: ${state.tab}`,
-                props.context?.before ? `Before: ${props.context.before}` : "",
-                props.context?.after ? `After: ${props.context.after}` : "",
+                before ? `Before: ${before}` : "",
+                after ? `After: ${after}` : "",
               ]
                 .filter(Boolean)
                 .join("\n"),

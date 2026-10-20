@@ -66,6 +66,76 @@ async function openEditor(page: Page) {
 }
 
 test.describe("read aloud transport", () => {
+  test("the voice picker matches each speaking editor and applies a new selection", async ({
+    page,
+  }) => {
+    await page.goto("/desk/");
+    await expect(
+      page.getByRole("heading", { name: "My Desk", exact: true }),
+    ).toBeVisible();
+    await page.evaluate(() => {
+      // Playback and synthesis are doubles; this test never requests paid audio.
+      HTMLMediaElement.prototype.play = async () => {};
+    });
+    const picker = page.getByRole("combobox", {
+      name: "Change narration voice and restart passage",
+    });
+    const cast = await page.evaluate(async () => {
+      const spec = "/src/utils/personas.ts";
+      const { PERSONAS } = await import(/* @vite-ignore */ spec);
+      return PERSONAS.map(
+        (p: { id: string; name: string; speechVoice: string }) => ({
+          id: p.id,
+          name: p.name,
+          voice: p.speechVoice,
+        }),
+      );
+    });
+    for (const persona of cast) {
+      const sent = await page.evaluate(async (persona) => {
+        const spec = "/src/utils/speech.ts";
+        const speech = await import(/* @vite-ignore */ spec);
+        const fixture = window as typeof window & { narrationVoices: string[] };
+        fixture.narrationVoices = [];
+        await speech.speak({
+          id: `picker-${persona.id}`,
+          text: `Fictional note from ${persona.name}.`,
+          author: persona.name,
+          signedIn: true,
+          client: {
+            action: async (_ref: unknown, args: { voice: string }) => {
+              fixture.narrationVoices.push(args.voice);
+              return {
+                audioBase64:
+                  "UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=",
+                mimeType: "audio/wav",
+              };
+            },
+          },
+        });
+        return fixture.narrationVoices;
+      }, persona);
+      expect(sent).toEqual([persona.voice]);
+      await expect(picker).toHaveValue(persona.voice);
+      await expect(picker.locator("option:checked")).toHaveText(persona.name);
+    }
+    await picker.selectOption("cedar");
+    await expect(picker).toHaveValue("cedar");
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          (
+            window as typeof window & { narrationVoices: string[] }
+          ).narrationVoices.at(-1),
+        ),
+      )
+      .toBe("cedar");
+    await page
+      .getByRole("button", { name: "Stop narration and close player" })
+      .click();
+    await expect(picker).toHaveCount(0);
+  });
+
   test("the control is present and starts idle", async ({ page }) => {
     await openEditor(page);
     const play = page.getByRole("button", {

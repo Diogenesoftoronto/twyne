@@ -2,11 +2,27 @@
 
 import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { makeFunctionReference } from "convex/server";
 import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
 import { userIsPro } from "./lib/entitlement";
+import {
+  reportedApplicationError,
+  type ApplicationErrorCode,
+} from "./lib/applicationErrors";
+import {
+  issueNotOrganicAccessToken,
+  notOrganicEnabled,
+  notOrganicIssuer,
+  notOrganicOpenAiRoute,
+} from "./lib/notorganic";
 
 const OPENAI_AUDIO_BASE = "https://api.openai.com/v1";
 const MAX_SPEECH_CHARS = 4096;
+const linkedDidReference = makeFunctionReference<
+  "query",
+  { productSubject: string },
+  { did: string; sessionVersion: number } | null
+>("providerIdentity:getLinkedDidBySubject");
 
 const audioFormatValidator = v.union(
   v.literal("mp3"),
@@ -26,9 +42,21 @@ export const synthesizeSpeech = action({
     responseFormat: v.optional(audioFormatValidator),
     speed: v.optional(v.number()),
   },
+  returns: v.object({
+    audioBase64: v.string(),
+    mimeType: v.string(),
+    responseFormat: v.string(),
+    provider: v.string(),
+    model: v.string(),
+    voice: v.string(),
+  }),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
+
+    const input = args.text.trim().slice(0, MAX_SPEECH_CHARS);
+    if (!input) throw new Error("Nothing to read.");
+    const responseFormat = args.responseFormat ?? "mp3";
 
     // Rate limit: each synthesis is a paid OpenAI call. 20 per minute per
     // user is well above any real reading flow, and stops abuse of the
@@ -39,6 +67,114 @@ export const synthesizeSpeech = action({
       ...RATE_LIMITS.voiceSynthesize,
     });
 
+    if (notOrganicEnabled()) {
+      const link = await ctx.runQuery(linkedDidReference, {
+        productSubject: identity.subject || identity.tokenIdentifier,
+      });
+      if (!link)
+        throw new Error(
+          "Link your Not Organic account before using hosted narration.",
+        );
+      const token = await issueNotOrganicAccessToken({
+        ...link,
+        feature: "voice-narration",
+        capabilities: ["infer:audio"],
+      });
+      const route = notOrganicOpenAiRoute(
+        token,
+        "audio",
+        "voice-narration",
+        notOrganicIssuer(),
+      );
+      // The gateway authorizes and settles the linked account's credit. A
+      // gateway rejection must never spend against the legacy OpenAI key.
+      const voice = args.voice ?? "alloy";
+      const res = await route.fetch(`${route.baseURL}/audio/speech`, {
+        method: "POST",
+        headers: {
+          ...route.headers,
+          authorization: `Bearer ${route.apiKey}`,
+          "content-type": "application/json",
+        },
+        signal: AbortSignal.timeout(60_000),
+        body: JSON.stringify({
+          model: route.model,
+          input,
+          voice,
+          response_format: responseFormat,
+          ...(args.instructions ? { instructions: args.instructions } : {}),
+          ...(args.speed ? { speed: clampSpeed(args.speed) } : {}),
+        }),
+      });
+      if (!res.ok) {
+        // Retain HTTP evidence and a support reference, never raw upstream
+        // bodies (which can echo manuscript text or credentials).
+        const code: ApplicationErrorCode =
+          res.status === 401
+            ? "authentication_required"
+            : res.status === 402 || res.status === 403
+              ? "permission_denied"
+              : res.status === 400 || res.status === 404
+                ? "configuration_required"
+                : res.status === 429
+                  ? "rate_limited"
+                  : "provider_unavailable";
+        throw reportedApplicationError(
+          "voice.synthesize",
+          code,
+          new Error(`Hosted narration HTTP ${res.status}`),
+          {
+            message:
+              res.status === 402
+                ? "Add Not Organic wallet credit to use hosted narration."
+                : res.status === 400 || res.status === 404
+                  ? "The hosted voice route is unavailable. Please contact support with this reference."
+                  : "Hosted narration could not finish. Please try again later.",
+            retryable: res.status === 429 || res.status >= 500,
+          },
+          {
+            status: res.status,
+            provider: "notorganic",
+            model: route.model,
+            operation: "speech",
+          },
+        );
+      }
+      const bytes = await res.arrayBuffer();
+      const contentType = res.headers
+        .get("content-type")
+        ?.split(";")[0]
+        .trim()
+        .toLowerCase();
+      if (
+        !bytes.byteLength ||
+        (contentType &&
+          !contentType.startsWith("audio/") &&
+          contentType !== "application/octet-stream")
+      ) {
+        throw reportedApplicationError(
+          "voice.synthesize",
+          "malformed_response",
+          new Error("Hosted narration returned no playable audio"),
+          {},
+          {
+            status: res.status,
+            provider: "notorganic",
+            model: route.model,
+            operation: "speech",
+          },
+        );
+      }
+      return {
+        audioBase64: Buffer.from(bytes).toString("base64"),
+        mimeType: audioMimeType(responseFormat),
+        responseFormat,
+        provider: "notorganic",
+        model: route.model,
+        voice,
+      };
+    }
+
     if (!(await userIsPro(ctx, identity.subject || identity.tokenIdentifier))) {
       throw new Error("Voice narration is a Pro feature.");
     }
@@ -47,10 +183,6 @@ export const synthesizeSpeech = action({
       process.env.VOICE_OPENAI_API_KEY ?? process.env.OPENAI_API_KEY;
     if (!apiKey) throw new Error("Hosted voice is not configured.");
 
-    const input = args.text.trim().slice(0, MAX_SPEECH_CHARS);
-    if (!input) throw new Error("Nothing to read.");
-
-    const responseFormat = args.responseFormat ?? "mp3";
     const res = await fetch(`${OPENAI_AUDIO_BASE}/audio/speech`, {
       method: "POST",
       headers: {

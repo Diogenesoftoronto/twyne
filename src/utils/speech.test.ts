@@ -4,9 +4,13 @@ import {
   beforeEach,
   describe,
   expect,
+  spyOn,
   test,
 } from "bun:test";
 import { PERSONAS } from "./personas";
+import * as aiClient from "./ai-client";
+import * as orchestrator from "./ai-orchestrator";
+import { setBrowserTtsCapabilityOverride } from "./browser-inference";
 import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 
 const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
@@ -15,6 +19,7 @@ const browserGlobalNames = [
   "localStorage",
   "CustomEvent",
   "Audio",
+  "navigator",
 ] as const;
 const originalGlobals = new Map(
   browserGlobalNames.map((name) => [
@@ -62,6 +67,11 @@ let revokedUrls = 0;
 let speakModule: typeof import("./speech");
 
 beforeEach(async () => {
+  setBrowserTtsCapabilityOverride(undefined);
+  Object.defineProperty(globalThis, "navigator", {
+    configurable: true,
+    value: { onLine: true },
+  });
   FakeAudio.instances = [];
   createdUrls = 0;
   revokedUrls = 0;
@@ -119,6 +129,7 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
+  setBrowserTtsCapabilityOverride(undefined);
   delete (globalThis as Record<string, unknown>).Audio;
 });
 
@@ -198,6 +209,158 @@ describe("stopSpeech", () => {
 });
 
 describe("speak", () => {
+  test("hosted synthesis sends the resolved saved voice shown by the picker", async () => {
+    const settings = aiClient.normalizeAiSettings(null);
+    settings.perFeature["voice-narration"] = { voice: "shimmer" };
+    const cached = spyOn(orchestrator, "getCachedAiSettings").mockResolvedValue(
+      settings,
+    );
+    const voices: Array<string | undefined> = [];
+    const client = {
+      action: async (_ref: unknown, args: { voice?: string }) => {
+        voices.push(args.voice);
+        return { audioBase64: "", mimeType: "audio/mpeg" };
+      },
+    } as never;
+    try {
+      await speakModule.speak({
+        id: "saved-hosted-voice",
+        text: "A fictional passage.",
+        client,
+        signedIn: true,
+      });
+      expect(voices).toEqual(["shimmer"]);
+      expect((await speakModule.currentSpeechVoiceMenu())?.selected).toBe(
+        "shimmer",
+      );
+      await speakModule.restartSpeechWithVoice("cedar");
+      expect(voices).toEqual(["shimmer", "cedar"]);
+      expect((await speakModule.currentSpeechVoiceMenu())?.selected).toBe(
+        "cedar",
+      );
+    } finally {
+      cached.mockRestore();
+    }
+  });
+  for (const scenario of [
+    { signedIn: true, online: true, hosted: true },
+    { signedIn: true, online: false, hosted: false },
+    { signedIn: false, online: true, hosted: false },
+  ]) {
+    test(`automatic browser voice: signedIn=${scenario.signedIn}, online=${scenario.online} uses ${scenario.hosted ? "hosted" : "local"} narration`, async () => {
+      setBrowserTtsCapabilityOverride("wasm");
+      Object.defineProperty(globalThis, "navigator", {
+        configurable: true,
+        value: { onLine: scenario.online },
+      });
+      const settings = aiClient.normalizeAiSettings(null);
+      const cached = spyOn(
+        orchestrator,
+        "getCachedAiSettings",
+      ).mockResolvedValue(settings);
+      const local = spyOn(aiClient, "runClientVoiceSpeech").mockResolvedValue({
+        audio: new Blob([]),
+        mimeType: "audio/wav",
+        provider: "supertonic",
+        model: "supertonic-tts",
+        voice: "M3",
+        responseFormat: "wav",
+      });
+      let hostedCalls = 0;
+      const client = {
+        action: async () => {
+          hostedCalls++;
+          return { audioBase64: "", mimeType: "audio/mpeg" };
+        },
+      } as never;
+      try {
+        await speakModule.speak({
+          id: "automatic-voice",
+          text: "Read this aloud.",
+          client,
+          signedIn: scenario.signedIn,
+          voice: "alloy",
+        });
+        expect(hostedCalls).toBe(scenario.hosted ? 1 : 0);
+        expect(local).toHaveBeenCalledTimes(scenario.hosted ? 0 : 1);
+        expect((await speakModule.currentSpeechVoiceMenu())?.provider).toBe(
+          scenario.hosted ? "Twyne voice" : "Browser voice",
+        );
+        // Reconnection must not reuse the offline clip or its voice menu.
+        if (scenario.signedIn && !scenario.online) {
+          speakModule.stopSpeech();
+          Object.defineProperty(globalThis, "navigator", {
+            configurable: true,
+            value: { onLine: true },
+          });
+          await speakModule.speak({
+            id: "automatic-voice",
+            text: "Read this aloud.",
+            client,
+            signedIn: true,
+            voice: "alloy",
+          });
+          expect(hostedCalls).toBe(1);
+          expect((await speakModule.currentSpeechVoiceMenu())?.provider).toBe(
+            "Twyne voice",
+          );
+        }
+      } finally {
+        cached.mockRestore();
+        local.mockRestore();
+      }
+    });
+  }
+
+  test("an explicitly configured narrator still wins over hosted and automatic browser voices", async () => {
+    setBrowserTtsCapabilityOverride("wasm");
+    const settings = aiClient.normalizeAiSettings({
+      advancedMode: true,
+      providers: [
+        {
+          id: "my-voice",
+          type: "openai",
+          name: "My voice",
+          apiKey: "fixture",
+          defaultModel: "gpt-4o-mini-tts",
+          availableModels: [],
+        },
+      ],
+      defaultProviderId: "my-voice",
+      perFeature: {},
+    });
+    const cached = spyOn(orchestrator, "getCachedAiSettings").mockResolvedValue(
+      settings,
+    );
+    const custom = spyOn(aiClient, "runClientVoiceSpeech").mockResolvedValue({
+      audio: new Blob([]),
+      mimeType: "audio/mpeg",
+      provider: "openai",
+      model: "gpt-4o-mini-tts",
+      voice: "alloy",
+      responseFormat: "mp3",
+    });
+    const action = spyOn(
+      { action: async () => ({ audioBase64: "", mimeType: "audio/mpeg" }) },
+      "action",
+    );
+    try {
+      await speakModule.speak({
+        id: "custom-voice",
+        text: "Read this aloud.",
+        client: { action } as never,
+        signedIn: true,
+      });
+      expect(custom).toHaveBeenCalledTimes(1);
+      expect(action).not.toHaveBeenCalled();
+      expect((await speakModule.currentSpeechVoiceMenu())?.provider).toBe(
+        "My voice",
+      );
+    } finally {
+      cached.mockRestore();
+      custom.mockRestore();
+    }
+  });
   test("ignores empty and whitespace-only text rather than calling a provider", async () => {
     await speakModule.speak({ id: "a", text: "   " });
     expect(speakModule.speechState().status).toBe("idle");

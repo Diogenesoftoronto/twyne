@@ -7314,6 +7314,131 @@ a {
 .flow-card__close:hover {
   color: var(--color-vermilion);
 }
+/* Gather: how many passages this card's conversation touches. Resting the
+   pointer fills the rule beneath it, then the passages gather. */
+.flow-card__gather {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: auto;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 999px;
+  background: var(--color-paper);
+  color: var(--color-ink-light);
+  font: 0.65rem var(--font-sans);
+  cursor: pointer;
+  overflow: hidden;
+}
+.flow-card__gather:hover,
+.flow-card__gather:focus-visible {
+  border-color: var(--flow-accent, var(--color-cobalt));
+  color: var(--color-ink);
+}
+.flow-card__gather::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  background: var(--flow-accent, var(--color-cobalt));
+}
+.flow-card__gather.is-arming::after {
+  width: 100%;
+  transition: width 1.1s linear;
+}
+/* A connected passage beyond the screen: a marker at the edge of the
+   visible text that stays and takes the writer there. */
+.flow-edges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none !important;
+}
+.flow-edge {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: min(30rem, 86%);
+  min-height: 1.9rem;
+  padding: 0.2rem 0.7rem 0.2rem 0.5rem;
+  border: 1px solid var(--flow-accent, var(--color-cobalt));
+  border-radius: 999px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font: 0.72rem var(--font-sans);
+  cursor: pointer;
+  pointer-events: auto;
+  animation: flow-edge-in 200ms ease-out;
+  z-index: 4;
+}
+.flow-edge:hover,
+.flow-edge:focus-visible {
+  background: color-mix(
+    in srgb,
+    var(--flow-accent, var(--color-cobalt)) 12%,
+    var(--color-paper)
+  );
+  outline: none;
+}
+.flow-edge:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-cobalt);
+}
+.flow-edge svg {
+  flex-shrink: 0;
+  color: var(--flow-accent, var(--color-cobalt));
+}
+.flow-edge__label {
+  flex-shrink: 0;
+  font: 0.6rem var(--font-typewriter);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-light);
+}
+.flow-edge__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: italic 0.8rem var(--font-serif);
+}
+/* The way back out of flow: quiet until reached for. */
+.flow-return {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: 0.4rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-ink-muted);
+  font: 0.68rem var(--font-sans);
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+.flow-return:hover,
+.flow-return:focus-visible {
+  opacity: 1;
+  border-color: var(--color-paper-3);
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+.flow-return kbd {
+  font: 0.6rem var(--font-typewriter);
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  padding: 0 0.2rem;
+}
+@keyframes flow-edge-in {
+  from {
+    opacity: 0;
+  }
+}
 .flow-card__body {
   display: flex;
   flex-direction: column;
@@ -7606,32 +7731,38 @@ a {
   opacity: 0.4;
   transition: opacity 1.2s ease;
 }
-/* The desk (post and galley slip) stays: it is what flow leaves behind. */
+/* In flow the text-heavy margin goes: cards, tools, conversations. It is
+   dismissed, not dimmed, so nothing invisible keeps focus or the pointer.
+   The desk (post and galley slip) stays: it is what flow leaves behind,
+   and the post is the way back. Nothing is deleted; a pause, Escape or the
+   post brings it all back as it was. */
 [data-flow="flow"] .flow-surface > :not(.flow-desk),
-[data-flow="flow"] .in-flow-rails {
+[data-flow="flow"] .in-flow-rails,
+[data-flow="flow"] .manuscript-comment-card.is-in-margin,
+[data-flow="flow"] .ld-panel {
+  visibility: hidden;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.8s ease;
+  transition:
+    opacity 0.8s ease,
+    visibility 0s linear 0.8s;
 }
-/* In flow the masthead, the review line and the docked panels recede but
-   keep their size, so the page does not move. Reaching for them (hover,
-   keyboard focus) brings them straight back. */
+/* The masthead, the review line and the docked panels leave too, but keep
+   their size, so the page does not move. The masthead is the explicit way
+   back: reaching for its strip (or Escape) ends focus. */
 [data-flow="flow"] .editor-workspace-main > header,
 [data-flow="flow"] .twyne-toolbar,
+[data-flow="flow"] .editor-desk-controls,
 [data-flow="flow"] .live-review-status,
 [data-flow="flow"] .editor-workspace-shell > aside {
-  opacity: 0.12;
-  transition: opacity 1.2s ease;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 1.2s ease,
+    visibility 0s linear 1.2s;
 }
 [data-flow="settling"] .editor-workspace-main > header:hover,
-[data-flow="settling"] .twyne-toolbar:hover,
-[data-flow="flow"] .editor-workspace-main > header:hover,
-[data-flow="flow"] .editor-workspace-main > header:focus-within,
-[data-flow="flow"] .twyne-toolbar:hover,
-[data-flow="flow"] .twyne-toolbar:focus-within,
-[data-flow="flow"] .live-review-status:hover,
-[data-flow="flow"] .editor-workspace-shell > aside:hover,
-[data-flow="flow"] .editor-workspace-shell > aside:focus-within {
+[data-flow="settling"] .twyne-toolbar:hover {
   opacity: 1;
   transition-duration: 0.2s;
 }
@@ -8147,6 +8278,16 @@ a {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .flow-edge,
+  .flow-card__gather.is-arming::after,
+  [data-flow] .flow-surface > *,
+  [data-flow] .in-flow-rails,
+  [data-flow] .twyne-toolbar,
+  [data-flow] .editor-desk-controls,
+  [data-flow] .editor-workspace-shell > aside {
+    animation: none;
+    transition: none;
+  }
   .flow-card,
   .flow-overlay__line,
   .flow-work__disc,

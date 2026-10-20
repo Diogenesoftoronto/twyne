@@ -83,6 +83,17 @@ const usageMetricFields = {
 };
 
 export default defineSchema({
+  // Content-free frozen export bytes make retrying a revision idempotent.
+  tractionExportSnapshots: defineTable({
+    date: v.string(),
+    revision: v.number(),
+    body: v.string(),
+    truncated: v.boolean(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_date_and_revision", ["date", "revision"])
+    .index("by_expiresAt", ["expiresAt"]),
   // Durable, explicitly queued instruments. Selected manuscript/source context
   // and feedback belong to this account, independent of a browser session.
   instrumentTasks: defineTable(taskFields)
@@ -232,6 +243,7 @@ export default defineSchema({
     count: v.number(),
     updatedAt: v.number(),
   })
+    .index("by_day", ["day"])
     .index("by_userId", ["userId"])
     .index("by_userId_day", ["userId", "day"]),
 
@@ -279,6 +291,7 @@ export default defineSchema({
     pricing: v.optional(usagePricingSnapshot),
     creditMicrounits: v.optional(v.number()),
   })
+    .index("by_occurredAt", ["occurredAt"])
     .index("by_ownerId_and_eventKey", ["ownerId", "eventKey"])
     .index("by_ownerId_and_occurredAt", ["ownerId", "occurredAt"])
     .index("by_ownerId_and_editorialActionId_and_outcome", [

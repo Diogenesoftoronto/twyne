@@ -8,11 +8,22 @@
   "images": [
     {
       "file": "public/assets/manual/writing-instruments/01-complete-wording-preview.webp",
-      "source": "artifacts/qa-recordings/instruments/20261009-final-baselines/results/instruments.e2e.ts-selecti-27344--applies-and-undoes-offline-chromium/01-complete-wording-preview.png",
-      "sourceSha256": "4864e6c1003b007198496906171c015b19f38aebfe94c69a282e4df990d50855",
-      "sha256": "d0187ddc711d71cea3db8127fdc735e25e33271e7f7ad9db4273137f66a96a4e",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/writing-instruments/stills/01-complete-wording-preview.png",
+      "sourceSha256": "8755cc65716664504f669d71f6b85b344e4c9efc807cdf2ed0ac781317fbabf4",
+      "sha256": "f025cf1d3e59aa99027b909b511658573cb2221c7274ce72ed9b4bf96a3f6d53",
       "width": 1440,
-      "height": 900
+      "height": 900,
+      "bytes": 56918,
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.442Z",
+      "format": "webp",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "public/assets/manual/writing-instruments/02-wording-used.webp",
@@ -101,5 +112,36 @@
       "+faststart",
       "public/assets/manual/writing-instruments.mp4"
     ]
+  },
+  "manualRefresh": {
+    "reviewedOn": "2026-10-19",
+    "report": "artifacts/qa-recordings/2026-10-19/manual-refresh/report.json",
+    "captures": [
+      {
+        "image": "/assets/manual/writing-instruments/01-complete-wording-preview.webp",
+        "file": "01-complete-wording-preview.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.442Z",
+        "width": 1440,
+        "height": 900,
+        "format": "webp",
+        "bytes": 56918,
+        "sha256": "f025cf1d3e59aa99027b909b511658573cb2221c7274ce72ed9b4bf96a3f6d53",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/writing-instruments/stills/01-complete-wording-preview.png",
+        "sourceSha256": "8755cc65716664504f669d71f6b85b344e4c9efc807cdf2ed0ac781317fbabf4",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/visual/playwright.config.ts",
+        "staging": "Local English rules and actual editor transactions; no model request.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 900,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      }
+    ],
+    "retainedCaptureDates": "Unchanged image records retain their original dates; historical video/test evidence is preserved separately.",
+    "verification": "Each replacement inspected against the running local app with fictional fixtures. No live sign-in, model, media generation, publish or restore proof.",
+    "guideDimensions": "Use report.json for final dimensions; guide source is concurrently owned by another agent."
   }
 }

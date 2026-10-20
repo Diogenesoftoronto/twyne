@@ -14,15 +14,27 @@ const user = {
 };
 
 describe("account identity without private email", () => {
-  test("uses the chosen writer name before the session name or handle", () => {
+  test("uses the Twyne alias before the writer name or session name", () => {
     expect(
       accountDisplayName(user, {
         displayName: "  M. Vale  ",
         handle: "morgan-vale",
       }),
-    ).toBe("M. Vale");
+    ).toBe("morgan-vale");
     expect(accountDisplayName(user, { handle: "morgan-vale" })).toBe(
-      "Morgan Vale",
+      "morgan-vale",
+    );
+  });
+
+  test("the authenticated alias wins over a legacy PDS name across refreshes", () => {
+    const session = { name: "accountname.pds.mypds.example" };
+    const profile = { handle: "dio", displayName: "Dio Writer" };
+    const merged = withAccountProfile(session, profile);
+    expect(accountDisplayName(session, profile)).toBe("dio");
+    expect(accountDisplayName(merged)).toBe("dio");
+    expect(merged.name).toBe("Dio Writer");
+    expect(accountDisplayName(withAccountProfile(session, null))).toBe(
+      "accountname",
     );
   });
 
@@ -30,6 +42,22 @@ describe("account identity without private email", () => {
     expect(
       accountDisplayName({ email: user.email }, { handle: "morgan-vale" }),
     ).toBe("morgan-vale");
+  });
+
+  test("account labels omit PDS domains even when legacy sessions use a handle as the name", () => {
+    const handle = "accountname.pds.mypds.example";
+    for (const identity of [{ name: handle }, { handle }]) {
+      expect(accountDisplayName(identity)).toBe("accountname");
+      expect(accountDisplayName(identity, { displayName: "Morgan Vale" })).toBe(
+        "handle" in identity ? "accountname" : "Morgan Vale",
+      );
+    }
+    expect(accountDisplayName(null, { handle })).toBe("accountname");
+    expect(accountDisplayName({ name: "M. Vale" })).toBe("M. Vale");
+    expect(withAccountProfile({ handle }, null)).toMatchObject({
+      name: "accountname",
+      handle,
+    });
   });
 
   test("never exposes email-only, legacy email names, or embedded email labels", () => {

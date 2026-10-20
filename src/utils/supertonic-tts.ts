@@ -335,7 +335,9 @@ export async function synthesizeSupertonic(
     for (const chunk of chunks) {
       const output = (await tts(chunk, {
         speaker_embeddings: speakerEmbeddings,
-        num_inference_steps: 2,
+        // Match Supertonic's reference quality setting. Two passes favoured
+        // latency over intelligibility; narration can wait for five.
+        num_inference_steps: 5,
         speed,
       })) as { audio: Float32Array; sampling_rate: number };
       samplingRate = output.sampling_rate || samplingRate;

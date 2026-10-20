@@ -45,9 +45,7 @@ async function openSentence(page: Page, source = INSTRUMENT_SENTENCE) {
     .getByRole("toolbar", { name: /^Actions for/ })
     .getByRole("button", { name: "Rework", exact: true })
     .click();
-  await page
-    .getByText("Ask an editor about this wording", { exact: true })
-    .click();
+  await page.getByText("Ask an editor", { exact: true }).click();
   const invitation = room(page);
   await expect(
     invitation.getByRole("button", { name: "Ask the room", exact: true }),
@@ -65,6 +63,7 @@ async function openThreads(page: Page) {
     .getByRole("complementary", { name: "Threads", exact: true })
     .locator("li")
     .filter({ hasText: "The same wording occurs twice." });
+  await connection.getByText("Ask an editor about this pair").click();
   const invitation = connection.getByRole("region", {
     name: "Ask the editorial room",
     exact: true,
@@ -235,7 +234,7 @@ test("Sentence room selects a real editor and saves the exact unapplied comparis
   expect(transport.replies).toHaveLength(0);
   await page
     .locator(".sentence-bench")
-    .getByRole("button", { name: /^Compare Use a verb:/ })
+    .getByRole("button", { name: /^Try Use a verb:/ })
     .click();
   await expect(page.locator(".sentence-bench textarea")).toHaveValue(PROPOSAL);
   await inspectInvitation(invitation, INSTRUMENT_SENTENCE, PROPOSAL);

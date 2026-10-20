@@ -1,0 +1,277 @@
+.passage-gather {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 1000);
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+.passage-gather__scrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-ink) 42%, transparent);
+  backdrop-filter: blur(2px) saturate(0.7);
+  animation: passage-gather-dim 260ms ease-out both;
+}
+.passage-gather__sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(54rem, 100%);
+  max-height: min(46rem, calc(100dvh - 3rem));
+  background: var(--color-paper);
+  color: var(--color-ink);
+  border-radius: 2px;
+  box-shadow: 0 24px 60px color-mix(in srgb, var(--color-ink) 28%, transparent);
+  animation: passage-gather-rise 260ms ease-out both;
+}
+.passage-gather.is-closing .passage-gather__scrim,
+.passage-gather.is-closing .passage-gather__sheet {
+  animation: passage-gather-out 180ms ease-in both;
+}
+.passage-gather__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--color-paper-3);
+}
+.passage-gather__kicker {
+  margin: 0;
+  font: 0.6875rem var(--font-typewriter);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-light);
+}
+.passage-gather__title {
+  margin: 0.2rem 0 0;
+  font: 600 1.125rem/1.3 var(--font-display);
+}
+.passage-gather__note {
+  margin: 0.35rem 0 0;
+  max-width: 40rem;
+  font: italic 0.875rem/1.5 var(--font-serif);
+  color: var(--color-ink-light);
+}
+.passage-gather__notice {
+  margin: 0.5rem 0 0;
+  font: 0.8125rem/1.5 var(--font-sans);
+  color: var(--color-vermilion);
+}
+.passage-gather__close {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+}
+.passage-gather__close kbd {
+  font: 0.625rem var(--font-typewriter);
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  padding: 0 0.25rem;
+}
+.passage-gather__body {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.25rem 1fr;
+  gap: 2.5rem;
+  min-height: 0;
+  flex: 1;
+  padding: 1rem 1.25rem 1.25rem 1rem;
+  overflow: hidden;
+}
+/* The whole manuscript in miniature, with where the reader is now. */
+.passage-gather__map {
+  position: relative;
+  min-height: 12rem;
+  border-right: 1px solid var(--color-paper-3);
+}
+.passage-gather__page {
+  position: absolute;
+  inset: 0 0.9rem 0 0;
+}
+.passage-gather__page i {
+  position: absolute;
+  left: 0;
+  min-height: 2px;
+  background: var(--color-paper-3);
+  border-radius: 1px;
+}
+.passage-gather__view {
+  position: absolute;
+  left: -0.25rem;
+  right: -0.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 35%, transparent);
+  border-radius: 2px;
+}
+.passage-gather__tick {
+  position: absolute;
+  right: -0.7rem;
+  transform: translateY(-50%);
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  border: 2px solid var(--gather-color);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font: 600 0.6875rem var(--font-sans);
+  cursor: pointer;
+  z-index: 1;
+}
+.passage-gather__tick:hover,
+.passage-gather__tick:focus-visible {
+  background: var(--gather-color);
+  color: var(--color-paper);
+}
+.passage-gather__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+.passage-gather__lines path {
+  fill: none;
+  stroke-width: 1.25;
+  opacity: 0.75;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: passage-gather-draw 520ms 120ms ease-out forwards;
+}
+.passage-gather__list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.25rem 0 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.passage-gather__passage {
+  border: 1px solid var(--gather-color);
+  background: var(--color-paper-soft);
+  padding: 0.6rem 0.85rem 0.7rem;
+  border-radius: 2px;
+}
+.passage-gather__label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font: 0.75rem var(--font-sans);
+}
+.passage-gather__num {
+  display: inline-grid;
+  place-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: var(--gather-color);
+  color: var(--color-paper);
+  font: 600 0.625rem var(--font-sans);
+}
+.passage-gather__where {
+  margin-left: auto;
+  color: var(--color-ink-light);
+  font: 0.6875rem var(--font-typewriter);
+}
+.passage-gather__text {
+  margin: 0.4rem 0 0.35rem;
+  font: 0.9375rem/1.65 var(--font-serif);
+  color: var(--color-ink-light);
+}
+.passage-gather__text mark {
+  color: var(--color-ink);
+  background: color-mix(in srgb, var(--gather-color) 22%, transparent);
+  box-shadow: inset 0 -2px var(--gather-color);
+}
+.passage-gather__notes {
+  margin: 0 0 0.35rem;
+  padding: 0 0 0 0.75rem;
+  border-left: 1px solid var(--color-paper-3);
+  list-style: none;
+  font: 0.8125rem/1.5 var(--font-sans);
+  color: var(--color-ink);
+}
+.passage-gather__notes li + li {
+  margin-top: 0.2rem;
+}
+.passage-gather__go {
+  border: 0;
+  background: none;
+  padding: 0.2rem 0;
+  color: var(--color-cobalt);
+  font: 0.75rem var(--font-sans);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.passage-gather button:focus-visible {
+  outline: 2px solid var(--color-cobalt);
+  outline-offset: 2px;
+}
+@media (max-width: 640px) {
+  .passage-gather {
+    padding: 0.5rem;
+    place-items: end stretch;
+  }
+  .passage-gather__sheet {
+    max-height: calc(100dvh - 1rem);
+  }
+  .passage-gather__body {
+    grid-template-columns: 2.25rem 1fr;
+    gap: 1.25rem;
+    padding: 0.75rem 0.75rem 1rem 0.5rem;
+  }
+  .passage-gather__go {
+    min-height: 2.5rem;
+  }
+}
+@keyframes passage-gather-dim {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes passage-gather-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes passage-gather-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes passage-gather-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .passage-gather__scrim,
+  .passage-gather__sheet,
+  .passage-gather.is-closing .passage-gather__scrim,
+  .passage-gather.is-closing .passage-gather__sheet,
+  .passage-gather__lines path {
+    animation: none;
+  }
+  .passage-gather__lines path {
+    stroke-dashoffset: 0;
+  }
+}
+::highlight(twyne-passage-reveal) {
+  background-color: var(--color-highlight-mint);
+}
+
+/* Floating instruments live in other stacking contexts; while passages are
+   gathered they step back with the rest of the desk. */
+[data-gathering] .thread-instrument,
+[data-gathering] .in-flow-rails,
+[data-gathering] .flow-edges,
+[data-gathering] .manuscript-comment-card.is-in-margin {
+  visibility: hidden;
+}

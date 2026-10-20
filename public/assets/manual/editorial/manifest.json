@@ -38,21 +38,31 @@
       "route": "/personas/",
       "width": 872,
       "height": 748,
-      "bytes": 54536,
-      "sha256": "ab2c8e377ddd81ad9bbb9ffdf4a380ab0ab33b71130448f8df84f3c0579171b0",
+      "bytes": 55044,
+      "sha256": "9dbb2fe38c5bd696481c2c4962201bc0449b92ace3e4a3867c0ba7398e2ac151",
       "description": "Actual cast assistance overrides, proposal scope and Edit controls.",
-      "staged": "Sample custom editor and unconnected sample model provider. No model request or connection test."
+      "staged": "Sample custom editor and unconnected sample model provider. No model request or connection test.",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/room-assistance.png",
+      "sourceSha256": "62f5753672f2c6b2b2e0af9adc6f6eec3a75f40ccd9b76571fd7486efffb861a",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.365Z",
+      "format": "webp"
     },
     {
       "file": "room-new-editor.webp",
       "chapter": "room",
       "route": "/personas/",
       "width": 848,
-      "height": 840,
-      "bytes": 29766,
-      "sha256": "628f5078a73ec49d487875671c3d3515e11cdda9cedef8a1e2ad689f800bca71",
+      "height": 917,
+      "bytes": 36322,
+      "sha256": "7f3118a635c4242e77f7ce66ecb0b83c6a6d75e757999c450b9dacc35eb6431a",
       "description": "Actual sample custom-editor form, before Create.",
-      "staged": "Sample custom editor and unconnected sample model provider. No model request or connection test."
+      "staged": "Sample custom editor and unconnected sample model provider. No model request or connection test.",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/room-new-editor.png",
+      "sourceSha256": "1a88c997914d33b49a8b2715ca74a0864b9cee4c1844877d32d2786bc71f4abe",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.367Z",
+      "format": "webp"
     },
     {
       "file": "room-model-routing.webp",
@@ -92,11 +102,22 @@
       "chapter": "rubric",
       "route": "/editor/",
       "width": 464,
-      "height": 788,
-      "bytes": 23262,
-      "sha256": "ea4ee77198987dcafc4f054d3d5b092763e61a69bf8c45deab727aee2278464e",
+      "height": 845,
+      "bytes": 26032,
+      "sha256": "738755b51f16598e5a908ce0ed45e5607f7a154de72e53f704e45f2d7b25c894",
       "description": "Editors tab showing staged editor rationales, alongside Criteria and Passages.",
-      "staged": "Saved grade, criterion marks, rationales and feedback are staged. Static measurements use the app scorer on the sample draft."
+      "staged": "Saved grade, criterion marks, rationales and feedback are staged. Static measurements use the app scorer on the sample draft.",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/rubric-readings.png",
+      "sourceSha256": "734d63f2384a78a73de50a9683719b240a49f1d40bb75d88b17531183d2139fc",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.368Z",
+      "format": "webp",
+      "crop": {
+        "x": 816,
+        "y": 105,
+        "width": 464,
+        "height": 845
+      }
     },
     {
       "file": "rubric-static-features.webp",
@@ -113,45 +134,89 @@
       "file": "marginalia-anchor.webp",
       "chapter": "marginalia",
       "route": "/editor/",
-      "width": 760,
-      "height": 550,
-      "bytes": 46200,
-      "sha256": "16059cc8fb7bd85ba91b9741b55598e4df4b925bf4e723e9f9490b50efecd86c",
+      "width": 900,
+      "height": 650,
+      "bytes": 52246,
+      "sha256": "98b7e705e47a627f2bc5ce5a59ae842b7732186bd0abc30357b91ebae9558071",
       "description": "Real highlighted anchor and writer thread with an unsent reply draft.",
-      "staged": "Initial anchored note is staged. Writer reply, Resolve, Reopen and editor selection were operated in the real UI. No request sent to the editor."
+      "staged": "Initial anchored note is staged. Writer reply, Resolve, Reopen and editor selection were operated in the real UI. No request sent to the editor.",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/marginalia-anchor.png",
+      "sourceSha256": "f0e2e01dcb6bfb0b8211b2b5e3704e34bf34e01447119163b948b00afcb9d743",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.370Z",
+      "format": "webp",
+      "crop": {
+        "x": 0,
+        "y": 220,
+        "width": 900,
+        "height": 650
+      }
     },
     {
       "file": "marginalia-reply.webp",
       "chapter": "marginalia",
       "route": "/editor/",
-      "width": 760,
-      "height": 550,
-      "bytes": 48148,
-      "sha256": "5a8791185d218c9b099f7afa2ae77590682996d105a7c1972befbff506756987",
+      "width": 900,
+      "height": 650,
+      "bytes": 52902,
+      "sha256": "bfee39a2c594ba0784030bf64e6b1b53df49568dfed838581a4130cd055526c0",
       "description": "Writer reply saved by the actual Reply action.",
-      "staged": "Initial anchored note is staged. Writer reply, Resolve, Reopen and editor selection were operated in the real UI. No request sent to the editor."
+      "staged": "Initial anchored note is staged. Writer reply, Resolve, Reopen and editor selection were operated in the real UI. No request sent to the editor.",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/marginalia-reply.png",
+      "sourceSha256": "b3e9425de203e989415b166ff0887ba9ebf787e8d06c1aadab526ca8091e8742",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.373Z",
+      "format": "webp",
+      "crop": {
+        "x": 0,
+        "y": 220,
+        "width": 900,
+        "height": 650
+      }
     },
     {
       "file": "marginalia-ask-editor.webp",
       "chapter": "marginalia",
       "route": "/editor/",
       "width": 760,
-      "height": 550,
-      "bytes": 26982,
-      "sha256": "e40ff9c4b63ef59a248d17b3d66ea0c95c6a6e4ce323f9c68cf91b563223d64b",
+      "height": 720,
+      "bytes": 30886,
+      "sha256": "f489b26b076f1dab58f4725b798d44772b63f6860eef2884f383d5a7498ff82b",
       "description": "Actual editor picker with the scholar selected. No request sent.",
-      "staged": "Initial anchored note is staged. Writer reply, Resolve, Reopen and editor selection were operated in the real UI. No request sent to the editor."
+      "staged": "Initial anchored note is staged. Writer reply, Resolve, Reopen and editor selection were operated in the real UI. No request sent to the editor.",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/marginalia-ask-editor.png",
+      "sourceSha256": "69ce7d5ae7e5d66639e55377bef223a9154c483d882ad4b2c2c152ee86567acb",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.376Z",
+      "format": "webp",
+      "crop": {
+        "x": 520,
+        "y": 105,
+        "width": 760,
+        "height": 720
+      }
     },
     {
       "file": "marginalia-resolve.webp",
       "chapter": "marginalia",
       "route": "/editor/",
-      "width": 760,
-      "height": 550,
-      "bytes": 47978,
-      "sha256": "c250ded214f59cc1b77c169f3998e6da8f64190c571045ed41b86a701c0e91aa",
+      "width": 900,
+      "height": 650,
+      "bytes": 52794,
+      "sha256": "bff51f65bb72ab69fa7ac20176253160ced63045ad42bb8293b44d30f1ad9753",
       "description": "Actual resolved thread with Reopen recovery.",
-      "staged": "Initial anchored note is staged. Writer reply, Resolve, Reopen and editor selection were operated in the real UI. No request sent to the editor."
+      "staged": "Initial anchored note is staged. Writer reply, Resolve, Reopen and editor selection were operated in the real UI. No request sent to the editor.",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/marginalia-resolve.png",
+      "sourceSha256": "10d72724bd01f4ace32441ac63eeb56aaee4aff5649a9d5487753d7305a9ea6a",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.378Z",
+      "format": "webp",
+      "crop": {
+        "x": 0,
+        "y": 220,
+        "width": 900,
+        "height": 650
+      }
     },
     {
       "file": "apparatus-manuscript.webp",
@@ -217,5 +282,149 @@
     "Model routing shows an unconnected sample provider with an empty key.",
     "No live research search or remote source verification was performed.",
     "The source manuscript and all local data belong to an isolated disposable browser context."
-  ]
+  ],
+  "manualRefresh": {
+    "reviewedOn": "2026-10-19",
+    "report": "artifacts/qa-recordings/2026-10-19/manual-refresh/report.json",
+    "captures": [
+      {
+        "image": "/assets/manual/editorial/room-assistance.webp",
+        "file": "room-assistance.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.365Z",
+        "width": 872,
+        "height": 748,
+        "format": "webp",
+        "bytes": 55044,
+        "sha256": "9dbb2fe38c5bd696481c2c4962201bc0449b92ace3e4a3867c0ba7398e2ac151",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/room-assistance.png",
+        "sourceSha256": "62f5753672f2c6b2b2e0af9adc6f6eec3a75f40ccd9b76571fd7486efffb861a",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/replay.mjs",
+        "staging": "Fictional Salt Roads, The Route Reader, saved bibliography and staged B/76 rubric with sample editor readings. No critique or grading request submitted."
+      },
+      {
+        "image": "/assets/manual/editorial/room-new-editor.webp",
+        "file": "room-new-editor.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.367Z",
+        "width": 848,
+        "height": 917,
+        "format": "webp",
+        "bytes": 36322,
+        "sha256": "7f3118a635c4242e77f7ce66ecb0b83c6a6d75e757999c450b9dacc35eb6431a",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/room-new-editor.png",
+        "sourceSha256": "1a88c997914d33b49a8b2715ca74a0864b9cee4c1844877d32d2786bc71f4abe",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/replay.mjs",
+        "staging": "Fictional Salt Roads, The Route Reader, saved bibliography and staged B/76 rubric with sample editor readings. No critique or grading request submitted."
+      },
+      {
+        "image": "/assets/manual/editorial/rubric-readings.webp",
+        "file": "rubric-readings.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.368Z",
+        "width": 464,
+        "height": 845,
+        "format": "webp",
+        "bytes": 26032,
+        "sha256": "738755b51f16598e5a908ce0ed45e5607f7a154de72e53f704e45f2d7b25c894",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/rubric-readings.png",
+        "sourceSha256": "734d63f2384a78a73de50a9683719b240a49f1d40bb75d88b17531183d2139fc",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/replay.mjs",
+        "staging": "Fictional Salt Roads, The Route Reader, saved bibliography and staged B/76 rubric with sample editor readings. No critique or grading request submitted.",
+        "crop": {
+          "x": 816,
+          "y": 105,
+          "width": 464,
+          "height": 845
+        }
+      },
+      {
+        "image": "/assets/manual/editorial/marginalia-anchor.webp",
+        "file": "marginalia-anchor.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.370Z",
+        "width": 900,
+        "height": 650,
+        "format": "webp",
+        "bytes": 52246,
+        "sha256": "98b7e705e47a627f2bc5ce5a59ae842b7732186bd0abc30357b91ebae9558071",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/marginalia-anchor.png",
+        "sourceSha256": "f0e2e01dcb6bfb0b8211b2b5e3704e34bf34e01447119163b948b00afcb9d743",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/replay.mjs",
+        "staging": "Fictional Salt Roads, The Route Reader, saved bibliography and staged B/76 rubric with sample editor readings. No critique or grading request submitted.",
+        "crop": {
+          "x": 0,
+          "y": 220,
+          "width": 900,
+          "height": 650
+        }
+      },
+      {
+        "image": "/assets/manual/editorial/marginalia-reply.webp",
+        "file": "marginalia-reply.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.373Z",
+        "width": 900,
+        "height": 650,
+        "format": "webp",
+        "bytes": 52902,
+        "sha256": "bfee39a2c594ba0784030bf64e6b1b53df49568dfed838581a4130cd055526c0",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/marginalia-reply.png",
+        "sourceSha256": "b3e9425de203e989415b166ff0887ba9ebf787e8d06c1aadab526ca8091e8742",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/replay.mjs",
+        "staging": "Fictional Salt Roads, The Route Reader, saved bibliography and staged B/76 rubric with sample editor readings. No critique or grading request submitted.",
+        "crop": {
+          "x": 0,
+          "y": 220,
+          "width": 900,
+          "height": 650
+        }
+      },
+      {
+        "image": "/assets/manual/editorial/marginalia-ask-editor.webp",
+        "file": "marginalia-ask-editor.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.376Z",
+        "width": 760,
+        "height": 720,
+        "format": "webp",
+        "bytes": 30886,
+        "sha256": "f489b26b076f1dab58f4725b798d44772b63f6860eef2884f383d5a7498ff82b",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/marginalia-ask-editor.png",
+        "sourceSha256": "69ce7d5ae7e5d66639e55377bef223a9154c483d882ad4b2c2c152ee86567acb",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/replay.mjs",
+        "staging": "Fictional Salt Roads, The Route Reader, saved bibliography and staged B/76 rubric with sample editor readings. No critique or grading request submitted.",
+        "crop": {
+          "x": 520,
+          "y": 105,
+          "width": 760,
+          "height": 720
+        }
+      },
+      {
+        "image": "/assets/manual/editorial/marginalia-resolve.webp",
+        "file": "marginalia-resolve.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.378Z",
+        "width": 900,
+        "height": 650,
+        "format": "webp",
+        "bytes": 52794,
+        "sha256": "bff51f65bb72ab69fa7ac20176253160ced63045ad42bb8293b44d30f1ad9753",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/stills/marginalia-resolve.png",
+        "sourceSha256": "10d72724bd01f4ace32441ac63eeb56aaee4aff5649a9d5487753d7305a9ea6a",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/editorial/replay.mjs",
+        "staging": "Fictional Salt Roads, The Route Reader, saved bibliography and staged B/76 rubric with sample editor readings. No critique or grading request submitted.",
+        "crop": {
+          "x": 0,
+          "y": 220,
+          "width": 900,
+          "height": 650
+        }
+      }
+    ],
+    "retainedCaptureDates": "Unchanged image records retain their original dates; historical video/test evidence is preserved separately.",
+    "verification": "Each replacement inspected against the running local app with fictional fixtures. No live sign-in, model, media generation, publish or restore proof.",
+    "guideDimensions": "Use report.json for final dimensions; guide source is concurrently owned by another agent."
+  }
 }

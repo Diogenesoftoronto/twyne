@@ -3,20 +3,97 @@
   "processing": "Lossless WebP encoding only; no crop or UI alteration.",
   "assets": [
     {
-      "source": "artifacts/qa-recordings/instruments-release/final-persona-visual/results/instrument-room.e2e.ts-Sen-d7eec-ove-an-unchanged-manuscript-chromium/desktop-room-invitation.png",
-      "sourceSha256": "df33586a3a82b762c0977412f09b7f05cf534144165e6b1097dbd007e2720d5a",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/instrument-room/stills/desktop-room-invitation.png",
+      "sourceSha256": "c7740f17a2c228231fd3a346801d33d172b4abee1e7ada363dab21fabc152576",
       "output": "instrument-room-invitation-v1.webp",
-      "outputSha256": "5c11ff92f249ac5af5efac937c685f81acd3d3f20db9c1af6626f645868306a6",
+      "outputSha256": "864a4178482e85791b6af74f2ebae918ba4d1bb96f79143cad21d295b54333b3",
       "width": 1440,
-      "height": 900
+      "height": 900,
+      "bytes": 57492,
+      "sha256": "864a4178482e85791b6af74f2ebae918ba4d1bb96f79143cad21d295b54333b3",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.429Z",
+      "format": "webp",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
-      "source": "artifacts/qa-recordings/instruments-release/final-persona-visual/results/instrument-room.e2e.ts-Sen-d7eec-ove-an-unchanged-manuscript-chromium/test-failed-1.png",
-      "sourceSha256": "69fe091d2b8cd88283c87bd6a7be9f93d383dbe0ad4ed7fbbf5898f4473873a0",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/instrument-room/stills/sentence-real-anchored-room-reply.png",
+      "sourceSha256": "c6cc0dd575d833672fc9e02e860d3ca595af1c7b4b8abb25abf139934700aa59",
       "output": "instrument-room-reply-v1.webp",
-      "outputSha256": "0d8b010770d3ef47789827303874c55330bd84da8726e5d4e32d371ee3676e1b",
+      "outputSha256": "b5d8c263e61c62698b80fb463247020c57ca393ca3d990abb758f7bf737462bf",
       "width": 1440,
-      "height": 900
+      "height": 900,
+      "bytes": 70974,
+      "sha256": "b5d8c263e61c62698b80fb463247020c57ca393ca3d990abb758f7bf737462bf",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.435Z",
+      "format": "webp",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     }
-  ]
+  ],
+  "manualRefresh": {
+    "reviewedOn": "2026-10-19",
+    "report": "artifacts/qa-recordings/2026-10-19/manual-refresh/report.json",
+    "captures": [
+      {
+        "image": "/assets/manual/instrument-room-invitation-v1.webp",
+        "file": "instrument-room-invitation-v1.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.429Z",
+        "width": 1440,
+        "height": 900,
+        "format": "webp",
+        "bytes": 57492,
+        "sha256": "864a4178482e85791b6af74f2ebae918ba4d1bb96f79143cad21d295b54333b3",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/instrument-room/stills/desktop-room-invitation.png",
+        "sourceSha256": "c7740f17a2c228231fd3a346801d33d172b4abee1e7ada363dab21fabc152576",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/visual/playwright.config.ts",
+        "staging": "Fictional manuscript and explicitly simulated judgement/reply transports. Real app anchoring and identity UI; no live model or sign-in.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 900,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/manual/instrument-room-reply-v1.webp",
+        "file": "instrument-room-reply-v1.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.435Z",
+        "width": 1440,
+        "height": 900,
+        "format": "webp",
+        "bytes": 70974,
+        "sha256": "b5d8c263e61c62698b80fb463247020c57ca393ca3d990abb758f7bf737462bf",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/instrument-room/stills/sentence-real-anchored-room-reply.png",
+        "sourceSha256": "c6cc0dd575d833672fc9e02e860d3ca595af1c7b4b8abb25abf139934700aa59",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/visual/playwright.config.ts",
+        "staging": "Fictional manuscript and explicitly simulated judgement/reply transports. Real app anchoring and identity UI; no live model or sign-in.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 900,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      }
+    ],
+    "retainedCaptureDates": "Unchanged image records retain their original dates; historical video/test evidence is preserved separately.",
+    "verification": "Each replacement inspected against the running local app with fictional fixtures. No live sign-in, model, media generation, publish or restore proof.",
+    "guideDimensions": "Use report.json for final dimensions; guide source is concurrently owned by another agent."
+  }
 }

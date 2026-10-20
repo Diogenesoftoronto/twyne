@@ -1,6 +1,8 @@
 import {
+  $,
   component$,
   useSignal,
+  useStore,
   useStyles$,
   useVisibleTask$,
 } from "@qwik.dev/core";
@@ -8,8 +10,13 @@ import {
   THREAD_INSTRUMENT_EVENT,
   threadInstrumentController,
   threadInstrumentSnapshot,
+  type InstrumentThread,
   type ThreadInstrumentSnapshot,
 } from "../../utils/thread-instrument";
+import {
+  openPassageGather,
+  type GatherPassage,
+} from "../../utils/passage-gather";
 import { InstrumentArt } from "../instruments/instrument-art";
 import { InstrumentRoom } from "../instruments/instrument-room";
 import { localWritingStatus } from "../../utils/local-writing-models";
@@ -22,7 +29,32 @@ import {
 
 /** A focused view of code-backed sentence pairs. The manuscript remains the
  * source of every node; model output can name only a permitted relation.
+ * "See together" gathers a pair (or every pair) into one read-only sheet of
+ * real manuscript excerpts; resting the pointer on a pair does the same.
  */
+const GATHER_HOLD_MS = 1_100;
+// Mutated in place: Qwik's handler segments cannot reassign module bindings.
+const hold: { timer?: ReturnType<typeof setTimeout> } = {};
+
+const relationLabel = (thread: InstrumentThread): string =>
+  thread.state === "confirmed" && thread.relation
+    ? thread.relation
+    : thread.state === "no-relation"
+      ? "No judged relation"
+      : thread.hypothesis === "exact-wording"
+        ? "Repeated wording"
+        : thread.hypothesis === "reference"
+          ? "Possible reference"
+          : thread.hypothesis === "embedding-neighbours"
+            ? "Similar sentence vectors"
+            : "Word overlap";
+const THREAD_COLORS = [
+  "var(--color-cobalt)",
+  "var(--color-vermilion)",
+  "#4f7a52",
+  "#8a5a9e",
+  "#a2702a",
+];
 export const ThreadsInstrument = component$<{
   fixture?: ThreadInstrumentSnapshot;
   readOnly?: boolean;
@@ -63,6 +95,13 @@ export const ThreadsInstrument = component$<{
     .thread-instrument-span button { display:block; text-align:left; width:100%; border:0; font:inherit; color:inherit; background:transparent; cursor:pointer; }
     .thread-instrument-span small { font:.6875rem var(--font-sans); display:block; margin-bottom:.2rem; }
     .thread-instrument-actions { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.6rem; }
+    .thread-instrument-room { margin-top:.6rem; font:.75rem/1.5 var(--font-sans); }
+    .thread-instrument-room > summary { cursor:pointer; padding:.25rem 0; }
+    .thread-instrument-head { display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+    .thread-instrument-gather { position:relative; overflow:hidden; border:1px solid var(--color-paper-3); border-radius:999px; background:var(--color-paper); color:var(--color-ink); font:.6875rem var(--font-sans); padding:.15rem .55rem; cursor:pointer; }
+    .thread-instrument-gather::after { content:""; position:absolute; left:0; bottom:0; height:2px; width:0; background:var(--color-cobalt); }
+    .thread-instrument li.is-arming .thread-instrument-gather::after { width:100%; transition:width 1.1s linear; }
+    @media (prefers-reduced-motion: reduce) { .thread-instrument li.is-arming .thread-instrument-gather::after { transition:none; } }
     .thread-instrument button:focus-visible { outline:2px solid var(--color-ink); outline-offset:2px; }
     @media(max-width:480px) { .thread-instrument { max-height:55dvh; } }
   `);
@@ -92,6 +131,8 @@ export const ThreadsInstrument = component$<{
     };
     const escape = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || !threadInstrumentSnapshot().open) return;
+      // An open gathering closes first; Threads stays behind it.
+      if (document.querySelector("[data-passage-gather]")) return;
       event.preventDefault();
       event.stopPropagation();
       threadInstrumentController()?.close();
@@ -102,6 +143,58 @@ export const ThreadsInstrument = component$<{
     cleanup(() => {
       window.removeEventListener(THREAD_INSTRUMENT_EVENT, sync);
       window.removeEventListener("keydown", escape, true);
+    });
+  });
+  const arming = useSignal<string | null>(null);
+  const roomOpen = useStore<Record<string, boolean>>({});
+  /** Gather the passages of these pairs, each sentence once. */
+  const gather = $((ids: string[], opener: HTMLElement | null) => {
+    clearTimeout(hold.timer);
+    arming.value = null;
+    const current = threadInstrumentSnapshot();
+    const controller = threadInstrumentController();
+    if (!controller || current.stale) return;
+    const pairs = current.threads.filter((t) => ids.includes(t.id));
+    const seen = new Set<string>();
+    const passages: GatherPassage[] = pairs.flatMap((thread, n) =>
+      (
+        [
+          [thread.firstId, thread.first],
+          [thread.secondId, thread.second],
+        ] as const
+      ).flatMap(([spanId, span]) => {
+        if (seen.has(spanId)) return [];
+        seen.add(spanId);
+        const range = controller.spanRange(spanId);
+        if (!range) return [];
+        return [
+          {
+            id: spanId,
+            label: `Sentence ${span.ordinal} · ${relationLabel(thread)}`,
+            color: THREAD_COLORS[n % THREAD_COLORS.length],
+            range,
+            go: () => {
+              threadInstrumentController()?.jump(spanId);
+              document
+                .querySelector<HTMLElement>(".ProseMirror")
+                ?.focus({ preventScroll: true });
+            },
+          },
+        ];
+      }),
+    );
+    if (!passages.length) {
+      message.value = "These spans changed. Reopen Threads to see them.";
+      return;
+    }
+    openPassageGather({
+      title:
+        pairs.length === 1
+          ? relationLabel(pairs[0])
+          : `${pairs.length} threads in this manuscript`,
+      note: pairs.length === 1 ? pairs[0].observation : undefined,
+      passages,
+      opener,
     });
   });
   const view = snapshot.value;
@@ -121,10 +214,22 @@ export const ThreadsInstrument = component$<{
           Close
         </button>
       </header>
-      <p class="thread-instrument-note">
-        Every passage below is a sentence from this manuscript. Hover or focus a
-        pair to mark both spans in the page.
-      </p>
+      {view.threads.length > 1 && (
+        <button
+          type="button"
+          class="btn-paper in-flow-mini"
+          disabled={view.stale}
+          data-gather-opener="threads:all"
+          onClick$={(_, el) =>
+            gather(
+              view.threads.map((t) => t.id),
+              el,
+            )
+          }
+        >
+          See all {view.threads.length} together
+        </button>
+      )}
       {embeddingReady.value && view.focusId && (
         <button
           type="button"
@@ -151,6 +256,7 @@ export const ThreadsInstrument = component$<{
         {view.threads.map((thread) => (
           <li
             key={thread.id}
+            class={{ "is-arming": arming.value === thread.id }}
             onMouseEnter$={() =>
               threadInstrumentController()?.preview(thread.id)
             }
@@ -158,26 +264,47 @@ export const ThreadsInstrument = component$<{
             onFocusIn$={() => threadInstrumentController()?.preview(thread.id)}
             onFocusOut$={() => threadInstrumentController()?.preview(null)}
           >
-            <p class="thread-instrument-relation">
-              {thread.state === "confirmed"
-                ? thread.relation
-                : thread.state === "no-relation"
-                  ? "No judged relation"
-                  : thread.hypothesis === "exact-wording"
-                    ? "Repeated wording"
-                    : thread.hypothesis === "reference"
-                      ? "Possible reference"
-                      : thread.hypothesis === "embedding-neighbours"
-                        ? "Similar sentence vectors"
-                        : "Word overlap"}
-            </p>
-            <p class="thread-instrument-note">
-              {thread.source === "judgement"
-                ? `${thread.model} · relation ${thread.probability?.toFixed(2)} · exists ${thread.exists?.toFixed(2)}`
-                : thread.source === "on-device"
-                  ? `${thread.embedding?.model} · cosine ${thread.embedding?.cosine.toFixed(3)} · relation unverified`
-                  : "by rule · relation unverified"}
-            </p>
+            <div class="thread-instrument-head">
+              <p
+                class="thread-instrument-relation"
+                title={
+                  thread.source === "judgement"
+                    ? `${thread.model} · relation ${thread.probability?.toFixed(2)} · exists ${thread.exists?.toFixed(2)}`
+                    : thread.source === "on-device"
+                      ? `${thread.embedding?.model} · cosine ${thread.embedding?.cosine.toFixed(3)} · relation unverified`
+                      : "By rule · relation unverified"
+                }
+              >
+                {relationLabel(thread)}
+              </p>
+              <button
+                type="button"
+                class="thread-instrument-gather"
+                data-gather-opener={`thread:${thread.id}`}
+                disabled={view.stale}
+                onClick$={(_, el) => gather([thread.id], el)}
+                onMouseEnter$={(_, el) => {
+                  // Resting on it gathers the pair; passing over does not.
+                  clearTimeout(hold.timer);
+                  arming.value = thread.id;
+                  hold.timer = setTimeout(() => {
+                    if (arming.value === thread.id)
+                      void gather([thread.id], el);
+                  }, GATHER_HOLD_MS);
+                }}
+                onPointerDown$={() => {
+                  clearTimeout(hold.timer);
+                  arming.value = null;
+                }}
+                onMouseLeave$={() => {
+                  clearTimeout(hold.timer);
+                  arming.value = null;
+                }}
+                title="See both passages together (or rest the pointer here)"
+              >
+                See together
+              </button>
+            </div>
             <InstrumentMotion state="compare">
               <InstrumentMotionPart part="source">
                 <div class="thread-instrument-span">
@@ -250,35 +377,41 @@ export const ThreadsInstrument = component$<{
                 </button>
               </div>
             )}
-            {thread.hypothesis === "exact-wording" && (
-              <p class="thread-instrument-note">
-                Repetition can be deliberate. Removing an occurrence is one undo
-                step.
-              </p>
-            )}
             {!fixture && !readOnly && (
-              <InstrumentRoom
-                disabled={view.stale}
-                context={{
-                  instrument: "threads",
-                  key: `${view.index.fingerprint}:${thread.id}`,
-                  source: `First passage (sentence ${thread.first.ordinal}):\n${thread.first.text}\n\nSecond passage (sentence ${thread.second.ordinal}):\n${thread.second.text}`,
-                  question:
-                    "Does this connection serve the reader as recurrence, contradiction, or setup and payoff, or is it coincidence? Suggest one concrete revision only if it would help.",
-                  detail: `The instrument's ${thread.source} observation is ${thread.observation}. Relation status: ${thread.state}. This observation is evidence to review, not a persona's endorsement.`,
+              <details
+                class="thread-instrument-room"
+                open={!!roomOpen[thread.id]}
+                onToggle$={(_, el) => {
+                  roomOpen[thread.id] = el.open;
                 }}
-                onAsk$={async (request) =>
-                  (await threadInstrumentController()?.askRoom(
-                    request,
-                    thread.id,
-                    view.index.fingerprint,
-                  )) ?? {
-                    ok: false,
-                    message:
-                      "Reopen Threads to invite an editor about this pair.",
-                  }
-                }
-              />
+              >
+                <summary>Ask an editor about this pair</summary>
+                {/* Mounted only while open: a closed disclosure has no box. */}
+                {roomOpen[thread.id] && (
+                  <InstrumentRoom
+                    disabled={view.stale}
+                    context={{
+                      instrument: "threads",
+                      key: `${view.index.fingerprint}:${thread.id}`,
+                      source: `First passage (sentence ${thread.first.ordinal}):\n${thread.first.text}\n\nSecond passage (sentence ${thread.second.ordinal}):\n${thread.second.text}`,
+                      question:
+                        "Does this connection serve the reader as recurrence, contradiction, or setup and payoff, or is it coincidence? Suggest one concrete revision only if it would help.",
+                      detail: `The instrument's ${thread.source} observation is ${thread.observation}. Relation status: ${thread.state}. This observation is evidence to review, not a persona's endorsement.`,
+                    }}
+                    onAsk$={async (request) =>
+                      (await threadInstrumentController()?.askRoom(
+                        request,
+                        thread.id,
+                        view.index.fingerprint,
+                      )) ?? {
+                        ok: false,
+                        message:
+                          "Reopen Threads to invite an editor about this pair.",
+                      }
+                    }
+                  />
+                )}
+              </details>
             )}
           </li>
         ))}

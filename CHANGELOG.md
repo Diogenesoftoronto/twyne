@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.24.2
+
+<sub>2026-10-20</sub>
+
+- Reconcile the deployed Sentence Bench, passage connections, narration repairs,
+  and Morgan Vale manual walkthroughs with the released source history.
+- Keep share text inside its panel and provide a return to writing from pricing,
+  with credit-pack and Pro choices leading to the purchase waitlist when needed.
+- Route hosted narration through the linked Not Organic wallet and show hosted
+  charges separately from costs whose final provider evidence is unavailable.
+- Redirect the public www alias to the canonical site while retaining the path
+  and query, and add an opt-in, content-free Traction export.
+
 ## 0.23.3
 
 <sub>2026-09-30</sub>

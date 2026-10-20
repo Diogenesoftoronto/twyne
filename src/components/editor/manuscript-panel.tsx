@@ -11,6 +11,7 @@ import { isFileDrag } from "../../utils/file-drag";
 import type { EditorStore } from "./editor-state";
 import { MarginRails } from "../in-flow/margin-rail";
 import { FlowSurface } from "../in-flow/flow-surface";
+import { PassageGather } from "../in-flow/passage-gather";
 import { DocumentSpine } from "../living-desk/document-spine";
 import { LivingDeskPanel } from "../living-desk/living-desk-panel";
 import {
@@ -181,6 +182,7 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
 
           <MarginRails zen={store.zenMode} readOnly={props.readOnly} />
           <FlowSurface zen={store.zenMode} readOnly={props.readOnly} />
+          <PassageGather />
           <DocumentSpine zen={store.zenMode} readOnly={props.readOnly} />
 
           {store.notes.length > 0 && (

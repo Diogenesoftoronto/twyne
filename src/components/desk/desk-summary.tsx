@@ -1,5 +1,7 @@
 import { component$ } from "@qwik.dev/core";
 import type { UsageMetrics } from "../../utils/usage-summary";
+import type { HostedUsageSummary } from "../../utils/hosted-usage";
+import type { HostedCostState } from "./hosted-cost";
 
 export interface SynchronizedCoverage {
   firstOccurredAt?: number;
@@ -17,6 +19,8 @@ export const DeskSummary = component$<{
   writingDaysLabel?: string;
   combined?: boolean;
   metrics: UsageMetrics;
+  hostedState?: HostedCostState;
+  hostedSummary?: HostedUsageSummary;
   sourceState:
     | "loading"
     | "local"
@@ -56,8 +60,20 @@ export const DeskSummary = component$<{
           ],
           ["Editorial actions", props.metrics.logicalActions.toLocaleString()],
           [
-            "Actual hosted cost",
-            `$${(props.metrics.actualCostMicrousd / 1_000_000).toFixed(4)}`,
+            props.hostedState
+              ? "Hosted wallet charges"
+              : "Recorded actual cost",
+            props.hostedState === "ready" && props.hostedSummary
+              ? props.hostedSummary.settledRequests > 0
+                ? `$${(props.hostedSummary.billedMicrousd / 1_000_000).toFixed(4)}${props.hostedSummary.truncated || props.hostedSummary.unresolvedRequests > 0 ? " (partial)" : ""}`
+                : "No confirmed charges"
+              : props.hostedState === "signed-out"
+                ? "Sign in to view"
+                : props.hostedState === "loading"
+                  ? "Checking…"
+                  : props.hostedState === "error"
+                    ? "Unavailable"
+                    : `$${(props.metrics.actualCostMicrousd / 1_000_000).toFixed(4)}`,
           ],
         ].map(([label, value]) => (
           <div key={label} class="py-2">

@@ -58,13 +58,25 @@ alternatives and generation prompts are retained under `artifacts/manual-artwork
 
 The [capture index](../artifacts/qa-recordings/2026-09-30/manual-visual/README.md)
 links the original workflows, final production reading walkthrough, replay,
-stills and print proofs. Preserve the recordings when refreshing their public
+stills and print proofs. The
+[2026-10-19 refresh](../artifacts/qa-recordings/2026-10-19/manual-refresh/README.md)
+recaptured 47 stills after the compact ribbon, graded dossier, Zen focus and
+piece-type changes; its `report.json` records per-image status, current control
+labels and alt text, and its replays are the ones to adapt next time. Preserve the recordings when refreshing their public
 illustrations so a later video can reuse the original actions.
 
 The examples illustrate controls and decisions. A staged reading does not prove
 model quality, a local save does not prove cross-device delivery, and an idle
 voice desk does not prove a funded conversation. Keep those distinctions next to
 the captures they qualify.
+
+## Voice of the guide
+
+The manual follows one writer, Morgan Vale, revising a travel essay called
+Salt Roads for a coastal series. Chapter leads name the problem Morgan has at
+that point; walkthrough steps say what to do, what the control is called, and
+what it will not do. Keep that anchor when adding a chapter: a reader should be
+able to tell from the first sentence why they would open this tool.
 
 ## Playback and reading
 

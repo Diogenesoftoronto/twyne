@@ -136,6 +136,8 @@ export interface FlowController {
   recall(id: string): void;
   /** Viewport line rects for each anchor of `item` found in the manuscript. */
   anchorRects(item: FlowItem): DOMRect[][];
+  /** The live DOM range of each anchor that is still in the text. */
+  anchorRanges(item: FlowItem): Range[];
   focusAnchor(item: FlowItem): void;
   /** File an amendment into the dossier; resolves to an error message or null. */
   fileAmendment(id: string, text: string): Promise<string | null>;
@@ -1297,29 +1299,35 @@ export function startFlowConductor(
       if (!active()) return;
       if (dismissed.delete(id)) publish();
     },
-    anchorRects(item) {
+    anchorRanges(item) {
       if (!active()) return [];
-      const groups: DOMRect[][] = [];
+      const ranges: Range[] = [];
       for (const anchor of item.anchors) {
         const range = locate(anchor);
         if (!range) continue;
         try {
-          // One rect per line, so a highlight hugs the text instead of
-          // boxing the whole paragraph.
           const start = editor.view.domAtPos(range.from);
           const end = editor.view.domAtPos(range.to);
           const dom = document.createRange();
           dom.setStart(start.node, start.offset);
           dom.setEnd(end.node, end.offset);
-          const lines = Array.from(dom.getClientRects()).filter(
-            (r) => r.width > 1 && r.height > 1,
-          );
-          if (lines.length) groups.push(lines);
+          ranges.push(dom);
         } catch {
           // Position outside the view (e.g. a collapsed page): skip it.
         }
       }
-      return groups;
+      return ranges;
+    },
+    anchorRects(item) {
+      // One rect per line, so a highlight hugs the text instead of boxing
+      // the whole paragraph.
+      return (controller?.anchorRanges(item) ?? [])
+        .map((dom) =>
+          Array.from(dom.getClientRects()).filter(
+            (r) => r.width > 1 && r.height > 1,
+          ),
+        )
+        .filter((lines) => lines.length > 0);
     },
     focusAnchor(item) {
       if (!active()) return;

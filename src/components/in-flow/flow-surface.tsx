@@ -9,6 +9,11 @@
  * Every card sits level with the passage it speaks to. Hover one — or hover
  * a marked passage in the text — and a proofreader's bracket and a drawn line
  * join the card to its passage, and to every other card on that passage.
+ * A connected passage beyond the screen gets a marker at the edge of the
+ * text instead, and the connection lingers a moment after the pointer
+ * leaves, so the marker can be reached and followed. Hold on a card, or use
+ * its Gather control, and every connected passage is gathered into one
+ * read-only sheet (`passage-gather.tsx`).
  * Nothing here decides what appears; `flow-conductor.ts` does.
  *
  * A comment or a persona note is a conversation. Open it — from its card or
@@ -64,6 +69,11 @@ import {
   ROOM_CARD_WIDTH,
 } from "../../utils/margin-geometry";
 import { Icon } from "../ui/icon";
+import {
+  openPassageGather,
+  revealPassage,
+  type GatherPassage,
+} from "../../utils/passage-gather";
 import { PersonaMasthead } from "../personas/persona-portrait";
 
 const ROOM_WIDTH = ROOM_CARD_WIDTH;
@@ -97,6 +107,33 @@ interface Bracket {
   d: string;
   color: string;
 }
+/** A connected passage beyond the visible text, kept reachable at its edge. */
+interface Edge {
+  key: string;
+  itemId: string;
+  /** Which of the item's anchors. */
+  index: number;
+  dir: "up" | "down";
+  /** The passage's own top, to tell passages apart. */
+  at: number;
+  top: number;
+  label: string;
+  excerpt: string;
+  color: string;
+}
+
+/** How long a connection stays drawn after the pointer leaves its card. */
+const LINGER_MS = 4_000;
+/** Holding on a card this long gathers its connected passages. */
+const GATHER_HOLD_MS = 1_100;
+// Module scope, mutated in place: Qwik's handler segments import module
+// bindings and cannot reassign them.
+const hold: {
+  linger?: ReturnType<typeof setTimeout>;
+  gather?: ReturnType<typeof setTimeout>;
+  /** A card that has gathered once arms again only after the pointer leaves. */
+  spent: string | null;
+} = { spent: null };
 
 interface SurfaceState {
   mode: FlowMode;
@@ -116,6 +153,13 @@ interface SurfaceState {
   lines: Line[];
   marks: Mark[];
   brackets: Bracket[];
+  edges: Edge[];
+  /** The last hovered card, still connected for a moment after leaving. */
+  lingerId: string | null;
+  /** The card a held pointer is about to gather. */
+  armingId: string | null;
+  /** Connected passages per card, counted from anchors and links. */
+  links: Record<string, number>;
   width: number;
   height: number;
   dockBottom: number;
@@ -202,6 +246,10 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       lines: [],
       marks: [],
       brackets: [],
+      edges: [],
+      lingerId: null,
+      armingId: null,
+      links: {},
       width: 0,
       height: 0,
       dockBottom: 80,
@@ -461,40 +509,74 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       /** Brackets, highlights and lines for whatever is hovered. */
       const drawConnections = () => {
         const controller = flowController();
-        const id = state.hoverId ?? state.peekId ?? state.openId;
+        const id =
+          state.hoverId ?? state.peekId ?? state.openId ?? state.lingerId;
         const focus = id && state.placed.find((p) => p.item.id === id);
+        // Gathering needs something to set side by side: two passages, or
+        // two notes on one passage.
+        state.links = Object.fromEntries(
+          state.placed.map((p) => {
+            const group = connected(p);
+            const passages = new Set(group.flatMap((c) => c.item.anchors));
+            return [
+              p.item.id,
+              passages.size > 1 || group.length > 1 ? passages.size : 0,
+            ];
+          }),
+        );
         if (!controller || !focus) {
           state.lines = [];
           state.marks = [];
           state.brackets = [];
+          state.edges = [];
           return;
         }
         const canvasRect = canvas.getBoundingClientRect();
+        const scrollerRect = scroller.getBoundingClientRect();
         const text = canvas.querySelector("#twyne-editor-mount .ProseMirror");
         const textRect = (text ?? canvas).getBoundingClientRect();
         const textLeft = textRect.left - canvasRect.left;
         const textRight = textRect.right - canvasRect.left;
-        const anchors = new Set(focus.item.anchors);
-        // Every card that shares a passage with the hovered one, or that it
-        // links to, is part of the same conversation.
-        const related = state.placed.filter(
-          (p) =>
-            p === focus ||
-            focus.item.links?.includes(p.item.id) ||
-            p.item.links?.includes(focus.item.id) ||
-            p.item.anchors.some((a) => anchors.has(a)),
-        );
+        // What of the text is on screen, in canvas coordinates.
+        const viewTop = Math.max(scrollerRect.top, 0) - canvasRect.top;
+        const viewBottom =
+          Math.min(scrollerRect.bottom, window.innerHeight) - canvasRect.top;
+        const related = connected(focus);
         const lines: Line[] = [];
         const marks: Mark[] = [];
         const brackets: Bracket[] = [];
+        const edges: Edge[] = [];
         for (const placed of related) {
           const color = accent(placed.item);
           const primary = placed === focus;
-          for (const group of controller.anchorRects(placed.item)) {
+          controller.anchorRanges(placed.item).forEach((range, index) => {
+            const group = Array.from(range.getClientRects()).filter(
+              (rect) => rect.width > 1 && rect.height > 1,
+            );
+            if (!group.length) return;
             const tops = group.map((r) => r.top - canvasRect.top);
             const bottoms = group.map((r) => r.bottom - canvasRect.top);
             const top = Math.min(...tops);
             const bottom = Math.max(...bottoms);
+            // Off screen, the passage is a marker at the edge of the text
+            // that stays put and takes the writer there.
+            if (bottom < viewTop + 4 || top > viewBottom - 4) {
+              const dir = bottom < viewTop + 4 ? "up" : "down";
+              // Two notes on one passage share one marker.
+              if (edges.some((e) => e.at === Math.round(top))) return;
+              edges.push({
+                at: Math.round(top),
+                key: `${placed.item.id}:${index}`,
+                itemId: placed.item.id,
+                index,
+                dir,
+                top: 0,
+                label: KIND_LABELS[placed.item.kind],
+                excerpt: clip(range.toString(), 90),
+                color,
+              });
+              return;
+            }
             if (primary)
               for (const r of group)
                 marks.push({
@@ -516,7 +598,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             // In the dock the room holds one card, which is rarely this one,
             // and a line to it would join the passage to the wrong note.
             const standing = onRight ? state.room === "rail" : state.archive;
-            if (!standing) continue;
+            if (!standing) return;
             const cardX = onRight ? state.width + GUTTER : -GUTTER;
             const cardY = placed.top + 20;
             const midY = (top + bottom) / 2;
@@ -526,11 +608,36 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
               color,
               dashed: !primary,
             });
-          }
+          });
         }
+        // Stack the markers at the top and bottom edges of what is visible.
+        const up = edges.filter((e) => e.dir === "up");
+        const down = edges.filter((e) => e.dir === "down");
+        up.forEach((e, i) => (e.top = viewTop + 12 + i * 34));
+        down.forEach(
+          (e, i) => (e.top = viewBottom - 46 - (down.length - 1 - i) * 34),
+        );
         state.lines = lines;
         state.marks = marks;
         state.brackets = brackets;
+        state.edges = [...up, ...down].slice(0, 8);
+      };
+
+      /** The cards in the same conversation as `focus`, focus first. */
+      const connected = (focus: Placed) => {
+        const anchors = new Set(focus.item.anchors);
+        // Every card that shares a passage with the hovered one, or that it
+        // links to, is part of the same conversation.
+        return [
+          focus,
+          ...state.placed.filter(
+            (p) =>
+              p !== focus &&
+              (focus.item.links?.includes(p.item.id) ||
+                p.item.links?.includes(focus.item.id) ||
+                p.item.anchors.some((a) => anchors.has(a))),
+          ),
+        ];
       };
 
       const onSnapshot = (event: Event) => {
@@ -633,7 +740,19 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       window.addEventListener("resize", layout);
       window.addEventListener("twyne:content", layout);
       window.addEventListener(FLOW_LAYOUT_EVENT, layout);
-      scroller.addEventListener("scroll", layout, { passive: true });
+      // Scrolling to follow a connection keeps it drawn until the writer
+      // settles, so its edge markers stay reachable.
+      const onScroll = () => {
+        if (state.lingerId && !state.hoverId) {
+          clearTimeout(hold.linger);
+          hold.linger = setTimeout(() => {
+            state.lingerId = null;
+            layout();
+          }, LINGER_MS);
+        }
+        layout();
+      };
+      scroller.addEventListener("scroll", onScroll, { passive: true });
       canvas.addEventListener("pointerover", onOver);
       canvas.addEventListener("focusin", onOver);
       observer.observe(canvas);
@@ -649,16 +768,112 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
         window.removeEventListener("resize", layout);
         window.removeEventListener("twyne:content", layout);
         window.removeEventListener(FLOW_LAYOUT_EVENT, layout);
-        scroller.removeEventListener("scroll", layout);
+        scroller.removeEventListener("scroll", onScroll);
+        clearTimeout(hold.linger);
+        clearTimeout(hold.gather);
         canvas.removeEventListener("pointerover", onOver);
         canvas.removeEventListener("focusin", onOver);
         observer.disconnect();
       });
     });
 
+    /** Every passage `id`'s conversation touches, ready to gather. */
+    const gather = $((id: string, opener?: HTMLElement | null) => {
+      clearTimeout(hold.gather);
+      state.armingId = null;
+      const controller = flowController();
+      const focus = state.placed.find((p) => p.item.id === id);
+      if (!controller || !focus) return;
+      const anchors = new Set(focus.item.anchors);
+      const related = [
+        focus,
+        ...state.placed.filter(
+          (p) =>
+            p !== focus &&
+            (focus.item.links?.includes(p.item.id) ||
+              p.item.links?.includes(focus.item.id) ||
+              p.item.anchors.some((a) => anchors.has(a))),
+        ),
+      ];
+      const passages: GatherPassage[] = related.flatMap((p) =>
+        controller.anchorRanges(p.item).map((range, i) => ({
+          id: `${p.item.id}:${i}`,
+          label: `${KIND_LABELS[p.item.kind]}${
+            p.item.kind === "persona-note" && p.item.byline
+              ? ` · ${p.item.byline}`
+              : p.item.kind === "comment" && p.item.title
+                ? ` · ${p.item.title}`
+                : ""
+          }`,
+          color: accent(p.item),
+          range,
+          notes: [p.item.body].filter(Boolean),
+          go: () => {
+            controller.engage(p.item.id);
+            revealPassage(range);
+          },
+        })),
+      );
+      openPassageGather({
+        title:
+          focus.item.kind === "comment"
+            ? `Margin note · ${focus.item.title}`
+            : focus.item.title || KIND_LABELS[focus.item.kind],
+        passages,
+        opener,
+      });
+    });
+
     const hover = $((id: string | null) => {
-      state.hoverId = id;
+      clearTimeout(hold.gather);
+      clearTimeout(hold.linger);
+      state.armingId = null;
+      if (id) {
+        state.hoverId = id;
+        state.lingerId = id;
+      } else {
+        hold.spent = null;
+        // Keep the connection drawn a moment, so an edge marker or a line
+        // can still be reached after the pointer leaves the card.
+        state.hoverId = null;
+        hold.linger = setTimeout(() => {
+          state.lingerId = null;
+          window.dispatchEvent(new Event(FLOW_LAYOUT_EVENT));
+        }, LINGER_MS);
+      }
       window.dispatchEvent(new Event(FLOW_LAYOUT_EVENT));
+    });
+
+    /** A pointer held still on a card gathers its passages. */
+    const arm = $((id: string, card: HTMLElement) => {
+      clearTimeout(hold.gather);
+      if (!state.links[id] || hold.spent === id) return;
+      state.armingId = id;
+      hold.gather = setTimeout(() => {
+        if (state.armingId === id && state.hoverId === id) {
+          hold.spent = id;
+          void gather(
+            id,
+            card.querySelector<HTMLElement>(".flow-card__gather"),
+          );
+        }
+      }, GATHER_HOLD_MS);
+    });
+
+    /** Follow an edge marker to its passage, and keep the connection. */
+    const follow = $((edge: Edge) => {
+      const controller = flowController();
+      const item = state.placed.find((p) => p.item.id === edge.itemId)?.item;
+      const range = item && controller?.anchorRanges(item)[edge.index];
+      if (!item || !range) return;
+      clearTimeout(hold.linger);
+      state.lingerId = state.hoverId ?? state.lingerId ?? item.id;
+      controller.engage(item.id);
+      revealPassage(range);
+      hold.linger = setTimeout(() => {
+        state.lingerId = null;
+        window.dispatchEvent(new Event(FLOW_LAYOUT_EVENT));
+      }, LINGER_MS * 2);
     });
 
     /** Comments and persona notes unfold into their conversation. */
@@ -736,6 +951,16 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           }}
           onMouseEnter$={() => hover(item.id)}
           onMouseLeave$={() => hover(null)}
+          onPointerMove$={(event, el) => {
+            // Resting on the card, not passing over it, gathers: each
+            // movement starts the wait again.
+            if (event.pointerType !== "mouse") return;
+            void arm(item.id, el);
+          }}
+          onPointerDown$={() => {
+            clearTimeout(hold.gather);
+            state.armingId = null;
+          }}
           onFocusIn$={() => hover(item.id)}
           onFocusOut$={() => hover(null)}
         >
@@ -758,6 +983,22 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
                   ? ` · ${item.folioName}`
                   : ""}
               </span>
+            )}
+            {(state.links[item.id] ?? 0) > 0 && (
+              <button
+                type="button"
+                data-gather-opener={`flow:${item.id}`}
+                class={[
+                  "flow-card__gather",
+                  { "is-arming": state.armingId === item.id },
+                ]}
+                onClick$={(_, el) => gather(item.id, el)}
+                aria-label={`See ${state.links[item.id] === 1 ? "this passage and its notes" : `${state.links[item.id]} connected passages`} together`}
+                title="See the connected passages together (or rest the pointer here)"
+              >
+                <Icon name="link" size={13} />
+                <span>{state.links[item.id]}</span>
+              </button>
             )}
             <button
               type="button"
@@ -1086,15 +1327,30 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
     // counts the rest; the post only holds while the page is quiet.
     const posting =
       state.enabled && state.held > 0 && (state.mode === "flow" || quiet);
+    // In flow the margin is dismissed, so the desk always offers the way back.
+    const inFlow = state.enabled && state.mode === "flow";
     const desk = () =>
-      posting || state.slip ? (
+      posting || state.slip || inFlow ? (
         <div
           class={["flow-desk", `flow-desk--${state.room}`]}
           style={
             state.room === "rail" ? { width: `${ROOM_WIDTH}px` } : undefined
           }
         >
-          <div class="flow-desk__top">{posting && post()}</div>
+          <div class="flow-desk__top">
+            {posting && post()}
+            {inFlow && (
+              <button
+                type="button"
+                class="flow-return"
+                onClick$={() => flowController()?.release()}
+                aria-keyshortcuts="Escape"
+                title="Bring the margin, tools and masthead back (Esc)"
+              >
+                Show margin <kbd>Esc</kbd>
+              </button>
+            )}
+          </div>
           <div class="flow-desk__bottom">{state.slip && slip(state.slip)}</div>
         </div>
       ) : null;
@@ -1167,6 +1423,36 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             />
           ))}
         </svg>
+
+        {state.edges.length > 0 && (
+          <div class="flow-edges" aria-label="Connected passages off screen">
+            {state.edges.map((edge) => (
+              <button
+                type="button"
+                key={edge.key}
+                class={["flow-edge", `flow-edge--${edge.dir}`]}
+                style={{ top: `${edge.top}px`, "--flow-accent": edge.color }}
+                onMouseEnter$={() => {
+                  clearTimeout(hold.linger);
+                }}
+                onMouseLeave$={() => hover(null)}
+                onFocus$={() => {
+                  clearTimeout(hold.linger);
+                }}
+                onBlur$={() => hover(null)}
+                onClick$={() => follow(edge)}
+                aria-label={`Go to the connected passage ${edge.dir === "up" ? "above" : "below"}: ${edge.excerpt}`}
+              >
+                <Icon
+                  name={edge.dir === "up" ? "arrow-up" : "arrow-down"}
+                  size={12}
+                />
+                <span class="flow-edge__label">{edge.label}</span>
+                <span class="flow-edge__text">“{edge.excerpt}”</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {state.archive && (
           <div

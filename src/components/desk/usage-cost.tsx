@@ -4,6 +4,8 @@ import { captureProductEvent } from "../../utils/product-analytics";
 import { ChartTable } from "./chart-table";
 import { TokenDimensions } from "./token-dimensions";
 import { UsageBreakdowns } from "./usage-breakdowns";
+import { HostedCost, type HostedCostState } from "./hosted-cost";
+import type { HostedUsageSummary } from "../../utils/hosted-usage";
 
 const TABS = ["cost", "features", "models", "tokens"] as const;
 type UsageTab = (typeof TABS)[number];
@@ -12,6 +14,9 @@ export const UsageCost = component$<{
   summary: UsageSummary;
   totalsOnly?: boolean;
   onSection$?: QRL<(section: UsageTab) => void>;
+  hostedState?: HostedCostState;
+  hostedSummary?: HostedUsageSummary;
+  onRefreshHosted$?: QRL<() => void>;
 }>((props) => {
   const active = useSignal<UsageTab>("cost");
   const selectTab = $((tab: UsageTab) => {
@@ -74,6 +79,13 @@ export const UsageCost = component$<{
       <div class="pt-5" role="tabpanel">
         {active.value === "cost" && (
           <div>
+            {props.hostedState && (
+              <HostedCost
+                state={props.hostedState}
+                summary={props.hostedSummary}
+                onRefresh$={props.onRefreshHosted$}
+              />
+            )}
             <div class="grid gap-6 sm:grid-cols-[1fr_15rem]">
               <div>
                 {props.summary.daily.length ? (
@@ -122,7 +134,7 @@ export const UsageCost = component$<{
               <dl class="divide-y divide-dotted divide-[var(--color-ink-muted)] border-y border-[var(--color-ink)] text-sm">
                 <div class="py-3">
                   <dt class="text-xs text-[var(--color-ink-muted)]">
-                    Actual provider cost
+                    Recorded actual cost
                   </dt>
                   <dd class="font-display text-xl tabular-nums">
                     $

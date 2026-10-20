@@ -1,80 +1,133 @@
 .sentence-bench {
   color: var(--color-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 .in-flow-rails:has(.sentence-bench) {
   z-index: 4;
 }
+/* The rail scrolls as a whole, but the working wording and its use control
+ * come first, so the decision is in view the moment the bench opens. */
 .in-flow-rail:has(.sentence-bench) {
-  max-height: 55dvh;
+  max-height: 70dvh;
   overflow: auto;
   overscroll-behavior: contain;
 }
 /* In the narrow dock the bench is a bounded sheet, so its working copy and
  * use control stay reachable. */
 .in-flow-dock:has(.sentence-bench) {
-  max-height: 55dvh;
+  max-height: 60dvh;
+}
+.sentence-bench .in-flow-label {
+  display: block;
+  margin-bottom: 0.3rem;
+}
+.sentence-bench-textarea {
+  font: 1rem/1.55 var(--font-serif);
+  min-height: 4.75rem;
+}
+.sentence-bench-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.sentence-bench-actions .btn-press {
+  min-height: 2.25rem;
 }
 .sentence-bench-tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  border-bottom: 1px solid var(--color-paper-3);
-  padding-bottom: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: 0;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  padding: 2px;
+  background: var(--color-paper-soft);
 }
 .sentence-bench-tabs button,
 .sentence-bench-word-line button,
-.sentence-bench-link {
+.sentence-bench-link,
+.sentence-bench-side {
   font: inherit;
   color: var(--color-ink);
   border: 0;
   background: transparent;
   cursor: pointer;
-  padding: 0.25rem 0.4rem;
 }
 .sentence-bench-tabs button {
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
+  flex: 1 1 0;
+  min-height: 2rem;
+  padding: 0.3rem 0.4rem;
+  font: 500 0.78rem var(--font-sans);
+  border-radius: 1px;
 }
-.sentence-bench-tabs .is-on {
-  box-shadow: inset 0 -2px var(--color-ink);
+.sentence-bench-tabs button:hover {
+  background: var(--color-paper-2);
 }
-.sentence-bench button:focus-visible {
-  outline: 2px solid var(--color-ink);
+.sentence-bench-tabs .is-on,
+.sentence-bench-tabs .is-on:hover {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+.sentence-bench button:focus-visible,
+.sentence-bench summary:focus-visible {
+  outline: 2px solid var(--color-cobalt);
   outline-offset: 2px;
 }
-.sentence-bench-candidates > li,
+.sentence-bench-candidates > li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+.sentence-bench .in-flow-choice {
+  font: 0.9375rem/1.5 var(--font-serif);
+  padding: 0.45rem 0.55rem;
+}
+.sentence-bench-side {
+  font: 0.72rem var(--font-sans);
+  padding: 0 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sentence-bench-side:hover,
+.sentence-bench-side[aria-pressed="true"] {
+  border-color: var(--color-paper-3);
+  background: var(--color-paper-soft);
+}
 .sentence-bench-slot {
   border-bottom: 1px solid var(--color-paper-3);
-  padding-bottom: 0.75rem;
-  margin-bottom: 0.75rem;
+  padding-bottom: 0.6rem;
 }
-.sentence-bench-facts {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem;
-  margin-top: 0.4rem;
-  font-family: var(--font-sans);
-  font-size: 0.6875rem;
+.sentence-bench-meta {
+  display: block;
+  margin-top: 0.25rem;
+  font: 0.6875rem/1.4 var(--font-sans);
+  color: var(--color-ink-light);
 }
 .sentence-bench-chip {
   display: inline-block;
   border: 1px solid var(--color-paper-3);
   border-radius: 1rem;
-  padding: 0.1rem 0.35rem;
+  padding: 0 0.35rem;
   font: 0.6875rem var(--font-sans);
   margin-right: 0.35rem;
-}
-.sentence-bench .sentence-bench-note {
-  font: 0.75rem/1.5 var(--font-sans);
   color: var(--color-ink);
-  opacity: 0.85;
-  margin: 0.3rem 0;
+}
+.sentence-bench .sentence-bench-hint {
+  font: 0.75rem/1.45 var(--font-sans);
+  color: var(--color-ink-light);
+  margin: 0.35rem 0 0;
 }
 .sentence-bench-context {
-  font: 0.875rem/1.7 var(--font-serif);
-  margin: 0.4rem 0;
+  font: 0.875rem/1.6 var(--font-serif);
+  margin: 0.35rem 0;
+  color: var(--color-ink-light);
+}
+.sentence-bench-slot .sentence-bench-context {
   color: var(--color-ink);
 }
 .sentence-bench-context strong {
@@ -93,63 +146,79 @@
   text-decoration-style: solid;
 }
 .sentence-bench-word-line {
-  font: 1rem/1.8 var(--font-serif);
+  font: 1rem/2 var(--font-serif);
+  margin: 0;
 }
 .sentence-bench-word-line button {
-  padding: 0 0.1rem;
+  padding: 0.1rem 0.15rem;
+  border-radius: 2px;
 }
-.sentence-bench-word-line button:disabled {
-  cursor: default;
-  opacity: 1;
+.sentence-bench-word-line button:hover {
+  background: var(--color-paper-2);
 }
 .sentence-bench-word-line .is-repeated {
   text-decoration: underline dotted 2px;
   text-underline-offset: 0.2rem;
 }
-.sentence-bench-word-line .is-on {
+.sentence-bench-word-line .is-on,
+.sentence-bench-word-line .is-on:hover {
   background: var(--color-highlight-mint);
 }
 .sentence-bench-link {
   font: 0.75rem var(--font-sans);
   text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0.3rem 0.2rem;
 }
-.sentence-bench-working {
-  border-top: 1px solid var(--color-paper-3);
-  padding-top: 0.75rem;
-  margin-top: 0.75rem;
+.sentence-bench-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 .sentence-bench-preview,
 .sentence-bench-comparison p {
   font: 0.875rem/1.6 var(--font-serif);
-  margin: 0.5rem 0;
+  margin: 0.4rem 0 0;
+}
+.sentence-bench-comparison {
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  padding: 0.5rem 0.6rem;
+  background: var(--color-paper-soft);
 }
 .sentence-bench-notice {
   font: 0.8125rem/1.5 var(--font-sans);
   border-left: 2px solid var(--color-ink);
   padding-left: 0.5rem;
+  margin: 0.4rem 0 0;
 }
-@media (max-width: 480px) {
-  .sentence-bench-tabs button {
-    padding: 0.35rem;
-  }
-  .sentence-bench .in-flow-actions {
-    flex-wrap: wrap;
-  }
+.sentence-bench-about,
+.sentence-bench-room {
+  font: 0.75rem/1.5 var(--font-sans);
+}
+.sentence-bench-about > summary,
+.sentence-bench-room > summary {
+  cursor: pointer;
+  padding: 0.3rem 0;
+  color: var(--color-ink-light);
+}
+.sentence-bench-about ul {
+  margin: 0.2rem 0 0;
+  padding-left: 1rem;
+  color: var(--color-ink-light);
 }
 .sentence-bench-room {
   border-top: 1px solid var(--color-paper-3);
-  margin-top: 0.75rem;
-  padding-top: 0.5rem;
+  padding-top: 0.35rem;
 }
 .sentence-bench-room > summary {
-  font: 0.75rem var(--font-sans);
-  cursor: pointer;
-  padding: 0.25rem 0;
+  color: var(--color-ink);
 }
-.sentence-bench-room > summary:focus-visible {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 2px;
-}
-.sentence-bench .sentence-bench-checks {
-  opacity: 0.7;
+@media (max-width: 480px) {
+  .sentence-bench-tabs button {
+    min-height: 2.5rem;
+  }
+  .sentence-bench-side {
+    min-width: 2.75rem;
+  }
 }

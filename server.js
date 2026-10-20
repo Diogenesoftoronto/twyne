@@ -4,6 +4,7 @@ import { stat } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { installLiveVoiceRelay } from "./scripts/live-voice-relay.mjs";
+import { redirectCanonicalHost } from "./scripts/canonical-host.mjs";
 
 // Railway terminates TLS at its edge. Let Qwik validate browser origins using
 // the edge's protocol rather than the container's internal HTTP connection.
@@ -118,6 +119,7 @@ async function main() {
     const { router, notFound, staticFile } = mod.default ? mod.default : mod;
 
     const server = createServer((req, res) => {
+      if (redirectCanonicalHost(req, res)) return;
       serveRootStaticFile(req, res, (rootStaticError) => {
         if (rootStaticError) {
           console.error(rootStaticError);

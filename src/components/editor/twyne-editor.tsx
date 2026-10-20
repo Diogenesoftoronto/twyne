@@ -1351,6 +1351,7 @@ export const TwyneEditor = component$(
           cleanup(
             startInFlowTools(editor, {
               getClient: () => clientSig.value,
+              isSignedIn: () => hasAuthenticatedConvexIdentity(auth.value),
               folioId: activeFolioId,
               brief: brief ?? null,
               openPanel: (panel) => void onEditorialContext$?.(panel),
@@ -2165,9 +2166,14 @@ export const TwyneEditor = component$(
             (target.matches("input, textarea, select") ||
               (target.isContentEditable && !target.closest(".ProseMirror")));
           const key = e.key.toLowerCase();
+          // Tab indents only in the manuscript. On a button, link or panel
+          // it is how keyboard writers move between controls.
+          const tabOutsideText =
+            key === "tab" && !target?.closest(".ProseMirror");
 
           if (
             !editingField &&
+            !tabOutsideText &&
             !e.defaultPrevented &&
             !store.typstSourcePending &&
             (!store.typstView || store.typstView === "write")

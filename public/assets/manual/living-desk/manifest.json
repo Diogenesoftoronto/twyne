@@ -6,43 +6,98 @@
   "images": [
     {
       "file": "public/assets/manual/living-desk/01-piece-overview.webp",
-      "source": "artifacts/qa-recordings/living-desk/2026-10-09T05-17-39-675Z/results/living-desk.e2e.ts-preview-e08e8-onal-choice-without-a-model-chromium/01-piece-overview.png",
-      "sourceSha256": "a1894cc864fe31c40f5d676cbf401f9c46463548a48d1f9ca90595c74f2c9b20",
-      "sha256": "146326b59a1dfb897638e5f46cdbbcf9a6cfab392b2ef74577a39b93ca3faee9",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/living-desk/stills/01-piece-overview.png",
+      "sourceSha256": "7e6695069d6a30e8b3dcb89de378cd2679e8f2e223387d6e4827e55cdd089694",
+      "sha256": "9372785a23ffbc5fa700b75a2480199e34e8afd62a38b9e3e3f1c5d2c109af7b",
       "width": 1440,
-      "height": 900
+      "height": 900,
+      "bytes": 106186,
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.406Z",
+      "format": "webp",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "public/assets/manual/living-desk/02-preview.webp",
-      "source": "artifacts/qa-recordings/living-desk/2026-10-09T05-17-39-675Z/results/living-desk.e2e.ts-preview-e08e8-onal-choice-without-a-model-chromium/02-preview.png",
-      "sourceSha256": "e601a5be1e5b21917880a7c9bc67b4b792c1e86b273c769b3993ba870ed8e378",
-      "sha256": "9965681114dbd69f8c7305fb027926249f4ff1875a01b263184d59e15e0054eb",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/living-desk/stills/02-preview.png",
+      "sourceSha256": "c2a2361051a1dc5be069707574d922c99417e64328c8641a4bd436991a3c9cec",
+      "sha256": "9df36f5c53a0dd890b246fae84dea42e4aa061d3d0bae4f9fb386e39e720813d",
       "width": 1440,
-      "height": 900
+      "height": 900,
+      "bytes": 106832,
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.411Z",
+      "format": "webp",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "public/assets/manual/living-desk/03-revised.webp",
-      "source": "artifacts/qa-recordings/living-desk/2026-10-09T05-17-39-675Z/results/living-desk.e2e.ts-preview-e08e8-onal-choice-without-a-model-chromium/03-revised.png",
-      "sourceSha256": "66723b4a6d222d165ad894a173de8dddbafb2db77835079e4a786d709f54d483",
-      "sha256": "268da93a40bd250319bc07dd48a0edec4f1e43087e13067a6d511d2fa62d501a",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/living-desk/stills/03-revised.png",
+      "sourceSha256": "0231c35b5c54268d9abfdf1e17e91cdb4a2fa0f78813a6b5f5a9d786f14c4a9b",
+      "sha256": "8430057d36f4269714b5bf94eadfd8eaa28a84a8efaa0e4dd6dde1827900250a",
       "width": 1440,
-      "height": 900
+      "height": 900,
+      "bytes": 106278,
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.416Z",
+      "format": "webp",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "public/assets/manual/living-desk/04-deliberate.webp",
-      "source": "artifacts/qa-recordings/living-desk/2026-10-09T05-17-39-675Z/results/living-desk.e2e.ts-preview-e08e8-onal-choice-without-a-model-chromium/04-deliberate.png",
-      "sourceSha256": "b44f7568801869c7bc48b03c5a0048a03c70f3fd9a2860648bfbc6ec5a9ebfad",
-      "sha256": "19f1014c4809ec14ab3c7d1c144b949038fdc2430bf5557f259198b07cac3df9",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/living-desk/stills/04-deliberate.png",
+      "sourceSha256": "36fafb6d825c57a011425d703d8a007d88f486c1c64e06a24869aacf91e159f1",
+      "sha256": "298846765f19bfc26321fa29cdab4ba73a957d9a919e09a949da7ad4e1ec20a7",
       "width": 1440,
-      "height": 900
+      "height": 900,
+      "bytes": 101144,
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.421Z",
+      "format": "webp",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "public/assets/manual/living-desk/05-presence.webp",
-      "source": "artifacts/qa-recordings/living-desk/2026-10-09T05-17-39-675Z/results/living-desk.e2e.ts-preview-e08e8-onal-choice-without-a-model-chromium/05-presence.png",
-      "sourceSha256": "a4884b5fa2b8d8e43d5d0a2688262d8c7440ec336822fbb8fded6e3965cc5749",
-      "sha256": "478d0654f29378da3f19ef4ad6f416cd9dbedd8248cfc57091442f1e7a05b063",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/living-desk/stills/05-presence.png",
+      "sourceSha256": "cfd73c657bcf8797385932ab5075c950e3d821bf6b19db2142bf66b9731b191a",
+      "sha256": "99bc7cbcd975ea6309c0f48c3a936429080b5c65e68a4afe90b2ab0eab5b0822",
       "width": 1440,
-      "height": 900
+      "height": 900,
+      "bytes": 104632,
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.424Z",
+      "format": "webp",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     }
   ],
   "video": {
@@ -125,5 +180,124 @@
     ]
   },
   "sourceRevision": "5d3f7552ca17715dc2fe968c2db720e1295988a5",
-  "sourceHadLocalChanges": true
+  "sourceHadLocalChanges": true,
+  "manualRefresh": {
+    "reviewedOn": "2026-10-19",
+    "report": "artifacts/qa-recordings/2026-10-19/manual-refresh/report.json",
+    "captures": [
+      {
+        "image": "/assets/manual/living-desk/01-piece-overview.webp",
+        "file": "01-piece-overview.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.406Z",
+        "width": 1440,
+        "height": 900,
+        "format": "webp",
+        "bytes": 106186,
+        "sha256": "9372785a23ffbc5fa700b75a2480199e34e8afd62a38b9e3e3f1c5d2c109af7b",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/living-desk/stills/01-piece-overview.png",
+        "sourceSha256": "7e6695069d6a30e8b3dcb89de378cd2679e8f2e223387d6e4827e55cdd089694",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/visual/playwright.config.ts",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 900,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/manual/living-desk/02-preview.webp",
+        "file": "02-preview.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.411Z",
+        "width": 1440,
+        "height": 900,
+        "format": "webp",
+        "bytes": 106832,
+        "sha256": "9df36f5c53a0dd890b246fae84dea42e4aa061d3d0bae4f9fb386e39e720813d",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/living-desk/stills/02-preview.png",
+        "sourceSha256": "c2a2361051a1dc5be069707574d922c99417e64328c8641a4bd436991a3c9cec",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/visual/playwright.config.ts",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 900,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/manual/living-desk/03-revised.webp",
+        "file": "03-revised.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.416Z",
+        "width": 1440,
+        "height": 900,
+        "format": "webp",
+        "bytes": 106278,
+        "sha256": "8430057d36f4269714b5bf94eadfd8eaa28a84a8efaa0e4dd6dde1827900250a",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/living-desk/stills/03-revised.png",
+        "sourceSha256": "0231c35b5c54268d9abfdf1e17e91cdb4a2fa0f78813a6b5f5a9d786f14c4a9b",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/visual/playwright.config.ts",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 900,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/manual/living-desk/04-deliberate.webp",
+        "file": "04-deliberate.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.421Z",
+        "width": 1440,
+        "height": 900,
+        "format": "webp",
+        "bytes": 101144,
+        "sha256": "298846765f19bfc26321fa29cdab4ba73a957d9a919e09a949da7ad4e1ec20a7",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/living-desk/stills/04-deliberate.png",
+        "sourceSha256": "36fafb6d825c57a011425d703d8a007d88f486c1c64e06a24869aacf91e159f1",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/visual/playwright.config.ts",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 900,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/manual/living-desk/05-presence.webp",
+        "file": "05-presence.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.424Z",
+        "width": 1440,
+        "height": 900,
+        "format": "webp",
+        "bytes": 104632,
+        "sha256": "99bc7cbcd975ea6309c0f48c3a936429080b5c65e68a4afe90b2ab0eab5b0822",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/living-desk/stills/05-presence.png",
+        "sourceSha256": "cfd73c657bcf8797385932ab5075c950e3d821bf6b19db2142bf66b9731b191a",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/visual/playwright.config.ts",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 900,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      }
+    ],
+    "retainedCaptureDates": "Unchanged image records retain their original dates; historical video/test evidence is preserved separately.",
+    "verification": "Each replacement inspected against the running local app with fictional fixtures. No live sign-in, model, media generation, publish or restore proof.",
+    "guideDimensions": "Use report.json for final dimensions; guide source is concurrently owned by another agent."
+  }
 }

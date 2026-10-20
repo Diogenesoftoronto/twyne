@@ -165,6 +165,8 @@ export interface ThreadInstrumentController {
   open(passage?: string): void;
   close(): void;
   jump(spanId: string): boolean;
+  /** The live DOM range of a span whose text is unchanged, for reading. */
+  spanRange(spanId: string): Range | null;
   preview(threadId: string | null): void;
   removeRepeated(threadId: string, removeSpanId: string): boolean;
   suggestWithEmbeddings(): Promise<boolean>;

@@ -915,6 +915,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
             role="dialog"
             aria-modal="true"
             aria-label="Share this piece"
+            style="white-space: normal; overflow-wrap: anywhere;"
           >
             <p class="dept-label">Share</p>
             <h3
@@ -946,7 +947,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
                   <input
                     readOnly
                     value={shareUrl.value}
-                    class="field-input flex-1 text-[12px]"
+                    class="field-input min-w-0 flex-1 text-[12px]"
                     style="font-family: var(--font-mono);"
                     onFocus$={(e) => (e.target as HTMLInputElement).select()}
                   />

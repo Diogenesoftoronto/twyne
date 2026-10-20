@@ -153,7 +153,7 @@ export interface InFlowController {
   applyVariant(text: string): Promise<boolean>;
   previewVariant(text: string | null): void;
   moveSentence(slotId: string): boolean;
-  hearVariant(text: string): void;
+  hearVariant(text: string): boolean;
   wordVariants(from: number, to: number): Promise<SentenceCandidate[]>;
   /** An edited transcript becomes a complete candidate, never an automatic edit. */
   acceptSpokenCandidate(text: string): Promise<boolean>;
@@ -206,6 +206,7 @@ export function startInFlowTools(
   editor: Editor,
   options: {
     getClient: () => ConvexClient | null | undefined;
+    isSignedIn?: () => boolean;
     folioId: string;
     brief: ProjectBrief | null;
     openPanel?: (panel: "citations") => void;
@@ -1159,9 +1160,10 @@ export function startInFlowTools(
       queueMicrotask(drawAnchor);
     },
     hearVariant(text) {
-      if (!active || !completeSentence(text)) return;
+      if (!active || stopped || editor.isDestroyed || !text.trim())
+        return false;
       const element = active.spec.elements.tool;
-      if (element.type !== "SentenceLab") return;
+      if (element.type !== "SentenceLab") return false;
       const before =
         splitSentences(element.props.context?.before ?? "").at(-1)?.text ?? "";
       const after =
@@ -1171,7 +1173,9 @@ export function startInFlowTools(
         text: [before, text, after].filter(Boolean).join(" "),
         label: "Sentence bench",
         client: options.getClient(),
+        signedIn: options.isSignedIn?.() ?? false,
       });
+      return true;
     },
     async wordVariants(from, to) {
       if (
@@ -1773,6 +1777,27 @@ export function startInFlowTools(
         .scrollIntoView()
         .run();
       return true;
+    },
+    spanRange(spanId) {
+      const current = threadInstrumentSnapshot(),
+        span = spanById(current.index, spanId);
+      if (
+        !span ||
+        current.stale ||
+        editor.isDestroyed ||
+        editor.state.doc.textBetween(span.from, span.to) !== span.text
+      )
+        return null;
+      try {
+        const start = editor.view.domAtPos(span.from);
+        const end = editor.view.domAtPos(span.to);
+        const range = document.createRange();
+        range.setStart(start.node, start.offset);
+        range.setEnd(end.node, end.offset);
+        return range;
+      } catch {
+        return null;
+      }
     },
     preview(threadId) {
       previewThread = threadId;
