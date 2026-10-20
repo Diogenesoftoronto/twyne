@@ -43,6 +43,7 @@ const ticks = new Map<number, () => void>();
 let nextInterval = 0;
 let judgementCalls = 0;
 let coverCalls = 0;
+const extractionRequests: unknown[] = [];
 let budgetWait = 0;
 let storableCalls = 0;
 const requests: JudgementRequest[] = [];
@@ -71,6 +72,7 @@ let comments: Promise<unknown[]>;
 // so later editor tests use the real judgement and storage implementations.
 const dependencies = [
   "../../../utils/judgement-client",
+  "../../../utils/extraction-client",
   "../../../utils/flow-media",
   "../../../utils/system-one-budget",
   "../../../utils/idb",
@@ -91,6 +93,12 @@ mock.module("../../../utils/judgement-client", () => ({
     judgementCalls++;
     requests.push(request);
     return answerRequest ? answerRequest(request) : judgement;
+  },
+}));
+mock.module("../../../utils/extraction-client", () => ({
+  askExtraction: async (_client: unknown, request: unknown) => {
+    extractionRequests.push(request);
+    return { ok: false, error: "unconfigured" };
   },
 }));
 mock.module("../../../utils/flow-media", () => ({
@@ -195,6 +203,7 @@ function resetRequests() {
   judgementCalls = coverCalls = 0;
   storableCalls = budgetWait = 0;
   requests.length = 0;
+  extractionRequests.length = 0;
   metadata.clear();
   folios = [];
   folioContents = {};
@@ -810,4 +819,85 @@ test("a selected way in uses the dossier's purpose and audience", async () => {
   expect(way.title).toBe("Who is this for?");
   expect(way.body).toContain("curious neighbours");
   expect(way.body).toContain("Explain seaside trade");
+});
+
+test("empirical rhythm keeps flow through a thinking pause and logs actual resumed focus", async () => {
+  resetRequests();
+  const time = clock();
+  metadata.set("flow-profile", {
+    version: 1,
+    runs: Array(8).fill(240_000),
+    pauses: Array(8).fill(10_000),
+    flowEntries: [],
+    hours: Array(24).fill(0),
+    kinds: {},
+    overrides: 0,
+    updatedAt: 0,
+  });
+  const current = start("rhythm-folio", false);
+  await enterFlow(current, time);
+  time.advance(4000);
+  current.tick();
+  expect(flowSnapshot().mode).toBe("flow");
+  time.advance(22_000);
+  current.tick();
+  expect(flowSnapshot().mode).toBe("flow");
+  expect(extractionRequests).toHaveLength(0);
+  current.stop();
+  await flush();
+  const log = metadata.get("flow-rhythm-predictions") as Array<{
+    source: string;
+    actualFocus: number;
+  }>;
+  expect(log[0].source).toBe("baseline");
+  expect(log[0].actualFocus).toBe(0);
+});
+
+test("reference focus outcomes span short pauses independently of the UI gate", async () => {
+  resetRequests();
+  const time = clock();
+  const current = start("rhythm-outcomes", false);
+  await enterFlow(current, time);
+  time.advance(4000);
+  current.tick();
+  time.advance(1000);
+  current.edit(" resumed");
+  for (let i = 0; i < 10; i++) {
+    time.advance(1000);
+    current.edit(" word");
+  }
+  time.advance(25_000);
+  current.tick();
+  current.stop();
+  await flush();
+  const log = metadata.get("flow-rhythm-predictions") as Array<{
+    actualFocus?: number;
+    actualPause?: number;
+  }>;
+  expect(log[0]).toMatchObject({ actualFocus: 11, actualPause: 1 });
+});
+
+test("the conductor requests Clairic once on a quiet pause with rhythm-only state", async () => {
+  resetRequests();
+  const time = clock();
+  metadata.set("flow-profile", {
+    version: 1,
+    runs: Array(8).fill(240_000),
+    pauses: Array(8).fill(10_000),
+    flowEntries: [],
+    hours: Array(24).fill(0),
+    kinds: {},
+    overrides: 0,
+    updatedAt: 0,
+  });
+  const current = start("rhythm-model");
+  await enterFlow(current, time);
+  time.advance(4000);
+  current.tick();
+  await flush();
+  time.advance(1000);
+  current.tick();
+  await flush();
+  expect(extractionRequests).toHaveLength(1);
+  expect(JSON.stringify(extractionRequests[0])).not.toContain("Odyssey");
 });
