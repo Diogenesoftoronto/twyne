@@ -15,6 +15,8 @@ export interface GatherPassage {
   label: string;
   color: string;
   range: Range;
+  /** Refresh a tracked span after editor decorations replace its DOM nodes. */
+  resolveRange?: () => Range | null;
   /** What the note or relation says about this passage, verbatim. */
   notes?: string[];
   /** Take the writer to the passage; defaults to selecting `range`. */
