@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "bfc5d9ed7ebb",
+  "strategy": "manual-commit",
+  "branch": "feat/editorial-roles-and-kits",
+  "checkpoints_count": 13,
+  "files_touched": [
+    "docs/manual-visuals.md",
+    "src/routes/docs/guide-editorial-room.ts",
+    "src/routes/docs/guide-your-work.ts",
+    "src/routes/docs/index.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/bf/c5d9ed7ebb/0/metadata.json",
+      "transcript": "/bf/c5d9ed7ebb/0/full.jsonl",
+      "compact_transcript": "/bf/c5d9ed7ebb/0/transcript.jsonl",
+      "content_hash": "/bf/c5d9ed7ebb/0/content_hash.txt",
+      "prompt": "/bf/c5d9ed7ebb/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1449493,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 55922304,
+    "output_tokens": 195479,
+    "api_call_count": 289
+  }
+}
