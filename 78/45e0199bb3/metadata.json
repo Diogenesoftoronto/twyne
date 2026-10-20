@@ -1,0 +1,53 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "7845e0199bb3",
+  "strategy": "manual-commit",
+  "branch": "feat/editorial-roles-and-kits",
+  "checkpoints_count": 13,
+  "files_touched": [
+    ".env.example",
+    "README.md",
+    "convex/_generated/api.d.ts",
+    "convex/lib/notorganic.ts",
+    "convex/voice.test.ts",
+    "convex/voice.ts",
+    "e2e/notorganic-signin.e2e.ts",
+    "e2e/read-aloud.e2e.ts",
+    "src/components/desk/desk-summary.tsx",
+    "src/components/desk/hosted-cost.tsx",
+    "src/components/ui/global-speech-player.tsx",
+    "src/routes/desk/index.tsx",
+    "src/routes/signin/index.tsx",
+    "src/utils/speech-alignment.test.ts",
+    "src/utils/speech-alignment.ts",
+    "src/utils/speech-source-map.test.ts",
+    "src/utils/speech-source-map.ts",
+    "src/utils/speech.test.ts",
+    "src/utils/speech.ts",
+    "tests/notorganic-metering.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/78/45e0199bb3/0/metadata.json",
+      "transcript": "/78/45e0199bb3/0/full.jsonl",
+      "compact_transcript": "/78/45e0199bb3/0/transcript.jsonl",
+      "content_hash": "/78/45e0199bb3/0/content_hash.txt",
+      "prompt": "/78/45e0199bb3/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1449493,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 55922304,
+    "output_tokens": 195479,
+    "api_call_count": 289,
+    "subagent_tokens": {
+      "input_tokens": 182321,
+      "cache_creation_tokens": 0,
+      "cache_read_tokens": 6599936,
+      "output_tokens": 36282,
+      "api_call_count": 61
+    },
+    "subagent_tokens_complete": true
+  }
+}

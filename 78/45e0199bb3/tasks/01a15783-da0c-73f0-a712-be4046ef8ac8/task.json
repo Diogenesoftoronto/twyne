@@ -1,0 +1,22 @@
+{
+  "tool_use_id": "01a15783-da0c-73f0-a712-be4046ef8ac8",
+  "agent_id": "01a15783-da0c-73f0-a712-be4046ef8ac8",
+  "subagent_type": "worker",
+  "files": [
+    "src/utils/speech.ts",
+    "src/utils/speech.test.ts",
+    "src/utils/speech-source-map.ts",
+    "src/utils/speech-source-map.test.ts",
+    "src/components/ui/global-speech-player.tsx",
+    "e2e/read-aloud.e2e.ts"
+  ],
+  "token_usage": {
+    "input_tokens": 182321,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 6599936,
+    "output_tokens": 36282,
+    "api_call_count": 61
+  },
+  "started_at": "2026-10-20T00:13:51.504549977-04:00",
+  "completed_at": "2026-10-20T00:30:49.225316287-04:00"
+}
