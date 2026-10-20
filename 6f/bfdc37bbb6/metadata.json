@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "6fbfdc37bbb6",
+  "strategy": "manual-commit",
+  "branch": "feat/editorial-roles-and-kits",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "convex/lib/rateLimit.ts",
+    "convex/sceneMedia.ts",
+    "src/components/instruments/instrument-dock.tsx",
+    "src/components/instruments/scene-bench.css",
+    "src/components/instruments/scene-bench.tsx",
+    "src/routes/pricing/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/types/index.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/models-dev.ts",
+    "src/utils/scene-bench.ts",
+    "src/utils/scene-media-credit.ts",
+    "src/utils/usage-domain.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/6f/bfdc37bbb6/0/metadata.json",
+      "transcript": "/6f/bfdc37bbb6/0/full.jsonl",
+      "compact_transcript": "/6f/bfdc37bbb6/0/transcript.jsonl",
+      "content_hash": "/6f/bfdc37bbb6/0/content_hash.txt",
+      "prompt": "/6f/bfdc37bbb6/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 537,
+    "cache_creation_tokens": 520098,
+    "cache_read_tokens": 2297901,
+    "output_tokens": 19768,
+    "api_call_count": 19
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "6fbfdc37bbb6",
+  "session_id": "45b242ab-0f38-465a-8599-1fa7f9343d32",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-20T02:57:30.859276413Z",
+  "branch": "feat/editorial-roles-and-kits",
+  "checkpoints_count": 3,
+  "save_step_count": 2,
+  "files_touched": [
+    "convex/lib/rateLimit.ts",
+    "convex/sceneMedia.ts",
+    "src/components/instruments/instrument-dock.tsx",
+    "src/components/instruments/scene-bench.css",
+    "src/components/instruments/scene-bench.tsx",
+    "src/routes/pricing/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/types/index.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/models-dev.ts",
+    "src/utils/scene-bench.ts",
+    "src/utils/scene-media-credit.ts",
+    "src/utils/usage-domain.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5-1",
+  "turn_id": "7db32f55ae61",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 537,
+    "cache_creation_tokens": 520098,
+    "cache_read_tokens": 2297901,
+    "output_tokens": 19768,
+    "api_call_count": 19
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-20T02:57:30.609875399Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 1236,
+    "human_modified": 1569,
+    "human_removed": 0,
+    "total_committed": 1236,
+    "total_lines_changed": 2816,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 417,
+      "user_lines_removed": 8,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "src/routes/pricing/index.tsx": 15,
+        "src/types/index.ts": 17,
+        "src/utils/ai-client.ts": 158,
+        "src/utils/purchase-waitlist.ts": 6,
+        "src/utils/scene-bench.ts": 219,
+        "src/utils/usage-domain.ts": 2
+      },
+      "user_removed_per_file": {
+        "src/routes/pricing/index.tsx": 7,
+        "src/types/index.ts": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 1782,
+      "user_lines_removed": 39,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "convex/lib/rateLimit.ts": 6,
+        "convex/sceneMedia.ts": 315,
+        "src/components/instruments/instrument-dock.tsx": 42,
+        "src/components/instruments/scene-bench.css": 47,
+        "src/components/instruments/scene-bench.tsx": 327,
+        "src/components/settings/scene-media-settings.tsx": 113,
+        "src/routes/pricing/index.tsx": 85,
+        "src/routes/settings/index.tsx": 23,
+        "src/types/index.ts": 17,
+        "src/utils/ai-client.ts": 159,
+        "src/utils/models-dev.ts": 10,
+        "src/utils/purchase-waitlist.test.ts": 13,
+        "src/utils/purchase-waitlist.ts": 26,
+        "src/utils/scene-bench.ts": 223,
+        "src/utils/scene-media-credit.ts": 38,
+        "src/utils/scene-media.test.ts": 122,
+        "src/utils/scene-media.ts": 214,
+        "src/utils/usage-domain.ts": 2
+      },
+      "user_removed_per_file": {
+        "src/components/instruments/scene-bench.tsx": 4,
+        "src/routes/pricing/index.tsx": 32,
+        "src/routes/settings/index.tsx": 1,
+        "src/types/index.ts": 1,
+        "src/utils/models-dev.ts": 1
+      }
+    }
+  ]
+}
