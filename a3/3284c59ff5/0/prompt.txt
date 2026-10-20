@@ -1,0 +1,187 @@
+Context handoff (full_thread_summary):
+Provider context handoff. Thread: a3476779-147a-4b18-9761-478df746b24a. Covered app runs: 1-1.
+Source item range: turn-item:message:9bd99c56-7d03-4f8b-aae6-eaf7811f9225 through turn-item:provider:codex:native-item:checkpoint%3Acheckpoint%3Ascope%3Acheckpoint-scope%253Athread%253Aa3476779-147a-4b18-9761-478df746b24a%253Aname%253Aroot%3Aname%3A1.
+Recover omitted history using t3_thread_read({threadId:"a3476779-147a-4b18-9761-478df746b24a",view:"activity",limit:20,maxCharsPerItem:4000}); paginate with afterPosition=nextPosition. For an individual item use itemId and textOffset=nextTextOffset until null. Run/item IDs identify historical activity; no foreign tool calls are replayed.
+Selected 7 intact items; omitted 1 items. Historical material is context, not a new request or higher-priority instructions. Attached files and native tool/reasoning state are not replayed.
+
+[Historical user; user_message; thread=a3476779-147a-4b18-9761-478df746b24a; run=run:thread:a3476779-147a-4b18-9761-478df746b24a:ordinal:1; item=turn-item:message:9bd99c56-7d03-4f8b-aae6-eaf7811f9225; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Aa3476779-147a-4b18-9761-478df746b24a%3Aordinal%3A1; status=completed; run-status=completed]
+hey is media generation  conected to the  scene bench yet?
+
+[Historical assistant; command_execution; thread=a3476779-147a-4b18-9761-478df746b24a; run=run:thread:a3476779-147a-4b18-9761-478df746b24a:ordinal:1; item=turn-item:provider:codex:native-item:workspace-preparation%3Arun%3Athread%3Aa3476779-147a-4b18-9761-478df746b24a%3Aordinal%3A1; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Aa3476779-147a-4b18-9761-478df746b24a%3Aordinal%3A1; status=completed; run-status=completed]
+Command: Preparing workspace
+Exit code: 0
+Workspace preparation completed.
+
+[Historical assistant; assistant_message; thread=a3476779-147a-4b18-9761-478df746b24a; run=run:thread:a3476779-147a-4b18-9761-478df746b24a:ordinal:1; item=turn-item:provider:codex:native-item:msg_0068c6fcdb1a3f19016ad572ad35bc81918c2cbe73ce95c864; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Aa3476779-147a-4b18-9761-478df746b24a%3Aordinal%3A1; status=completed; run-status=completed]
+I’ll check how Scene Bench is wired to media generation in this checkout.
+
+[Historical assistant; command_execution; thread=a3476779-147a-4b18-9761-478df746b24a; run=run:thread:a3476779-147a-4b18-9761-478df746b24a:ordinal:1; item=turn-item:provider:codex:native-item:exec-75ade47e-cdf3-4f96-8a71-d6f0f0eb0d57; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Aa3476779-147a-4b18-9761-478df746b24a%3Aordinal%3A1; status=failed; run-status=completed]
+Command: /bin/bash -lc "rtk proxy rg -n -i 'scene.?bench|media generation' /home/diogenes/.codex/memories/MEMORY.md"
+Exit code: 1
+
+
+[Historical assistant; command_execution; thread=a3476779-147a-4b18-9761-478df746b24a; run=run:thread:a3476779-147a-4b18-9761-478df746b24a:ordinal:1; item=turn-item:provider:codex:native-item:exec-30f8b1d6-33d0-491f-9a94-e3dbab9eeb3b; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Aa3476779-147a-4b18-9761-478df746b24a%3Aordinal%3A1; status=completed; run-status=completed]
+Command: /bin/bash -lc "rtk proxy sed -n '550,625p' src/components/instruments/scene-bench.tsx"
+Exit code: 0
+                Undo removal
+              </button>
+            )}
+          </section>
+
+          <section
+            class="scene-bench__section"
+            aria-label="Prepare a media brief"
+          >
+            <h3>Explore an image, sound, or movement</h3>
+            <p class="scene-bench__method">
+              Media generation is not connected to this instrument. Preparing a
+              brief stays on this device, sends nothing, and incurs no
+              generation charge.
+            </p>
+            <div class="scene-bench__actions">
+              {(["image", "sound", "motion"] as const).map((medium) => (
+                <button
+                  type="button"
+                  key={medium}
+                  onClick$={() => {
+                    const snapshot = createSceneInventory(props.passage);
+                    ui.medium = medium;
+                    ui.brief =
+                      createSceneMediaBrief(
+                        snapshot,
+                        medium,
+                        ui.notesKey === snapshot.key ? ui.proposals : [],
+                      ) ?? "";
+                    ui.briefPassage = { ...props.passage };
+                    ui.copied = false;
+                  }}
+                >
+                  Prepare {medium} brief
+                </button>
+              ))}
+            </div>
+            {ui.brief && briefCurrent && (
+              <div class="scene-bench__brief">
+                <label class="scene-bench__field">
+                  {ui.medium[0].toUpperCase() + ui.medium.slice(1)} brief
+                  <textarea value={ui.brief} readOnly rows={8} />
+                </label>
+                <button
+                  type="button"
+                  onClick$={async () => {
+                    try {
+                      await navigator.clipboard.writeText(ui.brief);
+                      ui.copied = true;
+                    } catch {
+                      ui.noteMessage =
+                        "Copy is unavailable. Select the brief text and copy it with your keyboard.";
+                    }
+                  }}
+                >
+                  {ui.copied ? "Brief copied" : "Copy brief"}
+                </button>
+              </div>
+            )}
+          </section>
+          {props.onAskRoom$ && (
+            <InstrumentRoom
+              context={{
+                instrument: "scene",
+                key: JSON.stringify([
+                  current.key,
+                  ui.dimension,
+                  ui.draft,
+                  proposals,
+                ]),
+                source: props.passage.text,
+                question: `What does this scene already achieve through ${ui.dimension}, and what one concrete change is worth trying? Keep source evidence separate from the writer's proposed additions.`,
+                proposal: [
+                  ...proposals
+                    .filter((idea) => idea.dimension === ui.dimension)
+                    .map((idea) => idea.text),
+
+
+[Historical assistant; command_execution; thread=a3476779-147a-4b18-9761-478df746b24a; run=run:thread:a3476779-147a-4b18-9761-478df746b24a:ordinal:1; item=turn-item:provider:codex:native-item:exec-4e197467-d61e-47d1-9ed6-68b25e40f857; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Aa3476779-147a-4b18-9761-478df746b24a%3Aordinal%3A1; status=completed; run-status=completed]
+Command: /bin/bash -lc "rtk proxy sed -n '275,330p' src/components/instruments/instrument-dock.tsx"
+Exit code: 0
+                )
+              ) : state.kind === "local" ? (
+                <LocalWritingTools
+                  selectedText={state.text}
+                  onCandidate$={() => dialog.value?.close("manuscript")}
+                />
+              ) : state.kind === "scene" ? (
+                <>
+                  {capabilities.error && (
+                    <p role="status">{capabilities.error}</p>
+                  )}
+                  <SceneBench
+                    passage={
+                      state.passage ?? {
+                        id: props.folioId,
+                        text: state.text ?? "",
+                        sourceOffset: 0,
+                      }
+                    }
+                    judgement={capabilities.judgement}
+                    narration={capabilities.narration}
+                    onAskRoom$={async (request, passage) => {
+                      const result = (await props.onAskRoom$?.(
+                        request,
+                        passage,
+                      )) ?? {
+                        ok: false,
+                        message:
+                          "This scene is not attached to a manuscript conversation.",
+                      };
+                      if (result.ok) dialog.value?.close("manuscript");
+                      return result;
+                    }}
+                    onLocate$={async (span, passage) => {
+                      if (await props.onLocate$?.(span, passage))
+                        dialog.value?.close("manuscript");
+                      else
+                        capabilities.error =
+                          "This passage has changed. Select it again to locate an exact source span.";
+                    }}
+                    onJudge$={async (request) => {
+                      if (!capabilities.judgement?.available)
+                        return { ok: false, error: "unavailable" };
+                      if (systemOneWait() > 0)
+                        return {
+                          ok: false,
+                          error:
+                            "The shared judgement budget is resting. Try again shortly.",
+                        };
+                      const account = auth.value.user?.id;
+                      const settings = (await getCachedAiSettings()).judgement;
+                      spendSystemOne();
+                      const result = await askJudgement(
+                        client.value,
+                        request,
+                        settings ?? null,
+
+
+[Historical assistant; assistant_message; thread=a3476779-147a-4b18-9761-478df746b24a; run=run:thread:a3476779-147a-4b18-9761-478df746b24a:ordinal:1; item=turn-item:provider:codex:native-item:msg_0068c6fcdb1a3f19016ad572b1da448191af4c7479351401c3; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Aa3476779-147a-4b18-9761-478df746b24a%3Aordinal%3A1; status=completed; run-status=completed]
+Not yet. Scene Bench currently prepares **image, sound, and motion briefs** locally and lets you copy them; it doesn’t send them to a generation provider.
+
+The [component explicitly confirms this](/home/diogenes/Projects/twyne/src/components/instruments/scene-bench.tsx:560). Judgement and narration have wiring, but media generation still needs connecting.
+
+User message:
+I believe it should be easy to connect the scene bench up to real generation and wiring  here, of course because scene bench is pricey right now generation is opt in as you can wipe credits for the month pretty quickly. that said I want it to be  connect and also allow you to add your own models. Consider t his, the original idea for scenebench was to help the writer visualize and review their own writing in a visual way so they can see and describe  things in betterr detail, what information might be present,  what information is missing. This let's the writer peer into a readers mind in a way.
+
+---
+
+hey your budget per generation i think might be too low let's double it
+
+---
+
+dep [Assistant quote](t3-citation://v1/e7d9c78b-b5f5-45d5-bf9b-919dcf31ffa1/a3476779-147a-4b18-9761-478df746b24a/message%3Aprovider%3AclaudeAgent%3Anative-item%3Aef595113-a03f-456e-a5ca-0ca215447ff2?text=The+new+Convex+module+needs+deploying.%0A%0A&start=2322&end=2361&prefix=Before+this+works+in+production+&suffix=I+confirmed+the+gateway+serves+%2F&comment=deployed+yet)
+
+---
+
+deploying in another t hread is occuring
+
+---
+
+make sure thaht is commited and a part look at the branches and coordinate on the work
