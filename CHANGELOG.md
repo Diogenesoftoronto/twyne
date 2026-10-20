@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.25.0
+
+<sub>2026-10-20</sub>
+
+- Let the editors read on their own: a draft they have not seen is read once it
+  reaches 500 words, then again after 200 new or rewritten words and a pause.
+- Grade each new version automatically and have the editors follow in the
+  background, keeping their notes beside later quick grades.
+- Research claims that need a source without your own model, name why research
+  is waiting, and retry failed searches on their own.
+- Link every quotation in an editor's note to its own passage, explain why two
+  passages are side by side, and keep notes marked intentional or later settled.
+- Describe each revision in Version history, with before and after text, the
+  notes a rewrite reached, and an optional intent for each checkpoint.
+- Hear each chapter of the manual as Morgan's story, and follow hosted
+  narration word by word through ElevenLabs v4.
+
 ## 0.24.2
 
 <sub>2026-10-20</sub>
