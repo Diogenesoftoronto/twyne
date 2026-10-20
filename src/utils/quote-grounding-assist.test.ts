@@ -58,7 +58,7 @@ describe("quotation assistance", () => {
     expect(html).toContain('data-quote="Ada held the iron key"');
     expect(html).toContain("data-draft-fingerprint=");
   });
-  test("null plus guess is a distinct near result without a quote link", async () => {
+  test("null plus guess is a distinct near result, linked as the closest passage", async () => {
     const resolution = await assistQuotation(
       "Ada clutched an iron key",
       draft,
@@ -76,6 +76,10 @@ describe("quotation assistance", () => {
       { quote: "Ada clutched an iron key", index: 0, context: "", resolution },
     ]);
     expect(html).not.toContain('class="quote-link"');
+    expect(html).toContain('class="quote-link quote-link--near"');
+    expect(html).toContain(`data-quote="${draft.slice(0, 21)}"`);
+    expect(html).toContain('data-quote-from="0" data-quote-to="21"');
+    expect(html).toContain('<span class="quote-near-mark" aria-hidden="true">closest</span>');
     expect(html).toContain("Closest passage, not quoted exactly");
   });
   test("invalid spans, absence and failures preserve unmatched", async () => {
