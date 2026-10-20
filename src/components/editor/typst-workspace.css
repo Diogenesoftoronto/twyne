@@ -484,6 +484,35 @@
 .editor-word-count {
   white-space: nowrap;
 }
+.editor-forecast {
+  display: inline-flex;
+  min-width: 0;
+  gap: 0.6rem;
+  overflow: hidden;
+  color: var(--color-ink-light);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.editor-forecast[hidden] {
+  display: none;
+}
+.editor-forecast__item + .editor-forecast__item::before {
+  content: "·";
+  margin-inline-end: 0.6rem;
+  color: var(--color-ink-muted);
+}
+.editor-forecast__range {
+  color: var(--color-ink-muted);
+}
+a.editor-forecast__credit {
+  color: var(--color-vermilion);
+  text-decoration: none;
+}
+a.editor-forecast__credit:hover,
+a.editor-forecast__credit:focus-visible {
+  text-decoration: underline;
+}
 .editor-desk-controls button:focus-visible,
 .editor-bottom-bar button:focus-visible,
 .editor-page-navigation:focus-visible {
@@ -527,6 +556,7 @@
     min-height: 2.25rem;
   }
   .editor-bottom-bar .flow-ribbon,
+  .editor-forecast,
   .editor-last-saved,
   .editor-bottom-bar .typst-cursor {
     display: none;
