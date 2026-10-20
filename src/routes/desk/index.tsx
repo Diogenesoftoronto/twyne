@@ -31,6 +31,11 @@ import {
 import { getNotOrganicHostedUsage } from "../../utils/notorganic-provider";
 import type { HostedUsageSummary } from "../../utils/hosted-usage";
 import type { HostedCostState } from "../../components/desk/hosted-cost";
+import { computeCreditRunway } from "../../utils/credit-runway";
+import {
+  FORECAST_PREVIEW_EVENT,
+  type CreditForecast,
+} from "../../utils/writing-forecasts";
 import { accountDisplayName } from "../../utils/account-display";
 import { useConvexClient } from "../../utils/convex-context";
 import { loadFolioContentFromIdb, loadFoliosFromIdb } from "../../utils/idb";
@@ -142,6 +147,7 @@ export default component$(() => {
   const hostedRevision = useSignal(0);
   const hostedSummary = useSignal<HostedUsageSummary>();
   const hostedState = useSignal<HostedCostState>("loading");
+  const hostedRunway = useSignal<CreditForecast | null>(null);
   const deskViewCaptured = useSignal(false);
   const initialRange = createUsageRange("30d", now);
   const store = useStore<DeskStore>({
@@ -191,6 +197,48 @@ export default component$(() => {
     } catch {
       if (!cancelled) hostedState.value = "error";
     }
+  });
+
+  // The runway is always this calendar month, whatever range is selected.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async ({ track, cleanup }) => {
+    const client = track(() => clientSignal.value);
+    const authState = track(() => auth.value);
+    track(() => hostedRevision.value);
+    let cancelled = false;
+    cleanup(() => {
+      cancelled = true;
+    });
+    const accountId = authState.user?.analyticsId;
+    if (!client || !accountId || !hasAuthenticatedConvexIdentity(authState))
+      return;
+    try {
+      const runway = await computeCreditRunway(client, accountId);
+      if (!cancelled) hostedRunway.value = runway;
+    } catch {
+      if (!cancelled) hostedRunway.value = null;
+    }
+  });
+
+  // Development only: a stubbed runway and wallet summary for browser checks.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    if (!import.meta.env.DEV) return;
+    const onPreview = (event: Event) => {
+      const detail = (
+        event as CustomEvent<{
+          credit?: CreditForecast;
+          hosted?: HostedUsageSummary;
+        }>
+      ).detail;
+      if (detail?.hosted) {
+        hostedSummary.value = detail.hosted;
+        hostedState.value = "ready";
+      }
+      hostedRunway.value = detail?.credit ?? null;
+    };
+    window.addEventListener(FORECAST_PREVIEW_EVENT, onPreview);
+    cleanup(() => window.removeEventListener(FORECAST_PREVIEW_EVENT, onPreview));
   });
 
   // Validate the URL before the ledger tasks react to a non-default range.
@@ -518,6 +566,7 @@ export default component$(() => {
               totalsOnly={preset.value === "all"}
               hostedState={hostedBilling.state}
               hostedSummary={hostedBilling.summary}
+              hostedRunway={hostedRunway.value}
               onRefreshHosted$={$(() => {
                 hostedRevision.value += 1;
               })}

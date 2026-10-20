@@ -21,6 +21,7 @@ import { Icon } from "../ui/icon";
 import { formatWordCount } from "../../utils/document";
 import { LastSavedLine, SyncDot } from "./sync-indicator";
 import { FlowRibbon } from "../in-flow/flow-ribbon";
+import { ForecastLine } from "./forecast-line";
 import { saveEditorViewPreferences } from "../../utils/editor-view-preferences";
 import type { TypstCodeState } from "./typst-code-editor";
 import { TypstSourceRibbon } from "./typst-source-ribbon";
@@ -556,6 +557,13 @@ export const TypstWorkspace = component$<{
         <span class="editor-word-count">
           {formatWordCount(props.store.meta.wordCount)} words
         </span>
+        {!props.readOnly && (
+          <ForecastLine
+            folioId={props.store.activeFolioId}
+            wordCount={props.store.meta.wordCount}
+            zen={props.store.zenMode}
+          />
+        )}
         <select
           class="editor-page-navigation"
           aria-label="Go to page"
