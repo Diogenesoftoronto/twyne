@@ -39,6 +39,7 @@ import type * as lib_errors from "../lib/errors.js";
 import type * as lib_judgementContract from "../lib/judgementContract.js";
 import type * as lib_notorganic from "../lib/notorganic.js";
 import type * as lib_notorganicSignIn from "../lib/notorganicSignIn.js";
+import type * as lib_personaResearch from "../lib/personaResearch.js";
 import type * as lib_providerCheckout from "../lib/providerCheckout.js";
 import type * as lib_providerLink from "../lib/providerLink.js";
 import type * as lib_rateLimit from "../lib/rateLimit.js";
@@ -105,6 +106,7 @@ declare const fullApi: ApiFromModules<{
   "lib/judgementContract": typeof lib_judgementContract;
   "lib/notorganic": typeof lib_notorganic;
   "lib/notorganicSignIn": typeof lib_notorganicSignIn;
+  "lib/personaResearch": typeof lib_personaResearch;
   "lib/providerCheckout": typeof lib_providerCheckout;
   "lib/providerLink": typeof lib_providerLink;
   "lib/rateLimit": typeof lib_rateLimit;
