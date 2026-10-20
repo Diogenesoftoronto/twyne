@@ -1,3 +1,4 @@
+import { GroundedNote } from "./grounded-note";
 import { currentModelLocale } from "../../i18n/model-language";
 import { askJudgement } from "../../utils/judgement-client";
 import {
@@ -21,10 +22,7 @@ import {
   type NoteDecision,
   type NoteDecisionKind,
 } from "../../utils/note-decisions";
-import {
-  renderGroundedMarkdown,
-  revealQuoteFromEvent,
-} from "../../utils/quote-grounding";
+import { revealQuoteFromEvent } from "../../utils/quote-grounding";
 import {
   downloadBlob,
   exportRoomAnalysisMarkdown,
@@ -765,6 +763,7 @@ export const PersonasPanel = component$(
                         review: reviewer,
                       }
                     : undefined,
+                  client,
                 );
                 // The finished text is deliberately left on screen: the filed
                 // cards are only built once all five editors are in, so
@@ -1158,6 +1157,7 @@ export const PersonasPanel = component$(
                       review: reviewer,
                     }
                   : undefined,
+                client,
               );
               if (!res || !res.text.trim() || res.provider === "local") {
                 return null;
@@ -1531,6 +1531,7 @@ export const PersonasPanel = component$(
                         review: reviewer,
                       }
                     : undefined,
+                  clientSig.value,
                 );
                 if (res && res.text.trim() && res.provider !== "local") {
                   responseText = res.text;
@@ -2631,7 +2632,7 @@ export const PersonasPanel = component$(
                       </blockquote>
                     )}
 
-                    <div
+                    <GroundedNote
                       data-speech-id={noteKey}
                       class={`desk-card__body comment-markdown${
                         bodyClamped ? " desk-card__body--clamped" : ""
@@ -2650,11 +2651,8 @@ export const PersonasPanel = component$(
                             }
                           : (event: Event) => revealQuoteFromEvent(event)
                       }
-                      onKeyDown$={(event: Event) => revealQuoteFromEvent(event)}
-                      dangerouslySetInnerHTML={renderGroundedMarkdown(
-                        feedback.feedback,
-                        store.manuscript,
-                      )}
+                      text={feedback.feedback}
+                      manuscript={store.manuscript}
                     />
 
                     {/* Why the note was wrong, once the writer has said it
@@ -2723,18 +2721,13 @@ export const PersonasPanel = component$(
                                 <span>· {timeAgo(r.timestamp)}</span>
                               </div>
                             )}
-                            <div
+                            <GroundedNote
                               class="comment-markdown mt-0.5"
                               onClick$={(event: Event) =>
                                 revealQuoteFromEvent(event)
                               }
-                              onKeyDown$={(event: Event) =>
-                                revealQuoteFromEvent(event)
-                              }
-                              dangerouslySetInnerHTML={renderGroundedMarkdown(
-                                r.text,
-                                store.manuscript,
-                              )}
+                              text={r.text}
+                              manuscript={store.manuscript}
                             />
                           </div>
                         ))}
