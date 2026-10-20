@@ -212,6 +212,38 @@ function elidedSpans(doc: string, segments: string[]): Array<[number, number]> {
   return spans;
 }
 
+function matchingSpans(
+  needle: string,
+  doc: Normalised,
+): Array<[number, number]> {
+  let spans: Array<[number, number]> = occurrences(doc.text, needle)
+    .map((at): [number, number] => [at, at + needle.length])
+    .filter(([s, e]) => !doc.text.slice(s, e).includes("\n"));
+  if (spans.length === 0) {
+    const segments = needle
+      .split(/\s*(?:…|\[…\]|\[\.\.\.\])\s*/)
+      .map((s) => s.trim())
+      .filter((s) => s.length >= 3);
+    if (segments.length > 1) spans = elidedSpans(doc.text, segments);
+  }
+  return spans;
+}
+
+/** Enumerate all occurrences with exactly the same normalisation as the resolver. */
+export function quotationCandidates(
+  quote: string,
+  manuscript: string,
+): Array<{ from: number; to: number }> {
+  const needle = normalise(trimQuote(quote)).text;
+  if (!needle || !manuscript) return [];
+  const doc = normalise(manuscript);
+  return matchingSpans(needle, doc).map(([s, e]) => {
+    const last = doc.map[e - 1];
+    const width = doc.text[e - 1] === "…" && manuscript[last] === "." ? 3 : 1;
+    return { from: doc.map[s], to: last + width };
+  });
+}
+
 /**
  * Find a quotation in the manuscript. Offsets are into `manuscript` as given.
  * `context` is the note text around the quotation; it only ever breaks ties.
@@ -225,16 +257,7 @@ export function resolveQuotation(
   if (!needle || !manuscript) return { status: "unmatched" };
   const doc = normalise(manuscript);
 
-  let spans: Array<[number, number]> = occurrences(doc.text, needle)
-    .map((at): [number, number] => [at, at + needle.length])
-    .filter(([s, e]) => !doc.text.slice(s, e).includes("\n"));
-  if (spans.length === 0) {
-    const segments = needle
-      .split(/\s*(?:…|\[…\]|\[\.\.\.\])\s*/)
-      .map((s) => s.trim())
-      .filter((s) => s.length >= 3);
-    if (segments.length > 1) spans = elidedSpans(doc.text, segments);
-  }
+  const spans = matchingSpans(needle, doc);
   if (spans.length === 0) return { status: "unmatched" };
 
   const toOriginal = ([s, e]: [number, number]) => {
@@ -294,7 +317,7 @@ export function renderGroundedMarkdown(
 ): string {
   const html = renderMarkdown(text);
   if (!manuscript) return html;
-  return linkQuotations(html, groundQuotations(text, manuscript));
+  return linkQuotations(html, groundQuotations(text, manuscript), manuscript);
 }
 
 /** The live draft text, asked of the editor synchronously ("" on the server). */
@@ -316,6 +339,29 @@ export const REVEAL_QUOTE_EVENT = "twyne:reveal-quote";
 export interface RevealQuoteDetail {
   quote: string;
   context: string;
+  from?: number;
+  to?: number;
+  draftFingerprint?: string;
+}
+
+/** A choice can select one repeat only while its manuscript snapshot is current. */
+export function resolveQuotationForReveal(
+  quote: string,
+  manuscript: string,
+  context: string,
+  hint?: RevealQuoteDetail,
+): QuoteResolution {
+  if (
+    hint?.draftFingerprint === quotationDraftFingerprint(manuscript) &&
+    Number.isSafeInteger(hint.from) &&
+    Number.isSafeInteger(hint.to) &&
+    hint.from! >= 0 &&
+    hint.to! > hint.from! &&
+    hint.to! <= manuscript.length &&
+    manuscript.slice(hint.from, hint.to) === quote
+  )
+    return { status: "resolved", from: hint.from!, to: hint.to! };
+  return resolveQuotation(quote, manuscript, context);
 }
 
 function escapeHtml(value: string): string {
@@ -351,9 +397,23 @@ function wrapInText(
  */
 export function linkQuotations(
   html: string,
-  grounded: GroundedQuotation[],
+  grounded: Array<
+    Omit<GroundedQuotation, "resolution"> & {
+      resolution:
+        | QuoteResolution
+        | {
+            status: "near";
+            passage: string;
+            from: number;
+            to: number;
+            pNull: number;
+          };
+    }
+  >,
+  manuscript = "",
 ): string {
   let out = html;
+  const fingerprint = quotationDraftFingerprint(manuscript);
   for (const q of grounded) {
     const needle = escapeHtml(q.quote);
     const r = q.resolution;
@@ -362,13 +422,15 @@ export function linkQuotations(
         out,
         needle,
         (inner) =>
-          `<span class="quote-link" role="link" tabindex="0" data-quote="${escapeHtml(q.quote)}" data-quote-context="${escapeHtml(q.context)}" title="Show this passage in the manuscript">${inner}</span>`,
+          `<span class="quote-link" role="link" tabindex="0" data-quote="${escapeHtml(manuscript ? manuscript.slice(r.from, r.to) : q.quote)}" data-draft-fingerprint="${fingerprint}" data-quote-from="${r.from}" data-quote-to="${r.to}" data-quote-context="${escapeHtml(q.context)}" title="Show this passage in the manuscript">${inner}</span>`,
       );
     } else {
       const why =
-        r.status === "ambiguous"
-          ? `These words appear ${r.count} times in the draft, and the note does not say which.`
-          : "Not in the draft as written. The passage may have changed since this note.";
+        r.status === "near"
+          ? `Closest passage, not quoted exactly: ${r.passage}`
+          : r.status === "ambiguous"
+            ? `These words appear ${r.count} times in the draft, and the note does not say which.`
+            : "Not in the draft as written. The passage may have changed since this note.";
       out = wrapInText(
         out,
         needle,
@@ -394,8 +456,22 @@ export function revealQuoteFromEvent(event: Event): boolean {
       detail: {
         quote: el.dataset.quote ?? "",
         context: el.dataset.quoteContext ?? "",
+        from: Number(el.dataset.quoteFrom),
+        to: Number(el.dataset.quoteTo),
+        draftFingerprint: el.dataset.draftFingerprint,
       },
     }),
   );
   return true;
+}
+
+/** A synchronous freshness guard for reveal events; inference caching uses SHA-256. */
+export function quotationDraftFingerprint(text: string): string {
+  let a = 2166136261,
+    b = 5381;
+  for (let i = 0; i < text.length; i++) {
+    a = Math.imul(a ^ text.charCodeAt(i), 16777619);
+    b = Math.imul(b, 33) ^ text.charCodeAt(i);
+  }
+  return `${text.length}:${a >>> 0}:${b >>> 0}`;
 }

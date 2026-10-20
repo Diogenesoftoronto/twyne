@@ -6,15 +6,11 @@ describe("Room of Editors Markdown wiring", () => {
       "src/components/personas/personas-panel.tsx",
     ).text();
 
-    expect(source).toContain(
-      "dangerouslySetInnerHTML={renderGroundedMarkdown(\n                        feedback.feedback,",
-    );
+    expect(source).toContain("text={feedback.feedback}");
     expect(source).toContain(
       "dangerouslySetInnerHTML={renderMarkdown(\n                      store.streamingNotes[persona.id].text,",
     );
-    expect(source).toContain(
-      "dangerouslySetInnerHTML={renderGroundedMarkdown(\n                                r.text,",
-    );
+    expect(source).toContain("text={r.text}");
     // Grounded notes still go through the safe renderer first.
     const grounding = await Bun.file("src/utils/quote-grounding.ts").text();
     expect(grounding).toContain("const html = renderMarkdown(text);");

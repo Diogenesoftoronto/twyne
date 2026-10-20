@@ -48,6 +48,7 @@ import {
   type MemoForSynthesis,
 } from "./agentPrompts";
 import { buildQuoteTools } from "./agentTools";
+import { hostedPersonaResearch } from "./lib/personaResearch";
 import type {
   DossierCheckResult,
   DossierProbe,
@@ -589,6 +590,7 @@ async function runAdaptiveHostedLlm(
     });
   }
 
+  const research = await hostedPersonaResearch(ctx);
   const result = await runAdaptiveEditorialDraft({
     operation: req.instruction ?? "feedback",
     initialReasoning: initialEditorialReasoning(req.instruction),
@@ -618,7 +620,10 @@ async function runAdaptiveHostedLlm(
         ...req,
         ...(repair.length ? { repairInstructions: [...repair] } : {}),
       });
-      const { tools, getAnchor } = buildQuoteTools(req.draftText);
+      const { tools, getAnchor, getAnchors, getExtractions } = buildQuoteTools(
+        req.draftText,
+        research,
+      );
       const usageTraceId = observability?.traceId
         ? `${observability.traceId}:draft-${attempt}`
         : createAiTraceId(`${feature}:draft-${attempt}`);
@@ -641,7 +646,7 @@ async function runAdaptiveHostedLlm(
         temperature,
         maxOutputTokens: maxTokens,
         tools,
-        stopWhen: stepCountIs(3),
+        stopWhen: stepCountIs(Object.keys(tools).length > 1 ? 6 : 3),
         experimental_telemetry: {
           isEnabled: tracingEnabled,
           functionId: `${feature}:draft-${attempt}`,
@@ -703,6 +708,8 @@ async function runAdaptiveHostedLlm(
         provider: generationProvider.label,
         traceId,
         anchor: getAnchor() ?? req.anchor,
+        anchors: getAnchors(),
+        extractions: getExtractions(),
       };
       return { value, text: cleaned, anchor: value.anchor };
     },
@@ -786,7 +793,11 @@ async function runLlm(
   const temperature =
     req.persona.temperature ?? (provider.label === "openai" ? 0.6 : 0.4);
   const start = Date.now();
-  const { tools, getAnchor } = buildQuoteTools(req.draftText);
+  const research = await hostedPersonaResearch(ctx);
+  const { tools, getAnchor, getAnchors, getExtractions } = buildQuoteTools(
+    req.draftText,
+    research,
+  );
   const usageTraceId = observability?.traceId ?? createAiTraceId(feature);
   const capture: HostedUsageCapture = {
     ctx,
@@ -806,7 +817,7 @@ async function runLlm(
       temperature,
       maxOutputTokens: maxTokens,
       tools,
-      stopWhen: stepCountIs(3),
+      stopWhen: stepCountIs(Object.keys(tools).length > 1 ? 6 : 3),
       experimental_telemetry: {
         isEnabled: tracingEnabled,
         functionId: feature,
@@ -836,7 +847,7 @@ async function runLlm(
         temperature,
         maxOutputTokens: maxTokens,
         tools,
-        stopWhen: stepCountIs(3),
+        stopWhen: stepCountIs(Object.keys(tools).length > 1 ? 6 : 3),
         experimental_telemetry: {
           isEnabled: tracingEnabled,
           functionId: `${feature}:retry`,
@@ -876,6 +887,8 @@ async function runLlm(
       provider: provider.label,
       traceId,
       anchor: getAnchor() ?? req.anchor,
+      anchors: getAnchors(),
+      extractions: getExtractions(),
     };
   } catch (err) {
     await captureServerAiGeneration({
