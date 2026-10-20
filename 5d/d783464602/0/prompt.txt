@@ -1,0 +1,9 @@
+Delegated task node:delegated-task:command%3Amcp%3A60dfe675-621b-4a87-a3fa-70aa7fad251b%3Adelegate-task%3Aclairic-lane2-rhythm-estimates-r1 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3A60dfe675-621b-4a87-a3fa-70aa7fad251b%3Adelegate-task%3Aclairic-lane2-rhythm-estimates-r1 to read the result.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A60dfe675-621b-4a87-a3fa-70aa7fad251b%3Adelegate-task%3Aclairic-lane1-persona-tools-r1 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3A60dfe675-621b-4a87-a3fa-70aa7fad251b%3Adelegate-task%3Aclairic-lane1-persona-tools-r1 to read the result.
+
+---
+
+what happens if clairic cannot be reached?

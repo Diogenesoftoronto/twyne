@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "5dd783464602",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "e2e/brief-signin.e2e.ts",
+    "src/components/onboarding/anti-tabula-rasa.tsx",
+    "src/components/onboarding/writing-format-input.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/5d/d783464602/0/metadata.json",
+      "transcript": "/5d/d783464602/0/full.jsonl",
+      "compact_transcript": "/5d/d783464602/0/transcript.jsonl",
+      "content_hash": "/5d/d783464602/0/content_hash.txt",
+      "prompt": "/5d/d783464602/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 56,
+    "cache_creation_tokens": 597999,
+    "cache_read_tokens": 6393569,
+    "output_tokens": 16499,
+    "api_call_count": 24
+  }
+}
