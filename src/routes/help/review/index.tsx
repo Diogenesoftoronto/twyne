@@ -10,17 +10,37 @@ export default component$(() => (
   >
     <h2>Automatic review</h2>
     <p class="doc-p">
-      When review is enabled, saved writing and relevant dossier information are
-      sent to the configured AI service after a pause. Use the Automatic review
-      switch in the Tools board to pause or resume review. Findings are
-      suggestions; Twyne does not rewrite your draft.
+      Review runs without being asked. When review is enabled, saved writing and
+      relevant dossier information are sent to the configured AI service after a
+      pause. Use the Automatic review switch in the Tools board to pause or
+      resume review. Findings are suggestions; Twyne does not rewrite your
+      draft.
+    </p>
+    <p class="doc-p">
+      Three readings follow on their own. The editors read a draft they have not
+      seen once it reaches 500 words, then again after about 200 new or
+      rewritten words and a minute's pause, at least five minutes apart. After
+      each quick grade, the editors read the new version themselves, at most
+      once every ten minutes. Research looks for claims that need a source after
+      you stop typing, and retries a failed search on its own. Each panel says
+      what it is doing or why it is waiting. The buttons in each panel run the
+      same work straight away.
     </p>
     <h2>Grades</h2>
     <p class="doc-p">
       The rubric grades your draft against its criteria. Open a criterion to
       read its reasoning, or open “How this was scored” for the calculation
       behind a grade. Grades are estimates to help you revise, not a verdict on
-      your writing.
+      your writing. The editors' written notes stay with the grade when a quick
+      check refreshes it, and say when they are about an earlier version.
+    </p>
+    <h2>Notes and the passages they quote</h2>
+    <p class="doc-p">
+      Each passage an editor quotes in a note or reply links to its place in the
+      manuscript. A quotation that appears more than once without enough context
+      to tell which, or that is no longer in the draft, is left unlinked with a
+      dotted underline that explains why. Mark a note intentional or later and
+      that editor will not raise the same passage again until its text changes.
     </p>
     <h2>Writing checks</h2>
     <p class="doc-p">

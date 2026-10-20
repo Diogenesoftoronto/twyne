@@ -67,7 +67,7 @@ export const EDITORIAL_GUIDES = {
       {
         title: "Hear the editors disagree",
         instruction:
-          "Choose Editors for each editor's own rationale, with their portrait and role above it. When M. Le Stylo and Professeur Athenæum score the same passage differently, the gap between them is usually where the revision is. Criteria returns to the marks; Passages opens the saved-draft review. A quick check may show no editor opinions yet; use Ask the editors there to request a full room reading.",
+          "Choose Editors for each editor's own rationale, with their portrait and role above it. When M. Le Stylo and Professeur Athenæum score the same passage differently, the gap between them is usually where the revision is. Criteria returns to the marks; Passages opens the saved-draft review. After a quick check the editors read the new version on their own, at most once every ten minutes; until they finish, the tab says soon. Ask them now reads it straight away.",
         image: `${assets}rubric-readings.webp`,
         alt: "The rubric’s Editors tab with portraits, names and roles above two staged readings, with Criteria, Passages and Grade again still available.",
         width: 464,

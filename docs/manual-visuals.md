@@ -78,6 +78,33 @@ that point; walkthrough steps say what to do, what the control is called, and
 what it will not do. Keep that anchor when adding a chapter: a reader should be
 able to tell from the first sentence why they would open this tool.
 
+## Morgan's story, read aloud
+
+Each chapter from Begin a piece to Privacy has a Listen control under its lead.
+It plays a short narration of that chapter told as Morgan's story: what Morgan
+does, and what the desk does on its own. It is a companion to the written
+chapter, not a reading of it.
+
+- The scripts live in `src/routes/docs/manual-narration-script.ts`, one
+  paragraph per rendered segment. Spell names as spoken ("Mademoiselle",
+  "Athenaeum"), keep Morgan ungendered, and avoid distinctions that only show
+  in print, such as two spellings of a name.
+- Render with `bun scripts/gen-manual-narration.ts`. It uses the launch films'
+  narrator (Gemini TTS voice Gacrux through fal, key from skate), renders only
+  chapters whose script changed, and writes mono AAC to
+  `public/assets/manual/narration/` plus the hash, duration and paragraph start
+  times to `manual-narration.generated.json`.
+  `manual-narration.test.ts` fails when a script no longer matches its audio.
+- Check a render by transcribing each segment and comparing it with the script.
+  Whisper spells the French editors phonetically and writes numerals; dropped,
+  repeated or invented words are what matter.
+- One audio element plays every chapter, so a single press reads through to the
+  end. When a chapter finishes, the next begins, and the page scrolls to it if
+  the reader was following. The transcript marks the paragraph being read and
+  any paragraph can be selected to listen from there. A film starting pauses the
+  narration; switching tabs or following a contents link does not. The browser's
+  media controls show the chapter and can skip between chapters.
+
 ## Playback and reading
 
 - The contents panel follows the visible chapter as you scroll, including the
@@ -92,7 +119,7 @@ able to tell from the first sentence why they would open this tool.
 - Step controls have keyboard focus and a selected state; the current
   instruction is announced politely. Every sequence also has a text version.
 - Printing includes every written step and the selected illustration. Navigation,
-  video players and step-switching controls are omitted.
+  video players, narration controls and step-switching controls are omitted.
 
 ## Check the rendered result
 

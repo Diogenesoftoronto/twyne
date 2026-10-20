@@ -596,6 +596,124 @@
   display: none;
 }
 
+/* Morgan's story, read aloud. A quiet bar under the chapter lead; it widens
+   into a position slider only while its chapter is the one being read. */
+.manual-narration-audio {
+  display: none;
+}
+
+.manual-narration {
+  margin: -0.25rem 0 1.25rem;
+}
+
+.manual-narration-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 2.5rem;
+  font: 500 0.8125rem/1.4 var(--font-sans);
+}
+
+.manual-narration-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 999px;
+  background: var(--color-paper);
+  color: var(--color-vermilion);
+  font-size: 0.6875rem;
+  letter-spacing: -0.05em;
+  cursor: pointer;
+}
+
+.manual-narration-play:hover,
+.manual-narration.is-active .manual-narration-play {
+  border-color: var(--color-vermilion);
+}
+
+.manual-narration-listen {
+  color: var(--color-ink-light);
+  font-weight: 400;
+}
+
+.manual-narration-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.manual-narration.is-active .manual-narration-name {
+  flex: 0 1 auto;
+}
+
+.manual-narration-seek {
+  flex: 1;
+  min-width: 4rem;
+  accent-color: var(--color-vermilion);
+}
+
+.manual-narration-duration {
+  color: var(--color-ink-light);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.manual-narration-download {
+  color: var(--color-vermilion);
+  font-size: 0.75rem;
+}
+
+.manual-narration-transcript {
+  margin-left: 2.625rem;
+}
+
+.manual-narration-transcript summary {
+  width: fit-content;
+  color: var(--color-ink-light);
+  font: 0.75rem/1.5 var(--font-sans);
+  cursor: pointer;
+}
+
+.manual-narration-lines {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.manual-narration-line {
+  padding: 0.25rem 0 0.25rem 0.75rem;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: none;
+  color: var(--color-ink-light);
+  font: italic 0.9375rem/1.7 var(--font-serif);
+  text-align: left;
+  cursor: pointer;
+}
+
+.manual-narration-line:hover {
+  color: var(--color-ink);
+}
+
+.manual-narration-line.is-current {
+  border-left-color: var(--color-vermilion);
+  color: var(--color-ink);
+}
+
+@media (max-width: 640px) {
+  .manual-narration.is-active .manual-narration-name {
+    display: none;
+  }
+
+  .manual-narration-transcript {
+    margin-left: 0;
+  }
+}
+
 .manual-video {
   margin: 1.25rem 0;
   border-block: 1px solid var(--color-paper-3);
@@ -802,6 +920,7 @@
   .manual-colophon,
   .manual-skip,
   .manual-video,
+  .manual-narration,
   .manual-walkthrough-steps,
   .manual-walkthrough-instruction,
   .manual-walkthrough-enlarge,

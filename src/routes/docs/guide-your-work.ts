@@ -118,7 +118,7 @@ export const YOUR_WORK_GUIDES = {
       {
         title: "Compare before you restore",
         instruction:
-          "In Write, open Review, then Version history. Save checkpoint keeps the current manuscript before a risky pass. Choose an earlier checkpoint to see what changed. Restore checkpoint asks first: Save current and restore protects today's draft before swapping; Keep current manuscript backs out.",
+          "In Write, open Review, then Version history. Twyne saves checkpoints as you write; Save checkpoint keeps one before a risky pass, with an optional line saying what it is for. Choose an earlier checkpoint to see what changed, described in a sentence and passage by passage. Restore checkpoint asks first: Save current and restore protects today's draft before swapping; Keep current manuscript backs out.",
         image: asset("revision-restore"),
         alt: "Version history with Compare with, changed passages, and the Save current and restore or Keep current manuscript confirmation.",
         width: 463,

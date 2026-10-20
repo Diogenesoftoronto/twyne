@@ -13,6 +13,11 @@ import { LaunchFilm } from "../../components/landing/launch-film";
 import { ManualWalkthrough } from "./manual-walkthrough";
 import { ManualVideo } from "./manual-video";
 import { MANUAL_FILMS } from "./manual-films";
+import {
+  ManualNarration,
+  ManualNarrationHost,
+  pauseManualNarration,
+} from "./manual-narration";
 import { ManualEditors } from "./manual-editors";
 import { AT_THE_DESK_GUIDES } from "./guide-at-the-desk";
 import { EDITORIAL_GUIDES } from "./guide-editorial-room";
@@ -100,6 +105,13 @@ const CHAPTER_TOPICS: Record<string, readonly (readonly [string, string])[]> = {
 
 const CHAPTER_LINKS = CHAPTERS.flatMap<readonly [string, string, string]>(
   (group) => group.links,
+);
+
+const chapterTitle = (id: string) =>
+  CHAPTER_LINKS.find(([chapter]) => chapter === id)?.[2] ?? "";
+
+const CHAPTER_TITLES = Object.fromEntries(
+  CHAPTER_LINKS.map(([id, , title]) => [id, title]),
 );
 
 const ReadingPosition = component$<{
@@ -240,7 +252,14 @@ export default component$(() => {
         if (video !== except && !video.paused) video.pause();
       });
     };
-    const onPlay = (event: Event) => pauseAll(event.target);
+    // Films and narration take turns: a film pauses the narration, and the
+    // narration's own play event pauses any film. Narration is left playing
+    // through tab switches and contents links, because listening is meant to
+    // go on while you look elsewhere.
+    const onPlay = (event: Event) => {
+      pauseAll(event.target);
+      if (event.target instanceof HTMLVideoElement) pauseManualNarration();
+    };
     const onVisibility = () => {
       if (document.hidden) pauseAll();
     };
@@ -278,6 +297,7 @@ export default component$(() => {
 
   return (
     <div class="twyne-manual" id="manual-top" role="main">
+      <ManualNarrationHost titles={CHAPTER_TITLES} />
       <a class="manual-skip" href="#manual-content">
         Skip to the guide
       </a>
@@ -289,7 +309,9 @@ export default component$(() => {
             <p class="manual-deck">
               From the first idea to the final proof. A guide to your writing
               desk, the House, and the voices in the margin. See the controls,
-              follow a walkthrough, then try it in your own draft.
+              follow a walkthrough, then try it in your own draft. Or press
+              Listen at any chapter and hear Morgan's story read through to the
+              end.
             </p>
           </div>
           <Link href="/editor/" class="btn-paper manual-desk-link">
@@ -339,6 +361,10 @@ export default component$(() => {
                 caravans and no idea what the essay is for. This manual follows
                 that draft, Salt Roads, from a brief to a proof.
               </p>
+              <ManualNarration
+                chapter="getting-started"
+                title={chapterTitle("getting-started")}
+              />
               <ChapterIllustrations chapter="getting-started" />
               <p class="manual-p">
                 Twyne is a writing desk with an editorial room attached. You
@@ -355,9 +381,11 @@ export default component$(() => {
                 </li>
                 <li>
                   <strong>Write first, read notes later.</strong> Your draft
-                  saves on this device as you type.{" "}
-                  <a href="#flow">The margin</a> holds feedback beside the
-                  passage it belongs to, and waits until you look up.
+                  saves on this device as you type. The editors, the grade and
+                  the research read it on their own when you pause; there is
+                  nothing to press. <a href="#flow">The margin</a> holds
+                  feedback beside the passage it belongs to, and waits until you
+                  look up.
                 </li>
                 <li>
                   <strong>Revise on your own terms.</strong> Follow a note to
@@ -378,6 +406,10 @@ export default component$(() => {
                 The dossier is where you admit what a piece is supposed to do,
                 so the editors can tell you whether it does it.
               </p>
+              <ManualNarration
+                chapter="dossier"
+                title={chapterTitle("dossier")}
+              />
               <ChapterIllustrations chapter="dossier" />
               <p class="manual-p">
                 Before the room opens, it asks a short series of questions. They
@@ -454,6 +486,7 @@ export default component$(() => {
                 Salt Roads is the second of five coastal essays. Morgan is not
                 going to type the same reader into five dossiers.
               </p>
+              <ManualNarration chapter="house" title={chapterTitle("house")} />
               <ChapterIllustrations chapter="house" />
               <p class="manual-p">
                 The House is everything you would otherwise repeat: the reader
@@ -537,6 +570,7 @@ export default component$(() => {
                 Morgan writes in long runs and resents anything that interrupts
                 one. The room is built to wait.
               </p>
+              <ManualNarration chapter="flow" title={chapterTitle("flow")} />
               <ChapterIllustrations chapter="flow" />
               <p class="manual-p">
                 While you work, Twyne can bring comments, sources, books,
@@ -562,6 +596,23 @@ export default component$(() => {
                 writing drifts from the dossier, the room may propose an
                 amendment. It never rewrites the brief behind your back.
               </p>
+              <h3 class="manual-h3">Why two passages are side by side</h3>
+              <p class="manual-p">
+                Halfway through Salt Roads, Morgan writes about the salt
+                merchant's ledger, and a card appears: Earlier in this piece.
+                Unpaid promise. The opening said the ledger would explain the
+                road, and nothing has explained it yet. The card names the
+                relationship (an unpaid promise, a tension, an echo, a
+                repetition, or the same subject) and says in a sentence why it
+                matters. It shows both passages; select either to go to it.
+              </p>
+              <p class="manual-p">
+                A relationship is a reading, not a fault. Some promises are
+                meant to stay open. Choose That's the connection if the reading
+                is right, or Not how I read it to set the card aside for good. A
+                card matched only on shared words says so, rather than
+                pretending to know more.
+              </p>
               <div class="manual-callout">
                 <p>
                   <strong>Your controls:</strong> Automatic review, margin
@@ -581,6 +632,10 @@ export default component$(() => {
                 that shifts, the name spelled two ways, the character who
                 vanishes for a chapter.
               </p>
+              <ManualNarration
+                chapter="the-piece"
+                title={chapterTitle("the-piece")}
+              />
               <ChapterIllustrations chapter="the-piece" />
               <h3 class="manual-h3">Useful without a model</h3>
               <p class="manual-p">
@@ -631,6 +686,10 @@ export default component$(() => {
                 one you wrote earlier. A scene with no sound in it. Each gets a
                 tool that opens beside the words, not instead of them.
               </p>
+              <ManualNarration
+                chapter="writing-instruments"
+                title={chapterTitle("writing-instruments")}
+              />
               <p class="manual-p">
                 Select text in the manuscript and the tools that fit it appear.
                 A single word offers Alternatives. A passage offers Rework, with
@@ -830,6 +889,7 @@ export default component$(() => {
                 single editor is right about everything, which is rather the
                 point of having five.
               </p>
+              <ManualNarration chapter="room" title={chapterTitle("room")} />
               <ManualVideo film={MANUAL_FILMS.room} />
               <ManualEditors />
               <p class="manual-p">
@@ -840,6 +900,52 @@ export default component$(() => {
                 signs with their initials. From any writing instrument, Ask the
                 room brings one of them into the question you are already
                 working on.
+              </p>
+              <h3 class="manual-h3">They read without being asked</h3>
+              <p class="manual-p">
+                Morgan never convenes the room. Once a draft reaches 500 words,
+                the editors read it on their own the first time Morgan pauses.
+                After that they come back whenever about 200 words are new or
+                rewritten and the page has been quiet for a minute. A rewrite
+                counts as much as new material, so tightening the harbour
+                section brings fresh notes. They read only the paragraphs that
+                changed, along with a sketch of how the draft has been moving.
+              </p>
+              <p class="manual-p">
+                Those notes arrive marked in passing, lighter than the notes you
+                ask for. There are at least five minutes between readings and a
+                limit per session, because this spends model calls without a
+                click. Get notes is still there when you want the whole room
+                now. Read as I write, in the room settings, turns the automatic
+                reading off.
+              </p>
+              <h3 class="manual-h3">Every quotation leads somewhere</h3>
+              <p class="manual-p">
+                When Professeur Athenæum quotes three lines of Salt Roads in one
+                note, each quotation is underlined and goes to its own passage,
+                not to the first one. Twyne matches the words literally. It
+                ignores curly quotes, capitals and spacing, and follows a
+                quotation with an ellipsis in it. If the same phrase appears
+                twice, the words around the quotation in the note decide which
+                one is meant.
+              </p>
+              <p class="manual-p">
+                A quotation that could be either, or that is no longer in the
+                draft because Morgan has since rewritten it, gets a dotted
+                underline instead of a link. Hover over it to see why. Twyne
+                would rather leave a quotation unplaced than send you to the
+                wrong sentence, and it checks again every time the draft
+                changes.
+              </p>
+              <h3 class="manual-h3">Meant as written, or for later</h3>
+              <p class="manual-p">
+                The abrupt ending of the ferry scene is deliberate, and Mlle.
+                Sceptique will not stop pointing it out. Choose intentional on
+                her note. Choose later for a note you agree with but will deal
+                with after this draft. Either way, that editor will not raise
+                the same passage again until its words change. The settled note
+                steps back on the page, and selecting the label again undoes the
+                decision. Decisions are kept on this device.
               </p>
               <h3 class="manual-h3">Arrange your room</h3>
               <ManualWalkthrough id="room" guide={GUIDES.room} />
@@ -883,6 +989,10 @@ export default component$(() => {
                 Salt Roads got a B. That is not information. The reasons under
                 the grade are.
               </p>
+              <ManualNarration
+                chapter="rubric"
+                title={chapterTitle("rubric")}
+              />
               <ChapterIllustrations chapter="rubric" />
               <p class="manual-p">
                 The <strong>static features</strong> are the part of the proof
@@ -900,14 +1010,21 @@ export default component$(() => {
                 from the five editors. If the quick check is unavailable, Twyne
                 falls back to the room reading.
               </p>
-              <h3 class="manual-h3">Ask the editors</h3>
+              <h3 class="manual-h3">The editors' reading</h3>
               <p class="manual-p">
-                Choose Ask the editors for the full room reading. Each editor
-                gives a score and a rationale, and the places where they
-                disagree are usually where the revision is. This path combines
-                editorial verdicts with the static features. Its Target Fit
-                check caps the shape scores when a piece misses the audience or
-                purpose in its dossier, because a beautifully built essay for
+                The grade arrives on its own. Once the draft has 500 words and
+                you pause, Twyne runs the quick check. The editors then read the
+                new version themselves, at most once every ten minutes, and the
+                grade stays on screen while they work. Until they finish, the
+                Editors tab says soon rather than showing a zero. Choose Ask
+                them now there if you would rather not wait. When the quick
+                check refreshes after an edit, the editors' notes stay, marked
+                as being about an earlier version until they read the new one.
+                Each editor gives a score and a rationale, and the places where
+                they disagree are usually where the revision is. This path
+                combines editorial verdicts with the static features. Its Target
+                Fit check caps the shape scores when a piece misses the audience
+                or purpose in its dossier, because a beautifully built essay for
                 the wrong reader is still the wrong essay.
               </p>
               <p class="manual-p">What the letters mean:</p>
@@ -944,6 +1061,10 @@ export default component$(() => {
                 Every argument about a passage happens next to the passage. Your
                 notes, the editors' notes, and the replies between them.
               </p>
+              <ManualNarration
+                chapter="marginalia"
+                title={chapterTitle("marginalia")}
+              />
               <ChapterIllustrations chapter="marginalia" />
               <p class="manual-p">
                 Select any passage and choose Comment to leave a note in the
@@ -969,6 +1090,10 @@ export default component$(() => {
                 paraphrasing. The Apparatus notices them and keeps them in
                 order.
               </p>
+              <ManualNarration
+                chapter="apparatus"
+                title={chapterTitle("apparatus")}
+              />
               <ChapterIllustrations chapter="apparatus" />
               <p class="manual-p">
                 The Apparatus does three things: finds sources, keeps them, and
@@ -982,6 +1107,32 @@ export default component$(() => {
                 The bibliography is formatted in the style you choose, MLA, APA
                 or Chicago, and switches instantly when an editor changes their
                 mind. Copy the whole list to the clipboard in one go.
+              </p>
+              <h3 class="manual-h3">Research that runs itself</h3>
+              <p class="manual-p">
+                Morgan does not ask for sources. A short while after Morgan
+                stops typing, the Apparatus reads the draft and picks out what a
+                careful reader would want backed up: the figure about the salt
+                trade, the line quoted from the 1911 survey, the year the
+                harbour closed. It searches for each one and files what it finds
+                under the claim that prompted it. With your own model
+                configured, that model picks the claims. Signed in without one,
+                Twyne finds them in the text and Jev confirms which really need
+                a source. In fiction, invented events are left alone.
+              </p>
+              <p class="manual-p">
+                The panel always says what it is doing: reading the draft,
+                searching, or why it is idle. It might be waiting for a pause,
+                the draft might be too short, there might be no claims that need
+                a source, or every claim may already be covered. Each claim in
+                Deep trace explains its result. Found means sources are on file,
+                so check that they support your wording. No match means the
+                search ran and found nothing, so the claim may need softer
+                wording or a source of your own. Failed means the search broke,
+                which is not the same as finding nothing. Twyne tries a failed
+                search again on its own after thirty seconds, two minutes and
+                ten minutes; retry is there if you want it sooner. Go to the
+                claim shows the sentence in the manuscript.
               </p>
               <div class="manual-callout">
                 <p>
@@ -1004,6 +1155,10 @@ export default component$(() => {
                 A name for the editors to address you by, and a way to talk to
                 one out loud when typing is too slow.
               </p>
+              <ManualNarration
+                chapter="account-and-live"
+                title={chapterTitle("account-and-live")}
+              />
               <ChapterIllustrations chapter="account-and-live" />
               <p class="manual-p">
                 Sign in with Not Organic to carry your account, hosted credits
@@ -1036,6 +1191,10 @@ export default component$(() => {
                 is a real page, and when it is not enough there is the source
                 underneath it.
               </p>
+              <ManualNarration
+                chapter="manuscript-tools"
+                title={chapterTitle("manuscript-tools")}
+              />
               <ManualVideo film={MANUAL_FILMS["manuscript-tools"]} />
               <h3 class="manual-h3" id="outline-and-find">
                 Move through the manuscript
@@ -1098,6 +1257,10 @@ export default component$(() => {
                 One piece per folio. Salt Roads, its outline and a scratch file
                 of cut paragraphs share a collection and nothing else.
               </p>
+              <ManualNarration
+                chapter="folios"
+                title={chapterTitle("folios")}
+              />
               <ChapterIllustrations chapter="folios" />
               <p class="manual-p">
                 Folios are separate documents with separate dossiers. Switch
@@ -1131,6 +1294,25 @@ export default component$(() => {
                 also download the .typ source. Private editorial annotations are
                 stripped from the exported copy; your saved source keeps them.
               </p>
+              <h3 class="manual-h3">What a revision did</h3>
+              <p class="manual-p">
+                Twyne saves checkpoints on its own as you write, and whenever
+                you ask for a grade. Version history describes each comparison
+                in a sentence, written from the changes themselves: Rewrote
+                three passages and cut one. The changes reach passages M. Le
+                Stylo had notes on. Each changed passage is labelled Rewritten,
+                Cut or New passage, with the before and after text together.
+                When a rewrite reaches a passage an editor had a note on, the
+                note is shown beside it. That shows the change reached the
+                passage, not that it answered the note.
+              </p>
+              <p class="manual-p">
+                Save checkpoint takes an optional line saying what the revision
+                was for, such as "pay off the ledger promise", and that line
+                names the checkpoint afterwards. The word and passage counts are
+                still there under Size of the change. Restore always saves the
+                current draft first.
+              </p>
             </section>
             <section id="byok" class="manual-section">
               <p class="manual-chapter">14 · Your work</p>
@@ -1139,6 +1321,7 @@ export default component$(() => {
                 Morgan already pays for a model and would like the editors to
                 use it. Three steps, once.
               </p>
+              <ManualNarration chapter="byok" title={chapterTitle("byok")} />
               <ChapterIllustrations chapter="byok" />
               <p class="manual-p">
                 <strong>Add a provider.</strong> In{" "}
@@ -1188,6 +1371,10 @@ export default component$(() => {
                 The manuscript is yours. Here is exactly where it goes, and
                 where it does not.
               </p>
+              <ManualNarration
+                chapter="privacy"
+                title={chapterTitle("privacy")}
+              />
               <ChapterIllustrations chapter="privacy" />
               <p class="manual-p">
                 <strong>API keys</strong> are saved in your browser's IndexedDB.
