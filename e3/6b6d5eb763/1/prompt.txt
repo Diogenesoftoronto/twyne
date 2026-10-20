@@ -1,0 +1,47 @@
+Hey so cloudflare just dropped clairic a system one extraction model and they dropped tsrs which is an implementation of typescript in rust. Both of these seem really cool for the project we are running. With clairic the system on extraction model i was thinking about all the areas that we currently use traditional llms for tasks here and because we can do so quickly now rather than before, quoting can be difficult. Another thing is forecasting, there is so much forecasting we might do with small ranges that we could then use to make judgements. Consider this: we might timeseries forecast when someone is in focus and for how long instead of the deterministic way that we run it now where we break someone out of flow when the stop typing for a bit, this could be more intelligent, we might forecast other data as well but i was thinking about split second decisions. There are otherr things like predictions that are related to the things in the person's response take a case where the text doesn't have the particular thing we arer trying to extract but has a pretty close version of that. Anyway look at the documentation. I have discussed it before with Astra and I will give you that too. We want to add support for this extraction endpoint in Notorganic.
+
+---
+
+maybe seconds o f focus remaining that are beingn predicted instead.
+
+---
+
+Here is the convo for twyne: 
+https://blog.cloudflare.com/clairic-extraction-model/ this just released we should think of the applications in our own applications 
+
+
+
+
+
+
+
+
+
+I’ll read the release and map it to concrete uses in Twyne, Keating and your newer documentation/video ideas, especially where it complements Jev rather than duplicates it.
+
+
+
+
+
+
+
+
+
+Yes. This fills a useful gap in the architecture you’ve been describing: Jev chooses among possibilities; Clairic supplies values and passages you didn’t have to enumerate beforehand.
+Cloudflare released the preview October 19. It can return source-text spans with offsets, typed values and estimates. That makes it more interesting for your apps as an evidence-extraction component than as another general-purpose assistant. Release
+My strongest fits:
+1. Twyne: turn editorial feedback into connected evidence.
+   For your multiple-quotation problem, keep exact/normalized string matching first. No model needed when the quotation matches. Clairic becomes useful for extracting all the relevant excerpts from a messy editor response or finding candidate passages behind a paraphrase. Then deterministic checks verify the text and attach it to the correct manuscript version. Repeated quotations still need disambiguation; an offset in the model’s input is not automatically a stable editor anchor.
+That could make each persona card point to several passages, with Jev judging the relationship and the writing model explaining why the connection matters. It directly addresses your complaint that connecting passage A and B doesn’t explain what a writer should do with that connection.
+2. Twyne: make auto-research produce something visible.
+   Once search retrieves sources, extract their claims, supporting excerpts, dates and numerical findings into reviewable evidence cards. Jev decides whether a claim needs checking and whether a source supports or contradicts it; the writer model explains the significance.
+The useful result isn’t “watching graph.” It’s “This sentence makes a factual claim; here are two relevant sources and the exact supporting passages.” Clairic would process retrieved material, not replace search or establish that a source is truthful.
+3. Keating: build learner state from ordinary conversati
+
+---
+
+[Assistant quote](t3-citation://v1/e7d9c78b-b5f5-45d5-bf9b-919dcf31ffa1/0efe05a8-7280-4581-953a-43171f1f1cfb/message%3Aprovider%3AclaudeAgent%3Anative-item%3A6b49cc22-a24f-47b6-84cd-d49db1986469?text=That+still+needs+to+be+said+on+the+card.&start=2023&end=2063&prefix=+doesn%27t+make+them+trustworthy.+&suffix=+3.+Focus+remaining%2C+from+earlie&comment=no+we+don%27t+need+to+hedge+every+claim+here.) [Assistant quote](t3-citation://v1/e7d9c78b-b5f5-45d5-bf9b-919dcf31ffa1/0efe05a8-7280-4581-953a-43171f1f1cfb/message%3Aprovider%3AclaudeAgent%3Anative-item%3A6b49cc22-a24f-47b6-84cd-d49db1986469?text=The+forecast+of+seconds+of+focus+remaining+is+the+third+use%2C+and+it%27s+a+different+kind+of+call%3A+an+estimate+over+rhythm+data+rather+than+a+reading+of+text.&start=2097&end=2252&prefix=.+Focus+remaining%2C+from+earlier+&suffix=+Order+I%27d+build+in+Twyne%27s+serv&comment=I+would+like+to+think+of+other+things+we+could+use+for+this.) [Assistant quote](t3-citation://v1/e7d9c78b-b5f5-45d5-bf9b-919dcf31ffa1/0efe05a8-7280-4581-953a-43171f1f1cfb/message%3Aprovider%3AclaudeAgent%3Anative-item%3A6b49cc22-a24f-47b6-84cd-d49db1986469?text=Quotations%3A+Clairic+fills+gaps+the+current+matcher+leaves+open%0A%0A%0Aquote-grounding.ts+already+does+what+Astra+recommends+first.+It+folds+away+typography%2C+finds+literal+and+elided+quotations%2C+and+uses+the+surrounding+words+to+break+ties.+It+has+two+ways+to+give+up%3A%0A%0A%0A%0A%0Aunmatched%3A+the+editor+paraphrased+or+misquoted%2C+so+the+words+aren%27t+in+the+draft+as+written.%0A%0A%0Aambiguous%3A+the+phrase+appears+more+than+once+and+the+surrounding+words+don%27t+settle+which.%0A%0A%0A%0A&start=204&end=649&prefix=yne%27s+code+is+already+built.+1.+&suffix=Two+calls+cover+those+gaps%2C+with&comment=I+think+we+could+have+a+more+advance+set+because+of+what+clairic+can+do%2C+we+can+extract+information+as+a+persona%2C+we+can+use+jev+to+judge+and+we+can+have+the+model+propose+questions+and+use+extraction+and+judgements+as+tools%2C+getting+quotations+and+other+things+they+are+interested+in)
+
+---
+
+Yeah let's implement this stuff. Use sol 6.1 for most tasks and opus on medium fofr tasks that need more  UI and UX judgements

@@ -3,9 +3,12 @@
   "checkpoint_id": "e36b6d5eb763",
   "strategy": "manual-commit",
   "branch": "feat/clairic-extraction",
-  "checkpoints_count": 13,
+  "checkpoints_count": 17,
   "files_touched": [
-    "convex/lib/rateLimit.ts"
+    "convex/extraction.ts",
+    "convex/lib/rateLimit.ts",
+    "src/utils/extraction-client.ts",
+    "src/utils/extraction.ts"
   ],
   "sessions": [
     {
@@ -14,13 +17,20 @@
       "compact_transcript": "/e3/6b6d5eb763/0/transcript.jsonl",
       "content_hash": "/e3/6b6d5eb763/0/content_hash.txt",
       "prompt": "/e3/6b6d5eb763/0/prompt.txt"
+    },
+    {
+      "metadata": "/e3/6b6d5eb763/1/metadata.json",
+      "transcript": "/e3/6b6d5eb763/1/full.jsonl",
+      "compact_transcript": "/e3/6b6d5eb763/1/transcript.jsonl",
+      "content_hash": "/e3/6b6d5eb763/1/content_hash.txt",
+      "prompt": "/e3/6b6d5eb763/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1449493,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 55922304,
-    "output_tokens": 195479,
-    "api_call_count": 289
+    "input_tokens": 1449615,
+    "cache_creation_tokens": 559240,
+    "cache_read_tokens": 65732083,
+    "output_tokens": 252167,
+    "api_call_count": 345
   }
 }
