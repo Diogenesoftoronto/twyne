@@ -163,3 +163,6 @@ for (const [id, chapter] of due) {
   writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`);
   console.log(`${id}: ${manifest[id].duration}s`);
 }
+
+// The repository checks formatting; keep the manifest in Prettier's shape.
+execFileSync("bunx", ["prettier", "--write", MANIFEST], { stdio: "ignore" });

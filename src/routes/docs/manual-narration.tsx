@@ -39,7 +39,23 @@ export function formatTime(seconds: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
+/**
+ * Whether the host is listening, and a press held until it is. One object,
+ * because Qwik splits the button and the host into separate chunks, and only
+ * an object's fields can be written from both.
+ */
+const host: { ready: boolean; held: NarrationCommand | null } = {
+  ready: false,
+  held: null,
+};
+
 function command(detail: NarrationCommand): void {
+  // A Listen press can arrive before the host's task has loaded. Keep the
+  // latest one and let the host play it, rather than losing the press.
+  if (!host.ready) {
+    if (detail.action !== "pause") host.held = detail;
+    return;
+  }
   window.dispatchEvent(new CustomEvent(COMMAND, { detail }));
 }
 
@@ -172,6 +188,12 @@ export const ManualNarrationHost = component$<{
       }
 
       window.addEventListener(COMMAND, onCommand);
+      host.ready = true;
+      if (host.held) {
+        const pending = host.held;
+        host.held = null;
+        onCommand(new CustomEvent(COMMAND, { detail: pending }));
+      }
       audio.addEventListener("ended", onEnded);
       audio.addEventListener("timeupdate", onUpdate);
       audio.addEventListener("play", onUpdate);
@@ -179,6 +201,7 @@ export const ManualNarrationHost = component$<{
       audio.addEventListener("playing", onUpdate);
       audio.addEventListener("error", onError);
       cleanup(() => {
+        host.ready = false;
         audio.pause();
         window.removeEventListener(COMMAND, onCommand);
         audio.removeEventListener("ended", onEnded);
