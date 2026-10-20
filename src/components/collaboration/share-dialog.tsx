@@ -367,7 +367,7 @@ export const ShareDialog = component$(
               }}
             />
             <div
-              class="absolute right-0 top-full mt-2 w-80 folio p-4 space-y-3"
+              class="absolute right-0 top-full mt-2 w-80 max-w-[92vw] folio p-4 space-y-3 whitespace-normal [overflow-wrap:anywhere]"
               style="z-index: var(--z-dropdown);"
             >
               <div class="flex items-center justify-between">

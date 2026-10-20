@@ -24,7 +24,13 @@ import { RecentWork } from "../../components/desk/recent-work";
 import { UsageCost } from "../../components/desk/usage-cost";
 import { WriterPatterns } from "../../components/desk/writer-patterns";
 import { WritingActivity } from "../../components/desk/writing-activity";
-import { useAuth } from "../../utils/auth-context";
+import {
+  hasAuthenticatedConvexIdentity,
+  useAuth,
+} from "../../utils/auth-context";
+import { getNotOrganicHostedUsage } from "../../utils/notorganic-provider";
+import type { HostedUsageSummary } from "../../utils/hosted-usage";
+import type { HostedCostState } from "../../components/desk/hosted-cost";
 import { accountDisplayName } from "../../utils/account-display";
 import { useConvexClient } from "../../utils/convex-context";
 import { loadFolioContentFromIdb, loadFoliosFromIdb } from "../../utils/idb";
@@ -133,6 +139,9 @@ export default component$(() => {
   const clientSignal = useConvexClient();
   const preset = useSignal<UsageRangePreset>("30d");
   const revision = useSignal(0);
+  const hostedRevision = useSignal(0);
+  const hostedSummary = useSignal<HostedUsageSummary>();
+  const hostedState = useSignal<HostedCostState>("loading");
   const deskViewCaptured = useSignal(false);
   const initialRange = createUsageRange("30d", now);
   const store = useStore<DeskStore>({
@@ -150,6 +159,38 @@ export default component$(() => {
     detailsTruncated: false,
     combinedPartial: false,
     remoteState: "idle",
+  });
+
+  // Billing evidence is independent of browser-ledger synchronization.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async ({ track, cleanup }) => {
+    const client = track(() => clientSignal.value);
+    const authState = track(() => auth.value);
+    const selectedPreset = track(() => preset.value);
+    track(() => hostedRevision.value);
+    let cancelled = false;
+    cleanup(() => {
+      cancelled = true;
+    });
+    hostedSummary.value = undefined;
+    if (!authState.user && !authState.loading) {
+      hostedState.value = "signed-out";
+      return;
+    }
+    hostedState.value = "loading";
+    if (!client || !hasAuthenticatedConvexIdentity(authState)) return;
+    try {
+      const summary = await getNotOrganicHostedUsage(
+        client,
+        createUsageRange(selectedPreset, Date.now()),
+      );
+      if (!cancelled) {
+        hostedSummary.value = summary;
+        hostedState.value = "ready";
+      }
+    } catch {
+      if (!cancelled) hostedState.value = "error";
+    }
   });
 
   // Validate the URL before the ledger tasks react to a non-default range.
@@ -417,6 +458,8 @@ export default component$(() => {
           writingDays={store.writingDays}
           folioCount={store.folioCount}
           metrics={store.summary.overall}
+          hostedState={hostedState.value}
+          hostedSummary={hostedSummary.value}
           sourceState={sourceState}
           combined={store.remoteState === "ready"}
           writingDaysLabel={
@@ -468,6 +511,11 @@ export default component$(() => {
             <UsageCost
               summary={store.summary}
               totalsOnly={preset.value === "all"}
+              hostedState={hostedState.value}
+              hostedSummary={hostedSummary.value}
+              onRefreshHosted$={$(() => {
+                hostedRevision.value += 1;
+              })}
             />
             <WriterPatterns
               patterns={store.summary.patterns}

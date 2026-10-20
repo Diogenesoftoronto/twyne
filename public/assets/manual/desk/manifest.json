@@ -63,16 +63,19 @@
         "width": 1440,
         "height": 960
       },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/desk-drawer.png",
+      "format": "webp",
+      "bytes": 75424,
+      "sha256": "aebd6fafa062cae3b9662d043f201e0e99a919dfc62354a870e1f5f077e49217",
+      "sourceSha256": "aa1692661a7f38f584310cad7829e48545b9e6a9a164eaf7b8cbd534a513ae96",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.328Z",
       "crop": {
         "x": 0,
         "y": 0,
         "width": 1340,
         "height": 800
-      },
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/desk-drawer.png",
-      "format": "webp",
-      "bytes": 71076,
-      "sha256": "ed64733876a4f74d356a34bbf63d76a297c21ea6c301e4cfe7039808d44c6676"
+      }
     },
     {
       "chapter": "getting-started",
@@ -87,16 +90,19 @@
         "width": 1440,
         "height": 960
       },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/desk-note.png",
+      "format": "webp",
+      "bytes": 51582,
+      "sha256": "dbf22dfd3eb76041ea21f9ebf15da0d2fd32ac9d3f7f5395066d58f557c4373c",
+      "sourceSha256": "1b5c2dcf16035f77559ed9d017b52679b48125adee9bd6b876b513883114d097",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.330Z",
       "crop": {
         "x": 0,
         "y": 230,
         "width": 1100,
         "height": 650
-      },
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/desk-note.png",
-      "format": "webp",
-      "bytes": 55714,
-      "sha256": "9f54ba6d88d23b93014c8304ed0f8cda17ee02e1a45eabb7a84e3f871796bc72"
+      }
     },
     {
       "chapter": "getting-started",
@@ -111,16 +117,19 @@
         "width": 1440,
         "height": 960
       },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/desk-suggestion.png",
+      "format": "webp",
+      "bytes": 50184,
+      "sha256": "464a2493064b955460825e588a0335b0cd8509a689e3ba92c3305110a9756fd6",
+      "sourceSha256": "b7da602a4ece6465d3324f0d2bff5f0ea0c5d35f95ca6ccc2dff169f1f154f4a",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.332Z",
       "crop": {
         "x": 0,
         "y": 230,
         "width": 1100,
         "height": 650
-      },
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/desk-suggestion.png",
-      "format": "webp",
-      "bytes": 54082,
-      "sha256": "86c046070d1c03fb01d287c62ed7bafc62c8718bcbfb58731e51aabd24757d84"
+      }
     },
     {
       "chapter": "dossier",
@@ -135,13 +144,19 @@
         "width": 1100,
         "height": 780
       },
-      "crop": {
-        "locator": "undefined"
-      },
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/dossier-create.png",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/dossier-create.png",
       "format": "webp",
-      "bytes": 40386,
-      "sha256": "79a33739e0f8ce388c81c9151589895aec91184a87697620b5a0bdc20bc8e494"
+      "bytes": 49842,
+      "sha256": "7b783a248a24d0661f72d6cbc3adeddbd5726b61df36d9eb6d9aa28ea4a6ebdb",
+      "sourceSha256": "c16fd62d6747e98d4f592141f9aa953c5458589f5348e98c7423509f0e509a0a",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.334Z",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 780
+      }
     },
     {
       "chapter": "dossier",
@@ -156,13 +171,19 @@
         "width": 1100,
         "height": 780
       },
-      "crop": {
-        "locator": "undefined"
-      },
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/dossier-intent.png",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/dossier-intent.png",
       "format": "webp",
-      "bytes": 43778,
-      "sha256": "6716db011b30b65168c79280f74213a05585f81ad31408570a8f209f1246458b"
+      "bytes": 49416,
+      "sha256": "e58e5f1981cdc974cc2d8d73059f64e18198eb0fff288830855ca6c8d6d3339a",
+      "sourceSha256": "739768ebfd31e31764a17fb18033a21fe6d82bc56a69e828bcdf2aa020025dd2",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.335Z",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 780
+      }
     },
     {
       "chapter": "dossier",
@@ -177,13 +198,19 @@
         "width": 1100,
         "height": 780
       },
-      "crop": {
-        "locator": "undefined"
-      },
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/dossier-references.png",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/dossier-references.png",
       "format": "webp",
-      "bytes": 51710,
-      "sha256": "235a10e0ccadec04b98a1af8d89f7e3493ebb6ccc5bf1172d48eb9abab280242"
+      "bytes": 64456,
+      "sha256": "768cb16dd1044d3171861a1f2cbf0deceadafcc7412dac16c6b3366a1656ed38",
+      "sourceSha256": "2d38a7cc75f7999c375897ceef952cf0a3058901e6328c5a6dd3c0d688f042db",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.338Z",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 780
+      }
     },
     {
       "chapter": "dossier",
@@ -198,13 +225,19 @@
         "width": 1100,
         "height": 780
       },
-      "crop": {
-        "locator": "undefined"
-      },
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/dossier-refine.png",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/dossier-refine.png",
       "format": "webp",
-      "bytes": 50818,
-      "sha256": "dcecdf6f02fadbc0743a1b0c458d11ad6c010f8758d0d5b9161e4fb015d37fd6"
+      "bytes": 58524,
+      "sha256": "a32916fa608878c6b5686eac5646b4e78fb90a2a6ea46079cb9211af6dbedc37",
+      "sourceSha256": "898506e5da3fcfa4d8e6afe25c1354748b7bd9b4ac25b91aa2ad88298f1d3065",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.340Z",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 780
+      }
     },
     {
       "chapter": "house",
@@ -308,23 +341,26 @@
       "title": "Choose the automatic controls",
       "alt": "The Tools board shows Automatic review, Margin tools, and Automatic focus on, Cover lookups off, and a link to AI settings.",
       "image": "/assets/manual/desk/flow-review-controls.webp",
-      "width": 650,
-      "height": 410,
+      "width": 463,
+      "height": 650,
       "route": "/editor/",
       "viewport": {
         "width": 1440,
         "height": 960
       },
-      "crop": {
-        "x": 790,
-        "y": 110,
-        "width": 650,
-        "height": 410
-      },
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/flow-review-controls.png",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/flow-review-controls.png",
       "format": "webp",
-      "bytes": 11854,
-      "sha256": "047a01288099df0dba01588efdd63a2beae7d95e66852778a95ac2e550608a35"
+      "bytes": 22260,
+      "sha256": "688e2274dcc98ace0833ca0c8584d7c0928ce9a4d7d44f4fa3a0421fa4251246",
+      "sourceSha256": "5a6ade5e8d63b5437e07fe7bc1acb0bfe42904f9f49f55fc546b9e4b390376e3",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.345Z",
+      "crop": {
+        "x": 977,
+        "y": 47,
+        "width": 463,
+        "height": 650
+      }
     },
     {
       "chapter": "flow",
@@ -339,16 +375,19 @@
         "width": 1440,
         "height": 960
       },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/flow-margin.png",
+      "format": "webp",
+      "bytes": 50902,
+      "sha256": "f2505d45289a4639c7312c8121125c84991f77eeaded202fc78c9b011de3e1cc",
+      "sourceSha256": "c5da9f14f505a40609bfdff781d116e6fd8f9f3910ba8f615f8aba64099d9d91",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.346Z",
       "crop": {
         "x": 300,
         "y": 250,
         "width": 1140,
         "height": 710
-      },
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/flow-margin.png",
-      "format": "webp",
-      "bytes": 55236,
-      "sha256": "a068a6e06978c80c462322539013e36cfeb71739703e9f30a308dc547302f578"
+      }
     },
     {
       "chapter": "flow",
@@ -356,23 +395,26 @@
       "title": "Enter focus yourself",
       "alt": "The compositor's View tab with its Focus button above the annotated manuscript.",
       "image": "/assets/manual/desk/flow-manual-focus.webp",
-      "width": 1140,
-      "height": 710,
+      "width": 1440,
+      "height": 850,
       "route": "/editor/",
       "viewport": {
         "width": 1440,
         "height": 960
       },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/flow-manual-focus.png",
+      "format": "webp",
+      "bytes": 57862,
+      "sha256": "53124b332e96fae011567a67bbf659330251ef9b1cff405cdefb5f5b64692fdb",
+      "sourceSha256": "b885663dae805355439ab798a7ee1dbc7e36aac3d009d8b0e8377aa8cfe2d284",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.349Z",
       "crop": {
         "x": 0,
-        "y": 145,
-        "width": 1140,
-        "height": 710
-      },
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/flow-manual-focus.png",
-      "format": "webp",
-      "bytes": 47054,
-      "sha256": "142e86bb6e0851d2f79ecf15c848e437bd8113a735f6f628e074aa9cf8852d34"
+        "y": 110,
+        "width": 1440,
+        "height": 850
+      }
     },
     {
       "chapter": "flow",
@@ -380,30 +422,33 @@
       "title": "Return to the room when you're ready",
       "alt": "Salt Roads in focus mode, with editor notes and writer-comment marks hidden and the proposed edit still visible in the manuscript.",
       "image": "/assets/manual/desk/flow-focus-page.webp",
-      "width": 840,
-      "height": 520,
+      "width": 1440,
+      "height": 680,
       "route": "/editor/",
       "viewport": {
         "width": 1440,
         "height": 960
       },
-      "crop": {
-        "x": 300,
-        "y": 220,
-        "width": 840,
-        "height": 520
-      },
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/flow-focus-page.png",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/flow-focus-page.png",
       "format": "webp",
-      "bytes": 40418,
-      "sha256": "b9e08a0d15968e1538a722a985e7be09eb850f70bdc2fa7e3a81d502fb44885a"
+      "bytes": 40290,
+      "sha256": "5b1f8b0acc27c864edfd7bcf7b657274183a1edb3d99e5a340219c16b0f9cb5a",
+      "sourceSha256": "226e657ae41dcd9505e26283dae926a0d32717d4c431955b690a684fa9138417",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.351Z",
+      "crop": {
+        "x": 0,
+        "y": 36,
+        "width": 1440,
+        "height": 680
+      }
     }
   ],
   "optimization": {
     "format": "WebP",
     "quality": 86,
     "maximumWidth": 1440,
-    "totalImageBytes": 775602,
+    "totalImageBytes": 824218,
     "sameAspectRatioWithinChapter": "Dossier and House are identical; desk and flow crops are closely matched."
   },
   "replay": {
@@ -433,7 +478,7 @@
     "captureCompleted": true,
     "pageErrors": 0,
     "inspectedImages": 15,
-    "dimensionsMatchGuide": true,
+    "dimensionsMatchGuide": false,
     "focusedTypecheck": "passed",
     "formatting": "passed",
     "broadBuild": "not run; integration belongs to the parent"
@@ -442,5 +487,245 @@
     "Editorial feedback and proposed wording are staged, not generated model results.",
     "No funded model request, production authentication, or cloud sync was verified.",
     "Automatic focus is documented from its actual controls and source; the quiet manuscript capture uses manual Focus."
-  ]
+  ],
+  "manualRefresh": {
+    "reviewedOn": "2026-10-19",
+    "report": "artifacts/qa-recordings/2026-10-19/manual-refresh/report.json",
+    "captures": [
+      {
+        "image": "/assets/manual/desk/desk-drawer.webp",
+        "file": "desk-drawer.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.328Z",
+        "width": 1340,
+        "height": 800,
+        "format": "webp",
+        "bytes": 75424,
+        "sha256": "aebd6fafa062cae3b9662d043f201e0e99a919dfc62354a870e1f5f077e49217",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/desk-drawer.png",
+        "sourceSha256": "aa1692661a7f38f584310cad7829e48545b9e6a9a164eaf7b8cbd534a513ae96",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/replay.mjs",
+        "staging": "Fictional Salt Roads / The Coast in Winter, Éditions du Passage and Journeys & Returns. Notes and proposed edits are seeded sample feedback.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1340,
+          "height": 800
+        }
+      },
+      {
+        "image": "/assets/manual/desk/desk-note.webp",
+        "file": "desk-note.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.330Z",
+        "width": 1100,
+        "height": 650,
+        "format": "webp",
+        "bytes": 51582,
+        "sha256": "dbf22dfd3eb76041ea21f9ebf15da0d2fd32ac9d3f7f5395066d58f557c4373c",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/desk-note.png",
+        "sourceSha256": "1b5c2dcf16035f77559ed9d017b52679b48125adee9bd6b876b513883114d097",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/replay.mjs",
+        "staging": "Fictional Salt Roads / The Coast in Winter, Éditions du Passage and Journeys & Returns. Notes and proposed edits are seeded sample feedback.",
+        "crop": {
+          "x": 0,
+          "y": 230,
+          "width": 1100,
+          "height": 650
+        }
+      },
+      {
+        "image": "/assets/manual/desk/desk-suggestion.webp",
+        "file": "desk-suggestion.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.332Z",
+        "width": 1100,
+        "height": 650,
+        "format": "webp",
+        "bytes": 50184,
+        "sha256": "464a2493064b955460825e588a0335b0cd8509a689e3ba92c3305110a9756fd6",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/desk-suggestion.png",
+        "sourceSha256": "b7da602a4ece6465d3324f0d2bff5f0ea0c5d35f95ca6ccc2dff169f1f154f4a",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/replay.mjs",
+        "staging": "Fictional Salt Roads / The Coast in Winter, Éditions du Passage and Journeys & Returns. Notes and proposed edits are seeded sample feedback.",
+        "crop": {
+          "x": 0,
+          "y": 230,
+          "width": 1100,
+          "height": 650
+        }
+      },
+      {
+        "image": "/assets/manual/desk/dossier-create.webp",
+        "file": "dossier-create.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.334Z",
+        "width": 1100,
+        "height": 780,
+        "format": "webp",
+        "bytes": 49842,
+        "sha256": "7b783a248a24d0661f72d6cbc3adeddbd5726b61df36d9eb6d9aa28ea4a6ebdb",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/dossier-create.png",
+        "sourceSha256": "c16fd62d6747e98d4f592141f9aa953c5458589f5348e98c7423509f0e509a0a",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/replay.mjs",
+        "staging": "Fictional Salt Roads / The Coast in Winter, Éditions du Passage and Journeys & Returns. Notes and proposed edits are seeded sample feedback. Answer-strength evidence is from an offline capture; upstream Jev calls were blocked and any pending Jev indicator is not completed model proof.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 780
+        }
+      },
+      {
+        "image": "/assets/manual/desk/dossier-intent.webp",
+        "file": "dossier-intent.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.335Z",
+        "width": 1100,
+        "height": 780,
+        "format": "webp",
+        "bytes": 49416,
+        "sha256": "e58e5f1981cdc974cc2d8d73059f64e18198eb0fff288830855ca6c8d6d3339a",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/dossier-intent.png",
+        "sourceSha256": "739768ebfd31e31764a17fb18033a21fe6d82bc56a69e828bcdf2aa020025dd2",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/replay.mjs",
+        "staging": "Fictional Salt Roads / The Coast in Winter, Éditions du Passage and Journeys & Returns. Notes and proposed edits are seeded sample feedback. Answer-strength evidence is from an offline capture; upstream Jev calls were blocked and any pending Jev indicator is not completed model proof.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 780
+        }
+      },
+      {
+        "image": "/assets/manual/desk/dossier-references.webp",
+        "file": "dossier-references.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.338Z",
+        "width": 1100,
+        "height": 780,
+        "format": "webp",
+        "bytes": 64456,
+        "sha256": "768cb16dd1044d3171861a1f2cbf0deceadafcc7412dac16c6b3366a1656ed38",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/dossier-references.png",
+        "sourceSha256": "2d38a7cc75f7999c375897ceef952cf0a3058901e6328c5a6dd3c0d688f042db",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/replay.mjs",
+        "staging": "Fictional Salt Roads / The Coast in Winter, Éditions du Passage and Journeys & Returns. Notes and proposed edits are seeded sample feedback. Answer-strength evidence is from an offline capture; upstream Jev calls were blocked and any pending Jev indicator is not completed model proof.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 780
+        }
+      },
+      {
+        "image": "/assets/manual/desk/dossier-refine.webp",
+        "file": "dossier-refine.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.340Z",
+        "width": 1100,
+        "height": 780,
+        "format": "webp",
+        "bytes": 58524,
+        "sha256": "a32916fa608878c6b5686eac5646b4e78fb90a2a6ea46079cb9211af6dbedc37",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/dossier-refine.png",
+        "sourceSha256": "898506e5da3fcfa4d8e6afe25c1354748b7bd9b4ac25b91aa2ad88298f1d3065",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/replay.mjs",
+        "staging": "Fictional Salt Roads / The Coast in Winter, Éditions du Passage and Journeys & Returns. Notes and proposed edits are seeded sample feedback. Answer-strength evidence is from an offline capture; upstream Jev calls were blocked and any pending Jev indicator is not completed model proof.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 780
+        }
+      },
+      {
+        "image": "/assets/manual/desk/flow-review-controls.webp",
+        "file": "flow-review-controls.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.345Z",
+        "width": 463,
+        "height": 650,
+        "format": "webp",
+        "bytes": 22260,
+        "sha256": "688e2274dcc98ace0833ca0c8584d7c0928ce9a4d7d44f4fa3a0421fa4251246",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/flow-review-controls.png",
+        "sourceSha256": "5a6ade5e8d63b5437e07fe7bc1acb0bfe42904f9f49f55fc546b9e4b390376e3",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/replay.mjs",
+        "staging": "Fictional Salt Roads / The Coast in Winter, Éditions du Passage and Journeys & Returns. Notes and proposed edits are seeded sample feedback.",
+        "crop": {
+          "x": 977,
+          "y": 47,
+          "width": 463,
+          "height": 650
+        }
+      },
+      {
+        "image": "/assets/manual/desk/flow-margin.webp",
+        "file": "flow-margin.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.346Z",
+        "width": 1140,
+        "height": 710,
+        "format": "webp",
+        "bytes": 50902,
+        "sha256": "f2505d45289a4639c7312c8121125c84991f77eeaded202fc78c9b011de3e1cc",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/flow-margin.png",
+        "sourceSha256": "c5da9f14f505a40609bfdff781d116e6fd8f9f3910ba8f615f8aba64099d9d91",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/replay.mjs",
+        "staging": "Fictional Salt Roads / The Coast in Winter, Éditions du Passage and Journeys & Returns. Notes and proposed edits are seeded sample feedback.",
+        "crop": {
+          "x": 300,
+          "y": 250,
+          "width": 1140,
+          "height": 710
+        }
+      },
+      {
+        "image": "/assets/manual/desk/flow-manual-focus.webp",
+        "file": "flow-manual-focus.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.349Z",
+        "width": 1440,
+        "height": 850,
+        "format": "webp",
+        "bytes": 57862,
+        "sha256": "53124b332e96fae011567a67bbf659330251ef9b1cff405cdefb5f5b64692fdb",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/flow-manual-focus.png",
+        "sourceSha256": "b885663dae805355439ab798a7ee1dbc7e36aac3d009d8b0e8377aa8cfe2d284",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/replay.mjs",
+        "staging": "Fictional Salt Roads / The Coast in Winter, Éditions du Passage and Journeys & Returns. Notes and proposed edits are seeded sample feedback.",
+        "crop": {
+          "x": 0,
+          "y": 110,
+          "width": 1440,
+          "height": 850
+        }
+      },
+      {
+        "image": "/assets/manual/desk/flow-focus-page.webp",
+        "file": "flow-focus-page.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.351Z",
+        "width": 1440,
+        "height": 680,
+        "format": "webp",
+        "bytes": 40290,
+        "sha256": "5b1f8b0acc27c864edfd7bcf7b657274183a1edb3d99e5a340219c16b0f9cb5a",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/stills/flow-focus-page.png",
+        "sourceSha256": "226e657ae41dcd9505e26283dae926a0d32717d4c431955b690a684fa9138417",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/desk/replay.mjs",
+        "staging": "Fictional Salt Roads / The Coast in Winter, Éditions du Passage and Journeys & Returns. Notes and proposed edits are seeded sample feedback.",
+        "crop": {
+          "x": 0,
+          "y": 36,
+          "width": 1440,
+          "height": 680
+        }
+      }
+    ],
+    "retainedCaptureDates": "Unchanged image records retain their original dates; historical video/test evidence is preserved separately.",
+    "verification": "Each replacement inspected against the running local app with fictional fixtures. No live sign-in, model, media generation, publish or restore proof.",
+    "guideDimensions": "Use report.json for final dimensions; guide source is concurrently owned by another agent."
+  }
 }

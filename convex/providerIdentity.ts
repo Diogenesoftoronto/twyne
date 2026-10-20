@@ -13,6 +13,7 @@ import {
 } from "./lib/notorganic";
 
 import { providerCheckoutSelection } from "./lib/providerCheckout";
+import { summarizeHostedUsage } from "../src/utils/hosted-usage";
 
 const didValidator = v.string();
 
@@ -127,6 +128,48 @@ export const getWalletState = action({
         feature: "wallet",
       },
     );
+  },
+});
+
+/** Read-only, account-bound billing evidence. Never accept a DID from the browser. */
+export const getHostedUsage = action({
+  args: { from: v.union(v.number(), v.null()), to: v.number() },
+  returns: v.object({
+    billedMicrousd: v.number(),
+    settledRequests: v.number(),
+    unresolvedRequests: v.number(),
+    unverifiedCostRequests: v.number(),
+    unverifiedCostMicrousd: v.number(),
+    truncated: v.boolean(),
+  }),
+  handler: async (ctx, range) => {
+    if (
+      !Number.isSafeInteger(range.to) ||
+      range.to < 0 ||
+      (range.from !== null &&
+        (!Number.isSafeInteger(range.from) ||
+          range.from < 0 ||
+          range.from >= range.to))
+    ) {
+      throw new Error("Invalid hosted usage range");
+    }
+    const link = await linkedDidForAction(ctx);
+    const token = await issueNotOrganicAccessToken({
+      did: link.did,
+      feature: "desk-usage",
+      capabilities: ["usage:read"],
+      sessionVersion: link.sessionVersion,
+    });
+    const payload = await providerJsonRequest<unknown>(
+      "/v1/usage?limit=100",
+      token,
+      {},
+      {
+        issuer: notOrganicIssuer(),
+        feature: "desk-usage",
+      },
+    );
+    return summarizeHostedUsage(payload, range);
   },
 });
 

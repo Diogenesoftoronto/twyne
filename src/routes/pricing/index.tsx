@@ -46,9 +46,9 @@ import {
 } from "../../utils/purchase-waitlist";
 
 const FREE_FEATURES = [
-  "The full editorial room — personas, rubric, citations",
-  "Anti-tabula-rasa project interview",
-  "Local-first drafts, BYOK AI and voice (your own keys)",
+  "The full editorial room: personas, rubric, citations",
+  "Project interview that shapes each dossier",
+  "Local-first drafts, with AI and voice on your own keys",
 ];
 
 const PRO_FEATURES = [
@@ -59,6 +59,8 @@ const PRO_FEATURES = [
   "Unused included credit rolls over for one billing cycle",
   "Optional wallet top-ups when you need more",
 ];
+
+const WALLET_URL = "https://id.notorganic.info/?product=twyne";
 
 export default component$(() => {
   const clientSig = useConvexClient();
@@ -203,31 +205,49 @@ export default component$(() => {
     }
   });
 
+  const creditNote =
+    creditAvailability.value === "loading"
+      ? "Checking your wallet before showing purchase options."
+      : creditAvailability.value === "unavailable"
+        ? "We couldn’t check your wallet. Open your wallet or reload to try again."
+        : availablePacks.value.length > 0
+          ? "Requires a linked Not Organic account. Credit appears after payment is confirmed."
+          : "Credit purchases aren’t open yet. Choosing a pack opens the Not Organic waitlist; no payment is taken.";
+  const creditsBlocked =
+    creditAvailability.value === "loading" ||
+    creditAvailability.value === "unavailable";
+  const packClass =
+    "btn-paper flex min-h-12 w-full items-center justify-center px-4 py-3 text-center text-sm disabled:cursor-not-allowed disabled:opacity-60";
+
   return (
-    <main class="mx-auto max-w-4xl px-6 py-16">
-      <header class="mb-12 text-center">
-        <p
-          class="text-[0.75rem] uppercase tracking-[0.2em] text-[var(--color-ink-light)]"
-          style="font-family: var(--font-serif);"
+    <main class="mx-auto max-w-5xl px-5 pb-16 pt-8 sm:px-8 sm:pt-12">
+      <nav class="mb-10" aria-label="Return to writing">
+        <Link
+          href="/editor/"
+          class="btn-paper inline-flex min-h-11 items-center gap-2"
         >
-          Plans and credits
-        </p>
+          <span aria-hidden="true">←</span>
+          Back to writing
+        </Link>
+      </nav>
+
+      <header class="mb-10 max-w-2xl">
         <h1
-          class="mt-2 text-4xl font-bold text-[var(--color-ink)]"
+          class="text-3xl font-bold leading-tight text-[var(--color-ink)] sm:text-4xl"
           style="font-family: var(--font-serif);"
         >
           Keep the room open
         </h1>
-        <p class="mt-3 text-[var(--color-ink-light)]">
-          Write for free with your own AI keys or supported local models. Pro
-          adds a monthly budget, or buy credits only when you need hosted
-          editorial AI.
+        <p class="mt-3 text-base leading-relaxed text-[var(--color-ink-light)] sm:text-lg">
+          Write free with your own AI keys or a supported local model. For
+          hosted editorial AI, subscribe to Pro for a monthly budget or add
+          credit only when you need it.
         </p>
       </header>
 
       {isCheckoutReturn(location.url.search) && (
         <section
-          class="mb-8 rounded border border-[var(--color-rule)] bg-[var(--color-paper)] p-5"
+          class="mb-10 rounded border border-[var(--color-rule)] bg-[var(--color-paper-soft)] p-5"
           aria-live="polite"
           aria-atomic="true"
         >
@@ -259,231 +279,286 @@ export default component$(() => {
             Payment receipts and credit pack status are available in your Not
             Organic wallet.
           </p>
-          <a
-            href="https://id.notorganic.info/?product=twyne"
-            class="mt-3 inline-block underline text-sm"
-          >
-            View wallet and payment status
-          </a>
-          {!auth.value.user && (
-            <Link href="/signin/" class="ml-4 inline-block underline text-sm">
-              Sign in
-            </Link>
-          )}
+          <div class="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+            <a href={WALLET_URL} class="underline">
+              View wallet and payment status
+            </a>
+            {!auth.value.user && (
+              <Link href="/signin/" class="underline">
+                Sign in
+              </Link>
+            )}
+          </div>
         </section>
       )}
 
-      <section
-        aria-labelledby="credits-title"
-        class="mb-10 border-y border-[var(--color-rule)] py-8"
-      >
-        <h2
-          id="credits-title"
-          class="text-2xl font-bold text-[var(--color-ink)]"
-          style="font-family: var(--font-serif);"
-        >
-          Hosted AI without a subscription
+      <section aria-labelledby="plans-title">
+        <h2 id="plans-title" class="sr-only">
+          Plans
         </h2>
-        <p class="mt-3 max-w-2xl text-[var(--color-ink-light)]">
-          Buy a one-time Not Organic credit pack and use it for editorial AI on
-          your free account. No monthly charge or automatic refill. Credit is
-          spent at the selected model’s rate.
-        </p>
-        <div class="mt-5 flex flex-wrap gap-3">
-          {TWYNE_CREDIT_PACKS.map((pack) =>
-            creditAvailability.value === "loading" ||
-            creditAvailability.value === "unavailable" ? (
-              <button
-                key={pack.id}
-                disabled
-                class="btn-press min-h-11 rounded border border-[var(--color-rule)] bg-[var(--color-paper)] px-5 py-3 text-sm text-[var(--color-ink)] disabled:opacity-60"
+        <div class="grid overflow-hidden rounded-md border border-[var(--color-rule)] md:grid-cols-2">
+          {/* Free */}
+          <article
+            aria-labelledby="plan-free-title"
+            class="flex flex-col bg-[var(--color-paper)] p-6 sm:p-8"
+          >
+            <h3
+              id="plan-free-title"
+              class="text-xl font-bold text-[var(--color-ink)]"
+              style="font-family: var(--font-serif);"
+            >
+              Free
+            </h3>
+            <p class="mt-3 flex items-baseline gap-2 text-[var(--color-ink)]">
+              <span class="text-4xl font-bold tabular-nums">$0</span>
+            </p>
+            <p class="mt-2 text-sm text-[var(--color-ink-light)]">
+              Bring your own AI keys or a local model.
+            </p>
+            <ul class="mt-6 space-y-3 text-[0.95rem] leading-snug text-[var(--color-ink)]">
+              {FREE_FEATURES.map((f) => (
+                <li key={f} class="flex gap-3">
+                  <span
+                    aria-hidden="true"
+                    class="mt-[0.5em] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-ink-muted)]"
+                  />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+            <div class="mt-8 md:mt-auto md:pt-8">
+              <Link
+                href="/editor/"
+                class="btn-paper inline-flex min-h-11 w-full items-center justify-center px-5 text-sm sm:w-auto"
               >
-                {creditAvailability.value === "loading"
-                  ? "Checking credit availability…"
-                  : "Wallet unavailable"}
-              </button>
-            ) : availablePacks.value.includes(pack.id) ? (
-              <button
-                key={pack.id}
-                onClick$={() => buyCredits(pack.id)}
-                disabled={busy.value}
-                class="btn-press min-h-11 rounded border border-[var(--color-rule)] bg-[var(--color-paper)] px-5 py-3 text-sm text-[var(--color-ink)] disabled:opacity-60"
+                Start writing
+              </Link>
+              <p class="mt-3 text-sm text-[var(--color-ink-light)] md:min-h-10">
+                Write locally without an account.
+              </p>
+            </div>
+          </article>
+
+          {/* Pro */}
+          <article
+            aria-labelledby="plan-pro-title"
+            class="flex flex-col border-t border-[var(--color-rule)] bg-[var(--color-paper-soft)] p-6 sm:p-8 md:border-l md:border-t-0"
+          >
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3
+                id="plan-pro-title"
+                class="text-xl font-bold text-[var(--color-ink)]"
+                style="font-family: var(--font-serif);"
               >
-                Add ${pack.usd} credit
-              </button>
-            ) : (
-              <a
-                key={pack.id}
-                href={purchaseWaitlistUrl("credits", pack.id)}
-                class="btn-press min-h-11 rounded border border-[var(--color-rule)] bg-[var(--color-paper)] px-5 py-3 text-sm text-[var(--color-ink)]"
+                Pro
+              </h3>
+              {providerPlanActive.value && (
+                <span class="rounded-full border border-[var(--color-vermilion)] px-2.5 py-0.5 text-xs font-semibold text-[var(--color-vermilion-2)]">
+                  Current plan
+                </span>
+              )}
+            </div>
+            <p class="mt-3 flex flex-wrap items-baseline gap-x-2 text-[var(--color-ink)]">
+              <span class="text-4xl font-bold tabular-nums">
+                ${TWYNE_PRO_PLAN.monthlyUsd}
+              </span>
+              <span class="text-sm text-[var(--color-ink-light)]">
+                USD / month, before tax
+              </span>
+            </p>
+            <p class="mt-2 text-sm text-[var(--color-ink-light)]">
+              Hosted AI with a monthly credit budget.
+            </p>
+            <ul class="mt-6 space-y-3 text-[0.95rem] leading-snug text-[var(--color-ink)]">
+              {PRO_FEATURES.map((f) => (
+                <li key={f} class="flex gap-3">
+                  <span
+                    aria-hidden="true"
+                    class="mt-[0.5em] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-vermilion)]"
+                  />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+            <div class="mt-8 md:mt-auto md:pt-8">
+              {!CHECKOUT_ENABLED && !providerPlanActive.value ? (
+                <a
+                  href={purchaseWaitlistUrl("subscription", TWYNE_PRO_PLAN.id)}
+                  aria-describedby="pro-note"
+                  class="btn-press inline-flex min-h-11 w-full items-center justify-center px-5 sm:w-auto"
+                >
+                  Subscribe to Pro
+                </a>
+              ) : (
+                <button
+                  onClick$={subscribe}
+                  aria-describedby="pro-note"
+                  disabled={
+                    busy.value ||
+                    checkoutReturnStatus.value === "checking" ||
+                    providerPlanActive.value ||
+                    !CHECKOUT_ENABLED
+                  }
+                  class="btn-press inline-flex min-h-11 w-full items-center justify-center px-5 sm:w-auto"
+                >
+                  {providerPlanActive.value
+                    ? "Pro is active"
+                    : !CHECKOUT_ENABLED
+                      ? "New subscriptions available soon"
+                      : busy.value
+                        ? "Starting checkout…"
+                        : "Subscribe to Pro"}
+                </button>
+              )}
+              <p
+                id="pro-note"
+                class="mt-3 text-sm text-[var(--color-ink-light)] md:min-h-10"
               >
-                Join waitlist for ${pack.usd} credit
-              </a>
-            ),
-          )}
+                {providerPlanActive.value
+                  ? "Not Organic confirms your current Pro billing period."
+                  : CHECKOUT_ENABLED
+                    ? "Uses your Not Organic account. Your wallet confirms payment and credit availability."
+                    : "Subscriptions aren’t open yet. This opens the Not Organic waitlist; no payment is taken."}
+              </p>
+              {error.value && (
+                <div class="mt-3">
+                  <ApplicationNotice
+                    error={error.value}
+                    compact
+                    recoveryLabel={
+                      error.value.code === "AUTHENTICATION_REQUIRED"
+                        ? "Sign in"
+                        : undefined
+                    }
+                    recoveryHref={
+                      error.value.code === "AUTHENTICATION_REQUIRED"
+                        ? "/signin/"
+                        : undefined
+                    }
+                    onRetry$={
+                      error.value.recovery.canRetry ? subscribe : undefined
+                    }
+                    onDismiss$={() => {
+                      error.value = null;
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </article>
         </div>
-        <p class="mt-3 text-sm text-[var(--color-ink-light)]">
-          USD, before tax.{" "}
-          {creditAvailability.value === "loading"
-            ? "Checking your wallet before showing purchase options."
-            : creditAvailability.value === "unavailable"
-              ? "We couldn't check your wallet. Open your wallet or reload to try again."
-              : availablePacks.value.length > 0
-                ? "Requires a linked Not Organic account. Credit appears after payment is confirmed."
-                : "Join the Not Organic waitlist to buy credits when access opens. No payment is taken."}{" "}
-          Purchased credit does not grant separate subscription features.
-        </p>
-        {busy.value && (
-          <p class="mt-3 text-sm" role="status">
-            Opening checkout…
-          </p>
-        )}
-        {creditError.value && (
-          <p class="mt-3 text-sm" role="alert">
-            {creditError.value}{" "}
-            <Link href="/signin/" class="underline">
-              Sign in
-            </Link>
-          </p>
-        )}
-        <a
-          href="https://id.notorganic.info/?product=twyne"
-          class="mt-3 inline-block underline text-sm"
-        >
-          View wallet and payment status
-        </a>
-        {!auth.value.user && (
-          <Link href="/signin/" class="ml-4 inline-block underline text-sm">
-            Sign in to buy credits
-          </Link>
-        )}
       </section>
 
-      <div class="grid gap-6 md:grid-cols-2">
-        {/* Free */}
-        <section class="rounded-lg border border-[var(--color-rule)] bg-[var(--color-paper)] p-8">
+      <section
+        aria-labelledby="credits-title"
+        class="mt-12 grid gap-6 border-t border-[var(--color-rule)] pt-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] md:gap-10"
+      >
+        <div>
           <h2
-            class="text-2xl font-bold text-[var(--color-ink)]"
+            id="credits-title"
+            class="text-xl font-bold text-[var(--color-ink)]"
             style="font-family: var(--font-serif);"
           >
-            Free
+            Credit packs
           </h2>
-          <p class="mt-1 text-3xl font-bold text-[var(--color-ink)]">$0</p>
-          <ul class="mt-6 space-y-2 text-[0.95rem] text-[var(--color-ink-light)]">
-            {FREE_FEATURES.map((f) => (
-              <li key={f} class="flex gap-2">
-                <span class="text-[var(--color-vermilion)]">—</span>
-                <span>{f}</span>
-              </li>
-            ))}
-          </ul>
-          <Link
-            href="/editor"
-            class="btn-press mt-8 inline-block rounded border border-[var(--color-rule)] px-5 py-2 text-sm"
-          >
-            Start writing
-          </Link>
-        </section>
-
-        {/* Pro */}
-        <section class="rounded-lg border-2 border-[var(--color-vermilion)] bg-[var(--color-paper)] p-8">
-          <h2
-            class="text-2xl font-bold text-[var(--color-ink)]"
-            style="font-family: var(--font-serif);"
-          >
-            Pro
-          </h2>
-          <p class="mt-1 text-3xl font-bold text-[var(--color-ink)]">
-            ${TWYNE_PRO_PLAN.monthlyUsd}
-            <span class="text-base font-normal text-[var(--color-ink-light)]">
-              {" "}
-              USD / month, before tax
-            </span>
+          <p class="mt-2 max-w-prose text-[0.95rem] leading-relaxed text-[var(--color-ink-light)]">
+            Hosted editorial AI without a subscription. A one-time pack is spent
+            at the selected model’s rate, with no monthly charge or automatic
+            refill.
           </p>
-          <ul class="mt-6 space-y-2 text-[0.95rem] text-[var(--color-ink-light)]">
-            {PRO_FEATURES.map((f) => (
-              <li key={f} class="flex gap-2">
-                <span class="text-[var(--color-vermilion)]">—</span>
-                <span>{f}</span>
-              </li>
-            ))}
-          </ul>
-          {!CHECKOUT_ENABLED && !providerPlanActive.value ? (
-            <a
-              href={purchaseWaitlistUrl("subscription", TWYNE_PRO_PLAN.id)}
-              class="btn-press mt-8 inline-block rounded bg-[var(--color-vermilion)] px-5 py-2 text-sm text-[var(--color-paper)]"
-            >
-              Join the Pro waitlist
-            </a>
-          ) : (
-            <button
-              onClick$={subscribe}
-              disabled={
-                busy.value ||
-                checkoutReturnStatus.value === "checking" ||
-                providerPlanActive.value ||
-                !CHECKOUT_ENABLED
-              }
-              class="btn-press mt-8 inline-block rounded bg-[var(--color-vermilion)] px-5 py-2 text-sm text-[var(--color-paper)] disabled:opacity-60"
-            >
-              {providerPlanActive.value
-                ? "Pro is active"
-                : !CHECKOUT_ENABLED
-                  ? "New subscriptions available soon"
-                  : busy.value
-                    ? "Starting checkout…"
-                    : "Subscribe to Pro"}
-            </button>
-          )}
-          <p class="mt-3 text-sm text-[var(--color-ink-light)]">
-            {CHECKOUT_ENABLED
-              ? "Uses your Not Organic account. Your wallet confirms payment and credit availability."
-              : "Register your interest through Not Organic. You can keep writing for free; joining the waitlist does not start a subscription."}
+        </div>
+        <div>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {TWYNE_CREDIT_PACKS.map((pack) =>
+              creditsBlocked ? (
+                <button
+                  key={pack.id}
+                  disabled
+                  aria-describedby="credit-note"
+                  class={packClass}
+                >
+                  Add ${pack.usd} credit
+                </button>
+              ) : availablePacks.value.includes(pack.id) ? (
+                <button
+                  key={pack.id}
+                  onClick$={() => buyCredits(pack.id)}
+                  disabled={busy.value}
+                  aria-describedby="credit-note"
+                  class={packClass}
+                >
+                  Add ${pack.usd} credit
+                </button>
+              ) : (
+                <a
+                  key={pack.id}
+                  href={purchaseWaitlistUrl("credits", pack.id)}
+                  aria-describedby="credit-note"
+                  class={packClass}
+                >
+                  Add ${pack.usd} credit
+                </a>
+              ),
+            )}
+          </div>
+          <p
+            id="credit-note"
+            class="mt-3 text-sm text-[var(--color-ink-light)]"
+            role="status"
+          >
+            {creditNote}
           </p>
-          {providerPlanActive.value && (
-            <p class="mt-3 text-sm" role="status">
-              Not Organic confirms your current Pro billing period.
+          {busy.value && (
+            <p class="mt-2 text-sm text-[var(--color-ink)]" role="status">
+              Opening checkout…
             </p>
           )}
+          {creditError.value && (
+            <p class="mt-2 text-sm text-[var(--color-ink)]" role="alert">
+              {creditError.value}{" "}
+              <Link href="/signin/" class="underline">
+                Sign in
+              </Link>
+            </p>
+          )}
+        </div>
+      </section>
+
+      <footer class="mt-12 border-t border-[var(--color-rule)] pt-8 text-sm text-[var(--color-ink-light)]">
+        <div class="-my-3 flex flex-wrap gap-x-5">
           <a
-            href="https://id.notorganic.info/?product=twyne"
-            class="mt-3 inline-block underline text-sm"
+            href={WALLET_URL}
+            class="inline-flex min-h-11 items-center underline text-[var(--color-ink)]"
           >
             Open Not Organic wallet
           </a>
-          {error.value && (
-            <div class="mt-3">
-              <ApplicationNotice
-                error={error.value}
-                compact
-                recoveryLabel={
-                  error.value.code === "AUTHENTICATION_REQUIRED"
-                    ? "Sign in"
-                    : undefined
-                }
-                recoveryHref={
-                  error.value.code === "AUTHENTICATION_REQUIRED"
-                    ? "/signin/"
-                    : undefined
-                }
-                onRetry$={error.value.recovery.canRetry ? subscribe : undefined}
-                onDismiss$={() => {
-                  error.value = null;
-                }}
-              />
-            </div>
+          {!auth.value.user && (
+            <Link
+              href="/signin/"
+              class="inline-flex min-h-11 items-center underline text-[var(--color-ink)]"
+            >
+              Sign in to buy credits
+            </Link>
           )}
-        </section>
-      </div>
-
-      <p class="mt-10 text-center text-[0.8rem] text-[var(--color-ink-light)]">
-        Subscriptions use Not Organic checkout with Paddle payment processing.
-        Cancel future renewals anytime. Included credit is service credit, not
-        cash; model choice and manuscript length affect usage. Extra AI use
-        requires available wallet credit. Live voice uses that credit, including
-        eligible first-time members’ welcome credit. Custom model training is
-        not included in this plan.
-      </p>
+        </div>
+        <ul class="mt-5 max-w-3xl list-disc space-y-1.5 pl-5 leading-relaxed">
+          <li>
+            Prices are in USD, before tax. Cancel future renewals anytime.
+          </li>
+          <li>
+            Included and purchased credit is service credit, not cash. Model
+            choice and manuscript length affect usage.
+          </li>
+          <li>
+            Extra AI use and live voice draw on wallet credit, including
+            eligible first-time members’ welcome credit.
+          </li>
+          <li>
+            Credit packs do not add Pro features. Custom model training is not
+            included.
+          </li>
+        </ul>
+      </footer>
     </main>
   );
 });

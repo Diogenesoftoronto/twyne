@@ -2,135 +2,135 @@ import type { ManualGuides } from "./manual-guide-types";
 
 export const MANUSCRIPT_CRAFT_GUIDES = {
   "outline-and-find": {
-    title: "Shape the manuscript and find your place",
+    title: "Give Salt Roads a skeleton",
     summary:
-      "Insert headings, navigate the outline, move whole sections, and revise repeated words.",
+      "Four thousand words with no headings is a diary. Add sections, move one, and fix a word Morgan used eleven times.",
     steps: [
       {
-        title: "Insert a heading from the page",
+        title: "Insert a heading from the keyboard",
         instruction:
-          "Put the cursor in a new paragraph and type / to open Insert a block. Keep typing to filter the commands: /heading shows the three heading levels. Choose Heading 2 for a section within the manuscript, then write its title. The Home toolbar also offers H₁, H₂, and H₃. Use actual headings so the outline can follow the structure of your piece.",
+          "Put the cursor in an empty paragraph and type /. The insert menu opens; keep typing to filter it, so /heading shows the three levels. Choose Heading 2 for a section inside the piece and type its title. H₁, H₂ and H₃ on the Home toolbar do the same thing. Real headings matter: the outline, the proof and the exports all follow them.",
         image: "/assets/manual/craft/outline-slash.webp",
         alt: "Salt Roads manuscript with /heading typed and the real insert menu showing Heading 1, Heading 2, and Heading 3.",
-        width: 820,
-        height: 570,
+        width: 1000,
+        height: 650,
       },
       {
-        title: "Navigate and move whole sections",
+        title: "Move a whole section",
         instruction:
-          "Open View → Outline and choose a heading to jump to that section. To change the order, close the outline, then drag the six-dot handle beside a manuscript heading onto another heading. Drop above or below the target to choose the position. The section moves with its following content; reopen the outline to check the new order. Here, The ford has moved before The departure.",
+          "Open View, then Outline, and select a heading to jump there. To reorder, close the outline and drag the six-dot handle beside a heading onto another heading; drop above or below to choose where it lands. The section travels with everything under it, as one undoable move. Here The ford has moved ahead of The departure, which is where it always belonged.",
         image: "/assets/manual/craft/outline-navigate.webp",
         alt: "Actual document outline listing Loading the caravan, The ford, The departure, and The inland market after a section move.",
-        width: 820,
-        height: 570,
+        width: 1000,
+        height: 650,
       },
       {
-        title: "Find a word and choose the replacement",
+        title: "Find the tic and decide the replacement",
         instruction:
-          "Open Review → Find, enter the word to locate, and write the replacement below it. The counter shows your current match and the total; use the arrows, Enter, or Shift+Enter to inspect matches. Whole word avoids partial-word matches, while Match case and Regular expression refine the search. Replace changes the current match; Replace all changes every match. In this example, harbour has two matches and port is the proposed replacement.",
+          "Open Review, then Find. Enter the word and write a replacement beneath it. The counter shows which match you're on and how many there are; arrows, Enter and Shift+Enter walk through them. Whole word stops 'harbour' matching 'harbours'; Match case and Regular expression are there when you need them. Replace changes this match, Replace all changes every one. Morgan is swapping two 'harbour's for 'port' and leaving the rest.",
         image: "/assets/manual/craft/outline-find.webp",
         alt: "Real find and replace panel with harbour, port, a one-of-two match counter, Whole word checked, and a highlighted match in the manuscript.",
-        width: 820,
-        height: 570,
+        width: 840,
+        height: 650,
       },
     ],
   },
   "tables-and-images": {
-    title: "Give tables and images a place on the page",
+    title: "Put a table and a picture where they belong",
     summary:
-      "Build a table, adjust its structure and presentation, and describe a selected image.",
+      "A journey table for the stages of the route, and a frontispiece with alt text a screen reader can use.",
     steps: [
       {
-        title: "Choose the table size",
+        title: "Draw the table size",
         instruction:
-          "Place the cursor where the table belongs, then open Insert → Table. Move over the grid to preview the number of rows and columns; click the final square to insert that rectangle. You can also focus the grid, resize the selection with the arrow keys, and press Enter. The illustrated selection creates a 3 × 3 table with a header row. Click a cell to write; Tab advances through the cells.",
+          "Put the cursor where the table goes, then open Insert, then Table. Move across the grid to preview rows and columns and select the last square to insert that shape. With the keyboard, focus the grid, resize with the arrows and press Enter. The pick shown makes a 3 × 3 table with a header row. Select a cell to type; Tab moves to the next.",
         image: "/assets/manual/craft/table-insert.webp",
         alt: "Actual table insertion grid with a three-row, three-column rectangle highlighted above the Salt Roads manuscript.",
-        width: 820,
-        height: 570,
+        width: 1000,
+        height: 650,
       },
       {
-        title: "Edit the structure and presentation",
+        title: "Shape it after it exists",
         instruction:
-          "Click inside the table to reveal Table tools. The Rows and Columns groups add above/below or left/right, delete, and toggle headers; Cells offers merge and split when the selection allows them. Hover an icon to read its action. Set Width, alignment, and Style, then enter a Caption and leave the field to commit it. The lower cell controls set shading, alignment, and borders. Here, banded rows and a Journey stages caption organize the sample table.",
+          "Select inside the table and Table tools appears. Rows and Columns add above, below, left or right, delete, and toggle headers; Cells merges and splits when the selection allows. Hover any icon for its name. Set Width, alignment and Style, then type a Caption and leave the field to keep it. The lower controls handle shading, alignment and borders for the selected cells. Banded rows and a Journey stages caption are enough for this one.",
         image: "/assets/manual/craft/table-tools.webp",
         alt: "Completed journey table with the actual row, column, cell, width, alignment, banded rows style, caption, and cell formatting controls.",
-        width: 820,
-        height: 570,
+        width: 1000,
+        height: 650,
       },
       {
-        title: "Describe and size a selected image",
+        title: "Describe the picture, then size it",
         instruction:
-          "Use Insert → Image to choose a file or enter an image URL, then select the inserted image to open its inspector. Write Alt text that describes what a reader cannot see, and add a Caption for the visible explanation. Choose Left, Centre, or Right alignment, then a 25%, 50%, 75%, or 100% width preset; the slider allows a custom width. These controls update the selected image. The example uses a local botanical illustration and a separate caption.",
+          "Insert, then Image, takes a file or a URL. Select the inserted image and its inspector opens. Alt text is for the reader who can't see it: say what the picture shows, not that it's a picture. Caption is the visible line underneath. Choose Left, Centre or Right, then a width of 25, 50, 75 or 100 percent, or drag the slider for something in between. Everything applies to the selected image only.",
         image: "/assets/manual/craft/image-inspector.webp",
         alt: "Selected botanical frontispiece with its actual Image inspector showing alt text, caption, Centre alignment, width presets, and custom width slider.",
-        width: 820,
-        height: 570,
+        width: 840,
+        height: 650,
       },
     ],
   },
   "page-layout": {
-    title: "Set the shape of the page",
+    title: "Set the page before anyone prints it",
     summary:
-      "Choose paper and margins, edit the running heads, and finish the opening initial and border.",
+      "The magazine wants A4 and a running head. Morgan wants a drop cap. Both are in Layout.",
     note: "This walkthrough uses the Layout controls to set running heads. Editable header and footer bands are not shown in the current writing canvas.",
     steps: [
       {
         title: "Choose paper and a writing width",
         instruction:
-          "Open View → Layout. Choose Letter, A4, or Legal paper and Portrait or Landscape orientation. Match paper uses the paper setting; Custom column offers narrow, normal, and wide writing widths. Choose one, two, or three columns, then adjust the column gap when using several. The illustrated setup selects A4, Portrait, Match paper, and one column. Use the margin sliders further down the panel to set space around the text.",
+          "Open View, then Layout. Piece type comes first: Essay here, and the choice sets the styles the proof uses. Then pick Letter, A4 or Legal, and Portrait or Landscape. Match paper sizes the text block to the sheet; Custom column gives narrow, normal and wide measures instead. One, two or three columns, with a gap control once you have more than one. The example is A4, Portrait, Match paper, one column. The margin sliders lower down set the space around the text.",
         image: "/assets/manual/craft/layout-paper.webp",
-        alt: "Actual Page layout panel with A4, Portrait, Match paper, and one column selected, plus opening initial, border, and margin controls.",
-        width: 820,
-        height: 640,
+        alt: "The Page layout panel with the Essay piece type selected, then A4 paper, Portrait, Match paper and one column.",
+        width: 1000,
+        height: 700,
       },
       {
-        title: "Finish the opening and page border",
+        title: "Dress the opening",
         instruction:
-          "Under Opening initial, choose Off, Plain, or Illustrated. Illustrated reveals Original and Alternate botanical collections; either Plain or Illustrated lets you choose a small, medium, or large initial. Under Page border, choose None, Plain, Botanical, Engraved, or Illuminated. The example selects an Illustrated initial from the Original collection at Small size and a Botanical border. Choose these details to support the manuscript’s tone, then check the full page with the panel closed.",
+          "Under Opening initial, choose Off, Plain or Illustrated. Illustrated offers the Original and Alternate botanical collections; both Plain and Illustrated come in small, medium and large. Page border offers None, Plain, Botanical, Engraved or Illuminated. The example takes a small Illustrated initial from the Original collection and a Botanical border. Close the panel and look at the whole page before you decide; ornament is easy to overdo.",
         image: "/assets/manual/craft/layout-ornaments.webp",
         alt: "Real opening-initial controls with Illustrated, Original, and Small selected, and the Botanical page-border option selected.",
-        width: 820,
-        height: 640,
+        width: 1000,
+        height: 700,
       },
       {
         title: "Set margins and running heads",
         instruction:
-          "Scroll down within Layout to set Left, Right, Top, and Bottom margins. Margin guides marks the printable text boundary. Under Running heads, enable Show running header and Page numbers as needed, then write the Header line and Footer line. These fields update the folio’s running text; here they read Salt Roads · Field notes and Working manuscript. The controls are available even when editable page bands are not visible on the writing canvas.",
+          "Scroll down in Layout for Left, Right, Top and Bottom margins; Margin guides draws the text boundary on the page. Under Running heads, switch on Show running header and Page numbers as you need them, then type the Header line and Footer line. These become the folio's running text. Here they read Salt Roads · Field notes and Working manuscript. Save as PDF… at the foot of the panel is the quickest way to see them in place, since the writing canvas doesn't show editable header bands.",
         image: "/assets/manual/craft/layout-running-heads.webp",
         alt: "Actual Layout margin controls and Running heads section with header and page numbers enabled and custom header and footer text fields.",
-        width: 820,
-        height: 640,
+        width: 1000,
+        height: 700,
       },
     ],
   },
   "notes-and-equations": {
-    title: "Add notes, equations, and diagrams",
+    title: "Notes, equations and a diagram of the route",
     summary:
-      "Keep supporting detail in notes, render LaTeX equations, and draw a Mermaid diagram.",
+      "A footnote for the survey, a formula for pace, and a three-stop map. None of it leaves the page.",
     steps: [
       {
-        title: "Write and revisit a footnote or endnote",
+        title: "Add a footnote and come back to it",
         instruction:
-          "Place the cursor after the passage and choose Insert → Footnote or Endnote. Write the note in the insertion dialog and confirm it. Activate its reference on the page, or focus the reference and press Enter, to reopen the note editor. Changes to Note text update the note; Kind converts between Footnote and Endnote. Previous and Next visit adjacent notes, Reference returns to the passage, and Delete removes the note. Footnotes and endnotes have separate collections below the manuscript.",
+          "Put the cursor after the passage and choose Insert, then Footnote or Endnote. Write the note in the dialog and confirm. To revisit it, activate the reference on the page, or focus it and press Enter. Note text edits the note; Kind converts a footnote to an endnote or back. Previous and Next step through the notes, Reference jumps to the passage, Delete removes it. Footnotes and endnotes collect separately beneath the manuscript.",
         image: "/assets/manual/craft/notes-edit.webp",
         alt: "Actual Footnote 1 editor beside its manuscript reference, with editable note text, a Footnote kind selector, and Previous, Reference, Next, and Delete controls.",
-        width: 820,
-        height: 570,
+        width: 1000,
+        height: 650,
       },
       {
-        title: "Render an inline or display equation",
+        title: "Set an equation inline or on its own line",
         instruction:
-          "In a new paragraph, type /equation and choose Inline equation for a formula within a paragraph, or Equation block for a display formula. Select the inserted equation to open its LaTeX editor. Enter the expression and inspect the live preview, then choose Render equation to commit it or Cancel to discard the draft. Select a rendered equation again to edit it. Here, the inline formula is v = \\frac{d}{t}, while the display editor previews d = v t.",
+          "In a new paragraph, type /equation. Inline equation sits inside a sentence; Equation block gets a line to itself. Select the inserted equation to open its LaTeX editor, type the expression and watch the preview. Render equation keeps it; Cancel drops the draft. Select a rendered equation again to edit it. The inline one here is v = \\frac{d}{t}; the block editor is previewing d = v t.",
         image: "/assets/manual/craft/equation-editor.webp",
         alt: "Actual Block LaTeX source editor with d = v t, its rendered preview, Render equation and Cancel buttons, and a rendered inline fraction below.",
-        width: 820,
-        height: 570,
+        width: 1000,
+        height: 650,
       },
       {
-        title: "Draw a diagram from Mermaid source",
+        title: "Draw the route as a diagram",
         instruction:
-          "Open Insert → Diagram to enter Mermaid source. A short route can begin with graph LR, followed by A[Departure] --> B[Ford] and B --> C[Market] on separate lines. The dialog renders a live Diagram preview beside the source, so check the labels and connections before choosing Insert diagram. Cancel leaves the manuscript alone; Cmd/Ctrl+Enter also inserts. The example shows a left-to-right route through three places in the fictional manuscript.",
+          "Open Insert, then Diagram, and type Mermaid. A route can be as short as graph LR, then A[Departure] --> B[Ford] and B --> C[Market] on their own lines. The preview renders beside the source, so check the labels and arrows before Insert diagram. Cancel leaves the manuscript alone; Cmd/Ctrl+Enter inserts without reaching for the mouse.",
         image: "/assets/manual/craft/diagram-editor.webp",
         alt: "Actual Mermaid diagram dialog with editable graph source, a rendered Departure → Ford → Market preview, Cancel, and Insert diagram.",
         width: 920,

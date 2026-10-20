@@ -6,33 +6,33 @@ const stagedReading =
 
 export const EDITORIAL_GUIDES = {
   room: {
-    title: "Shape the room that reads your draft",
+    title: "Build the room that reads Salt Roads",
     summary:
-      "Give each editor a job, set how far they may edit, and choose the models behind the room's work.",
+      "Morgan wants hard questions about the argument and a light hand on the prose. Each editor gets a job and a limit on how much they may change.",
     note: "Sample editor and model configuration. No model connection is shown.",
     steps: [
       {
         title: "Set each editor's remit",
         instruction:
-          "Open Room of Editors from the drawer, or Edit cast in the board's Cast tab. Choose comments, sentence, or paragraph for each editor; click may propose to block their proposed edits. Use Edit to revise an editor and the arrows to change the order.",
+          "Open Room of Editors from the drawer, or Edit cast from the board's Cast tab. For each editor choose comments, sentence or paragraph: that is the largest unit they are allowed to rewrite. Morgan lets M. Le Stylo touch sentences and keeps Mlle. Sceptique to comments, because her job is the argument, not the wording. Select may propose to stop an editor offering edits at all. Edit revises an editor; the arrows change the order they read in.",
         image: `${assets}room-assistance.webp`,
         alt: "Room of Editors management page with per-editor comments, sentence and paragraph controls, may propose buttons, and an editor's Edit and Remove actions.",
         width: 872,
         height: 748,
       },
       {
-        title: "Create an editor with a specific perspective",
+        title: "Add the editor the piece is missing",
         instruction:
-          "Click New editor. Give them a name, role, voice description and focus; use backstory, editorial doctrine and voiceprint to make their approach concrete. Add sample lines and a colour, then click Create. Cancel leaves the cast as it was.",
+          "Salt Roads is full of routes and distances, and nobody in the room checks them. Select New editor and describe The Route Reader: a name, a role, how they talk and what they look for. Biography, editorial doctrine and voiceprint make the perspective concrete enough to hold. Upload portrait gives them a face, or leave No portrait and they sign with initials. Add sample notes so you can hear them, pick a colour for their marks, and Create. Cancel leaves the cast as it was.",
         image: `${assets}room-new-editor.webp`,
-        alt: "Actual New editor form filled with a sample research editor, The Route Reader, including focus, doctrine, voice, sample lines, colour swatches and Create and Cancel buttons.",
+        alt: "New editor form for the fictional Route Reader, including No portrait, Upload portrait, biography, doctrine, voiceprint, sample notes, colour swatches and Create and Cancel.",
         width: 848,
-        height: 840,
+        height: 917,
       },
       {
-        title: "Choose the model for the job",
+        title: "Choose the model behind each job",
         instruction:
-          "In Settings, enable advanced configuration and configure a provider to reveal Per-Feature Models. Expand Read My Draft (room notes), then choose a provider and model. Temperature and Max tokens tune that feature. Reply Thread, rewrites and full analysis have separate rows; Reset to defaults removes an override.",
+          "In Preferences, enable advanced configuration and configure a provider; Per-Feature Models appears. Expand Read My Draft, which is what the room uses for its notes, and choose a provider and model. Temperature and Max tokens tune that one feature. Reply Thread, rewrites and full analysis each have their own row, so a cheaper model can answer replies while a careful one reads the whole draft. Reset to defaults removes an override.",
         image: `${assets}room-model-routing.webp`,
         alt: "Per-Feature Models settings with Read My Draft expanded to show provider, model, temperature, max tokens and Reset to defaults, followed by separate Reply Thread, rewrite and analysis rows.",
         width: 872,
@@ -41,42 +41,42 @@ export const EDITORIAL_GUIDES = {
     ],
   },
   rubric: {
-    title: "Turn a grade into a revision",
+    title: "Turn a B into a revision plan",
     summary:
-      "Read the reason behind a mark, adjust your criteria, and compare editorial readings with local measurements.",
+      "The grade is the least useful thing on the galley proof. The reasons underneath it tell Morgan what to do next.",
     note: stagedReading,
     steps: [
       {
-        title: "Open the mark that needs work",
+        title: "Open the weakest criterion first",
         instruction:
-          "Open the editorial board and choose Rubric, then Criteria. The grade and weakest criterion sit above the marks. Click a criterion, such as Evidence, to reveal its explanation and Try this next move. Grade again requests a fresh reading of the saved draft.",
+          "Open the editorial board, choose Rubric, then Criteria. The grade and the weakest criterion sit above the marks. Select a criterion, here Evidence, and it unfolds into an explanation and a Try this next move. That sentence is the real product; the letter is just a summary of it. Grade again asks for a fresh reading of the saved draft.",
         image: `${assets}rubric-criteria.webp`,
         alt: "Rubric panel showing a staged B grade, 76 out of 100, Criteria, Editors and Passages tabs, and expanded Evidence feedback with a concrete next move and Grade again.",
         width: 464,
         height: 788,
       },
       {
-        title: "Change what counts",
+        title: "Grade what you actually care about",
         instruction:
-          "Below the criteria, open Change what's graded. Check the criteria you want and adjust how much each counts with the weight controls. Add your own name and description, then click Add. Suggest asks the editors for possible criteria. Weights change your weighted score; new criteria need a fresh reading.",
+          "Below the criteria, open Change what's graded. Untick anything that doesn't matter for this piece and use the weight controls to say what matters most. Morgan adds Sense of place, with a sentence describing it, and selects Add. Suggest asks the editors for criteria you might not have thought of. Changing weights re-scores immediately; a new criterion needs a fresh reading.",
         image: `${assets}rubric-configure.webp`,
         alt: "Rubric configuration with enabled criterion checkboxes, weight steppers, a sample Sense of place criterion, and Add and Suggest controls beneath the saved grade.",
         width: 464,
         height: 788,
       },
       {
-        title: "Compare the readings",
+        title: "Hear the editors disagree",
         instruction:
-          "Choose Editors for the individual rationales behind a room reading. Criteria returns to the marks; Passages opens the saved-draft review view. A quick check can have no editor opinions yet: use Ask the editors in that view to request a separate room reading.",
+          "Choose Editors for each editor's own rationale, with their portrait and role above it. When M. Le Stylo and Professeur Athenæum score the same passage differently, the gap between them is usually where the revision is. Criteria returns to the marks; Passages opens the saved-draft review. A quick check may show no editor opinions yet; use Ask the editors there to request a full room reading.",
         image: `${assets}rubric-readings.webp`,
-        alt: "The Editors tab of the rubric with two staged editor rationales, while Criteria, Passages, Grade again and Full report remain available.",
+        alt: "The rubric’s Editors tab with portraits, names and roles above two staged readings, with Criteria, Passages and Grade again still available.",
         width: 464,
-        height: 788,
+        height: 845,
       },
       {
-        title: "Read what was counted locally",
+        title: "Check the arithmetic",
         instruction:
-          "Choose Full report and find What the rubric counted. Inspect length, structure, pacing, evidence, vocabulary and paragraph shape alongside the word, paragraph, sentence and citation counts. These measurements help you interpret the reading; they cannot establish whether a claim is true.",
+          "Choose Full report and find What the rubric counted. Length, structure, pacing, evidence, vocabulary and paragraph shape are measured on this device, with word, paragraph, sentence and citation counts beside them. They cost nothing and they never lie, but they also cannot tell whether a claim is true. Use them to sanity-check a reading, not to replace one.",
         image: `${assets}rubric-static-features.webp`,
         alt: "Static Features section of the actual Galley Proof report, with six feature measurements, manuscript counts and local feedback on the sample draft.",
         width: 472,
@@ -85,77 +85,77 @@ export const EDITORIAL_GUIDES = {
     ],
   },
   marginalia: {
-    title: "Keep the conversation attached to the passage",
+    title: "Argue in the margin, not in a separate document",
     summary:
-      "Open a marked phrase, reply in its thread, invite an editor, and resolve the note when its work is done.",
+      "Morgan isn't sure 'the road forgot the sea entirely' is too much. The conversation about it stays pinned to those six words.",
     note: stagedReading,
     steps: [
       {
-        title: "Open the anchored thread",
+        title: "Open the note at its anchor",
         instruction:
-          "Click the coloured mark beside a passage to open its note. The quoted phrase identifies the anchor. To make a new note, select a passage and choose Comment, write the note, then Place note. In an existing writer note, type into Reply as the writer.",
+          "Select the coloured mark beside a passage to open its note. The quoted phrase at the top is the anchor; the thread belongs to it. To start a note of your own, select a passage, choose Comment, write it, then Place note. In a note you started, the reply field is already yours.",
         image: `${assets}marginalia-anchor.webp`,
         alt: "A coloured manuscript anchor for the road forgot the sea entirely beside its actual writer-note card, quoted anchor, reply draft, Resolve and Reply controls.",
-        width: 760,
-        height: 550,
+        width: 900,
+        height: 650,
       },
       {
-        title: "Keep the reply in the thread",
+        title: "Keep the thread in one place",
         instruction:
-          "Click Reply. The message appears beneath the original note and the reply field clears, ready for the next turn. Open Marginalia in the editorial board to browse the same pending notes and their replies.",
+          "Select Reply. The message lands beneath the original note and the field clears for the next turn. Everything about this passage stays here, with the passage. The board's Marginalia tab lists the same pending notes if you'd rather work through them as a queue.",
         image: `${assets}marginalia-reply.webp`,
         alt: "The same anchored note after the actual Reply action, showing the writer's saved response beneath the original note and an empty reply field.",
-        width: 760,
-        height: 550,
+        width: 900,
+        height: 650,
       },
       {
-        title: "Invite a particular editor",
+        title: "Bring in the right editor",
         instruction:
-          "In the board's Marginalia tab, find the note and choose Ask an editor. Pick the editor whose perspective fits, then Send to editor to request a response in the thread. Cancel closes the picker. The selected scholar here is an example; no request was sent for this illustration.",
+          "A question about whether an image is earned is a question for Professeur Athenæum. In the board's Marginalia tab, find the note and choose Ask an editor, pick the editor, then Send to editor. Their reply arrives in the same thread. Cancel closes the picker. The scholar shown here is an example; no request was sent for this illustration.",
         image: `${assets}marginalia-ask-editor.webp`,
         alt: "Actual Marginalia board thread with Ask an editor open, Professeur Athenæum selected, and Send to editor and Cancel visible.",
         width: 760,
-        height: 550,
+        height: 720,
       },
       {
-        title: "Resolve, then reopen if needed",
+        title: "Resolve it, and reopen it if you were wrong",
         instruction:
-          "Click Resolve in the anchored note when you have dealt with it. Its status changes to resolved and the thread remains available. Reopen returns it to the pending work without discarding the conversation. Erase removes the note instead.",
+          "Select Resolve when the question is settled. The status turns green and the thread stays readable. Reopen puts it back in the pending work with the whole conversation intact. Erase is the only control that actually throws the note away.",
         image: `${assets}marginalia-resolve.webp`,
         alt: "The actual writer thread after Resolve, with a green resolved status, its saved reply preserved, and Reopen, Erase and Reply controls.",
-        width: 760,
-        height: 550,
+        width: 900,
+        height: 650,
       },
     ],
   },
   apparatus: {
-    title: "Build a bibliography around the draft",
+    title: "Keep the sources that Salt Roads leans on",
     summary:
-      "Recognize references in the manuscript, keep useful sources, and switch their citation format.",
+      "The essay quotes a 1911 survey and links to a tide table. The Apparatus notices both and keeps them in whichever citation style the editor finally asks for.",
     note: "Illustrated with a sample draft and saved sample references. Detection and citation formatting run locally.",
     steps: [
       {
-        title: "Recognize references already in the text",
+        title: "Let it find what's already in the text",
         instruction:
-          "Open The Apparatus from the drawer. Detected in the manuscript lists references such as URLs and author-year citations. Use look up to inspect a reference and Add to bib to keep it. Detection identifies a reference pattern; check the source before relying on it.",
+          "Open The Apparatus from the drawer. Detected in the manuscript lists the URLs and author-year citations it has spotted in your draft. Use look up to see what a reference points at, and Add to bib to keep it. Detection recognises the shape of a citation, not its truth, so check the source before you depend on it.",
         image: `${assets}apparatus-manuscript.webp`,
         alt: "Actual Apparatus showing two saved sample references, MLA selected, and detected URL and author-year references with look up and Add to bib controls.",
         width: 576,
         height: 490,
       },
       {
-        title: "Keep the working bibliography beside the draft",
+        title: "Build the bibliography beside the draft",
         instruction:
-          "Your bibliography holds sources saved for the active folio. The cited in draft marker connects a saved URL to the manuscript. Choose APA to reformat the entries. Drop removes a source from the bibliography; it does not rewrite the manuscript.",
+          "Your bibliography holds the sources saved for this folio. A cited in draft marker shows which saved link the manuscript actually uses. Choose APA and every entry reformats. Drop removes a source from the list without touching the manuscript.",
         image: `${assets}apparatus-apa.webp`,
         alt: "The same actual bibliography reformatted by the APA button, including a cited in draft marker, Drop actions and the detected references below.",
         width: 576,
         height: 490,
       },
       {
-        title: "Choose a style and copy the list",
+        title: "Switch styles and copy the list",
         instruction:
-          "Switch between MLA, APA and Chicago above Your bibliography. The saved entries are formatted in the selected style; the detected reference list stays beside them. Click Copy all to copy the formatted bibliography, then check source details before using it in a finished piece.",
+          "The magazine wants Chicago. Select it above Your bibliography and the entries change in place while the detected list stays put. Copy all puts the formatted bibliography on the clipboard. Read the entries once before they go into a finished piece; a formatter can only format what it was given.",
         image: `${assets}apparatus-chicago.webp`,
         alt: "The same bibliography with Chicago selected, visibly changed citation text, Copy all, and the unchanged manuscript reference detection list.",
         width: 576,

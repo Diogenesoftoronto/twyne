@@ -36,7 +36,10 @@ import {
 import { resolveFeatureConfig, runClientVoiceSpeech } from "./ai-client";
 import { getCachedAiSettings } from "./ai-orchestrator";
 import { reportApplicationDiagnostic } from "./application-diagnostics";
-import { BROWSER_TTS_VOICES } from "./browser-inference";
+import {
+  BROWSER_TTS_PROVIDER_ID,
+  BROWSER_TTS_VOICES,
+} from "./browser-inference";
 import { segmentSpeechText } from "./speech-segments";
 import type {
   SpeechAlignmentRange,
@@ -296,17 +299,24 @@ export function pickVoiceForProvider(
   return fallback;
 }
 
+/** The injected browser voice is a fallback, not a saved provider choice. */
+function resolveNarrationConfig(settings: AiSettings, req: SpeakRequest) {
+  const resolved = resolveFeatureConfig(settings, "voice-narration");
+  const hostedAvailable =
+    req.client &&
+    req.signedIn &&
+    (typeof navigator === "undefined" || navigator.onLine !== false);
+  return hostedAvailable && resolved?.provider.id === BROWSER_TTS_PROVIDER_ID
+    ? null
+    : resolved;
+}
+
 function resolveVoice(
   req: SpeakRequest,
   settings: AiSettings,
 ): string | undefined {
-  const selected = pickVoiceForProvider(
-    req.voices,
-    req.voice,
-    resolveFeatureConfig(settings, "voice-narration")?.provider.type,
-  );
-  const provider = resolveFeatureConfig(settings, "voice-narration")?.provider
-    .type;
+  const provider = resolveNarrationConfig(settings, req)?.provider.type;
+  const selected = pickVoiceForProvider(req.voices, req.voice, provider);
   if (provider === "supertonic") {
     // OpenAI names are not Supertonic embedding ids. Keep the cast distinct.
     const mapped: Record<string, string> = {
@@ -348,7 +358,7 @@ export async function currentSpeechVoiceMenu(): Promise<SpeechVoiceMenu | null> 
 
   const spoken = await withPersonaVoice(req);
   const settings = await getCachedAiSettings();
-  const resolved = resolveFeatureConfig(settings, "voice-narration");
+  const resolved = resolveNarrationConfig(settings, spoken);
   const providerType = resolved?.provider.type;
   const selected = resolveVoice(spoken, settings) ?? spoken.voice ?? "alloy";
   let cast: Persona[] = PERSONAS;
@@ -361,6 +371,7 @@ export async function currentSpeechVoiceMenu(): Promise<SpeechVoiceMenu | null> 
   const castOptions = cast.flatMap((persona) => {
     const id = resolveVoice(
       {
+        ...spoken,
         id: persona.id,
         text: "",
         voice: persona.speechVoice,
@@ -631,8 +642,7 @@ export async function restartSpeechWithVoice(voice: string): Promise<void> {
   if (!req || !nextVoice) return;
 
   const settings = await getCachedAiSettings();
-  const providerType = resolveFeatureConfig(settings, "voice-narration")
-    ?.provider.type;
+  const providerType = resolveNarrationConfig(settings, req)?.provider.type;
   queue = queue.map((item, index) =>
     index >= queueIndex && item.id === req.id
       ? {
@@ -681,7 +691,7 @@ async function synthesize(
   // providers too (Google, say), and gating on it stranded any writer running
   // Anthropic for the room and Google for dictation: narration resolved to
   // nothing, this threw, and the hosted path below was never reached.
-  const narrator = resolveFeatureConfig(settings, "voice-narration");
+  const narrator = resolveNarrationConfig(settings, req);
   if (narrator) {
     const result = await runClientVoiceSpeech(
       {
@@ -715,9 +725,10 @@ async function synthesize(
 
   if (req.client && req.signedIn) {
     try {
+      const hostedVoice = resolveVoice(req, settings) ?? req.voice ?? "alloy";
       const res = (await req.client.action(api.voice.synthesizeSpeech, {
         text,
-        voice: req.voice,
+        voice: hostedVoice,
         instructions: req.instructions,
       })) as { audioBase64: string; mimeType: string };
       const bytes = Uint8Array.from(atob(res.audioBase64), (c) =>
@@ -728,7 +739,7 @@ async function synthesize(
         mimeType: res.mimeType,
         provider: "hosted",
         model: "hosted",
-        voice: req.voice ?? "alloy",
+        voice: hostedVoice,
       };
     } catch (err) {
       reportApplicationDiagnostic("twyne:speech:hosted-declined", err, {
@@ -759,7 +770,7 @@ async function resolveClip(req: SpeakRequest): Promise<ResolvedClip> {
   // Key the cache on the voice that will actually be used, so two editors
   // sharing a fallback name never collide on one clip.
   const settings = await getCachedAiSettings();
-  const resolved = resolveFeatureConfig(settings, "voice-narration");
+  const resolved = resolveNarrationConfig(settings, spoken);
   const override = settings.perFeature["voice-narration"];
   const voice = resolveVoice(spoken, settings) ?? spoken.voice ?? "alloy";
   const key = cacheKey(

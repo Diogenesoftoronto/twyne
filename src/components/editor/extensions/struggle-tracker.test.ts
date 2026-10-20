@@ -11,6 +11,7 @@ import * as idb from "../../../utils/idb";
 import * as context from "../../../utils/model-context";
 import * as judgement from "../../../utils/judgement-client";
 import * as localModels from "../../../utils/local-writing-models";
+import * as speech from "../../../utils/speech";
 import {
   threadInstrumentController,
   threadInstrumentSnapshot,
@@ -23,6 +24,10 @@ async function bench(
   run: Parameters<typeof withEditor>[1],
   html = content,
   onAskRoom?: Parameters<typeof startInFlowTools>[1]["onAskRoom"],
+  narration?: Pick<
+    Parameters<typeof startInFlowTools>[1],
+    "getClient" | "isSignedIn"
+  >,
 ) {
   const spies = [
     spyOn(grammar, "checkGrammar").mockResolvedValue([]),
@@ -51,6 +56,7 @@ async function bench(
           brief: null,
           getClient: () => null,
           onAskRoom,
+          ...narration,
         });
         try {
           await pause();
@@ -190,6 +196,37 @@ test("placement preserves inline marks and is a single undo transaction", async 
     expect(editor.commands.undo()).toBe(true);
     expect(editor.getHTML()).toBe(content);
   });
+});
+test("Hear passes current authentication and reads unfinished wording in its real context", async () => {
+  const speak = spyOn(speech, "speak").mockResolvedValue(undefined);
+  const client = {} as import("convex/browser").ConvexClient;
+  let signedIn = true;
+  try {
+    await bench(
+      () => {
+        const controller = inFlowController()!;
+        const id = inFlowSnapshot().active!.id;
+        expect(controller.hearVariant("A quieter room")).toBe(true);
+        expect(speak).toHaveBeenLastCalledWith({
+          id: `sentence-bench-${id}`,
+          text: "The map remained. A quieter room We followed the river.",
+          label: "Sentence bench",
+          client,
+          signedIn: true,
+        });
+        signedIn = false;
+        expect(controller.hearVariant(sentence)).toBe(true);
+        expect(speak.mock.calls.at(-1)?.[0].signedIn).toBe(false);
+        expect(controller.hearVariant(" ")).toBe(false);
+        expect(speak).toHaveBeenCalledTimes(2);
+      },
+      content,
+      undefined,
+      { getClient: () => client, isSignedIn: () => signedIn },
+    );
+  } finally {
+    speak.mockRestore();
+  }
 });
 test("changed source refuses both wording and placement instead of matching another copy", async () => {
   await bench(async ({ editor }) => {

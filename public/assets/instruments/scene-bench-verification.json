@@ -45,5 +45,58 @@
     "scene-bench-model-specimen-mobile-v1.png",
     "scene-bench-offline-v1.mp4"
   ],
-  "publicScreenshotCapture": "Actual component at 1100x850 CSS pixels, screenshot scaled by preview service; Qwik developer click-to-source overlay hidden for public documentation."
+  "publicScreenshotCapture": "Actual component at 1100x850 CSS pixels, screenshot scaled by preview service; Qwik developer click-to-source overlay hidden for public documentation.",
+  "manualRefresh": {
+    "reviewedOn": "2026-10-19",
+    "report": "artifacts/qa-recordings/2026-10-19/manual-refresh/report.json",
+    "captures": [
+      {
+        "image": "/assets/instruments/scene-bench-offline-v1.png",
+        "file": "scene-bench-offline-v1.png",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.438Z",
+        "width": 1280,
+        "height": 1600,
+        "format": "png",
+        "bytes": 140925,
+        "sha256": "b14316736ecede0ac5427e2456865183dd6b956aa363fd62d9b8fac15d43f987",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/scene-bench/stills/scene-bench-offline-v1.png",
+        "sourceSha256": "b14316736ecede0ac5427e2456865183dd6b956aa363fd62d9b8fac15d43f987",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/visual/playwright.config.ts",
+        "staging": "Fictional kitchen passage and a writer-added bell idea. Local cue scan and brief only; no narration, judgement, picture generation or paid request.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 1600,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/instruments/scene-bench-brief-v1.png",
+        "file": "scene-bench-brief-v1.png",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.440Z",
+        "width": 1280,
+        "height": 1600,
+        "format": "png",
+        "bytes": 120821,
+        "sha256": "7bde68c8f063d549d41c775010761aa4245836a99977d581759bcef058bb9722",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/scene-bench/stills/scene-bench-brief-v1.png",
+        "sourceSha256": "7bde68c8f063d549d41c775010761aa4245836a99977d581759bcef058bb9722",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/visual/playwright.config.ts",
+        "staging": "Fictional kitchen passage and a writer-added bell idea. Local cue scan and brief only; no narration, judgement, picture generation or paid request.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 1600,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      }
+    ],
+    "retainedCaptureDates": "Unchanged image records retain their original dates; historical video/test evidence is preserved separately.",
+    "verification": "Each replacement inspected against the running local app with fictional fixtures. No live sign-in, model, media generation, publish or restore proof.",
+    "guideDimensions": "Use report.json for final dimensions; guide source is concurrently owned by another agent."
+  }
 }

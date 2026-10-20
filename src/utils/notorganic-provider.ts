@@ -1,5 +1,19 @@
 import type { ConvexClient } from "convex/browser";
 import { makeFunctionReference } from "convex/server";
+import type { HostedUsageSummary } from "./hosted-usage";
+
+const hostedUsage = makeFunctionReference<
+  "action",
+  { from: number | null; to: number },
+  HostedUsageSummary
+>("providerIdentity:getHostedUsage");
+
+export function getNotOrganicHostedUsage(
+  client: ConvexClient,
+  range: { from: number | null; to: number },
+): Promise<HostedUsageSummary> {
+  return client.action(hostedUsage, range);
+}
 
 const walletState = makeFunctionReference<
   "action",

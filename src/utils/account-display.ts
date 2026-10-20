@@ -39,16 +39,36 @@ export function accountAvatarUrl(
   }
 }
 
+function accountLabel(value: string | null | undefined) {
+  const name = accountName(value);
+  // Legacy sessions can put an AT Protocol handle in the name field.
+  return name && /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i.test(name)
+    ? name.slice(0, name.indexOf("."))
+    : name;
+}
+
+function accountWriterName(
+  user: AccountIdentity | null | undefined,
+  profile?: AccountProfile | null,
+): string {
+  return (
+    accountLabel(profile?.displayName) ||
+    accountLabel(user?.name) ||
+    accountLabel(profile?.handle) ||
+    accountLabel(user?.handle) ||
+    "Writer"
+  );
+}
+
+/** Account controls prefer the authenticated Twyne alias over a PDS name. */
 export function accountDisplayName(
   user: AccountIdentity | null | undefined,
   profile?: AccountProfile | null,
 ): string {
   return (
-    accountName(profile?.displayName) ||
-    accountName(user?.name) ||
-    accountName(profile?.handle) ||
-    accountName(user?.handle) ||
-    "Writer"
+    accountLabel(profile?.handle) ||
+    accountLabel(user?.handle) ||
+    accountWriterName(user, profile)
   );
 }
 
@@ -69,7 +89,7 @@ export function withAccountProfile<T extends AccountIdentity>(
 ): T & { name: string; image: string | undefined; handle: string | undefined } {
   return {
     ...user,
-    name: accountDisplayName(user, profile),
+    name: accountWriterName(user, profile),
     image: accountAvatarUrl(profile?.avatarUrl) || accountAvatarUrl(user.image),
     handle: accountName(profile?.handle) || accountName(user.handle),
   };

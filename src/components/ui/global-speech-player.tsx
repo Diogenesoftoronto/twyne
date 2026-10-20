@@ -582,6 +582,12 @@ export const GlobalSpeechPlayer = component$(() => {
                 ? "Preparing voice…"
                 : `${player.voiceMenu.provider || player.state.provider || "Voice"} · ${player.voiceMenu.model || player.state.model || "narration"}`}
           </p>
+          {player.state.status === "error" &&
+            player.state.error?.referenceId && (
+              <p class="break-all text-[0.6rem] text-[var(--color-ink-muted)]">
+                Reference: {player.state.error.referenceId}
+              </p>
+            )}
         </div>
 
         <div class="flex shrink-0 items-center gap-1">
@@ -707,12 +713,20 @@ export const GlobalSpeechPlayer = component$(() => {
               title="Change voice and restart this passage"
             >
               {player.voiceMenu.options.map((voice) => (
-                <option key={voice.id} value={voice.id}>
+                <option
+                  key={voice.id}
+                  value={voice.id}
+                  selected={
+                    !local.customOpen && voice.id === player.voiceMenu.selected
+                  }
+                >
                   {voice.label}
                 </option>
               ))}
               {player.voiceMenu.allowsCustom && (
-                <option value="__custom__">Custom voice…</option>
+                <option value="__custom__" selected={local.customOpen}>
+                  Custom voice…
+                </option>
               )}
             </select>
             {local.customOpen && (

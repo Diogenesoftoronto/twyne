@@ -11,7 +11,7 @@ export const ManualWalkthrough = component$<{ id: string; guide: ManualGuide }>(
     return (
       <figure class="manual-walkthrough" aria-labelledby={`${id}-guide-title`}>
         <figcaption class="manual-walkthrough-heading">
-          <p class="manual-plate-label">At the desk · A visual walkthrough</p>
+          <p class="manual-plate-label">A visual walkthrough</p>
           <h3 id={`${id}-guide-title`}>{guide.title}</h3>
           <p>{guide.summary}</p>
         </figcaption>

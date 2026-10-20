@@ -8,179 +8,245 @@
   "captures": [
     {
       "file": "outline-slash.webp",
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/outline-slash.png",
-      "width": 820,
-      "height": 570,
-      "clip": {
-        "x": 235,
-        "y": 325,
-        "width": 820,
-        "height": 570
-      },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/outline-slash.png",
+      "width": 1000,
+      "height": 650,
       "description": "Actual filtered slash insertion menu for the three heading levels.",
       "route": "/editor/",
       "origin": "http://127.0.0.1:5180",
-      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile.",
+      "bytes": 32576,
+      "sha256": "3970ae18c19e9e81260c08e8c08f01add35e85238d72407f26cf74df0e567eb0",
+      "sourceSha256": "69827a09a1fe1a81e75d5752565cc96b56899d57e2d9e0cbf94ba8f7918758e4",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.381Z",
+      "format": "webp",
+      "crop": {
+        "x": 235,
+        "y": 240,
+        "width": 1000,
+        "height": 650
+      }
     },
     {
       "file": "outline-navigate.webp",
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/outline-navigate.png",
-      "width": 820,
-      "height": 570,
-      "clip": {
-        "x": 0,
-        "y": 80,
-        "width": 820,
-        "height": 570
-      },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/outline-navigate.png",
+      "width": 1000,
+      "height": 650,
       "description": "Actual outline after dragging The ford before The departure, with heading navigation exercised.",
       "route": "/editor/",
       "origin": "http://127.0.0.1:5180",
-      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile.",
+      "bytes": 25624,
+      "sha256": "5cc58edea4fa1355d7277cb876815d995559f2ce4912af23e0f07aba1d5dfdc6",
+      "sourceSha256": "8300fb5f695095b512f33840d90de8f6bfad9679c29e38c596398c3ee2eb1df9",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.383Z",
+      "format": "webp",
+      "crop": {
+        "x": 0,
+        "y": 80,
+        "width": 1000,
+        "height": 650
+      }
     },
     {
       "file": "outline-find.webp",
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/outline-find.png",
-      "width": 820,
-      "height": 570,
-      "clip": {
-        "x": 440,
-        "y": 60,
-        "width": 820,
-        "height": 570
-      },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/outline-find.png",
+      "width": 840,
+      "height": 650,
       "description": "Actual find/replace panel: harbour, two matches, port replacement and Whole word matching.",
       "route": "/editor/",
       "origin": "http://127.0.0.1:5180",
-      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile.",
+      "bytes": 22616,
+      "sha256": "f6769744a89c6260b9993b889f6f06eaba07cad02081a95de1220d3a4826f504",
+      "sourceSha256": "27ef6d5e3f940664a566c04592858674c1de1a48ca74c1ab4f33df41cca383b3",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.385Z",
+      "format": "webp",
+      "crop": {
+        "x": 440,
+        "y": 60,
+        "width": 1000,
+        "height": 650
+      }
     },
     {
       "file": "table-insert.webp",
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/table-insert.png",
-      "width": 820,
-      "height": 570,
-      "clip": {
-        "x": 230,
-        "y": 60,
-        "width": 820,
-        "height": 570
-      },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/table-insert.png",
+      "width": 1000,
+      "height": 650,
       "description": "Actual 3 by 3 table grid selection in Insert tools.",
       "route": "/editor/",
       "origin": "http://127.0.0.1:5180",
-      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile.",
+      "bytes": 29154,
+      "sha256": "9ca98c8cbf0e17c0acbe1a8da3b501c7087251769b34b2e3e89e742a4273c8c7",
+      "sourceSha256": "4ebf8493d525c47af1005006d2d1bd067ac04dc1760acc9563d4ee87d7973425",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.388Z",
+      "format": "webp",
+      "crop": {
+        "x": 230,
+        "y": 60,
+        "width": 1000,
+        "height": 650
+      }
     },
     {
       "file": "table-tools.webp",
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/table-tools.png",
-      "width": 820,
-      "height": 570,
-      "clip": {
-        "x": 230,
-        "y": 325,
-        "width": 820,
-        "height": 570
-      },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/table-tools.png",
+      "width": 1000,
+      "height": 650,
       "description": "Actual table row/column actions, banded-rows style, width, caption and cell-format controls.",
       "route": "/editor/",
       "origin": "http://127.0.0.1:5180",
-      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile.",
+      "bytes": 25166,
+      "sha256": "d5a8d22e2bad0730c3ce2e7ca9eed7b30b9e2b1f45fb00009abea1ea6aec48fa",
+      "sourceSha256": "aad1e7dffcf2fa0296fb00e61594acfa9b0feb8fda5254437db4d5b42167cf2c",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.391Z",
+      "format": "webp",
+      "crop": {
+        "x": 230,
+        "y": 240,
+        "width": 1000,
+        "height": 650
+      }
     },
     {
       "file": "image-inspector.webp",
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/image-inspector.png",
-      "width": 820,
-      "height": 570,
-      "clip": {
-        "x": 440,
-        "y": 80,
-        "width": 820,
-        "height": 570
-      },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/image-inspector.png",
+      "width": 840,
+      "height": 650,
       "description": "Actual selected standalone local illustration with committed alt text, caption, Centre alignment and 25% width.",
       "route": "/editor/",
       "origin": "http://127.0.0.1:5180",
-      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile.",
+      "bytes": 19596,
+      "sha256": "d81665a5a9f9d42124d097d5d82b332ef0cca1c28049fc699e10d58ee555cdd9",
+      "sourceSha256": "79cf9a4c9f7c824dab607eb4e344b65d8deb919953ae7df0d0837da67cb54365",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.394Z",
+      "format": "webp",
+      "crop": {
+        "x": 440,
+        "y": 80,
+        "width": 1000,
+        "height": 650
+      }
     },
     {
       "file": "layout-paper.webp",
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/layout-paper.png",
-      "width": 820,
-      "height": 640,
-      "clip": {
-        "x": 60,
-        "y": 245,
-        "width": 820,
-        "height": 640
-      },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/layout-paper.png",
+      "width": 1000,
+      "height": 700,
       "description": "Actual paper, orientation, writing width and column controls: A4, Portrait, Match paper and One selected.",
       "route": "/editor/",
       "origin": "http://127.0.0.1:5180",
-      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile.",
+      "bytes": 30106,
+      "sha256": "4365a51a6d3200b6860373957e8ad9a0ea1015936986d01dc0b8bc0241cbf072",
+      "sourceSha256": "20866db9387b63fc0948cd9950f73f8c2da2a5ff073429890d4d65279fa1167e",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.395Z",
+      "format": "webp",
+      "crop": {
+        "x": 60,
+        "y": 190,
+        "width": 1000,
+        "height": 700
+      }
     },
     {
       "file": "layout-ornaments.webp",
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/layout-ornaments.png",
-      "width": 820,
-      "height": 640,
-      "clip": {
-        "x": 60,
-        "y": 245,
-        "width": 820,
-        "height": 640
-      },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/layout-ornaments.png",
+      "width": 1000,
+      "height": 700,
       "description": "Actual Illustrated opening initial, Original collection, Small size and Botanical page border controls.",
       "route": "/editor/",
       "origin": "http://127.0.0.1:5180",
-      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile.",
+      "bytes": 55826,
+      "sha256": "daa1215b4b25af578261065c5945d4320ac24d21288f58b982eab4abf3c2f9d2",
+      "sourceSha256": "b8ea12423d55488df9ead8edb3af6c423cb970f4d581769a288b2571ab03f265",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.397Z",
+      "format": "webp",
+      "crop": {
+        "x": 60,
+        "y": 190,
+        "width": 1000,
+        "height": 700
+      }
     },
     {
       "file": "layout-running-heads.webp",
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/layout-running-heads.png",
-      "width": 820,
-      "height": 640,
-      "clip": {
-        "x": 60,
-        "y": 245,
-        "width": 820,
-        "height": 640
-      },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/layout-running-heads.png",
+      "width": 1000,
+      "height": 700,
       "description": "Actual running heads: margin controls, header and page-number toggles, and fully visible Header line and Footer line fields.",
       "route": "/editor/",
       "origin": "http://127.0.0.1:5180",
-      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile.",
+      "bytes": 57140,
+      "sha256": "2940d5fd4e50edb741ca8668799163a2ee495ac760781ad57b9f5b6b904deccb",
+      "sourceSha256": "44058c5159acee9269d79f31b9c0dac9b46e3b0cf10edb18cc3ac0226f5389d5",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.399Z",
+      "format": "webp",
+      "crop": {
+        "x": 60,
+        "y": 190,
+        "width": 1000,
+        "height": 700
+      }
     },
     {
       "file": "notes-edit.webp",
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/notes-edit.png",
-      "width": 820,
-      "height": 570,
-      "clip": {
-        "x": 230,
-        "y": 325,
-        "width": 820,
-        "height": 570
-      },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/notes-edit.png",
+      "width": 1000,
+      "height": 650,
       "description": "Actual editable Footnote 1 popover, Note kind conversion and reference/navigation/delete controls.",
       "route": "/editor/",
       "origin": "http://127.0.0.1:5180",
-      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile.",
+      "bytes": 46920,
+      "sha256": "86e482e2082d6f31aaa3281251e20b352e48fa1f7fcf4dc92d75cdfac36bd637",
+      "sourceSha256": "34ca96583ec75f65d996086ada5d6ab0a2a9ec65139bb54cff997c042a61053e",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.402Z",
+      "format": "webp",
+      "crop": {
+        "x": 230,
+        "y": 240,
+        "width": 1000,
+        "height": 650
+      }
     },
     {
       "file": "equation-editor.webp",
-      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/equation-editor.png",
-      "width": 820,
-      "height": 570,
-      "clip": {
-        "x": 230,
-        "y": 325,
-        "width": 820,
-        "height": 570
-      },
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/equation-editor.png",
+      "width": 1000,
+      "height": 650,
       "description": "Actual Block LaTeX source editor and preview, Render equation and Cancel controls, with a rendered inline fraction below.",
       "route": "/editor/",
       "origin": "http://127.0.0.1:5180",
-      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile.",
+      "bytes": 46452,
+      "sha256": "65264edd41e4bff05c1e53c4b2d45a28afcc01b1040b53c23694a798bb01c4d4",
+      "sourceSha256": "54265835c348c97e2e55a27d826ef96ba926dca544a4136a2ec02db328aba6f4",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.404Z",
+      "format": "webp",
+      "crop": {
+        "x": 230,
+        "y": 240,
+        "width": 1000,
+        "height": 650
+      }
     },
     {
       "file": "diagram-editor.webp",
@@ -218,5 +284,245 @@
     "HMR WebSockets blocked to prevent concurrent docs edits from interrupting capture",
     "Current visual writing canvas does not render editable header/footer bands; working Layout controls are shown"
   ],
-  "supplementalVideo": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/running-heads.webm"
+  "supplementalVideo": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/running-heads.webm",
+  "manualRefresh": {
+    "reviewedOn": "2026-10-19",
+    "report": "artifacts/qa-recordings/2026-10-19/manual-refresh/report.json",
+    "captures": [
+      {
+        "image": "/assets/manual/craft/outline-slash.webp",
+        "file": "outline-slash.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.381Z",
+        "width": 1000,
+        "height": 650,
+        "format": "webp",
+        "bytes": 32576,
+        "sha256": "3970ae18c19e9e81260c08e8c08f01add35e85238d72407f26cf74df0e567eb0",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/outline-slash.png",
+        "sourceSha256": "69827a09a1fe1a81e75d5752565cc96b56899d57e2d9e0cbf94ba8f7918758e4",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/replay.mjs",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 235,
+          "y": 240,
+          "width": 1000,
+          "height": 650
+        }
+      },
+      {
+        "image": "/assets/manual/craft/outline-navigate.webp",
+        "file": "outline-navigate.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.383Z",
+        "width": 1000,
+        "height": 650,
+        "format": "webp",
+        "bytes": 25624,
+        "sha256": "5cc58edea4fa1355d7277cb876815d995559f2ce4912af23e0f07aba1d5dfdc6",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/outline-navigate.png",
+        "sourceSha256": "8300fb5f695095b512f33840d90de8f6bfad9679c29e38c596398c3ee2eb1df9",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/replay.mjs",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 0,
+          "y": 80,
+          "width": 1000,
+          "height": 650
+        }
+      },
+      {
+        "image": "/assets/manual/craft/outline-find.webp",
+        "file": "outline-find.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.385Z",
+        "width": 840,
+        "height": 650,
+        "format": "webp",
+        "bytes": 22616,
+        "sha256": "f6769744a89c6260b9993b889f6f06eaba07cad02081a95de1220d3a4826f504",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/outline-find.png",
+        "sourceSha256": "27ef6d5e3f940664a566c04592858674c1de1a48ca74c1ab4f33df41cca383b3",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/replay.mjs",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 440,
+          "y": 60,
+          "width": 1000,
+          "height": 650
+        }
+      },
+      {
+        "image": "/assets/manual/craft/table-insert.webp",
+        "file": "table-insert.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.388Z",
+        "width": 1000,
+        "height": 650,
+        "format": "webp",
+        "bytes": 29154,
+        "sha256": "9ca98c8cbf0e17c0acbe1a8da3b501c7087251769b34b2e3e89e742a4273c8c7",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/table-insert.png",
+        "sourceSha256": "4ebf8493d525c47af1005006d2d1bd067ac04dc1760acc9563d4ee87d7973425",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/replay.mjs",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 230,
+          "y": 60,
+          "width": 1000,
+          "height": 650
+        }
+      },
+      {
+        "image": "/assets/manual/craft/table-tools.webp",
+        "file": "table-tools.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.391Z",
+        "width": 1000,
+        "height": 650,
+        "format": "webp",
+        "bytes": 25166,
+        "sha256": "d5a8d22e2bad0730c3ce2e7ca9eed7b30b9e2b1f45fb00009abea1ea6aec48fa",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/table-tools.png",
+        "sourceSha256": "aad1e7dffcf2fa0296fb00e61594acfa9b0feb8fda5254437db4d5b42167cf2c",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/replay.mjs",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 230,
+          "y": 240,
+          "width": 1000,
+          "height": 650
+        }
+      },
+      {
+        "image": "/assets/manual/craft/image-inspector.webp",
+        "file": "image-inspector.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.394Z",
+        "width": 840,
+        "height": 650,
+        "format": "webp",
+        "bytes": 19596,
+        "sha256": "d81665a5a9f9d42124d097d5d82b332ef0cca1c28049fc699e10d58ee555cdd9",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/image-inspector.png",
+        "sourceSha256": "79cf9a4c9f7c824dab607eb4e344b65d8deb919953ae7df0d0837da67cb54365",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/replay.mjs",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 440,
+          "y": 80,
+          "width": 1000,
+          "height": 650
+        }
+      },
+      {
+        "image": "/assets/manual/craft/layout-paper.webp",
+        "file": "layout-paper.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.395Z",
+        "width": 1000,
+        "height": 700,
+        "format": "webp",
+        "bytes": 30106,
+        "sha256": "4365a51a6d3200b6860373957e8ad9a0ea1015936986d01dc0b8bc0241cbf072",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/layout-paper.png",
+        "sourceSha256": "20866db9387b63fc0948cd9950f73f8c2da2a5ff073429890d4d65279fa1167e",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/replay.mjs",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 60,
+          "y": 190,
+          "width": 1000,
+          "height": 700
+        }
+      },
+      {
+        "image": "/assets/manual/craft/layout-ornaments.webp",
+        "file": "layout-ornaments.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.397Z",
+        "width": 1000,
+        "height": 700,
+        "format": "webp",
+        "bytes": 55826,
+        "sha256": "daa1215b4b25af578261065c5945d4320ac24d21288f58b982eab4abf3c2f9d2",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/layout-ornaments.png",
+        "sourceSha256": "b8ea12423d55488df9ead8edb3af6c423cb970f4d581769a288b2571ab03f265",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/replay.mjs",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 60,
+          "y": 190,
+          "width": 1000,
+          "height": 700
+        }
+      },
+      {
+        "image": "/assets/manual/craft/layout-running-heads.webp",
+        "file": "layout-running-heads.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.399Z",
+        "width": 1000,
+        "height": 700,
+        "format": "webp",
+        "bytes": 57140,
+        "sha256": "2940d5fd4e50edb741ca8668799163a2ee495ac760781ad57b9f5b6b904deccb",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/layout-running-heads.png",
+        "sourceSha256": "44058c5159acee9269d79f31b9c0dac9b46e3b0cf10edb18cc3ac0226f5389d5",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/replay.mjs",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 60,
+          "y": 190,
+          "width": 1000,
+          "height": 700
+        }
+      },
+      {
+        "image": "/assets/manual/craft/notes-edit.webp",
+        "file": "notes-edit.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.402Z",
+        "width": 1000,
+        "height": 650,
+        "format": "webp",
+        "bytes": 46920,
+        "sha256": "86e482e2082d6f31aaa3281251e20b352e48fa1f7fcf4dc92d75cdfac36bd637",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/notes-edit.png",
+        "sourceSha256": "34ca96583ec75f65d996086ada5d6ab0a2a9ec65139bb54cff997c042a61053e",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/replay.mjs",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 230,
+          "y": 240,
+          "width": 1000,
+          "height": 650
+        }
+      },
+      {
+        "image": "/assets/manual/craft/equation-editor.webp",
+        "file": "equation-editor.webp",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.404Z",
+        "width": 1000,
+        "height": 650,
+        "format": "webp",
+        "bytes": 46452,
+        "sha256": "65264edd41e4bff05c1e53c4b2d45a28afcc01b1040b53c23694a798bb01c4d4",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/equation-editor.png",
+        "sourceSha256": "54265835c348c97e2e55a27d826ef96ba926dca544a4136a2ec02db328aba6f4",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/craft/replay.mjs",
+        "staging": "Fictional manuscript and isolated device storage; no model, publishing or sign-in action.",
+        "crop": {
+          "x": 230,
+          "y": 240,
+          "width": 1000,
+          "height": 650
+        }
+      }
+    ],
+    "retainedCaptureDates": "Unchanged image records retain their original dates; historical video/test evidence is preserved separately.",
+    "verification": "Each replacement inspected against the running local app with fictional fixtures. No live sign-in, model, media generation, publish or restore proof.",
+    "guideDimensions": "Use report.json for final dimensions; guide source is concurrently owned by another agent."
+  }
 }

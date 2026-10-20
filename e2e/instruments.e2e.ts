@@ -128,10 +128,19 @@ test("selection bench offers checked complete wordings, previews, applies and un
   const original = await draftText(page);
   await openBench(page);
   const candidate = bench(page).getByRole("button", {
-    name: /^Compare Use a verb:/,
+    name: /^Try Use a verb:/,
   });
   await expect(candidate).toBeVisible();
-  await expect(bench(page)).toContainText("Harper checked");
+  // The working wording and its use control lead; provenance waits behind
+  // a disclosure instead of repeating under every wording.
+  const use = bench(page).getByRole("button", {
+    name: "Use this wording",
+    exact: true,
+  });
+  await expect(use).toBeInViewport();
+  await expect(bench(page).getByText("Harper checked")).toBeHidden();
+  await bench(page).getByText("How these were checked").click();
+  await expect(bench(page)).toContainText("Use a verb: Harper checked");
   await candidate.hover();
   await expect(page.locator(".sentence-bench-ghost")).toContainText(
     "We decided to leave",
@@ -200,6 +209,50 @@ test("Words changes one use in context and Place preserves marked text with one 
   ).toHaveText(INSTRUMENT_SENTENCE);
   await undo(page);
   await expect.poll(() => manuscript(page).innerHTML()).toBe(original);
+});
+
+test("Words explains missing alternatives and incomplete working wording explains its disabled apply", async ({
+  page,
+}) => {
+  await seed(page);
+  await openBench(page);
+  await bench(page).getByRole("button", { name: "Words", exact: true }).click();
+  await bench(page).getByRole("button", { name: "leave", exact: true }).click();
+  await expect(bench(page)).toContainText(
+    "No bundled alternatives for “leave”.",
+  );
+  await expect(bench(page)).toContainText("Edit the wording above");
+  await bench(page).locator("textarea").fill("We left for a quieter room");
+  await expect(
+    bench(page).getByRole("button", { name: "Use this wording", exact: true }),
+  ).toBeDisabled();
+  await expect(bench(page)).toContainText(
+    "Finish the wording with sentence punctuation before using it.",
+  );
+  await bench(page)
+    .getByRole("button", { name: "Keep original", exact: true })
+    .click();
+  await expect(bench(page).locator("textarea")).toHaveValue(
+    INSTRUMENT_SENTENCE,
+  );
+});
+
+test("Hear starts the narration player for an unfinished working wording", async ({
+  page,
+}) => {
+  await seed(page);
+  await openBench(page);
+  await bench(page).locator("textarea").fill("We left for a quieter room");
+  await bench(page).getByRole("button", { name: "Hear", exact: true }).click();
+  await bench(page)
+    .getByRole("button", { name: "Hear this wording in context", exact: true })
+    .click();
+  // This fixture has no voice provider. The real player must report its
+  // configuration error rather than silently ignoring unfinished wording.
+  await expect(bench(page)).toContainText(
+    "Narration needs attention in player",
+  );
+  await expect(manuscript(page)).toContainText(INSTRUMENT_SENTENCE);
 });
 
 test("checked candidate refresh preserves the chosen pane and unfinished wording", async ({
@@ -310,6 +363,44 @@ test("Threads uses real spans, removes a repeat, undoes and closes with Escape",
     .toBe(true);
 });
 
+test("Threads gathers a pair as read-only excerpts, jumps to one and keeps Threads open", async ({
+  page,
+}) => {
+  await seed(page);
+  const original = await draftText(page);
+  await selectPassage(page, INSTRUMENT_REPEAT);
+  await page.getByRole("button", { name: "More", exact: false }).click();
+  await page.getByRole("menuitem", { name: "Threads", exact: true }).click();
+  const repeat = threads(page)
+    .locator("li")
+    .filter({ hasText: "Repeated wording" });
+  await repeat
+    .getByRole("button", { name: "See together", exact: true })
+    .click();
+  const sheet = page.getByRole("dialog");
+  await expect(sheet.locator(".passage-gather__passage")).toHaveCount(2);
+  await expect(sheet.locator("mark").first()).toHaveText(INSTRUMENT_REPEAT);
+  await expect(sheet).toContainText("This was our only trace.");
+  await sheet
+    .getByRole("button", { name: "Go to passage", exact: true })
+    .nth(1)
+    .click();
+  await expect(sheet).toHaveCount(0);
+  await expect(threads(page)).toBeVisible();
+  expect(await page.evaluate(() => getSelection()?.toString())).toBe(
+    INSTRUMENT_REPEAT,
+  );
+  expect(await draftText(page)).toBe(original);
+  // Escape closes a gathering before it closes Threads.
+  await repeat
+    .getByRole("button", { name: "See together", exact: true })
+    .click();
+  await expect(sheet).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(sheet).toHaveCount(0);
+  await expect(threads(page)).toBeVisible();
+});
+
 test("sentence and thread controls remain reachable on a narrow viewport", async ({
   page,
 }, info) => {
@@ -357,7 +448,7 @@ test("@demo complete sentence and real span revision in a readable offline take"
   await openBench(take);
   await hold("Select a complete sentence and open its bench.");
   const wording = bench(take).getByRole("button", {
-    name: /^Compare Use a verb:/,
+    name: /^Try Use a verb:/,
   });
   await wording.hover();
   await expect(take.locator(".sentence-bench-ghost")).toContainText(

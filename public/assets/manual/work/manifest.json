@@ -35,21 +35,63 @@
       "width": 308,
       "height": 348,
       "route": "/editor/",
-      "staging": "Synthetic profile; no authenticated exchange or cloud sync."
+      "staging": "Synthetic profile; no authenticated exchange or cloud sync.",
+      "bytes": 12609,
+      "sha256": "400366aabf346f21c7bbe38c54fa493b7cf2665ca709d9a0933ce97630fae648",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/account-menu.png",
+      "sourceSha256": "a1cf09653b68ed95852d27cbc52d466bbcf812571882ad9a418816bb7cfd7f1c",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.352Z",
+      "format": "jpeg",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 308,
+        "height": 348,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "voice-idle.jpg",
-      "width": 430,
-      "height": 544,
+      "width": 360,
+      "height": 506,
       "route": "/editor/",
-      "staging": "Idle desk; read-only zero-credit access fixture; no microphone or session."
+      "staging": "Idle desk; read-only zero-credit access fixture; no microphone or session.",
+      "bytes": 27121,
+      "sha256": "b02d21bde97042b9f2d530c38396685d85f8a0cb24dcdd226f2d64b6a8002058",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/voice-idle.png",
+      "sourceSha256": "908b45b3e45ea0460a424ab164fac0c36e9d5f7f644fa4dcbc69b878f0c550d0",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.355Z",
+      "format": "jpeg",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 506,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "narration-entry.jpg",
-      "width": 1098,
-      "height": 96,
+      "width": 1100,
+      "height": 97,
       "route": "/editor/",
-      "staging": "Idle narration entry; read was not invoked; no speech provider or audio request."
+      "staging": "Idle narration entry; read was not invoked; no speech provider or audio request.",
+      "bytes": 13368,
+      "sha256": "b3e80f0e4bc6d843ee5df53fbd580ecf1d732f44833ea5fddbf14621d7bf266b",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/narration-entry.png",
+      "sourceSha256": "5a0e30906696b301ffb23d4df82de985dd60201def4aefae18ffa6dcf30aa07d",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.353Z",
+      "format": "jpeg",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 97,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "library.jpg",
@@ -66,20 +108,62 @@
     {
       "file": "source-draft.jpg",
       "width": 1098,
-      "height": 747,
-      "route": "/editor/"
+      "height": 764,
+      "route": "/editor/",
+      "bytes": 48769,
+      "sha256": "7f9b3ef74d5c9059a760053745e9b1698f7810b83a5f01ff5cb2572289ed9f4e",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/source-draft.png",
+      "sourceSha256": "65ea2214ca870f3bbfc790f1f5d2fb0551f676839df1c6ea10969f82f7e94816",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.356Z",
+      "format": "jpeg",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1098,
+        "height": 764,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "source-find.jpg",
       "width": 1098,
-      "height": 747,
-      "route": "/editor/"
+      "height": 788,
+      "route": "/editor/",
+      "bytes": 52779,
+      "sha256": "f06d4d9bd24dc31c9244dc1b513ebc07b92ec0a4225f2fe13626430554482203",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/source-find.png",
+      "sourceSha256": "d34860ec7ecb5bfb9d8559e306dbd2b8508e795d90112cb83b8acdece76b9b33",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.357Z",
+      "format": "jpeg",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1098,
+        "height": 788,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "typeset-proof.jpg",
       "width": 1098,
-      "height": 747,
-      "route": "/editor/"
+      "height": 788,
+      "route": "/editor/",
+      "bytes": 61155,
+      "sha256": "34d380a00acccccec494921db6de357dfb9f1ed96f54a59d209f6eea4acf7344",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/typeset-proof.png",
+      "sourceSha256": "7d19ec681c160c1242322c4298704519bfb1db2871fa8fa89d975e36482a0f5f",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.358Z",
+      "format": "jpeg",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1098,
+        "height": 788,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "file-export.jpg",
@@ -92,14 +176,42 @@
       "width": 480,
       "height": 810,
       "route": "/editor/",
-      "staging": "Publication setup only; Publish now was not invoked."
+      "staging": "Publication setup only; Publish now was not invoked.",
+      "bytes": 42546,
+      "sha256": "4c406103d8fad9e0f86c50889721199b7c7ed3397a98eda7b010be4a357bbe29",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/publication-review.png",
+      "sourceSha256": "4708c7c4fccfe681a048ee140d151cdfda9a39728d5583905542b79cd9a1788e",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.360Z",
+      "format": "jpeg",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 810,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "revision-restore.jpg",
       "width": 463,
-      "height": 737,
+      "height": 804,
       "route": "/editor/",
-      "staging": "Checkpoint comparison and restore confirmation only; no restore submitted."
+      "staging": "Checkpoint comparison and restore confirmation only; no restore submitted.",
+      "bytes": 35855,
+      "sha256": "8c2a544104027da063cb8cc53e20f0247e4849502196292d611922e5ec567cc5",
+      "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/revision-restore.png",
+      "sourceSha256": "98da85dff10e22cbec072b4f25bf779fc1a60027ad63c2b9c6d7a8967b2219d5",
+      "capturedOn": "2026-10-19",
+      "capturedAt": "2026-10-20T00:46:21.361Z",
+      "format": "jpeg",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 463,
+        "height": 804,
+        "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+      }
     },
     {
       "file": "byok-switch.jpg",
@@ -162,5 +274,190 @@
       "source": "artifacts/qa-recordings/2026-09-30/portal-account-privacy/default-settings-private.png",
       "staging": "Existing synthetic account Settings capture; Private email disclosure remains closed; no live authentication."
     }
-  ]
+  ],
+  "manualRefresh": {
+    "reviewedOn": "2026-10-19",
+    "report": "artifacts/qa-recordings/2026-10-19/manual-refresh/report.json",
+    "captures": [
+      {
+        "image": "/assets/manual/work/account-menu.jpg",
+        "file": "account-menu.jpg",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.352Z",
+        "width": 308,
+        "height": 348,
+        "format": "jpeg",
+        "bytes": 12609,
+        "sha256": "400366aabf346f21c7bbe38c54fa493b7cf2665ca709d9a0933ce97630fae648",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/account-menu.png",
+        "sourceSha256": "a1cf09653b68ed95852d27cbc52d466bbcf812571882ad9a418816bb7cfd7f1c",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/replay.mjs",
+        "staging": "Synthetic Morgan Vale profile and sample account access, fictional manuscripts and sample provider/model names; API keys empty. No real authentication, narration, microphone, publish, profile-save or restore submitted.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 308,
+          "height": 348,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/manual/work/narration-entry.jpg",
+        "file": "narration-entry.jpg",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.353Z",
+        "width": 1100,
+        "height": 97,
+        "format": "jpeg",
+        "bytes": 13368,
+        "sha256": "b3e80f0e4bc6d843ee5df53fbd580ecf1d732f44833ea5fddbf14621d7bf266b",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/narration-entry.png",
+        "sourceSha256": "5a0e30906696b301ffb23d4df82de985dd60201def4aefae18ffa6dcf30aa07d",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/replay.mjs",
+        "staging": "Synthetic Morgan Vale profile and sample account access, fictional manuscripts and sample provider/model names; API keys empty. No real authentication, narration, microphone, publish, profile-save or restore submitted.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 97,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/manual/work/voice-idle.jpg",
+        "file": "voice-idle.jpg",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.355Z",
+        "width": 360,
+        "height": 506,
+        "format": "jpeg",
+        "bytes": 27121,
+        "sha256": "b02d21bde97042b9f2d530c38396685d85f8a0cb24dcdd226f2d64b6a8002058",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/voice-idle.png",
+        "sourceSha256": "908b45b3e45ea0460a424ab164fac0c36e9d5f7f644fa4dcbc69b878f0c550d0",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/replay.mjs",
+        "staging": "Synthetic Morgan Vale profile and sample account access, fictional manuscripts and sample provider/model names; API keys empty. No real authentication, narration, microphone, publish, profile-save or restore submitted.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 360,
+          "height": 506,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/manual/work/source-draft.jpg",
+        "file": "source-draft.jpg",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.356Z",
+        "width": 1098,
+        "height": 764,
+        "format": "jpeg",
+        "bytes": 48769,
+        "sha256": "7f9b3ef74d5c9059a760053745e9b1698f7810b83a5f01ff5cb2572289ed9f4e",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/source-draft.png",
+        "sourceSha256": "65ea2214ca870f3bbfc790f1f5d2fb0551f676839df1c6ea10969f82f7e94816",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/replay.mjs",
+        "staging": "Synthetic Morgan Vale profile and sample account access, fictional manuscripts and sample provider/model names; API keys empty. No real authentication, narration, microphone, publish, profile-save or restore submitted.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1098,
+          "height": 764,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/manual/work/source-find.jpg",
+        "file": "source-find.jpg",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.357Z",
+        "width": 1098,
+        "height": 788,
+        "format": "jpeg",
+        "bytes": 52779,
+        "sha256": "f06d4d9bd24dc31c9244dc1b513ebc07b92ec0a4225f2fe13626430554482203",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/source-find.png",
+        "sourceSha256": "d34860ec7ecb5bfb9d8559e306dbd2b8508e795d90112cb83b8acdece76b9b33",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/replay.mjs",
+        "staging": "Synthetic Morgan Vale profile and sample account access, fictional manuscripts and sample provider/model names; API keys empty. No real authentication, narration, microphone, publish, profile-save or restore submitted.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1098,
+          "height": 788,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/manual/work/typeset-proof.jpg",
+        "file": "typeset-proof.jpg",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.358Z",
+        "width": 1098,
+        "height": 788,
+        "format": "jpeg",
+        "bytes": 61155,
+        "sha256": "34d380a00acccccec494921db6de357dfb9f1ed96f54a59d209f6eea4acf7344",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/typeset-proof.png",
+        "sourceSha256": "7d19ec681c160c1242322c4298704519bfb1db2871fa8fa89d975e36482a0f5f",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/replay.mjs",
+        "staging": "Synthetic Morgan Vale profile and sample account access, fictional manuscripts and sample provider/model names; API keys empty. No real authentication, narration, microphone, publish, profile-save or restore submitted.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 1098,
+          "height": 788,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/manual/work/publication-review.jpg",
+        "file": "publication-review.jpg",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.360Z",
+        "width": 480,
+        "height": 810,
+        "format": "jpeg",
+        "bytes": 42546,
+        "sha256": "4c406103d8fad9e0f86c50889721199b7c7ed3397a98eda7b010be4a357bbe29",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/publication-review.png",
+        "sourceSha256": "4708c7c4fccfe681a048ee140d151cdfda9a39728d5583905542b79cd9a1788e",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/replay.mjs",
+        "staging": "Synthetic Morgan Vale profile and sample account access, fictional manuscripts and sample provider/model names; API keys empty. No real authentication, narration, microphone, publish, profile-save or restore submitted.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 480,
+          "height": 810,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      },
+      {
+        "image": "/assets/manual/work/revision-restore.jpg",
+        "file": "revision-restore.jpg",
+        "capturedOn": "2026-10-19",
+        "capturedAt": "2026-10-20T00:46:21.361Z",
+        "width": 463,
+        "height": 804,
+        "format": "jpeg",
+        "bytes": 35855,
+        "sha256": "8c2a544104027da063cb8cc53e20f0247e4849502196292d611922e5ec567cc5",
+        "source": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/revision-restore.png",
+        "sourceSha256": "98da85dff10e22cbec072b4f25bf779fc1a60027ad63c2b9c6d7a8967b2219d5",
+        "replay": "artifacts/qa-recordings/2026-10-19/manual-refresh/work/replay.mjs",
+        "staging": "Synthetic Morgan Vale profile and sample account access, fictional manuscripts and sample provider/model names; API keys empty. No real authentication, narration, microphone, publish, profile-save or restore submitted.",
+        "crop": {
+          "x": 0,
+          "y": 0,
+          "width": 463,
+          "height": 804,
+          "method": "Entire source still; component, dialog or full viewport as recorded in replay"
+        }
+      }
+    ],
+    "retainedCaptureDates": "Unchanged image records retain their original dates; historical video/test evidence is preserved separately.",
+    "verification": "Each replacement inspected against the running local app with fictional fixtures. No live sign-in, model, media generation, publish or restore proof.",
+    "guideDimensions": "Use report.json for final dimensions; guide source is concurrently owned by another agent."
+  }
 }

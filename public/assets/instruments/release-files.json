@@ -126,8 +126,8 @@
     },
     {
       "path": "public/assets/instruments/scene-bench-brief-v1.png",
-      "bytes": 144650,
-      "sha256": "66a257b9bf99a8866c8aea63614a7447b14dd8366c16540cf8fce97bc7687f07",
+      "bytes": 120821,
+      "sha256": "7bde68c8f063d549d41c775010761aa4245836a99977d581759bcef058bb9722",
       "releaseTransfer": "new"
     },
     {
@@ -144,8 +144,8 @@
     },
     {
       "path": "public/assets/instruments/scene-bench-offline-v1.png",
-      "bytes": 149143,
-      "sha256": "3ce180ecd95b224cb43ae59f293aaaa306df91fd84c8b6bcd74d14cd0971e0f0",
+      "bytes": 140925,
+      "sha256": "b14316736ecede0ac5427e2456865183dd6b956aa363fd62d9b8fac15d43f987",
       "releaseTransfer": "new"
     },
     {
@@ -226,8 +226,8 @@
     },
     {
       "path": "public/assets/manual/writing-instruments/01-complete-wording-preview.webp",
-      "bytes": 73814,
-      "sha256": "d0187ddc711d71cea3db8127fdc735e25e33271e7f7ad9db4273137f66a96a4e",
+      "bytes": 56918,
+      "sha256": "f025cf1d3e59aa99027b909b511658573cb2221c7274ce72ed9b4bf96a3f6d53",
       "releaseTransfer": "new",
       "provenance": "Parent-prepared test recording and stills"
     },
@@ -338,5 +338,6 @@
     }
   ],
   "manifestPath": "public/assets/instruments/release-files.json",
-  "complete": true
+  "complete": true,
+  "manualRefreshedOn": "2026-10-19"
 }

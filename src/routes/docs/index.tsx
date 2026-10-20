@@ -335,25 +335,35 @@ export default component$(() => {
               <p class="manual-chapter">01 · At the desk</p>
               <h2 class="manual-h2">Begin a piece</h2>
               <p class="manual-lead">
-                Give the room a direction. Then make the page your own.
+                Meet Morgan Vale, who has four thousand words about salt
+                caravans and no idea what the essay is for. This manual follows
+                that draft, Salt Roads, from a brief to a proof.
               </p>
               <ChapterIllustrations chapter="getting-started" />
+              <p class="manual-p">
+                Twyne is a writing desk with an editorial room attached. You
+                write on the page. A small cast of editors reads in the margin,
+                each with a different job, and nothing they say changes a word
+                until you say so. Three habits make the room worth having:
+              </p>
               <ol class="manual-start">
                 <li>
-                  <strong>Set the brief.</strong> The{" "}
-                  <a href="#dossier">dossier</a> holds your audience, purpose
-                  and the shape of the piece.
+                  <strong>Say what the piece is for.</strong> The{" "}
+                  <a href="#dossier">dossier</a> holds the reader, the goal and
+                  the shape of the piece. Editors with a brief give better notes
+                  than editors guessing.
                 </li>
                 <li>
-                  <strong>Write at the desk.</strong> Your draft saves on this
-                  device.
-                  <a href="#flow"> The margin</a> makes room for feedback
-                  without taking you away.
+                  <strong>Write first, read notes later.</strong> Your draft
+                  saves on this device as you type.{" "}
+                  <a href="#flow">The margin</a> holds feedback beside the
+                  passage it belongs to, and waits until you look up.
                 </li>
                 <li>
-                  <strong>Make a revision.</strong> Follow a comment to its
-                  passage, ask an editor, or inspect the{" "}
-                  <a href="#rubric">galley proof</a>. You choose what changes.
+                  <strong>Revise on your own terms.</strong> Follow a note to
+                  its passage, argue with it, ask a different editor, or check
+                  the <a href="#rubric">galley proof</a>. Every change is yours
+                  to make or refuse.
                 </li>
               </ol>
               <p class="manual-route">
@@ -364,53 +374,76 @@ export default component$(() => {
               <p class="manual-chapter">02 · At the desk</p>
               <h2 class="manual-h2">The dossier</h2>
               <p class="manual-lead">
-                Every piece worth writing needs a brief. The dossier is Twyne's
-                way of keeping the writer honest about what they're trying to
-                do.
+                Morgan's first draft of Salt Roads was beautiful and pointless.
+                The dossier is where you admit what a piece is supposed to do,
+                so the editors can tell you whether it does it.
               </p>
               <ChapterIllustrations chapter="dossier" />
               <p class="manual-p">
-                Before the room opens, we ask seven questions. They are not
-                optional flourishes — they are the spine of the editorial
-                conversation. When you know your audience, your goal, your tone,
-                your constraints, and what success looks like, the editors have
-                something to grip. Without it, even the cleverest feedback is
-                fishing in the dark.
+                Before the room opens, it asks a short series of questions. They
+                feel like paperwork and they are the opposite: a dossier is the
+                difference between an editor saying "this paragraph is weak" and
+                an editor saying "this paragraph loses the reader you said you
+                were writing for." Answer briefly and honestly. You can change
+                any answer later.
               </p>
-              <p class="manual-p">The seven fields:</p>
+              <p class="manual-p">
+                Ten sections, and what each is really asking:
+              </p>
               <ul class="manual-ul">
                 <li>
-                  <strong>Working Title</strong> — A name the room can hold
-                  onto.
+                  <strong>Working title.</strong> A name the room can use. It
+                  does not have to be the final one.
                 </li>
                 <li>
-                  <strong>Format</strong> — Essay, memo, chapter, dispatch,
-                  proposal…
+                  <strong>Form.</strong> Essay, memo, chapter, dispatch,
+                  proposal. The shape sets expectations about length and
+                  manners.
                 </li>
                 <li>
-                  <strong>Audience</strong> — Name the actual reader, not a
-                  demographic.
+                  <strong>Reader.</strong> One real person, not a demographic.
+                  "A friend who hates travel writing" beats "general readers."
                 </li>
                 <li>
-                  <strong>Goal</strong> — What should the piece accomplish?
+                  <strong>Intent.</strong> What should be different in the
+                  reader when they finish? This is the question Morgan could not
+                  answer, and the one that fixed the essay.
                 </li>
                 <li>
-                  <strong>Tone</strong> — How should it feel, not just sound?
+                  <strong>Voice.</strong> How it should feel to read, not just
+                  how it should sound.
                 </li>
                 <li>
-                  <strong>Constraints</strong> — Sources to keep, jargon to
-                  avoid, anecdotes to protect.
+                  <strong>Non-negotiables.</strong> Sources to keep, jargon to
+                  avoid, the anecdote that must survive every cut.
                 </li>
                 <li>
-                  <strong>Success Signal</strong> — How will you know the draft
-                  has landed?
+                  <strong>Landing.</strong> How you will know the draft has done
+                  its job. "The reader can picture the journey" is a test an
+                  editor can apply.
+                </li>
+                <li>
+                  <strong>Particulars.</strong> A few follow-up questions drawn
+                  from your own answers, to sharpen the softest ones.
+                </li>
+                <li>
+                  <strong>Prior material and References.</strong> Earlier
+                  drafts, field notes, links: anything the room should read,
+                  with a line on why it matters.
                 </li>
               </ul>
+              <p class="manual-p">
+                The working copy grades each answer as you type, from vague to
+                specific, and counts how many answers are carrying weight. A red
+                mark is not a failure. It is the room telling you which question
+                it would ask first.
+              </p>
               <div class="manual-callout">
                 <p>
-                  <strong>Pro tip:</strong> You can refine the dossier at any
-                  time by clicking "Refine the dossier" in the masthead. The
-                  room picks up the new brief on the next pass.
+                  <strong>When the piece changes its mind:</strong> choose
+                  Refine the dossier at the desk and rewrite the answer that no
+                  longer holds. Each filing is kept as an edition, and the room
+                  reads the new one on its next pass.
                 </p>
               </div>
             </section>
@@ -418,9 +451,17 @@ export default component$(() => {
               <p class="manual-chapter">03 · At the desk</p>
               <h2 class="manual-h2">The House &amp; collections</h2>
               <p class="manual-lead">
-                A standard you set once can follow the next piece.
+                Salt Roads is the second of five coastal essays. Morgan is not
+                going to type the same reader into five dossiers.
               </p>
               <ChapterIllustrations chapter="house" />
+              <p class="manual-p">
+                The House is everything you would otherwise repeat: the reader
+                you usually write for, the standards you always hold, the tone
+                of the whole enterprise. A collection narrows that for a series.
+                A folio is one manuscript with its own dossier. Context flows
+                downward, and the most specific layer wins:
+              </p>
               <ol class="manual-inheritance" aria-label="Context inheritance">
                 <li>
                   <strong>House</strong>
@@ -436,10 +477,11 @@ export default component$(() => {
                 </li>
               </ol>
               <p class="manual-p">
-                A filled-in folio field takes precedence over its collection,
-                then the House. Leave a field blank to inherit it. Working
-                titles belong to each folio; charter articles accumulate across
-                the three levels.
+                A filled-in folio field overrides its collection, which
+                overrides the House. Leave a field blank and it inherits.
+                Working titles belong to each folio alone. Charter articles are
+                the exception: they accumulate, so a House rule applies to every
+                piece even when a collection adds rules of its own.
               </p>
               <dl class="manual-terms">
                 <div>
@@ -449,8 +491,9 @@ export default component$(() => {
                 <div>
                   <dt>Charter</dt>
                   <dd>
-                    Required or preferred standards for your House, collection
-                    or folio.
+                    Standards you require or prefer, at House, collection or
+                    folio level. "Every claim grounded in a concrete scene" is a
+                    Charter article.
                   </dd>
                 </div>
                 <div>
@@ -462,23 +505,28 @@ export default component$(() => {
                 <div>
                   <dt>Amendment</dt>
                   <dd>
-                    A proposed change to the dossier. It takes effect when you
-                    file it.
+                    A proposed change to the dossier, usually offered from the
+                    margin. It takes effect only when you file it.
                   </dd>
                 </div>
               </dl>
               <p class="manual-p">
                 Open <Link href="/house/">the House</Link> to arrange
-                collections, inspect inherited context and read the register of
-                changes. “What the models read” shows the assembled dossier and
-                charter; individual tools add their own instructions and
-                excerpts. The Engine room holds developer diagnostics.
+                collections, inspect what a folio inherited, and read the
+                register of changes. "What the models read" is the assembled
+                dossier and charter exactly as the editors receive it; each tool
+                adds its own instructions and excerpts on top. The Engine room
+                holds developer diagnostics and nothing a writer needs.
               </p>
               <div class="manual-callout">
                 <p>
-                  <strong>When the piece changes direction:</strong> Refine the
-                  dossier yourself, or review an amendment offered in the
-                  margin. The room uses the updated brief on its next pass.
+                  <strong>
+                    If the editors start asking about something you never told
+                    them:
+                  </strong>{" "}
+                  look in the register. A collection default or an inherited
+                  Charter article is usually the answer, and the source stamp on
+                  each field says which.
                 </p>
               </div>
             </section>
@@ -486,35 +534,41 @@ export default component$(() => {
               <p class="manual-chapter">04 · At the desk</p>
               <h2 class="manual-h2">Writing in flow</h2>
               <p class="manual-lead">
-                The page stays central. Help can wait in the margin.
+                Morgan writes in long runs and resents anything that interrupts
+                one. The room is built to wait.
               </p>
               <ChapterIllustrations chapter="flow" />
               <p class="manual-p">
                 While you work, Twyne can bring comments, sources, books,
-                records and connections to earlier writing beside the relevant
-                passage. Hover or focus a marker to see its connections; click
-                it to open the conversation in the same margin.
+                records and echoes of your earlier writing into the margin, each
+                beside the passage it concerns. Nothing pops up over the page.
+                Hover or focus a marker to see what it connects to; select it to
+                open the conversation in the same margin.
               </p>
               <h3 class="manual-h3">A quieter page</h3>
               <p class="manual-p">
-                Automatic focus uses your typing cadence to quiet the room
-                during a sustained run. New ambient cards wait. When you pause
-                or reach for the room, its controls return. You can enter focus
-                yourself or leave it with <kbd class="manual-kbd">Esc</kbd>.
+                Automatic focus reads your typing cadence. When you have been
+                writing steadily for a while, it quiets the room: new cards
+                wait, controls recede, and the page is the only thing left.
+                Pause, or reach for the room, and it comes back. You can also
+                enter focus yourself with Zen in the manuscript status bar, and
+                leave it with <kbd class="manual-kbd">Esc</kbd>.
               </p>
               <h3 class="manual-h3">Help when you need it</h3>
               <p class="manual-p">
-                When a passage stalls, the margin can offer one relevant
-                connection or a short way into the next sentence. These are
-                suggestions you can set aside. A change of purpose may prompt an
-                amendment; it never silently rewrites your dossier.
+                When a passage stalls, the margin may offer a single connection
+                or a short way into the next sentence. These are offers, not
+                corrections; ignore them and they go away. If what you are
+                writing drifts from the dossier, the room may propose an
+                amendment. It never rewrites the brief behind your back.
               </p>
               <div class="manual-callout">
                 <p>
                   <strong>Your controls:</strong> Automatic review, margin
-                  tools, automatic focus and cover lookups have separate
-                  switches in the review controls. Timing and item preferences
-                  are learned on this device. Cover lookups send book or record
+                  tools, automatic focus and cover lookups each have their own
+                  switch in the review controls. The desk learns your timing and
+                  preferences on this device. Cover lookups are the one feature
+                  here that talks to the outside world: they send book or record
                   titles to external catalogues.
                 </p>
               </div>
@@ -523,45 +577,49 @@ export default component$(() => {
               <p class="manual-chapter">05 · At the desk</p>
               <h2 class="manual-h2">The piece</h2>
               <p class="manual-lead">
-                See what changes across the draft, with the passages and
-                controls to work on it.
+                Some problems only show up across the whole draft: the voice
+                that shifts, the name spelled two ways, the character who
+                vanishes for a chapter.
               </p>
               <ChapterIllustrations chapter="the-piece" />
               <h3 class="manual-h3">Useful without a model</h3>
               <p class="manual-p">
-                The local desk watches first-person stance, similar names and
-                the conventions your draft mostly follows: spelling, small
-                numbers, quotation marks, dashes and list punctuation. It also
-                maps recurring names across headed sections. A finding is a
-                pattern to inspect; you decide whether it needs a change.
+                The piece runs on this device, with no model and no cost. It
+                watches first-person stance, similar names, and the conventions
+                your draft mostly follows: spelling, small numbers, quotation
+                marks, dashes and list punctuation. It also maps where each
+                recurring name appears across the headed sections. A finding is
+                a pattern worth a look. Whether it is a problem is your call.
               </p>
               <p class="manual-p">
-                Select Stance, Names, Style or Presence to see that lens on the
-                page. Open a finding for its passages and available actions. On
-                a narrow screen, the desk sits below the writing area; Close
-                returns the space to your draft. Zen hides it while you write.
+                Choose Stance, Names, Style or Presence to see that lens on the
+                page. Open a finding for its passages and the actions it offers.
+                On a narrow screen the desk sits below the writing area, and
+                Close gives the space back to the draft. Zen hides it while you
+                write.
               </p>
               <h3 class="manual-h3">Know what the score means</h3>
               <p class="manual-p">
-                The ≈ sign identifies an estimate. Consistency can update from
-                local rules as you revise; that change is not a new editorial
-                reading. Score details separates measures by rule from those by
-                review. An overall estimate begins at about 150 words.
+                The ≈ sign marks an estimate. Consistency can move as you
+                revise, because local rules re-count; that movement is not a new
+                editorial opinion. Score details separates the measures made by
+                rule from those made by review. An overall estimate appears at
+                about 150 words.
               </p>
               <p class="manual-p">
-                Confirm with a full read requests a fresh review of the current
-                draft. It needs automatic review enabled, at least 500 words and
-                an available signed-in model service. The desk explains when a
-                request cannot run. Later edits make the score an estimate again
-                until the revised draft has been read.
+                Confirm with a full read asks for a fresh editorial reading of
+                the current draft. It needs automatic review switched on, at
+                least 500 words, and a signed-in model service. The desk says so
+                when a request cannot run. Edit again afterwards and the score
+                becomes an estimate until the new draft has been read.
               </p>
               <div class="manual-callout">
                 <p>
                   <strong>Your choices stay yours.</strong> Fixes change only
-                  the listed passages and support Undo. Deliberate exceptions
-                  stay with the folio on this device. For pieces above 80,000
-                  characters, the desk pauses these checks and asks you to
-                  divide the work into folios.
+                  the listed passages, and Undo reverses them. A deliberate
+                  exception stays with the folio on this device. Above 80,000
+                  characters the desk pauses these checks and asks you to divide
+                  the work into folios.
                 </p>
               </div>
             </section>
@@ -569,91 +627,96 @@ export default component$(() => {
               <p class="manual-chapter">06 · At the desk</p>
               <h2 class="manual-h2">Writing instruments</h2>
               <p class="manual-lead">
-                Choose the words, hear their rhythm, follow a connection, or
-                leave a question working at the desk.
+                A sentence that is almost right. A paragraph that sounds like
+                one you wrote earlier. A scene with no sound in it. Each gets a
+                tool that opens beside the words, not instead of them.
               </p>
               <p class="manual-p">
-                Select text in the manuscript to open the tools that belong to
-                it. A word offers Alternatives; a passage offers Rework, with
+                Select text in the manuscript and the tools that fit it appear.
+                A single word offers Alternatives. A passage offers Rework, with
                 Hear it read, Threads, Scene bench and Task desk under More. The
-                Compositor also opens Task desk from Review. Close a tool or
-                press Escape to return to the page.
+                Compositor also opens Task desk from Review. Close a tool, or
+                press Escape, and the page is back.
               </p>
               <ChapterIllustrations chapter="writing-instruments" />
               <h3 id="sentence-bench" class="manual-h3">
                 Work on a whole sentence
               </h3>
               <p class="manual-p">
-                <strong>Rewrite</strong> brings together complete earlier
-                wordings, available rule changes and model alternatives. Each
-                identifies its source and word-count change. Compare alongside
-                keeps the original beside the candidate; hover or keyboard-focus
-                a candidate to preview it in the manuscript. Edit the working
-                wording, then choose Use this wording. Grammar status and any
-                unverified meaning are shown; your usual Undo restores the edit.
+                Morgan's opening line has been rewritten nine times. Sentence
+                bench keeps the working wording at the top with Use this wording
+                beside it. <strong>Rewrite</strong> lists complete earlier
+                wordings, rule-based changes and model alternatives, each with
+                its word-count change. Choose one to make it the working
+                wording, or Compare to keep the original alongside. Hover or
+                keyboard-focus a candidate to preview it in place on the page.
+                How these were checked shows the grammar status and any meaning
+                the check could not verify. Undo restores the edit.
               </p>
               <p class="manual-p">
-                <strong>Words</strong> shows bundled thesaurus choices inside
-                the complete sentence and underlines words repeated in the
-                paragraph. These choices can change the meaning. With the Words
-                in context pack installed, On-device alternatives adds local
-                word predictions. A likely word still needs your reading.
+                <strong>Words</strong> offers bundled thesaurus choices shown
+                inside the full sentence, and underlines words you have already
+                used in the paragraph. A synonym can change the meaning, so read
+                the sentence again. With the Words in context pack installed,
+                On-device alternatives adds local word predictions. Likely is
+                not the same as right.
               </p>
               <p class="manual-p">
-                <strong>Place</strong> shows neighbouring positions with the
-                sentences on either side. Read each arrangement before choosing
-                Move here. The reasons come from local rules; the positions have
-                not received a model judgement. <strong>Hear</strong> reads the
-                preceding sentence, the working wording and the following
-                sentence through your narration player. It can use a downloaded
-                local voice or your configured voice service.
+                <strong>Place</strong> shows where else the sentence could sit,
+                with the sentences on either side. Read each arrangement before
+                choosing Move here; the reasons come from local rules and no
+                model has judged them. <strong>Hear</strong> reads the sentence
+                before, the working wording and the sentence after through your
+                narration player, using a downloaded local voice or your voice
+                service.
               </p>
               <h3 id="writing-threads" class="manual-h3">
                 Follow a thread
               </h3>
               <p class="manual-p">
-                Threads pairs exact sentences from the manuscript. Hover or
-                keyboard-focus a pair to mark both passages; choose a sentence
-                to go to it. Local checks identify repeated wording, word
-                overlap and possible references. A relation remains unverified
-                unless the judgement service has read it; model readings name
-                their source and show their uncertainty.
+                Threads pairs exact sentences from the manuscript that may be
+                talking to each other. Hover or keyboard-focus a pair to mark
+                both passages; choose a sentence to go to it. Local checks find
+                repeated wording, shared vocabulary and possible references. A
+                relation stays unverified until the judgement service has read
+                it; a model reading names its source and shows how sure it is.
               </p>
               <p class="manual-p">
                 For an exact repeat, you can remove either occurrence as one
-                undoable edit. Repetition may be deliberate, so leaving both is
-                always a choice. If the passage changes, reopen the instrument
-                before acting on its earlier reading.
+                undoable edit. Repetition is sometimes the point, so leaving
+                both is always an option. If the passage changes, reopen the
+                instrument before trusting its earlier reading.
               </p>
               <h3 id="writing-entities" class="manual-h3">
                 Follow an entity through the piece
               </h3>
               <p class="manual-p">
                 In the instrument desk, choose Entities. Select a name candidate
-                to see its mentions across sections and inspect the source
-                passages. This local index can include places or ordinary
-                capitalised words; a name candidate is not a confirmed
-                character. Spelling variants are grouped by a local rule.
+                to see every mention across the sections and read the source
+                passages. The index is local and literal: it can include places
+                or ordinary capitalised words, and a candidate is not a
+                confirmed character. Spelling variants are grouped by a local
+                rule.
               </p>
               <p class="manual-p">
                 Choose a reading, then Read with judgement model to inspect
-                relationships by section, compare a named attribute such as a
-                coat's colour, or try blind dialogue attribution. The blind
-                reading withholds speaker tags and can answer Unknown. Each
-                result keeps its exact evidence and full distribution available.
-                A possible contradiction is a lead to inspect, and a model's
-                confidence is not a grade for characterisation or dialogue.
+                relationships by section, compare a named attribute such as the
+                colour of a coat, or try blind dialogue attribution. The blind
+                reading hides speaker tags and is allowed to answer Unknown.
+                Every result keeps its exact evidence and full distribution. A
+                possible contradiction is a lead to chase, and a model's
+                confidence is not a grade for your characterisation.
               </p>
               <h3 id="paragraph-readings" class="manual-h3">
                 Read paragraphs; keep your choices
               </h3>
               <p class="manual-p">
-                Open Paragraph readings in The piece to inspect each paragraph's
+                Open Paragraph readings in The piece to see each paragraph's
                 scores and narrating tense. Local English cues and Jev readings
-                are labelled separately. Inspect distributions and context shows
-                the exact paragraph behind a reading, including a split or
-                uncertain result. These readings are separate from the
-                whole-piece grade and its estimate.
+                are labelled separately so you know which is which. Inspect
+                distributions and context shows the exact paragraph behind a
+                reading, including a split or uncertain result. These readings
+                stand apart from the whole-piece grade and its estimate.
               </p>
               <p class="manual-p">
                 Keeping a deliberate style or name exception saves the existing
@@ -666,88 +729,96 @@ export default component$(() => {
               </h3>
               <p class="manual-p">
                 Sentence bench, each Threads pair and Scene bench offer
-                <strong> Ask the room</strong>. Your judgement model, including
-                Jev when selected, reads the current passage, your working
-                proposal and the tool's question to choose a helpful editor. It
-                can choose no one. You can also choose an editor yourself.
+                <strong> Ask the room</strong>. Your judgement model, Jev when
+                selected, reads the passage, your working proposal and the
+                tool's question, then chooses the editor most likely to help. It
+                may choose no one. You can also pick an editor yourself.
               </p>
               <p class="manual-p">
                 The chosen editor replies in Marginalia, with their portrait and
                 name above the critique. The saved question keeps the original
-                passage separate from unapplied wording or scene ideas. The
-                reply uses your writing model; provider settings govern charges.
-                If the source changes before the request is filed, reopen the
-                instrument. Your manuscript text stays yours to revise.
+                passage separate from any unapplied wording or scene idea, so
+                the editor knows what is on the page and what is only proposed.
+                The reply uses your writing model and your provider settings
+                govern the charge. If the source changes before the request is
+                filed, reopen the instrument. The manuscript stays yours.
               </p>
               <ChapterIllustrations chapter="instrument-room" />
               <h3 id="task-desk" class="manual-h3">
                 Leave a question at the Task desk
               </h3>
               <p class="manual-p">
-                Choose Writing review or Research selected account resources,
-                check the reference passage, and describe what would help. For
-                research, enable resource access in Account sources and choose
-                up to three texts. The task reads those resources; it does not
-                search the open web.
+                Some questions need more than a margin note: "does the ford
+                scene contradict the field notes?" Choose Writing review or
+                Research selected account resources, confirm the reference
+                passage, and describe what would help. For research, enable
+                resource access in Account sources and choose up to three texts.
+                The task reads those and only those; it does not search the open
+                web.
               </p>
               <p class="manual-p">
                 Sign in with Not Organic and sync the folio before queueing.
-                Once your account accepts the request, server work can continue
-                after the tab closes. It uses your hosted model and account
-                credit. Return to this folio's Task desk for its status, result,
-                saved passage and source excerpts. If the draft has changed,
-                review the earlier context before using the result.
+                Once your account accepts the request, the work continues on the
+                server after you close the tab, using your hosted model and
+                account credit. Come back to this folio's Task desk for the
+                status, the result, the saved passage and the source excerpts.
+                If the draft has moved on, read the earlier context before
+                acting on the answer.
               </p>
               <p class="manual-p">
-                You can cancel unfinished work. A request already sent to a
-                provider may still finish and incur its charge, but its
-                cancelled result is discarded. Mark a returned result Useful or
-                Not useful and add a comment to save feedback with the task.
-                Results remain proposals for your review.
+                You can cancel unfinished work. A request already with a
+                provider may still finish and incur its charge, but its result
+                is discarded. Mark a returned result Useful or Not useful and
+                add a comment; the feedback is saved with the task. Results are
+                proposals, never edits.
               </p>
               <h3 id="on-device-writing" class="manual-h3">
                 Keep a few tools on your device
               </h3>
               <p class="manual-p">
                 From Task desk, choose On-device tools. Passage connections,
-                Words in context and Say it are separate English-language packs
-                with their download sizes shown. Download &amp; load is an
-                explicit choice; Stop download and Remove pack are available.
+                Words in context and Say it are separate English-language packs,
+                each with its download size shown. Download &amp; load is an
+                explicit choice, with Stop download and Remove pack beside it.
                 Model files come from Hugging Face and the shared runtime from
-                jsDelivr. Keep the page open for the first load. These
-                operations use no account credit, and your passages and
-                recordings stay on this device.
+                jsDelivr; keep the page open for the first load. Once installed,
+                these tools use no account credit, and your passages and
+                recordings never leave the device.
               </p>
               <p class="manual-p">
-                Passage connections compares nearby passages you supply. Its
-                similarity measure invites a closer reading; it does not prove a
-                repetition or missing transition. For <strong>Say it</strong>,
-                install the speech pack, select a sentence, then record up to a
-                minute or choose an audio clip. Review and edit the transcript
-                before using it as a sentence candidate. Browser storage can be
-                cleared or evicted, so a saved pack may need downloading again.
+                Passage connections compares nearby passages you choose. Its
+                similarity score is an invitation to read closer; it does not
+                prove a repetition or a missing transition. For{" "}
+                <strong>Say it</strong>, install the speech pack, select a
+                sentence, then record up to a minute or pick an audio clip.
+                Review the transcript before using it as a candidate wording.
+                Browsers can clear or evict storage, so a pack may one day need
+                downloading again.
               </p>
               <h3 id="scene-bench" class="manual-h3">
                 See what a scene gives you
               </h3>
               <p class="manual-p">
-                Scene bench inventories place, time, light, sound, movement and
-                pressure through exact quotes from the selected passage. The
-                local English scan names its cues. A cue it does not find may
-                still be present in the writing. An optional judgement reading
-                can select evidence and assess pressure; its service and cost
-                information appear before you request it. Hear the passage uses
-                your narration player.
+                Scene bench takes stock of a passage by sense: place, time,
+                light, sound, movement and pressure, each backed by exact quotes
+                from your selection. The local English scan names the cue it
+                found. A cue it did not find may still be there in a form it
+                does not recognise. An optional judgement reading can select
+                evidence and assess pressure; its service and cost appear before
+                you ask for it. Hear the passage uses your narration player.
               </p>
               <ChapterIllustrations chapter="scene-bench" />
               <div class="manual-callout">
                 <p>
-                  <strong>Ideas stay beside the evidence.</strong> Save a detail
-                  you want to try without changing the manuscript. Image, sound
-                  and motion briefs keep those additions separate from the
-                  original passage. You can copy a brief into another tool;
-                  media generation is not connected here. The bench asks for a
-                  shorter selection above 12,000 characters or 64 sentences.
+                  <strong>Ideas stay beside the evidence.</strong> Under Try a
+                  detail, save a sound or an image you want to try without
+                  touching the manuscript. Image, sound and motion briefs keep
+                  those additions clearly separate from the original passage,
+                  ready to paste into another tool. See it as a reader might can
+                  sketch a picture of the scene, but scene pictures are off
+                  until you enable them in Settings, because generating one
+                  spends credit. Above 12,000 characters or 64 sentences the
+                  bench asks for a shorter selection.
                 </p>
               </div>
             </section>
@@ -755,17 +826,20 @@ export default component$(() => {
               <p class="manual-chapter">07 · The editorial room</p>
               <h2 class="manual-h2">Your editors</h2>
               <p class="manual-lead">
-                Five resident voices. Each reads with a different lens. Together
-                they cover the ground a single editor can't.
+                Five resident voices, each reading for something different. No
+                single editor is right about everything, which is rather the
+                point of having five.
               </p>
               <ManualVideo film={MANUAL_FILMS.room} />
               <ManualEditors />
               <p class="manual-p">
-                Recognise a voice by its face as well as its name. The same
-                portraits accompany the editors' critiques, margin replies and
-                individual rubric readings. A custom editor without a portrait
-                uses their initials. From a writing instrument, Ask the room
-                brings an editor into the question you are already working on.
+                You will come to know them by their faces. The same portraits
+                accompany each editor's critiques, margin replies and rubric
+                readings, so a glance tells you whether it was the sceptic or
+                the copy chief who objected. A custom editor without a portrait
+                signs with their initials. From any writing instrument, Ask the
+                room brings one of them into the question you are already
+                working on.
               </p>
               <h3 class="manual-h3">Arrange your room</h3>
               <ManualWalkthrough id="room" guide={GUIDES.room} />
@@ -779,80 +853,87 @@ export default component$(() => {
                   >
                     the Room of Editors
                   </Link>{" "}
-                  to add, edit, or rearrange your cast. Each editor needs a
-                  name, a role, and a description of their voice. The AI uses
-                  these to stay in character.
+                  to add, edit or reorder the cast. An editor needs a name, a
+                  role and a description of how they talk; the more specific the
+                  description, the more consistently the model stays in
+                  character. Morgan's Route Reader exists because nobody else in
+                  the room cared about distances.
                 </p>
               </div>
 
-              <h3 class="manual-h3">Changing the Model</h3>
+              <h3 class="manual-h3">Changing the model</h3>
               <p class="manual-p">
-                Each editor's voice is shaped by the model that reads for them.
-                A careful, precise model makes Mlle. Sceptique sharper. A warmer
-                model makes Sœur Encourageante more generous. Go to{" "}
+                Each editor is only as good as the model reading for them. A
+                careful, precise model makes Mlle. Sceptique sharper. A warmer
+                one makes Sœur Encourageante more generous. In{" "}
                 <Link
                   href="/settings"
                   class="underline hover:text-[var(--color-vermilion)]"
                 >
                   Preferences
                 </Link>{" "}
-                to assign different models to different tasks — the room adapts.
+                you can assign different models to different jobs, and the room
+                adapts.
               </p>
             </section>
             <section id="rubric" class="manual-section">
               <p class="manual-chapter">08 · The editorial room</p>
               <h2 class="manual-h2">The galley proof</h2>
               <p class="manual-lead">
-                Check the shape of the draft, then choose an editorial reading.
+                Salt Roads got a B. That is not information. The reasons under
+                the grade are.
               </p>
               <ChapterIllustrations chapter="rubric" />
               <p class="manual-p">
-                The <strong>static features</strong> are deterministic —
-                sentence length distribution, type-token ratio, citation
-                density, paragraph shape. These never call an API and never cost
-                a token. They give you a cold, honest picture of the draft's
-                mechanical health.
+                The <strong>static features</strong> are the part of the proof
+                that never guesses: sentence length distribution, type-token
+                ratio, citation density, paragraph shape. They are computed on
+                this device, cost nothing and call nothing. They give you a
+                cold, honest picture of the draft's mechanics, and nothing at
+                all about whether it is any good.
               </p>
               <h3 class="manual-h3">Quick check</h3>
               <p class="manual-p">
-                When the signed-in service is available, the default check uses
-                one typed judgement request to assess your enabled criteria,
-                including custom ones. This produces a grade without separate
-                verdicts from the five editors. If the quick check is
-                unavailable, Twyne tries the room reading instead.
+                When the signed-in service is available, the default check makes
+                one typed judgement request against your enabled criteria,
+                custom ones included. You get a grade without separate verdicts
+                from the five editors. If the quick check is unavailable, Twyne
+                falls back to the room reading.
               </p>
               <h3 class="manual-h3">Ask the editors</h3>
               <p class="manual-p">
-                Choose “Ask the editors” for the independent room reading. Each
-                persona gives a score and rationale. That path combines
-                editorial verdicts with static features; its Target Fit check
-                caps shape scores when the piece misses its audience or purpose.
+                Choose Ask the editors for the full room reading. Each editor
+                gives a score and a rationale, and the places where they
+                disagree are usually where the revision is. This path combines
+                editorial verdicts with the static features. Its Target Fit
+                check caps the shape scores when a piece misses the audience or
+                purpose in its dossier, because a beautifully built essay for
+                the wrong reader is still the wrong essay.
               </p>
-              <p class="manual-p">Grading scale:</p>
+              <p class="manual-p">What the letters mean:</p>
               <ul class="manual-ul">
                 <li>
-                  <strong>A range</strong> — Publishable or nearly so. Minor
-                  polish.
+                  <strong>A range.</strong> Publishable or nearly so. Polish.
                 </li>
                 <li>
-                  <strong>B range</strong> — Solid draft with clear, fixable
-                  issues.
+                  <strong>B range.</strong> A solid draft with clear, fixable
+                  problems. This is where Salt Roads sits.
                 </li>
                 <li>
-                  <strong>C range</strong> — Doing the work but needs a real
-                  pass.
+                  <strong>C range.</strong> Doing the work, but a real pass is
+                  still needed.
                 </li>
                 <li>
-                  <strong>D–F range</strong> — The important next pass is still
-                  ahead.
+                  <strong>D to F range.</strong> The important next pass is
+                  still ahead.
                 </li>
               </ul>
               <div class="manual-callout">
                 <p>
-                  <strong>Use the rationale:</strong> Read the explanation
-                  beside a grade and compare it with your purpose. The rubric
-                  gives you another reading of the draft; you decide what
-                  deserves a revision.
+                  <strong>Use the rationale, not the letter:</strong> read the
+                  explanation beside each criterion and hold it against your own
+                  purpose. The rubric is one more reading of the draft. You
+                  decide which of its complaints deserve a revision.
                 </p>
               </div>
             </section>
@@ -860,59 +941,59 @@ export default component$(() => {
               <p class="manual-chapter">09 · The editorial room</p>
               <h2 class="manual-h2">Margin conversations</h2>
               <p class="manual-lead">
-                Threaded comments alongside the draft. Your own notes, plus the
-                editors' voices when you ask them in.
+                Every argument about a passage happens next to the passage. Your
+                notes, the editors' notes, and the replies between them.
               </p>
               <ChapterIllustrations chapter="marginalia" />
               <p class="manual-p">
-                Select any passage in the manuscript and click "Comment" to
-                pencil a margin note. Comments are folio-scoped — they travel
-                with the draft, not the global state. Each comment can have
-                replies, and you can ask any editor to weigh in by clicking "Ask
-                an editor."
+                Select any passage and choose Comment to leave a note in the
+                margin. Notes belong to the folio and travel with it. Each one
+                can hold replies, and Ask an editor invites a particular voice
+                into the thread when you want a second opinion on your own
+                doubt.
               </p>
               <p class="manual-p">
-                Click a passage marker to unfold its thread beside the
-                manuscript. Reply, ask an editor or resolve the comment there.
-                One conversation stays in the foreground at a time; on a narrow
-                screen, its card stays anchored to the passage. Press Esc to
-                close it. Unsent replies survive switching threads during this
-                visit, but not a reload.
+                Select a passage marker to unfold its thread beside the
+                manuscript. Reply, ask an editor or resolve it there. One
+                conversation is in the foreground at a time; on a narrow screen
+                its card stays anchored to the passage. Press Esc to close it. A
+                reply you have not sent survives switching threads during the
+                visit, but not a reload, so send it or lose it.
               </p>
             </section>
             <section id="apparatus" class="manual-section">
               <p class="manual-chapter">10 · The editorial room</p>
               <h2 class="manual-h2">Research &amp; citations</h2>
               <p class="manual-lead">
-                Research, bibliography, and citation — the machinery behind the
-                prose.
+                The 1911 survey, the tide table, the book Morgan keeps
+                paraphrasing. The Apparatus notices them and keeps them in
+                order.
               </p>
               <ChapterIllustrations chapter="apparatus" />
               <p class="manual-p">
-                The Apparatus has three jobs: find sources, save them, and cite
-                them. As you write, it detects DOIs, URLs, ISBNs, and
-                author-year references automatically. You can also search for
-                sources by query — the panel fetches a shortlist with title,
-                author, publisher, and a snippet. Save what matters to your
-                bibliography.
+                The Apparatus does three things: finds sources, keeps them, and
+                cites them. As you write it recognises DOIs, URLs, ISBNs and
+                author-year references in the text. You can also search by
+                query; the panel returns a shortlist with title, author,
+                publisher and a snippet. Save what matters to the bibliography
+                and ignore the rest.
               </p>
               <p class="manual-p">
-                Bibliographies are formatted in your chosen style — MLA, APA, or
-                Chicago. Switch at any time; the saved entries reformat
-                instantly. Copy the whole bibliography to your clipboard with
-                one click.
+                The bibliography is formatted in the style you choose, MLA, APA
+                or Chicago, and switches instantly when an editor changes their
+                mind. Copy the whole list to the clipboard in one go.
               </p>
               <div class="manual-callout">
                 <p>
-                  The full Apparatus is available at{" "}
+                  The full Apparatus lives at{" "}
                   <Link
                     href="/apparatus"
                     class="underline hover:text-[var(--color-vermilion)]"
                   >
                     /apparatus
                   </Link>
-                  . The right-panel citation tab shows a quick view of detected
-                  references.
+                  . The citation tab in the right panel shows a quick view of
+                  what has been detected without leaving the page.
                 </p>
               </div>
             </section>
@@ -920,36 +1001,40 @@ export default component$(() => {
               <p class="manual-chapter">11 · The editorial room</p>
               <h2 class="manual-h2">Your account &amp; Live</h2>
               <p class="manual-lead">
-                A name in the room. A conversation when you need one.
+                A name for the editors to address you by, and a way to talk to
+                one out loud when typing is too slow.
               </p>
               <ChapterIllustrations chapter="account-and-live" />
               <p class="manual-p">
-                Sign in with Not Organic to use your account, hosted credits and
-                plan across devices. Your account name and picture identify you
-                in the room; your email belongs in private account settings. You
-                can keep writing locally without signing in.
+                Sign in with Not Organic to carry your account, hosted credits
+                and plan across devices. Your name and picture identify you in
+                the room; your email stays in private account settings and
+                appears nowhere else. You can keep writing locally without ever
+                signing in.
               </p>
               <p class="manual-p">
-                Open Talk from the compositor, an editor’s comment or the
-                narration player to speak with an editor. Live shows captions,
-                lets you mute the microphone, and can find passages or propose
-                edits. Approve a proposed edit before it changes your
-                manuscript. Switching folios ends the conversation; captions and
-                microphone recordings are not saved.
+                Talk opens a voice conversation with an editor, from the
+                compositor, from one of their comments, or from the narration
+                player. Live shows captions, lets you mute the microphone, and
+                can find passages or propose edits as you speak. A proposed edit
+                waits for your approval before it touches the manuscript.
+                Switching folios ends the conversation. Captions and microphone
+                audio are not saved.
               </p>
               <p class="manual-p">
-                Live requires a Pro plan or available Twyne welcome credit. A
+                Live needs a Pro plan or available Twyne welcome credit. A
                 conversation reserves up to $0.50; delegated language requests
-                have a separate $0.05 maximum each. The voice desk shows these
-                limits before you start.
+                cap at $0.05 each on top. The voice desk shows these limits
+                before you start, which is why it is worth reading.
               </p>
             </section>
             <section id="manuscript-tools" class="manual-section">
               <p class="manual-chapter">12 · Your work</p>
               <h2 class="manual-h2">Manuscript &amp; source tools</h2>
               <p class="manual-lead">
-                Structure the page, work in the source, and check the printed
-                proof.
+                Headings, tables, a footnote, a pull quote set just so. The page
+                is a real page, and when it is not enough there is the source
+                underneath it.
               </p>
               <ManualVideo film={MANUAL_FILMS["manuscript-tools"]} />
               <h3 class="manual-h3" id="outline-and-find">
@@ -958,22 +1043,22 @@ export default component$(() => {
               <ChapterIllustrations chapter="outline-and-find" />
               <p class="manual-p">
                 Type <strong>/</strong> at the start of a block to open the
-                command menu. Use the outline to jump among headings, or drag a
-                heading's section handle to move that section and all of its
-                subsections in one undoable edit. Find and Replace supports
-                whole words, case sensitivity, and regular expressions.
+                insert menu. The outline jumps between headings, and dragging a
+                heading's section handle moves that section with everything
+                under it in one undoable edit. Find and Replace understands
+                whole words, case and regular expressions.
               </p>
               <h3 class="manual-h3" id="tables-and-images">
                 Tables and images
               </h3>
               <ChapterIllustrations chapter="tables-and-images" />
               <p class="manual-p">
-                Tables support a dimension picker, captions, row and column
-                tools, cell shading, alignment, borders, and reusable visual
-                presets. Images can be dropped, pasted, or selected from disk;
-                selecting an image reveals its alt text, caption, alignment,
-                width, and upload status. Online images are stored with the
-                folio, while deliberately offline work keeps an inline copy.
+                Tables come with a size picker, captions, row and column tools,
+                cell shading, alignment, borders and reusable visual presets.
+                Images can be dropped, pasted or chosen from disk; select one to
+                set its alt text, caption, alignment, width and see its upload
+                status. Online images are stored with the folio. Deliberately
+                offline work keeps an inline copy instead.
               </p>
               <h3 class="manual-h3" id="source-and-proof">
                 Source and proof
@@ -983,11 +1068,12 @@ export default component$(() => {
                 guide={GUIDES["manuscript-tools"]}
               />
               <p class="manual-p">
-                The Typst workspace lets you edit the source and inspect a
-                paginated proof. Source drafts recover locally after a reload.
-                Apply a valid draft to update the folio; if another device has
-                changed its base, resolve that conflict before applying. An
-                invalid draft stays available to fix.
+                The Typst workspace lets you edit the source directly and read a
+                paginated proof. A source draft recovers on this device after a
+                reload. Apply a valid draft to update the folio; if another
+                device has changed the base in the meantime, resolve that
+                conflict first. An invalid draft is never applied and stays
+                there for you to fix.
               </p>
               <h3 class="manual-h3" id="page-layout">
                 Shape the page
@@ -998,85 +1084,85 @@ export default component$(() => {
               </h3>
               <ChapterIllustrations chapter="notes-and-equations" />
               <p class="manual-p">
-                Inline and display equations accept LaTeX and render locally.
-                Footnotes and endnotes can be edited beside their references,
-                and View → Layout holds the running header and footer controls.
-                Inspect their placement in the proof. Notes and equations remain
-                portable in HTML and Markdown exports.
+                Inline and display equations accept LaTeX and render on this
+                device. Footnotes and endnotes are edited beside their
+                references. The running header and footer live under View, then
+                Layout, and the proof is where you check their placement. Notes
+                and equations survive HTML and Markdown export intact.
               </p>
             </section>
             <section id="folios" class="manual-section">
               <p class="manual-chapter">13 · Your work</p>
               <h2 class="manual-h2">Folios, export &amp; publishing</h2>
               <p class="manual-lead">
-                One piece per folio. Related pieces can share a collection.
+                One piece per folio. Salt Roads, its outline and a scratch file
+                of cut paragraphs share a collection and nothing else.
               </p>
               <ChapterIllustrations chapter="folios" />
               <p class="manual-p">
-                Folios are separate documents. You might keep a main draft,
-                scratch notes and an outline together in a collection. Switch
-                between them from the left drawer. Each folio keeps its own word
-                count, update time, and (optionally) its own layout settings.
+                Folios are separate documents with separate dossiers. Switch
+                between them from the drawer. Each keeps its own word count,
+                last-updated time and, if you want, its own layout settings.
               </p>
               <p class="manual-p">
-                <strong>Export</strong> your folio as Markdown, standalone HTML,
-                plain text, PDF, Word, Typst source, or a full Twyne backup
-                (JSON with brief, folios, and content). Use the File menu in the
-                masthead.
+                <strong>Export</strong> a folio as Markdown, standalone HTML,
+                plain text, PDF, Word, Typst source, or a full Twyne backup: a
+                JSON file with the brief, the folios and their content. All of
+                it is under File in the masthead.
               </p>
               <p class="manual-p">
-                <strong>Share</strong> a public reading view of any folio.
-                Anyone with the link can read it; no one can edit it. Unpublish
-                instantly.
+                <strong>Share</strong> publishes a public reading view of a
+                folio. Anyone with the link can read it and nobody can edit it.
+                Unpublish takes it down at once.
               </p>
               <p class="manual-p">
                 <strong>Publish to your PDS</strong> by connecting Bluesky or
-                another ATProto provider in the Share dialog. This publishing
-                connection is separate from your Not Organic sign-in. Twyne
-                files a Standard.site publication and document in your own
-                repository, serves a verifiable public reading page, and updates
-                the same record when you re-publish. Unpublishing removes the
-                document from your PDS.
+                another ATProto provider in the Share dialog. That connection is
+                separate from your Not Organic sign-in. Twyne files a
+                Standard.site publication and document in your own repository,
+                serves a verifiable public reading page, and updates the same
+                record when you publish again. Unpublishing removes the document
+                from your PDS.
               </p>
               <p class="manual-p">
-                <strong>PDF (Typst)</strong> compiles your manuscript on this
-                device with bundled fonts. The proof supports equations and
-                diagrams, and reports source or asset problems before export.
-                You can also download the .typ source. Private editorial
-                annotations are removed from that exported copy; your saved
-                source stays intact.
+                <strong>PDF (Typst)</strong> compiles the manuscript on this
+                device with bundled fonts, equations and diagrams included, and
+                reports any source or asset problem before the export. You can
+                also download the .typ source. Private editorial annotations are
+                stripped from the exported copy; your saved source keeps them.
               </p>
             </section>
             <section id="byok" class="manual-section">
               <p class="manual-chapter">14 · Your work</p>
               <h2 class="manual-h2">Bring your own key</h2>
               <p class="manual-lead">
-                Choose a hosted model or connect a provider you already use.
+                Morgan already pays for a model and would like the editors to
+                use it. Three steps, once.
               </p>
               <ChapterIllustrations chapter="byok" />
               <p class="manual-p">
-                <strong>Step 1: Add a provider.</strong> Go to{" "}
+                <strong>Add a provider.</strong> In{" "}
                 <Link
                   href="/settings"
                   class="underline hover:text-[var(--color-vermilion)]"
                 >
                   Preferences
-                </Link>{" "}
-                and turn on "Bring Your Own Key." Add your OpenAI, Anthropic, or
-                Google key. For other providers (Groq, Together, Rivet), use the
-                "OpenAI-compatible" option with your base URL.
+                </Link>
+                , switch on Bring Your Own Key and add an OpenAI, Anthropic or
+                Google key. For anything else, Groq, Together, Rivet, a local
+                server, choose the OpenAI-compatible option and give it the base
+                URL.
               </p>
               <p class="manual-p">
-                <strong>Step 2: Pick models per feature.</strong> The
-                per-feature grid lets you choose different models for the room,
-                rubric and other tools. Use the models available from your
-                connected provider.
+                <strong>Test the key.</strong> Choose Test key on the provider
+                card. A successful check proves the key reaches the model list,
+                and lets you refresh the models you can pick from.
               </p>
               <p class="manual-p">
-                <strong>Step 3: Test the key.</strong> Choose "Test key" on the
-                provider card to check access to its model list. A successful
-                check lets you refresh the available models and choose one for
-                the feature you want to use.
+                <strong>Pick models per feature.</strong> The per-feature grid
+                assigns different models to the room, the rubric and the other
+                tools. Spend the expensive model where reading quality matters
+                and leave the rest on something cheaper.
               </p>
               <p class="manual-p">Supported providers:</p>
               <ul class="manual-ul">
@@ -1089,9 +1175,9 @@ export default component$(() => {
               </ul>
               <div class="manual-callout">
                 <p>
-                  <strong>If a connection fails:</strong> Check the provider and
-                  key in Preferences, then test the connection again. You can
-                  keep drafting while the provider is unavailable.
+                  <strong>If a connection fails:</strong> check the provider and
+                  key in Preferences and test again. The desk keeps working
+                  while a provider is down; only the editors go quiet.
                 </p>
               </div>
             </section>
@@ -1099,34 +1185,35 @@ export default component$(() => {
               <p class="manual-chapter">15 · Your work</p>
               <h2 class="manual-h2">Privacy &amp; your data</h2>
               <p class="manual-lead">
-                Your manuscript is yours. We intend to keep it that way.
+                The manuscript is yours. Here is exactly where it goes, and
+                where it does not.
               </p>
               <ChapterIllustrations chapter="privacy" />
               <p class="manual-p">
-                <strong>API keys:</strong> Saved in your browser’s IndexedDB.
-                Remote BYOK requests pass through Twyne’s server relay, which
-                forwards your key and request to the selected provider. Local
-                model endpoints stay direct.
+                <strong>API keys</strong> are saved in your browser's IndexedDB.
+                A remote BYOK request passes through Twyne's server relay, which
+                forwards your key and the request to the provider you chose and
+                keeps neither. Local model endpoints are called directly.
               </p>
               <p class="manual-p">
-                <strong>Drafts and folios:</strong> Saved locally in your
-                browser profile via IndexedDB. Signing out does not erase that
-                local copy. Signing into an account with no cloud snapshot can
-                sync the existing local work into that account. Signed-in sync
-                provides cross-device access.
+                <strong>Drafts and folios</strong> are saved in your browser
+                profile. Signing out does not erase that local copy. Signing in
+                to an account that has no cloud snapshot can sync the existing
+                local work into it, and signed-in sync is what gives you the
+                same work on another device.
               </p>
               <p class="manual-p">
-                <strong>AI calls:</strong> When you BYOK, your draft text goes
-                to the provider you chose, through the relay for remote
-                endpoints. Hosted calls go through Convex and Not Organic.
-                Provider processing and content-logging consent are managed in
-                Not Organic.
+                <strong>AI calls</strong> send draft text to whichever model is
+                reading. With your own key, that is the provider you chose,
+                through the relay for remote endpoints. Hosted calls go through
+                Convex and Not Organic, where provider processing and
+                content-logging consent are managed.
               </p>
               <p class="manual-p">
-                <strong>Published pieces:</strong> Only what you explicitly
-                publish becomes a public reading page. Local work remains in the
-                browser profile; sharing and collaboration grant the access you
-                choose through their own controls.
+                <strong>Published pieces</strong> are the only ones anyone else
+                can read. Nothing becomes public until you publish it. Sharing
+                and collaboration grant exactly the access you choose, through
+                their own controls.
               </p>
             </section>
             <section id="shortcuts" class="manual-section">
@@ -1190,7 +1277,7 @@ export const head: DocumentHead = {
     {
       name: "description",
       content:
-        "The writer’s guide to Twyne: your desk, reusable House context, margin conversations, source and proof, privacy, and keyboard shortcuts.",
+        "The writer’s guide to Twyne, told through one essay: the brief, the House, the editorial room, source and proof, privacy, and keyboard shortcuts.",
     },
   ],
 };
