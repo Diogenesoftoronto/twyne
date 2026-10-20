@@ -1,12 +1,61 @@
 import { component$, type QRL } from "@qwik.dev/core";
 import { Link } from "@qwik.dev/router";
 import type { HostedUsageSummary } from "../../utils/hosted-usage";
+import {
+  formatDay,
+  formatDayRange,
+  formatUsd,
+  type CreditForecast,
+} from "../../utils/writing-forecasts";
 
 export type HostedCostState = "signed-out" | "loading" | "ready" | "error";
+
+/**
+ * Where this month's hosted spend is heading. The interval carries the
+ * uncertainty; the copy states the date plainly.
+ */
+export const CreditRunway = component$<{ forecast: CreditForecast }>(
+  ({ forecast: f }) => (
+    <div
+      class="mt-4 border-t border-dotted border-[var(--color-ink-muted)] pt-3"
+      data-testid="credit-runway"
+    >
+      <p class="text-xs font-semibold tracking-[0.1em] uppercase text-[var(--color-ink-muted)]">
+        This month
+      </p>
+      <p class="mt-1 text-sm tabular-nums">
+        Heading for ~{formatUsd(f.month.median)}{" "}
+        <span class="text-[var(--color-ink-light)]">
+          ({formatUsd(f.month.p10)}–{formatUsd(f.month.p90)})
+        </span>
+        {" · "}
+        {formatUsd(f.availableMicros)} credit left
+      </p>
+      <p
+        class={{
+          "mt-1 text-sm tabular-nums": true,
+          "text-[var(--color-vermilion)]": !f.outlastsMonth,
+        }}
+      >
+        {f.runsOut && !f.outlastsMonth ? (
+          <>
+            Credit runs out around {formatDay(f.runsOut.median)}{" "}
+            <span class="text-[var(--color-ink-light)]">
+              ({formatDayRange(f.runsOut.early, f.runsOut.late)})
+            </span>
+          </>
+        ) : (
+          <>Credit lasts past {formatDay(f.monthEnd)}</>
+        )}
+      </p>
+    </div>
+  ),
+);
 
 export const HostedCost = component$<{
   state: HostedCostState;
   summary?: HostedUsageSummary;
+  runway?: CreditForecast | null;
   onRefresh$?: QRL<() => void>;
 }>((props) => (
   <div class="mb-6 border-y border-[var(--color-ink)] py-4" aria-live="polite">
@@ -47,6 +96,7 @@ export const HostedCost = component$<{
             without final provider cost evidence.
           </p>
         )}
+        {props.runway && <CreditRunway forecast={props.runway} />}
       </>
     )}
     <div class="mt-3 flex flex-wrap items-center gap-4 text-sm">

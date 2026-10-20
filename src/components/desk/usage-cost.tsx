@@ -6,6 +6,7 @@ import { TokenDimensions } from "./token-dimensions";
 import { UsageBreakdowns } from "./usage-breakdowns";
 import { HostedCost, type HostedCostState } from "./hosted-cost";
 import type { HostedUsageSummary } from "../../utils/hosted-usage";
+import type { CreditForecast } from "../../utils/writing-forecasts";
 
 const TABS = ["cost", "features", "models", "tokens"] as const;
 type UsageTab = (typeof TABS)[number];
@@ -16,6 +17,7 @@ export const UsageCost = component$<{
   onSection$?: QRL<(section: UsageTab) => void>;
   hostedState?: HostedCostState;
   hostedSummary?: HostedUsageSummary;
+  hostedRunway?: CreditForecast | null;
   onRefreshHosted$?: QRL<() => void>;
 }>((props) => {
   const active = useSignal<UsageTab>("cost");
@@ -83,6 +85,7 @@ export const UsageCost = component$<{
               <HostedCost
                 state={props.hostedState}
                 summary={props.hostedSummary}
+                runway={props.hostedRunway}
                 onRefresh$={props.onRefreshHosted$}
               />
             )}
