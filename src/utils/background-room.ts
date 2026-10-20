@@ -1,3 +1,5 @@
+import { RHYTHM_BREAK_EVENT, type RhythmBreak } from "./flow-rhythm-estimator";
+import { predictedBreak } from "./flow-rhythm";
 import { currentModelLocale } from "../i18n/model-language";
 import { askJudgement } from "./judgement-client";
 /**
@@ -14,9 +16,8 @@ import { askJudgement } from "./judgement-client";
  *
  *   1. At least {@link WORD_DELTA_THRESHOLD} net new words since the last pass.
  *      Fiddling with a sentence is not something to interrupt over.
- *   2. Then {@link IDLE_MS} of no typing. This is an *idle* timer, not a
- *      debounce window: every keystroke pushes it back, so the room waits
- *      until the writer has actually stopped rather than firing mid-paragraph.
+ *   2. A rhythm estimate whose p10 predicts a pause of at least 60 seconds,
+ *      or {@link IDLE_MS} of observed idle time. Every keystroke resets the wait.
  *
  * On top of that sit two spend guards — a hard floor between passes and a
  * per-session cap — because this runs without the writer asking, and anything
@@ -129,6 +130,25 @@ let lastReadText = "";
 let latestText = "";
 let running = false;
 let generation = 0;
+let draftChangedAt = 0;
+
+function onPredictedBreak(event: Event): void {
+  const prediction = (event as CustomEvent<RhythmBreak>).detail;
+  if (
+    !prediction ||
+    prediction.folioId !== activeFolioId ||
+    !enabled ||
+    state.status !== "armed" ||
+    state.pendingWords < WORD_DELTA_THRESHOLD ||
+    prediction.at < draftChangedAt ||
+    prediction.at > Date.now() ||
+    prediction.lastKeyAt > prediction.at ||
+    !predictedBreak(prediction.pause, prediction.pauseSeconds)
+  )
+    return;
+  clearIdleTimer();
+  void runPass();
+}
 
 export function snapshot(): BackgroundRoomSnapshot {
   return {
@@ -182,6 +202,10 @@ export function startBackgroundRoom(args: {
   /** The draft as it stands now; read straight away if it holds unread work. */
   currentText?: string;
 }): void {
+  if (typeof window !== "undefined") {
+    window.removeEventListener(RHYTHM_BREAK_EVENT, onPredictedBreak);
+    window.addEventListener(RHYTHM_BREAK_EVENT, onPredictedBreak);
+  }
   const folioChanged = args.folioId !== activeFolioId;
   generation++;
   activeClient = args.client ?? null;
@@ -236,6 +260,8 @@ export function setBackgroundRoomEnabled(next: boolean): void {
 }
 
 export function stopBackgroundRoom(): void {
+  if (typeof window !== "undefined")
+    window.removeEventListener(RHYTHM_BREAK_EVENT, onPredictedBreak);
   generation++;
   clearIdleTimer();
   enabled = false;
@@ -273,6 +299,7 @@ export function noteExplicitConvene(): void {
 export function onDraftChanged(draftText: string): void {
   if (!enabled || !activeFolioId) return;
   latestText = draftText;
+  draftChangedAt = Date.now();
 
   const delta = changedWords(lastReadText, draftText);
   state.pendingWords = delta;
@@ -610,6 +637,9 @@ export async function currentTrajectoryDigest(): Promise<string> {
 
 /** Test seam: reset all module state between cases. */
 export function __resetForTests(): void {
+  if (typeof window !== "undefined")
+    window.removeEventListener(RHYTHM_BREAK_EVENT, onPredictedBreak);
+  draftChangedAt = 0;
   generation++;
   clearIdleTimer();
   state.status = "off";

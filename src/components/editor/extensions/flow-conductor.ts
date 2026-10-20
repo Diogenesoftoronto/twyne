@@ -23,6 +23,20 @@ import type { Node as PmNode } from "@tiptap/pm/model";
 import type { Transaction } from "@tiptap/pm/state";
 import type { ConvexClient } from "convex/browser";
 import type { PersonaReply, ProjectBrief } from "../../../types";
+import { askExtraction } from "../../../utils/extraction-client";
+import {
+  FlowRhythmEstimator,
+  RHYTHM_BREAK_EVENT,
+} from "../../../utils/flow-rhythm-estimator";
+import {
+  normalizePredictions,
+  PREDICTION_LOG_KEY,
+} from "../../../utils/flow-predictions";
+import {
+  FlowInterruptions,
+  INTERRUPTION_KEY,
+  normalizeInterruptions,
+} from "../../../utils/flow-interruptions";
 import { askJudgement } from "../../../utils/judgement-client";
 import {
   backOffSystemOne,
@@ -152,6 +166,8 @@ export interface FlowController {
   cursorTop(): number | null;
   /** The most recent qualifying slip for this folio, including after a remount. */
   lastSession(): FlowSession | null;
+  /** Median observed recovery after this kind of card, on this device. */
+  interruptionCostSeconds(kind: FlowItemKind): number | null;
 }
 
 let snapshot: FlowSnapshot = {
@@ -258,6 +274,18 @@ export function startFlowConductor(
   let reaching = false;
   let reachTimer: ReturnType<typeof setTimeout> | undefined;
   let lastKeyAt = 0;
+  let runStartedAt = 0;
+  // Observe focus bouts against the unmodified exit pause, independent of
+  // whether a forecast holds or releases the UI. Short thinking gaps can resume.
+  let observedFocusStartedAt = 0;
+  let focusOutcomeRecorded = true;
+  let observedExitPauseMs = thresholdsFor(profile).exitPauseMs;
+  let rhythmDirty = false;
+  let interruptionsDirty = false;
+  const rhythm = new FlowRhythmEstimator(() => {
+    rhythmDirty = true;
+  });
+  const interruptions = new FlowInterruptions();
   let runRecorded = true;
   let flowConfirmedUntil = 0;
   let flowDeclinedUntil = 0;
@@ -278,6 +306,7 @@ export function startFlowConductor(
   let archive: PassageIndex | null = null;
   let archiveBuilding: Promise<void> | null = null;
   let lastVisibleKey = "";
+  let lastVisibleIds = new Set<string>();
   let latestSession: FlowSession | null = null;
   let session: {
     startedAt: number;
@@ -346,13 +375,25 @@ export function startFlowConductor(
           now: Date.now(),
         })
       : { visible: [], held: 0, reasons: {} };
+    const fragile = decision.visible.filter((item) =>
+      interruptions.skip(item.kind, mode, kindWeight(profile, item.kind)),
+    );
+    decision.visible = decision.visible.filter(
+      (item) => !fragile.includes(item),
+    );
+    decision.held += fragile.length;
+    for (const item of fragile)
+      decision.reasons[item.id] = "held: costly while settling";
     for (const item of decision.visible) {
+      if (!lastVisibleIds.has(item.id))
+        interruptions.shown(item.kind, Date.now());
       if (!shown.has(item.id)) {
         shown.add(item.id);
         profile = recordItem(profile, item.kind, "shown", Date.now());
         profileDirty = true;
       }
     }
+    lastVisibleIds = new Set(decision.visible.map((i) => i.id));
     const visibleKey = decision.visible.map((i) => i.id).join("|");
     if (visibleKey !== lastVisibleKey) {
       lastVisibleKey = visibleKey;
@@ -461,9 +502,26 @@ export function startFlowConductor(
     const gap = now - lastKeyAt;
     const t = thresholdsFor(profile);
     if (lastKeyAt && gap > t.gapMs) {
+      // A key can arrive before the timer has observed the closing gap.
+      if (!runRecorded) {
+        profile = recordRun(profile, lastKeyAt - runStartedAt, lastKeyAt);
+      }
+      runStartedAt = now;
       profile = recordPause(profile, gap, now);
       profileDirty = true;
     }
+    if (lastKeyAt) {
+      if (gap >= observedExitPauseMs) {
+        rhythm.finishRun(observedFocusStartedAt, lastKeyAt);
+        observedFocusStartedAt = now;
+        observedExitPauseMs = thresholdsFor(profile).exitPauseMs;
+      }
+      if (gap >= t.gapMs) rhythm.key(lastKeyAt, now);
+    } else {
+      runStartedAt = observedFocusStartedAt = now;
+      observedExitPauseMs = t.exitPauseMs;
+    }
+    focusOutcomeRecorded = false;
     lastKeyAt = now;
     runRecorded = false;
     samples = trimSamples([...samples, { at: now, inserted, deleted }], now);
@@ -481,15 +539,40 @@ export function startFlowConductor(
     const now = Date.now();
     const t = thresholdsFor(profile);
     const previous = mode;
+    const local = readFlow(samples, now, mode, t);
+    if (lastKeyAt && local.pauseMs >= t.gapMs) {
+      const client = options.getClient();
+      rhythm.begin({
+        now,
+        lastKeyAt,
+        runStartedAt: observedFocusStartedAt,
+        runSeconds: local.runMs / 1000,
+        deleteRatio: local.recentChurn,
+        exitPauseMs: observedExitPauseMs,
+        samples,
+        profile,
+        ask:
+          isQuiet(previous) && client
+            ? (request) => askExtraction(client, request)
+            : undefined,
+        current: () => active() && enabled && options.getClient() === client,
+      });
+    }
     const next = readFlow(samples, now, mode, t, {
       reaching: reaching || interactingWithRoom(),
+      pauseDecision: rhythm.decision(now, t.exitPauseMs),
     });
 
     // Record a finished run once its closing pause is long enough.
     if (!runRecorded && next.pauseMs > t.gapMs) {
       runRecorded = true;
-      profile = recordRun(profile, next.runMs, now);
+      profile = recordRun(profile, lastKeyAt - runStartedAt, lastKeyAt);
       profileDirty = true;
+    }
+
+    if (!focusOutcomeRecorded && next.pauseMs >= observedExitPauseMs) {
+      focusOutcomeRecorded = true;
+      rhythm.finishRun(observedFocusStartedAt, lastKeyAt);
     }
 
     let nextMode = next.mode;
@@ -515,13 +598,30 @@ export function startFlowConductor(
       onModeChange(previous, nextMode, next);
     }
     setFlowAttribute(mode);
+    if (
+      next.pauseMs <= t.gapMs &&
+      (mode === "settling" || mode === "flow") &&
+      next.deleteRatio <= t.maxDeleteRatio &&
+      next.activeRatio >= t.minActiveRatio
+    ) {
+      interruptionsDirty =
+        interruptions.steady(lastKeyAt, t.settleMs) || interruptionsDirty;
+    }
+    const predictedBreak = rhythm.breakPrediction(folioId);
+    if (predictedBreak)
+      window.dispatchEvent(
+        new CustomEvent(RHYTHM_BREAK_EVENT, { detail: predictedBreak }),
+      );
 
     // A pause worth using: gather candidates and check the dossier.
     if (!isQuiet(mode) && mode !== "away" && next.pauseMs >= 1_500) {
       void gather();
       if (wordsSinceDrift >= DRIFT_EVERY_WORDS) void checkDrift();
     }
-    if (profileDirty && now % 15_000 < TICK_MS) saveProfile();
+    if (now % 15_000 < TICK_MS) {
+      if (profileDirty) saveProfile();
+      saveRhythm();
+    }
     publish();
   };
 
@@ -1297,6 +1397,17 @@ export function startFlowConductor(
 
   /* ── Settings and profile ───────────────────────────────────── */
 
+  const saveRhythm = () => {
+    if (rhythmDirty) {
+      rhythmDirty = false;
+      void saveMetaToIdb(PREDICTION_LOG_KEY, toStorable(rhythm.log));
+    }
+    if (interruptionsDirty) {
+      interruptionsDirty = false;
+      void saveMetaToIdb(INTERRUPTION_KEY, toStorable(interruptions.history));
+    }
+  };
+
   const saveProfile = () => {
     profileDirty = false;
     void saveMetaToIdb(PROFILE_KEY, toStorable(profile));
@@ -1312,6 +1423,7 @@ export function startFlowConductor(
     enabled = flow !== false && inFlow !== false;
     if (!enabled) {
       closeSession("manual");
+      rhythm.invalidate();
       mode = "working";
       flowConfirmedUntil = 0;
       setFocus(false, "automatic focus switched off");
@@ -1501,6 +1613,9 @@ export function startFlowConductor(
         return null;
       }
     },
+    interruptionCostSeconds(kind) {
+      return interruptions.interruptionCostSeconds(kind);
+    },
     lastSession() {
       return latestSession ? { ...latestSession } : null;
     },
@@ -1553,9 +1668,22 @@ export function startFlowConductor(
       (!currentSession || savedSession.endedAt > currentSession.endedAt)
     )
       latestSession = savedSession;
-    const savedProfile = await loadMetaFromIdb<FlowProfile>(PROFILE_KEY);
+    const [savedProfile, savedPredictions, savedInterruptions] =
+      await Promise.all([
+        loadMetaFromIdb<FlowProfile>(PROFILE_KEY),
+        loadMetaFromIdb(PREDICTION_LOG_KEY),
+        loadMetaFromIdb(INTERRUPTION_KEY),
+      ]);
     if (!active()) return;
     profile = normalizeProfile(savedProfile);
+    // Keep only resolved old observations; a previous editor cannot finish its pauses.
+    rhythm.log = [
+      ...normalizePredictions(savedPredictions).filter(
+        (p) => p.actualFocus !== undefined && p.actualPause !== undefined,
+      ),
+      ...rhythm.log,
+    ].slice(-240);
+    interruptions.history = normalizeInterruptions(savedInterruptions);
     await refreshContext();
     if (!active()) return;
     await settings();
@@ -1573,7 +1701,9 @@ export function startFlowConductor(
     clearInterval(interval);
     clearTimeout(reachTimer);
     clearTimeout(notesTimer);
+    rhythm.invalidate();
     if (ownsSnapshot && profileDirty) saveProfile();
+    if (ownsSnapshot) saveRhythm();
     if (ownsSnapshot) {
       if (autoFocus) setFocus(false, "the folio closed");
       setFlowAttribute(null);

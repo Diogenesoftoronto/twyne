@@ -59,6 +59,8 @@ export const DEFAULT_THRESHOLDS: FlowThresholds = {
 export interface FlowContext {
   /** 0..1 from `readStruggle` for the paragraph under the cursor. */
   struggle?: number;
+  /** A fresh, calibrated rhythm interval; absence preserves the usual timer. */
+  pauseDecision?: "hold" | "release" | "timer";
   /** The writer has held the pointer over the room (margins, masthead). */
   reaching?: boolean;
 }
@@ -149,6 +151,13 @@ export function readFlow(
   if (pauseMs >= t.awayMs) return at("away", "No keys for a while.");
 
   if (context.reaching) return at("working", "Reached for the room.");
+
+  if ((previous === "flow" || previous === "settling") && pauseMs >= t.gapMs) {
+    if (context.pauseDecision === "release")
+      return at("working", "The run is predicted to end.");
+    if (context.pauseDecision === "hold")
+      return at(previous, "A thinking pause inside the run.");
+  }
 
   if (previous === "flow") {
     if (pauseMs >= t.exitPauseMs)

@@ -82,3 +82,33 @@ test("trimming preserves the cutoff and quiet modes are exactly settling and flo
   for (const mode of ["away", "working", "settling", "flow", "stuck"] as const)
     expect(isQuiet(mode)).toBe(mode === "flow" || mode === "settling");
 });
+
+test("rhythm decisions preserve quiet through a pause or release early, while writer intent wins", () => {
+  const samples = steady(90);
+  expect(
+    readFlow(samples, 120_000, "flow", undefined, { pauseDecision: "hold" })
+      .mode,
+  ).toBe("flow");
+  expect(
+    readFlow(samples, 95_000, "flow", undefined, { pauseDecision: "release" })
+      .mode,
+  ).toBe("working");
+  expect(
+    readFlow(samples, 95_000, "settling", undefined, { pauseDecision: "hold" })
+      .mode,
+  ).toBe("settling");
+  expect(
+    readFlow(samples, 120_000, "flow", undefined, { pauseDecision: "timer" })
+      .mode,
+  ).toBe("working");
+  expect(
+    readFlow(samples, 120_000, "flow", undefined, {
+      pauseDecision: "hold",
+      reaching: true,
+    }).mode,
+  ).toBe("working");
+  expect(
+    readFlow(samples, 270_000, "flow", undefined, { pauseDecision: "hold" })
+      .mode,
+  ).toBe("away");
+});

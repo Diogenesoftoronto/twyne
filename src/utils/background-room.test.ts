@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from "bun:test";
+import { afterAll, beforeEach, describe, expect, spyOn, test } from "bun:test";
 import {
   IDLE_MS,
   MAX_PASSES_PER_SESSION,
@@ -6,11 +6,14 @@ import {
   WORD_DELTA_THRESHOLD,
   __resetForTests,
   onDraftChanged,
+  noteExplicitConvene,
   snapshot,
   startBackgroundRoom,
   stopBackgroundRoom,
   whyNotReady,
 } from "./background-room";
+import { RHYTHM_BREAK_EVENT } from "./flow-rhythm-estimator";
+import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 import { PERSONAS } from "./personas";
 import { MIN_EDITOR_WORDS } from "./draft-thresholds";
 
@@ -19,6 +22,9 @@ import { MIN_EDITOR_WORDS } from "./draft-thresholds";
  * so its guards are the part that has to be right. These tests exercise the
  * trigger and the spend limits directly, without going near a provider.
  */
+
+const releaseGlobals = await lockBrowserGlobalsForTestFile();
+afterAll(releaseGlobals);
 
 const words = (n: number) => "word ".repeat(n).trim();
 const doc = (n: number) => `${words(n)}\n\n${words(n)}`;
@@ -188,4 +194,62 @@ describe("spend guards", () => {
       folioId: "folio-1",
     });
   });
+});
+
+test("fresh predicted breaks start the room early but preserve readiness, word and folio guards", () => {
+  const originalWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+  const events = new EventTarget();
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: events,
+  });
+  let now = 100_000;
+  const time = spyOn(Date, "now").mockImplementation(() => now);
+  const predict = (overrides: Record<string, unknown> = {}) => {
+    const event = new Event(RHYTHM_BREAK_EVENT);
+    Object.assign(event, {
+      detail: {
+        folioId: "folio-1",
+        at: now,
+        lastKeyAt: now - 4000,
+        pauseSeconds: 4,
+        pause: { p10: 56, median: 80, p90: 120 },
+        ...overrides,
+      },
+    });
+    events.dispatchEvent(event);
+  };
+  try {
+    start({ baselineText: "" });
+    onDraftChanged(words(WORD_DELTA_THRESHOLD));
+    expect(snapshot().status).toBe("armed");
+    predict({ folioId: "old-folio" });
+    expect(snapshot().status).toBe("armed");
+    predict({ at: now - 1 });
+    expect(snapshot().status).toBe("armed");
+    predict({ pause: { p10: 55, median: 80, p90: 120 } });
+    expect(snapshot().status).toBe("armed");
+    // Invoked before sixty seconds, but declined as too short without a provider call.
+    predict();
+    expect(snapshot().status).toBe("idle");
+    expect(snapshot().passesThisSession).toBe(0);
+
+    noteExplicitConvene();
+    now += 5000;
+    onDraftChanged("different ".repeat(600));
+    expect(whyNotReady()).toBe("too-soon");
+    predict();
+    expect(snapshot().status).toBe("idle");
+    expect(snapshot().passesThisSession).toBe(0);
+
+    onDraftChanged("short");
+    predict();
+    expect(snapshot().status).toBe("idle");
+  } finally {
+    stopBackgroundRoom();
+    time.mockRestore();
+    if (originalWindow)
+      Object.defineProperty(globalThis, "window", originalWindow);
+    else Reflect.deleteProperty(globalThis, "window");
+  }
 });
