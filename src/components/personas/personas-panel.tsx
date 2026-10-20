@@ -1,4 +1,7 @@
 import { GroundedNote } from "./grounded-note";
+import { NoteEvidenceList } from "./note-evidence-list";
+import { evidenceFields, noteEvidence } from "../../utils/note-evidence";
+import type { PersonaExtractionReading } from "../../utils/persona-research";
 import { currentModelLocale } from "../../i18n/model-language";
 import { askJudgement } from "../../utils/judgement-client";
 import {
@@ -699,6 +702,8 @@ export const PersonasPanel = component$(
           type: PersonaFeedback["type"];
           provider: string;
           anchor?: string;
+          anchors?: string[];
+          extractions?: PersonaExtractionReading[];
           traceId?: string;
         }> = [];
 
@@ -777,6 +782,8 @@ export const PersonasPanel = component$(
                       provider:
                         res.provider as (typeof responses)[0]["provider"],
                       anchor: res.anchor,
+                      anchors: res.anchors,
+                      extractions: res.extractions,
                       traceId: res.traceId,
                     }
                   : null;
@@ -839,6 +846,8 @@ export const PersonasPanel = component$(
               type: PersonaFeedback["type"];
               provider: string;
               anchor?: string;
+              anchors?: string[];
+              extractions?: PersonaExtractionReading[];
               traceId?: string;
             }>;
             try {
@@ -964,6 +973,7 @@ export const PersonasPanel = component$(
             timestamp,
             type: r.type,
             anchor: anchor,
+            ...evidenceFields(r),
             noteId,
           };
           feedbackList.push(fb);
@@ -1377,6 +1387,10 @@ export const PersonasPanel = component$(
           detail: {
             noteId,
             replies: store.repliesByNote[noteId] ?? [],
+            evidence: (() => {
+              const note = store.feedback.find((f) => f.noteId === noteId);
+              return note ? noteEvidence(note) : undefined;
+            })(),
           },
         }),
       );
@@ -2654,6 +2668,13 @@ export const PersonasPanel = component$(
                       text={feedback.feedback}
                       manuscript={store.manuscript}
                     />
+
+                    {!bodyClamped && (
+                      <NoteEvidenceList
+                        evidence={noteEvidence(feedback)}
+                        context={feedback.feedback}
+                      />
+                    )}
 
                     {/* Why the note was wrong, once the writer has said it
                       was. Its own row rather than a sixth item in the foot,

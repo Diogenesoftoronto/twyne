@@ -20,6 +20,7 @@
  * and sign-up to hydrate or seed the server in one round-trip.
  */
 
+import { noteEvidenceFields } from "./lib/noteEvidence";
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { readCollection, writeCollection } from "./lib/collections";
@@ -257,6 +258,7 @@ export const putPersonaNote = mutation({
     feedback: v.string(),
     traceId: v.optional(v.string()),
     anchor: v.optional(v.string()),
+    ...noteEvidenceFields,
     briefTitle: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -274,6 +276,8 @@ export const putPersonaNote = mutation({
         traceId: args.traceId,
         type: args.type,
         anchor: args.anchor,
+        anchors: args.anchors,
+        facts: args.facts,
       });
       return existing._id;
     }
@@ -288,6 +292,8 @@ export const putPersonaNote = mutation({
       feedback: args.feedback,
       traceId: args.traceId,
       anchor: args.anchor,
+      anchors: args.anchors,
+      facts: args.facts,
       briefTitle: args.briefTitle,
       createdAt: Date.now(),
     });
@@ -652,6 +658,7 @@ export const pushAll = mutation({
           feedback: v.string(),
           traceId: v.optional(v.string()),
           anchor: v.optional(v.string()),
+          ...noteEvidenceFields,
           briefTitle: v.optional(v.string()),
           createdAt: v.number(),
         }),
@@ -825,6 +832,8 @@ export const pushAll = mutation({
               | "critique"
               | "perspective",
             anchor: n.anchor,
+            anchors: n.anchors,
+            facts: n.facts,
             personaName: n.personaName,
             personaColor: n.personaColor,
             personaId: n.personaId,
@@ -846,6 +855,8 @@ export const pushAll = mutation({
             feedback: n.feedback,
             traceId: n.traceId,
             anchor: n.anchor,
+            anchors: n.anchors,
+            facts: n.facts,
             briefTitle: n.briefTitle,
             createdAt: n.createdAt,
           });
@@ -1053,6 +1064,8 @@ export const pullAll = query({
         feedback: n.feedback,
         traceId: n.traceId,
         anchor: n.anchor,
+        anchors: n.anchors,
+        facts: n.facts,
         briefTitle: n.briefTitle,
         createdAt: n.createdAt,
       })),
