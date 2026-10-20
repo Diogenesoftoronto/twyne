@@ -31,6 +31,8 @@ export interface NotePopover {
   placement: "above" | "below";
   quote?: string;
   briefTitle?: string;
+  /** Further passages and facts behind the note, mirrored from the panel. */
+  evidence?: import("../../utils/note-evidence").NoteEvidence;
   draft: string;
   dismissed: boolean;
   pinned: boolean;

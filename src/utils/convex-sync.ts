@@ -1,3 +1,4 @@
+import type { NoteFact } from "./note-evidence";
 import { api } from "../../convex/_generated/api";
 import type { ConvexClient } from "convex/browser";
 import type {
@@ -86,6 +87,8 @@ interface SyncedSnapshot {
     feedback: string;
     traceId?: string;
     anchor?: string;
+    anchors?: string[];
+    facts?: NoteFact[];
     briefTitle?: string;
     createdAt: number;
   }>;
@@ -646,6 +649,8 @@ function buildPushPayload(snap: LocalSnapshot) {
       feedback: n.feedback,
       traceId: n.traceId,
       anchor: n.anchor,
+      anchors: n.anchors,
+      facts: n.facts,
       briefTitle: n.briefTitle,
       createdAt: n.timestamp,
     })),

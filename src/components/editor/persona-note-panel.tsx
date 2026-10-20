@@ -1,4 +1,5 @@
 import { GroundedNote } from "../personas/grounded-note";
+import { NoteEvidenceList } from "../personas/note-evidence-list";
 import { component$, type PropFunction } from "@qwik.dev/core";
 import { renderMarkdown } from "../../utils/markdown";
 import { revealQuoteFromEvent } from "../../utils/quote-grounding";
@@ -99,6 +100,7 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
           onClick$={(event: Event) => revealQuoteFromEvent(event)}
           text={note.note}
         />
+        <NoteEvidenceList evidence={note.evidence} context={note.note} />
         {note.briefTitle && (
           <p
             class="text-[0.65rem] text-[var(--color-ink-muted)]"

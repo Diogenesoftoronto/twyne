@@ -424,13 +424,21 @@ export function linkQuotations(
         (inner) =>
           `<span class="quote-link" role="link" tabindex="0" data-quote="${escapeHtml(manuscript ? manuscript.slice(r.from, r.to) : q.quote)}" data-draft-fingerprint="${fingerprint}" data-quote-from="${r.from}" data-quote-to="${r.to}" data-quote-context="${escapeHtml(q.context)}" title="Show this passage in the manuscript">${inner}</span>`,
       );
+    } else if (r.status === "near") {
+      // The closest passage, not the quoted words: it still leads somewhere,
+      // but a broken rule and a small mark say it is not an exact quote.
+      const passage = manuscript ? manuscript.slice(r.from, r.to) : r.passage;
+      out = wrapInText(
+        out,
+        needle,
+        (inner) =>
+          `<span class="quote-link quote-link--near" role="link" tabindex="0" data-quote="${escapeHtml(passage)}" data-draft-fingerprint="${fingerprint}" data-quote-from="${r.from}" data-quote-to="${r.to}" data-quote-context="${escapeHtml(q.context)}" aria-label="${escapeHtml(`Closest passage, not quoted exactly: ${passage.slice(0, 200)}`)}" title="${escapeHtml(`Closest passage, not quoted exactly: ${passage.slice(0, 280)}`)}">${inner}<span class="quote-near-mark" aria-hidden="true">closest</span></span>`,
+      );
     } else {
       const why =
-        r.status === "near"
-          ? `Closest passage, not quoted exactly: ${r.passage}`
-          : r.status === "ambiguous"
-            ? `These words appear ${r.count} times in the draft, and the note does not say which.`
-            : "Not in the draft as written. The passage may have changed since this note.";
+        r.status === "ambiguous"
+          ? `These words appear ${r.count} times in the draft, and the note does not say which.`
+          : "Not in the draft as written. The passage may have changed since this note.";
       out = wrapInText(
         out,
         needle,

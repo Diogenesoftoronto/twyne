@@ -66,6 +66,7 @@ import { MANUSCRIPT_READING_ID, ManuscriptPanel } from "./manuscript-panel";
 import { SuggestionPanel } from "./suggestion-panel";
 import { UserCommentPanel } from "./user-comment-panel";
 import { PersonaNotePanel } from "./persona-note-panel";
+import type { NoteEvidence } from "../../utils/note-evidence";
 import {
   REVEAL_QUOTE_EVENT,
   resolveQuotationForReveal,
@@ -2439,12 +2440,14 @@ export const TwyneEditor = component$(
           const detail = (e as CustomEvent).detail as {
             noteId?: string;
             replies?: PersonaReply[];
+            evidence?: NoteEvidence;
           };
           if (!detail?.noteId || !store.notePopover) return;
           if (detail.noteId !== store.notePopover.id) return;
           store.notePopover = {
             ...store.notePopover,
             thread: detail.replies ?? [],
+            ...(detail.evidence ? { evidence: detail.evidence } : {}),
           };
         };
         const onReplying = (e: Event) => {

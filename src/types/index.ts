@@ -71,6 +71,13 @@ export interface PersonaFeedback {
   type: "encouragement" | "suggestion" | "critique" | "perspective";
   /** Exact sentence from the draft this note is pinned to, when one was found. */
   anchor?: string;
+  /**
+   * Further verbatim passages the note draws on, beyond `anchor`, in the order
+   * research found them. Capped at three; see `utils/note-evidence`.
+   */
+  anchors?: string[];
+  /** Continuity facts the editor read from the draft while writing the note. */
+  facts?: import("../utils/note-evidence").NoteFact[];
   /** Stable id shared between the feed card and the inline mark in the manuscript. */
   noteId?: string;
   /** Title of the brief the note was filed against, for the timeline. */
@@ -93,6 +100,9 @@ export interface PersonaNotePayload {
   note: string;
   quote: string;
   briefTitle?: string;
+  /** Further passages the note links to; see `PersonaFeedback.anchors`. */
+  anchors?: string[];
+  facts?: import("../utils/note-evidence").NoteFact[];
 }
 
 export interface RubricCriterion {

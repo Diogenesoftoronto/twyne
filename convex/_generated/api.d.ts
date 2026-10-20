@@ -37,6 +37,7 @@ import type * as lib_collections from "../lib/collections.js";
 import type * as lib_entitlement from "../lib/entitlement.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_judgementContract from "../lib/judgementContract.js";
+import type * as lib_noteEvidence from "../lib/noteEvidence.js";
 import type * as lib_notorganic from "../lib/notorganic.js";
 import type * as lib_notorganicSignIn from "../lib/notorganicSignIn.js";
 import type * as lib_personaResearch from "../lib/personaResearch.js";
@@ -104,6 +105,7 @@ declare const fullApi: ApiFromModules<{
   "lib/entitlement": typeof lib_entitlement;
   "lib/errors": typeof lib_errors;
   "lib/judgementContract": typeof lib_judgementContract;
+  "lib/noteEvidence": typeof lib_noteEvidence;
   "lib/notorganic": typeof lib_notorganic;
   "lib/notorganicSignIn": typeof lib_notorganicSignIn;
   "lib/personaResearch": typeof lib_personaResearch;

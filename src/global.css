@@ -5237,11 +5237,142 @@ a {
   text-decoration-color: currentColor;
   outline: none;
 }
+/* The closest passage, not the quoted words: still a way in, but a broken
+   rule and a small-caps mark keep it from passing for a quotation. */
+.comment-markdown .quote-link--near {
+  text-decoration-style: dashed;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+}
+.comment-markdown .quote-near-mark {
+  margin-left: 0.3em;
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  font-style: normal;
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-muted);
+  text-decoration: none;
+  display: inline-block;
+}
 .comment-markdown .quote-unresolved {
   text-decoration: underline dotted;
   text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
   text-underline-offset: 0.18em;
   cursor: help;
+}
+
+/* Further passages a note draws on, and the facts read on the way. Small
+   type under the body, one line a passage; the anchor above stays first. */
+.note-evidence {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--color-ink-muted);
+}
+.note-evidence__label {
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.note-evidence ul {
+  list-style: none;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.note-evidence__passage,
+.note-evidence__source {
+  display: block;
+  width: 100%;
+  padding: 0.05rem 0 0.05rem 0.5rem;
+  border: 0;
+  border-left: 1px solid color-mix(in srgb, var(--card-accent, currentColor) 45%, transparent);
+  background: none;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.16s ease, border-color 0.16s ease;
+}
+.note-evidence__passage:hover,
+.note-evidence__passage:focus-visible,
+.note-evidence__source:hover,
+.note-evidence__source:focus-visible {
+  color: var(--color-ink);
+  border-left-color: var(--card-accent, currentColor);
+  outline: none;
+}
+.note-evidence__facts summary {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  cursor: pointer;
+  list-style: none;
+}
+.note-evidence__facts summary::-webkit-details-marker {
+  display: none;
+}
+.note-evidence__facts summary::before {
+  content: "›";
+  display: inline-block;
+  transition: transform 0.16s ease;
+}
+.note-evidence__facts[open] summary::before {
+  transform: rotate(90deg);
+}
+.note-evidence__facts summary:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
+}
+.note-evidence__count {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+}
+.note-evidence__facts dl {
+  margin: 0.3rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.note-evidence__fact dt {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+}
+.note-evidence__fact dd {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.note-evidence__reading {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.note-evidence__value {
+  color: var(--color-ink-light);
+}
+.note-evidence__value.is-near {
+  font-style: italic;
+}
+.note-evidence__near {
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+}
+.zen-mode .note-evidence,
+[data-zen="true"] .note-evidence {
+  opacity: 0.75;
 }
 
 /* ── The note ──
