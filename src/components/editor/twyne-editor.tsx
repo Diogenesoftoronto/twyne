@@ -66,6 +66,11 @@ import { MANUSCRIPT_READING_ID, ManuscriptPanel } from "./manuscript-panel";
 import { SuggestionPanel } from "./suggestion-panel";
 import { UserCommentPanel } from "./user-comment-panel";
 import { PersonaNotePanel } from "./persona-note-panel";
+import {
+  REVEAL_QUOTE_EVENT,
+  resolveQuotation,
+  type RevealQuoteDetail,
+} from "../../utils/quote-grounding";
 import { InsertPanels } from "./insert-panels";
 import { CompositorPanel } from "./compositor-panel";
 import {
@@ -2397,6 +2402,32 @@ export const TwyneEditor = component$(
         };
         window.addEventListener("twyne:scroll-to-persona-note", onScrollToNote);
 
+        // ── A quotation inside a note, sent to the passage it quotes ──
+        // Resolved again against the live document, so an edit since the
+        // note rendered can never send the writer to the wrong sentence.
+        const onRevealQuote = (e: Event) => {
+          const detail = (e as CustomEvent<RevealQuoteDetail>).detail;
+          if (!detail?.quote) return;
+          const range = findQuotationRange(
+            editor.state.doc,
+            detail.quote,
+            detail.context,
+          );
+          if (!range) return;
+          editor.chain().focus().setTextSelection(range).run();
+          const { node } = editor.view.domAtPos(range.from);
+          const element =
+            node instanceof Element ? node : (node.parentElement ?? null);
+          element?.scrollIntoView({
+            block: "center",
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+              .matches
+              ? "auto"
+              : "smooth",
+          });
+        };
+        window.addEventListener(REVEAL_QUOTE_EVENT, onRevealQuote);
+
         // ── Inline reply thread, mirrored from the personas panel ──
         // The popover is a live conversation: the panel sends the writer's
         // optimistic reply, the persona's response, an in-flight flag, and
@@ -2669,6 +2700,7 @@ export const TwyneEditor = component$(
             "twyne:scroll-to-persona-note",
             onScrollToNote,
           );
+          window.removeEventListener(REVEAL_QUOTE_EVENT, onRevealQuote);
           window.removeEventListener(
             "twyne:persona-reply-thread",
             onReplyThread,
@@ -4451,6 +4483,41 @@ function findTextRange(
     return false;
   });
   return found;
+}
+
+/**
+ * Locate a quotation from a note, using the same deterministic matching the
+ * notes panel used to decide it was linkable. Blocks are joined by a blank
+ * line so a quotation never spans paragraphs.
+ */
+function findQuotationRange(
+  doc: any,
+  quote: string,
+  context: string,
+): { from: number; to: number } | null {
+  let text = "";
+  const positions: number[] = [];
+  doc.descendants((node: any, pos: number) => {
+    if (!node.isTextblock) return true;
+    if (text) {
+      text += "\n\n";
+      positions.push(-1, -1);
+    }
+    node.forEach((child: any, offset: number) => {
+      if (!child.isText || !child.text) return;
+      for (let i = 0; i < child.text.length; i++) {
+        positions.push(pos + 1 + offset + i);
+      }
+      text += child.text;
+    });
+    return false;
+  });
+  const result = resolveQuotation(quote, text, context);
+  if (result.status !== "resolved") return null;
+  const from = positions[result.from];
+  const last = positions[result.to - 1];
+  if (from == null || from < 0 || last == null || last < 0) return null;
+  return { from, to: last + 1 };
 }
 
 function flashMarkedElement(root: HTMLElement, selector: string): void {

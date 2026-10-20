@@ -5,7 +5,9 @@ A guide to using the writing room, understanding its data, and maintaining the a
 **For writers:** open [The Manual](https://www.twyne.love/docs/) in Twyne. It covers
 the desk, the House, conversations in the margin, source and proof, and shortcuts.
 Numbered visual walkthroughs show the actual controls, with editor illustrations
-and optional films at the beginning of relevant chapters. The contents panel
+and optional films at the beginning of relevant chapters. Each chapter can also
+be heard: Listen plays Morgan's story for that chapter and carries on through
+the rest. The contents panel
 follows your current chapter and shows your reading position as you scroll.
 
 **For contributors:** start with the [project README](../README.md#development),
@@ -36,15 +38,16 @@ then follow the guide for the part you are changing.
 These describe intent and implementation history. A plan is not evidence that a
 feature is deployed or that its provider integration has been exercised.
 
-| Record                                                                                                                        | Subject                                      |
-| ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| [Native Typst plan](typst-native-editor-plan.md) · [execution record](typst-native-editor-execution.md)                       | Source editing, proof and migration.         |
-| [Editorial drafting brief](editorial-drafting-context-brief.md) · [parallel build graph](editor-parallel-build-graph.md)      | Context and editor implementation.           |
-| [My Desk specification](my-desk-usage-profile-spec.md)                                                                        | Usage and profile design.                    |
-| [Dossier UX changes](changes/dossier-ux-cleanup.md)                                                                           | The recorded refinement of the dossier flow. |
-| [Local models plan](local-models-plan.md)                                                                                     | Local model integration.                     |
-| [Pricing rollout](pricing-rollout.md)                                                                                         | The recorded pricing proposal and rollout.   |
-| [Translation plan](gt-qwik-plan.md) · [authoring brief](gt-qwik-authoring-brief.md) · [verification](gt-qwik-verification.md) | Qwik translation work and its checks.        |
+| Record                                                                                                                        | Subject                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [Native Typst plan](typst-native-editor-plan.md) · [execution record](typst-native-editor-execution.md)                       | Source editing, proof and migration.                                                                |
+| [Editorial drafting brief](editorial-drafting-context-brief.md) · [parallel build graph](editor-parallel-build-graph.md)      | Context and editor implementation.                                                                  |
+| [My Desk specification](my-desk-usage-profile-spec.md)                                                                        | Usage and profile design.                                                                           |
+| [Dossier UX changes](changes/dossier-ux-cleanup.md)                                                                           | The recorded refinement of the dossier flow.                                                        |
+| [Autonomous editorial work](changes/autonomous-editorial-work.md)                                                             | Review, research and editors acting unasked; quotation links; settled notes; revision descriptions. |
+| [Local models plan](local-models-plan.md)                                                                                     | Local model integration.                                                                            |
+| [Pricing rollout](pricing-rollout.md)                                                                                         | The recorded pricing proposal and rollout.                                                          |
+| [Translation plan](gt-qwik-plan.md) · [authoring brief](gt-qwik-authoring-brief.md) · [verification](gt-qwik-verification.md) | Qwik translation work and its checks.                                                               |
 
 ## Artwork and presentation
 

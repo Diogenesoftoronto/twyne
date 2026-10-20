@@ -30,6 +30,8 @@ import {
   loadAiSettingsFromIdb,
   loadFolioContentFromIdb,
   loadActiveFolioIdFromIdb,
+  loadMetaFromIdb,
+  saveMetaToIdb,
 } from "../../utils/idb";
 import { createRevisionSnapshot } from "../../utils/revision-history";
 import type { AiSettings } from "../../types";
@@ -97,6 +99,9 @@ import {
   rubricDraftFingerprint,
 } from "../../utils/rubric-judgement-result";
 
+/** Least time between two readings the editors start on their own. */
+const ROOM_READ_FLOOR_MS = 10 * 60_000;
+
 interface RubricStore {
   result: RubricResult | null;
   resultFresh: boolean;
@@ -106,6 +111,8 @@ interface RubricStore {
   streamingReview: string;
   error: AppError | null;
   judges: JudgeResult[];
+  /** The draft fingerprint the editors' notes were written about. */
+  judgesFingerprint: string | null;
   static: StaticScore | null;
   brief: ProjectBrief | null;
   aiSettings: AiSettings | null;
@@ -186,6 +193,7 @@ export const RubricPanel = component$(
     const clientSig = useConvexClient();
     const store = useStore<RubricStore>({
       result: null,
+      judgesFingerprint: null,
       resultFresh: false,
       isAnalyzing: false,
       isReviewing: false,
@@ -227,7 +235,8 @@ export const RubricPanel = component$(
       }
     });
 
-    const runAnalysis = $(async (frontierOnly = false) => {
+    // `quiet` reads in the background and leaves the current grade on screen.
+    const runAnalysis = $(async (frontierOnly = false, quiet = false) => {
       if (store.isAnalyzing || store.isReviewing) return;
       const folioId = activeFolioId;
       const runId = ++store.runId;
@@ -237,7 +246,8 @@ export const RubricPanel = component$(
         store.runId === runId &&
         store.contextFolioId === folioId &&
         store.contextBrief === briefKey;
-      store.isAnalyzing = true;
+      if (quiet) store.isReviewing = true;
+      else store.isAnalyzing = true;
       store.resultFresh = false;
       store.error = null;
       store.status = "";
@@ -257,14 +267,24 @@ export const RubricPanel = component$(
           current();
         const saveResult = async (result: RubricResult) => {
           if (!(await stillFresh())) {
-            if (current())
+            // The editors still read real prose; keep their notes beside the
+            // newer grade, and they read again on the next quiet moment.
+            if (current() && result.judges.length && store.result) {
+              store.result = { ...store.result, judges: result.judges };
+              store.judges = result.judges;
+              store.judgesFingerprint = fingerprint;
               store.status =
-                "The draft changed while it was being read. Grade it again to see the latest version.";
+                "The editors read the draft as it was a moment ago. They will read the newer version on their own.";
+            } else if (current()) {
+              store.status =
+                "The draft changed while it was being read. It will be read again on its own.";
+            }
             return;
           }
           store.result = result;
           store.resultFresh = true;
           store.judges = result.judges;
+          if (result.judges.length) store.judgesFingerprint = fingerprint;
           await saveRubricResultToIdb(result, folioId);
           const history = await appendRubricHistory(
             {
@@ -284,12 +304,15 @@ export const RubricPanel = component$(
             folioId,
           );
           if (current()) store.history = history;
+          // A reading the writer asked for is always a checkpoint; one the
+          // editors started themselves is spaced like automatic checkpoints,
+          // so it cannot crowd the writer's own out of the history.
           await createRevisionSnapshot({
             folioId,
             html: revisionHtml,
             label: `Rubric pass · ${result.overallScore}/100`,
-            source: "rubric",
-            force: true,
+            source: quiet ? "automatic" : "rubric",
+            force: !quiet,
           });
         };
         const client = clientSig.value;
@@ -695,7 +718,10 @@ export const RubricPanel = component$(
             metadata: { feature: "rubric", operation: "analyze" },
           });
       } finally {
-        if (current()) store.isAnalyzing = false;
+        if (current()) {
+          store.isAnalyzing = false;
+          store.isReviewing = false;
+        }
         if (current() && store.resultFresh && store.result) {
           playRubricGradeCue(store.result.overallGrade);
         }
@@ -704,6 +730,28 @@ export const RubricPanel = component$(
 
     const analyze = $(() => runAnalysis(false));
     const askRoom = $(() => runAnalysis(true));
+
+    /**
+     * The editors read each new version on their own: when a quick grade
+     * lands for a draft they have not read, and they have not read in the
+     * last few minutes. The button stays for a writer who wants it now.
+     */
+    const autoReadRoom = $(async () => {
+      const result = store.result;
+      if (!result || store.isAnalyzing || !activeFolioId) return;
+      if (
+        result.draftFingerprint &&
+        result.draftFingerprint === store.judgesFingerprint
+      )
+        return;
+      const key = `rubric-room-read-at:${activeFolioId}`;
+      const last = (await loadMetaFromIdb<number>(key)) ?? 0;
+      if (Date.now() - last < ROOM_READ_FLOOR_MS) return;
+      const settings = normalizeAiSettings(await loadAiSettingsFromIdb());
+      if (!clientSig.value && !hasConfiguredAiProvider(settings)) return;
+      await saveMetaToIdb(key, Date.now());
+      await runAnalysis(true, true);
+    });
 
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(async ({ track, cleanup }) => {
@@ -723,6 +771,8 @@ export const RubricPanel = component$(
         store.result = cached;
         store.resultFresh = false;
         store.judges = cached.judges ?? [];
+        if (cached.judges?.length)
+          store.judgesFingerprint = cached.draftFingerprint ?? null;
         store.static = cached.staticScore ?? null;
       }
       store.aiSettings = normalizeAiSettings(aiRaw);
@@ -759,9 +809,16 @@ export const RubricPanel = component$(
               store.resultFresh =
                 Boolean(event) && snapshot.status === "current";
             }
-            store.result = snapshot.result.rubric;
-            store.judges = snapshot.result.rubric.judges;
-            store.static = snapshot.result.rubric.staticScore;
+            // A quick check carries no editors' notes. Keep the last ones
+            // rather than letting a refresh make them vanish.
+            const incoming = snapshot.result.rubric;
+            const judges = incoming.judges.length
+              ? incoming.judges
+              : (store.result?.judges ?? []);
+            store.result = { ...incoming, judges };
+            store.judges = judges;
+            store.static = incoming.staticScore;
+            if (snapshot.status === "current" && event) void autoReadRoom();
           }
         };
         const open = () => {
@@ -937,6 +994,11 @@ export const RubricPanel = component$(
                 <Icon name="file-check" /> Grade this draft
               </button>
             </div>
+            <p class="mt-2 max-w-sm text-xs leading-5 text-[var(--color-ink-muted)]">
+              Twyne grades the draft on its own once it reaches{" "}
+              {MIN_RUBRIC_WORDS} words and you pause, then the editors read it.
+              Grade it now if you would rather not wait.
+            </p>
             {store.error && (
               <div class="mt-3 max-w-sm">
                 <ApplicationNotice
@@ -1077,10 +1139,20 @@ export const RubricPanel = component$(
                       }
                     />
                     {s.label}
-                    {s.count !== undefined && (
-                      <span class="ml-1 text-[var(--color-ink-muted)]">
-                        {s.count}
+                    {s.id === "room" && s.count === 0 ? (
+                      // Zero would read as "the editors had nothing to say";
+                      // the truth is they have not been asked yet.
+                      <span class="ml-1 text-[var(--color-ink-muted)] normal-case">
+                        {store.isAnalyzing || store.isReviewing
+                          ? "reading…"
+                          : "soon"}
                       </span>
+                    ) : (
+                      s.count !== undefined && (
+                        <span class="ml-1 text-[var(--color-ink-muted)]">
+                          {s.count}
+                        </span>
+                      )
                     )}
                   </button>
                 );
@@ -1150,18 +1222,31 @@ export const RubricPanel = component$(
                   {store.result.judges.length === 0 && (
                     <div class="py-4 text-center">
                       <p class="mb-3 text-sm text-[var(--color-ink-light)]">
-                        These scores came from a quick model check. Ask the
-                        editors for their own reading, with written notes.
+                        {store.isAnalyzing || store.isReviewing
+                          ? "The editors are reading the draft. Their notes will appear here when they finish."
+                          : "These scores came from a quick model check. The editors read new versions on their own every few minutes; ask now to have them read this one straight away."}
                       </p>
                       <button
                         onClick$={askRoom}
-                        disabled={store.isReviewing}
+                        disabled={store.isAnalyzing || store.isReviewing}
                         class="btn-paper"
                       >
-                        Ask the editors
+                        {store.isAnalyzing || store.isReviewing
+                          ? "Reading…"
+                          : "Ask them now"}
                       </button>
                     </div>
                   )}
+                  {store.result.judges.length > 0 &&
+                    store.judgesFingerprint &&
+                    store.result.draftFingerprint &&
+                    store.judgesFingerprint !==
+                      store.result.draftFingerprint && (
+                      <p class="text-xs text-[var(--color-ink-muted)]">
+                        These notes are on an earlier version of the draft. The
+                        editors will read the new one on their own.
+                      </p>
+                    )}
                   {store.result.judges.map((judge) => (
                     <JudgeCard key={judge.personaId} judge={judge} />
                   ))}

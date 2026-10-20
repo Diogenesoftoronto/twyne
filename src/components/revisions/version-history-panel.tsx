@@ -7,12 +7,16 @@ import {
   readActiveFolioHtml,
   readActiveFolioTypstSource,
 } from "../../utils/folio-export";
+import { loadPersonaNotesLocally } from "../../utils/convex-sync";
+import type { PersonaFeedback } from "../../types";
 import {
   compareRevisionPassages,
   compareRevisions,
   createRevisionSnapshot,
   loadRevisionHistory,
+  describeRevision,
   loadRevisionTasks,
+  notesTouchedBy,
   setRevisionTaskStatus,
   type RevisionSnapshot,
   type RevisionTask,
@@ -30,6 +34,10 @@ interface VersionHistoryStore {
   currentHtml: string;
   revisions: RevisionSnapshot[];
   tasks: RevisionTask[];
+  /** Editors' notes on this folio, to show which changes touched them. */
+  notes: PersonaFeedback[];
+  /** What the writer says the next checkpoint is for. */
+  intentDraft: string;
   selectedId: string | null;
   compareId: "current" | string;
   confirmRestore: boolean;
@@ -37,7 +45,8 @@ interface VersionHistoryStore {
 }
 
 function checkpointLabel(revision: RevisionSnapshot): string {
-  return `${revision.label} · ${new Date(revision.createdAt).toLocaleString()}`;
+  const name = revision.intent || revision.label;
+  return `${name} · ${new Date(revision.createdAt).toLocaleString()}`;
 }
 
 export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
@@ -47,6 +56,8 @@ export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
       currentHtml: "",
       revisions: [],
       tasks: [],
+      notes: [],
+      intentDraft: "",
       selectedId: null,
       compareId: "current",
       confirmRestore: false,
@@ -55,14 +66,16 @@ export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
 
     const refresh = $(async () => {
       store.loading = true;
-      const [currentHtml, revisions, tasks] = await Promise.all([
+      const [currentHtml, revisions, tasks, notes] = await Promise.all([
         readActiveFolioHtml(activeFolioId),
         loadRevisionHistory(activeFolioId),
         loadRevisionTasks(activeFolioId),
+        loadPersonaNotesLocally(activeFolioId),
       ]);
       store.currentHtml = currentHtml;
       store.revisions = revisions;
       store.tasks = tasks;
+      store.notes = notes;
       if (!revisions.some((revision) => revision.id === store.selectedId)) {
         store.selectedId = revisions[0]?.id ?? null;
       }
@@ -102,11 +115,13 @@ export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
         folioId: activeFolioId,
         html,
         label: "Manual checkpoint",
+        intent: store.intentDraft,
         source: "manual",
       });
       store.message = snapshot
         ? "Checkpoint saved."
         : "The current manuscript already has a checkpoint.";
+      if (snapshot) store.intentDraft = "";
       store.currentHtml = html;
       store.revisions = await loadRevisionHistory(activeFolioId);
       store.selectedId = store.revisions[0]?.id ?? null;
@@ -222,6 +237,20 @@ export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
                 manuscript without leaving the editor.
               </p>
             </div>
+          </div>
+          <div class="mt-3 flex flex-wrap items-end gap-2">
+            <label class="min-w-[12rem] flex-1 text-xs font-semibold text-[var(--color-ink-light)]">
+              What was this revision for? (optional)
+              <input
+                type="text"
+                class="mt-1 w-full border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-2 py-1.5 font-serif text-sm font-normal text-[var(--color-ink)]"
+                placeholder="e.g. Pay off the promise in the opening"
+                value={store.intentDraft}
+                onInput$={(_, el) => {
+                  store.intentDraft = el.value;
+                }}
+              />
+            </label>
             <button
               type="button"
               class="btn-press inline-flex shrink-0 items-center gap-2"
@@ -299,8 +328,6 @@ export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
               </div>
             </div>
 
-            {comparison && <RevisionSummary comparison={comparison} />}
-
             <section class="mt-5" aria-labelledby="changed-passages-heading">
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -313,6 +340,16 @@ export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
                   {selected && compared && (
                     <p class="mt-1 text-xs text-[var(--color-ink-light)]">
                       {selected.label} compared with {compared.label}
+                    </p>
+                  )}
+                  {compared && "intent" in compared && compared.intent && (
+                    <p class="mt-1 font-serif text-sm italic text-[var(--color-ink)]">
+                      Intent: {compared.intent}
+                    </p>
+                  )}
+                  {selected && compared && (
+                    <p class="mt-1 font-serif text-sm text-[var(--color-ink)]">
+                      {describeRevision(passageChanges, store.notes)}
                     </p>
                   )}
                 </div>
@@ -335,41 +372,83 @@ export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
                 </p>
               ) : (
                 <ol class="mt-4 space-y-3">
-                  {passageChanges.map((change, index) => (
-                    <li
-                      key={`${index}-${change.before ?? "added"}`}
-                      class="border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] p-3"
-                    >
-                      {change.before && (
-                        <div class="bg-[color-mix(in_srgb,var(--color-vermilion)_7%,var(--color-paper))] p-3">
-                          <p class="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-vermilion)]">
-                            Removed
-                          </p>
-                          <p class="mt-1 whitespace-pre-wrap font-serif text-sm leading-6">
-                            {change.before}
-                          </p>
-                        </div>
-                      )}
-                      {change.after && (
-                        <div
-                          class={[
-                            "bg-[color-mix(in_srgb,var(--color-sage)_9%,var(--color-paper))] p-3",
-                            { "mt-2": Boolean(change.before) },
-                          ]}
-                        >
-                          <p class="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-sage)]">
-                            Added
-                          </p>
-                          <p class="mt-1 whitespace-pre-wrap font-serif text-sm leading-6">
-                            {change.after}
-                          </p>
-                        </div>
-                      )}
-                    </li>
-                  ))}
+                  {passageChanges.map((change, index) => {
+                    const touched = notesTouchedBy(change, store.notes);
+                    return (
+                      <li
+                        key={`${index}-${change.before ?? "added"}`}
+                        class="border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] p-3"
+                      >
+                        <p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-ink-light)]">
+                          {change.before && change.after
+                            ? "Rewritten"
+                            : change.before
+                              ? "Cut"
+                              : "New passage"}
+                        </p>
+                        {change.before && (
+                          <div class="bg-[color-mix(in_srgb,var(--color-vermilion)_7%,var(--color-paper))] p-3">
+                            <p class="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-vermilion)]">
+                              Before
+                            </p>
+                            <p class="mt-1 whitespace-pre-wrap font-serif text-sm leading-6">
+                              {change.before}
+                            </p>
+                          </div>
+                        )}
+                        {change.after && (
+                          <div
+                            class={[
+                              "bg-[color-mix(in_srgb,var(--color-sage)_9%,var(--color-paper))] p-3",
+                              { "mt-2": Boolean(change.before) },
+                            ]}
+                          >
+                            <p class="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-sage)]">
+                              After
+                            </p>
+                            <p class="mt-1 whitespace-pre-wrap font-serif text-sm leading-6">
+                              {change.after}
+                            </p>
+                          </div>
+                        )}
+                        {touched.length > 0 && (
+                          <div class="mt-2 border-l-2 border-[var(--color-paper-3)] pl-3 text-xs leading-5 text-[var(--color-ink-light)]">
+                            <p class="font-semibold">
+                              This change rewrote the passage{" "}
+                              {touched.length === 1
+                                ? "an editor's note was on"
+                                : `${touched.length} editors' notes were on`}
+                              :
+                            </p>
+                            {touched.slice(0, 3).map((note) => (
+                              <p key={note.noteId ?? note.timestamp}>
+                                <span style={{ color: note.personaColor }}>
+                                  {note.personaName}
+                                </span>
+                                {": "}
+                                {note.feedback.length > 160
+                                  ? `${note.feedback.slice(0, 159)}…`
+                                  : note.feedback}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ol>
               )}
             </section>
+
+            {comparison && (
+              <details class="mt-5">
+                <summary class="cursor-pointer text-xs font-semibold text-[var(--color-ink-light)] focus-ring">
+                  Size of the change: {comparison.wordsChanged.toLocaleString()}{" "}
+                  words changed
+                </summary>
+                <RevisionSummary comparison={comparison} />
+              </details>
+            )}
 
             {store.confirmRestore && selected && (
               <div class="mt-5 border border-[var(--color-vermilion)] bg-[var(--color-paper-soft)] p-4">

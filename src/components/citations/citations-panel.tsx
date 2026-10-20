@@ -21,12 +21,16 @@ import {
   upsertBibEntry,
 } from "../../utils/bibliography";
 import {
+  RESEARCH_IDLE_COPY,
+  RESEARCH_IDLE_LABEL,
   retryBackgroundResearch,
   retryResearchTarget,
   snapshot as researchSnapshot,
   type ResearchActivityEntry,
+  type ResearchIdleReason,
   type ResearchProgressItem,
 } from "../../utils/background-research";
+import { REVEAL_QUOTE_EVENT } from "../../utils/quote-grounding";
 import { targetKindLabel } from "../../utils/research-targets";
 import {
   loadAiSettingsFromIdb,
@@ -53,6 +57,7 @@ interface CitationsStore {
   research: {
     status: "idle" | "running" | "saving" | "error";
     phase: string;
+    idleReason: ResearchIdleReason;
     passActive: boolean;
     lastQuery: string;
     lastQueryAt: number;
@@ -101,6 +106,7 @@ export const CitationsPanel = component$(
       research: {
         status: "idle",
         phase: "idle",
+        idleReason: "waiting",
         passActive: false,
         lastQuery: "",
         lastQueryAt: 0,
@@ -325,6 +331,7 @@ export const CitationsPanel = component$(
         store.research = {
           status: s.status as CitationsStore["research"]["status"],
           phase: s.phase,
+          idleReason: s.idleReason,
           passActive: s.passActive,
           lastQuery: s.lastQuery,
           lastQueryAt: s.lastQueryAt,
@@ -543,7 +550,7 @@ export const CitationsPanel = component$(
                     store.research.status === "idle" &&
                     (backgroundCount > 0
                       ? `${backgroundCount} source${backgroundCount === 1 ? "" : "s"} on file`
-                      : "Watching draft")}
+                      : RESEARCH_IDLE_LABEL[store.research.idleReason])}
                 </p>
               </div>
             </div>
@@ -657,6 +664,30 @@ export const CitationsPanel = component$(
                         </summary>
                         <div class="apparatus-trace-list__detail">
                           <p>
+                            <span>What this means</span>
+                            {item.status === "found"
+                              ? `${item.count ?? 0} source${item.count === 1 ? "" : "s"} on file for this claim. Check that they support your wording before you cite them.`
+                              : item.status === "missed"
+                                ? "The search ran and found nothing usable. The claim may need softer wording, or a source you add yourself."
+                                : item.status === "error"
+                                  ? "The search did not run to the end. This is a failure, not an empty result. Retry it."
+                                  : "Not settled yet."}
+                          </p>
+                          <button
+                            type="button"
+                            class="apparatus-retry"
+                            onClick$={() =>
+                              window.dispatchEvent(
+                                new CustomEvent(REVEAL_QUOTE_EVENT, {
+                                  detail: { quote: item.anchor, context: "" },
+                                }),
+                              )
+                            }
+                            title="Show this claim in the manuscript"
+                          >
+                            Go to the claim
+                          </button>
+                          <p>
                             <span>Exact query</span>
                             {item.query}
                           </p>
@@ -715,7 +746,9 @@ export const CitationsPanel = component$(
                 class="text-sm text-[var(--color-ink-light)]"
                 style={{ fontFamily: "var(--font-serif)", fontStyle: "italic" }}
               >
-                Watching for claims that need sources.
+                {store.research.status === "idle"
+                  ? RESEARCH_IDLE_COPY[store.research.idleReason]
+                  : "Looking for claims that need sources."}
               </p>
             </div>
           )}

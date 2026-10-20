@@ -28,10 +28,12 @@ import {
 } from "../../utils/idb";
 import {
   formatResearchTime,
+  RESEARCH_IDLE_COPY,
   retryBackgroundResearch,
   retryResearchTarget,
   snapshot as researchSnapshot,
   type ResearchActivityEntry,
+  type ResearchIdleReason,
   type ResearchProgressItem,
 } from "../../utils/background-research";
 import { targetKindLabel } from "../../utils/research-targets";
@@ -63,6 +65,7 @@ interface ApparatusStore {
   research: {
     status: "idle" | "running" | "saving" | "error";
     phase: string;
+    idleReason?: ResearchIdleReason;
     passActive: boolean;
     lastQuery: string;
     lastQueryAt: number;
@@ -204,6 +207,7 @@ export default component$(() => {
       store.research = {
         status: s.status as ApparatusStore["research"]["status"],
         phase: s.phase,
+        idleReason: s.idleReason,
         passActive: s.passActive,
         lastQuery: s.lastQuery,
         lastQueryAt: s.lastQueryAt,
@@ -564,8 +568,10 @@ export default component$(() => {
                     : "Apparatus hit an error while researching.")}
                 {store.research.status === "idle" &&
                   (backgroundEntries.length > 0
-                    ? `Agents are watching — ${backgroundEntries.length} source${backgroundEntries.length === 1 ? "" : "s"} found so far.`
-                    : "Agents are watching your draft. Sources will appear as they are found.")}
+                    ? `${backgroundEntries.length} source${backgroundEntries.length === 1 ? "" : "s"} found so far. ${RESEARCH_IDLE_COPY[store.research.idleReason ?? "waiting"]}`
+                    : RESEARCH_IDLE_COPY[
+                        store.research.idleReason ?? "waiting"
+                      ])}
               </p>
               {store.research.lastQuery ? (
                 <p

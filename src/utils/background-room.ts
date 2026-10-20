@@ -31,10 +31,11 @@ import { api } from "../../convex/_generated/api";
 import { toAgentPersona } from "../../convex/agentPrompts";
 import type { Persona, PersonaFeedback, ProjectBrief } from "../types";
 import {
-  MIN_EDITOR_WORDS,
-  WORDS_PER_FOLIO,
-  countWords,
-} from "./draft-thresholds";
+  decisionsDigest,
+  loadNoteDecisions,
+  withoutSettled,
+} from "./note-decisions";
+import { MIN_EDITOR_WORDS, countWords } from "./draft-thresholds";
 import {
   appendTrajectory,
   diffParagraphs,
@@ -50,18 +51,26 @@ import { reportApplicationDiagnostic } from "./application-diagnostics";
 import { liveReviewSnapshot } from "./live-review";
 import { rubricDraftFingerprint } from "./rubric-judgement-result";
 import { htmlToPlainText } from "./anti-tabula-rasa";
-import { loadFolioContentFromIdb, loadMetaFromIdb } from "./idb";
+import { loadFolioContentFromIdb, loadMetaFromIdb, saveMetaToIdb } from "./idb";
 import { selectForAttention } from "./passage-triage";
 import {
   createEditorialNoteReviewer,
   reviewEditorialNote,
 } from "./editorial-note-review";
 
-/** Wait for another substantive folio before automatically reading again. */
-export const WORD_DELTA_THRESHOLD = WORDS_PER_FOLIO;
+/**
+ * Words written or rewritten since the room last read before it reads again.
+ * Counted over changed paragraphs, not net growth, so a revision that tightens
+ * the prose is read as surely as one that lengthens it.
+ */
+export const WORD_DELTA_THRESHOLD = 200;
 
 /** Quiet time required after that threshold is crossed. */
-export const IDLE_MS = 120_000;
+export const IDLE_MS = 60_000;
+
+/** Where the room keeps what it last read, per folio. */
+export const roomReadKey = (folioId: string) =>
+  `background-room-read:${folioId}`;
 
 /**
  * Hard floor between passes, independent of how much gets written. Protects
@@ -165,8 +174,13 @@ export function startBackgroundRoom(args: {
   folioId: string | null;
   personas: Persona[];
   enabled: boolean;
-  /** Current draft text, used as the baseline so existing prose isn't "new". */
+  /**
+   * What the room has already read in this folio. Empty when it never has, so
+   * a draft the room has not seen is read on its own, without a click.
+   */
   baselineText?: string;
+  /** The draft as it stands now; read straight away if it holds unread work. */
+  currentText?: string;
 }): void {
   const folioChanged = args.folioId !== activeFolioId;
   generation++;
@@ -190,6 +204,16 @@ export function startBackgroundRoom(args: {
   }
 
   setStatus(enabled ? "idle" : "off");
+  if (enabled && args.currentText) onDraftChanged(args.currentText);
+}
+
+/** Words in paragraphs that are new or rewritten since the last read. */
+function changedWords(before: string, after: string): number {
+  return countWords(diffParagraphs(before, after).added.join(" "));
+}
+
+function rememberRead(folioId: string, text: string): void {
+  void saveMetaToIdb(roomReadKey(folioId), text);
 }
 
 /**
@@ -235,6 +259,7 @@ export function stopBackgroundRoom(): void {
  */
 export function noteExplicitConvene(): void {
   lastReadText = latestText;
+  if (activeFolioId) rememberRead(activeFolioId, latestText);
   state.pendingWords = 0;
   state.lastPassAt = Date.now();
   clearIdleTimer();
@@ -249,7 +274,7 @@ export function onDraftChanged(draftText: string): void {
   if (!enabled || !activeFolioId) return;
   latestText = draftText;
 
-  const delta = countWords(draftText) - countWords(lastReadText);
+  const delta = changedWords(lastReadText, draftText);
   state.pendingWords = delta;
 
   if (delta < WORD_DELTA_THRESHOLD) {
@@ -339,7 +364,13 @@ export async function runPass(): Promise<PersonaFeedback[]> {
     const history = entry
       ? await appendTrajectory(folioId, entry)
       : await loadTrajectory(folioId);
-    const digest = trajectoryDigest(history);
+    const decisions = await loadNoteDecisions(folioId);
+    const digest = [
+      trajectoryDigest(history),
+      decisionsDigest(decisions, draftText),
+    ]
+      .filter(Boolean)
+      .join("\n\n");
     let newMaterial = diff.added.join("\n\n");
     const review = liveReviewSnapshot();
     if (
@@ -363,6 +394,7 @@ export async function runPass(): Promise<PersonaFeedback[]> {
         const selected = selectForAttention(covered, 3);
         if (!selected.length) {
           lastReadText = draftText;
+          rememberRead(folioId, draftText);
           state.pendingWords = 0;
           setStatus("idle");
           return [];
@@ -372,14 +404,18 @@ export async function runPass(): Promise<PersonaFeedback[]> {
     }
     if (!current()) return [];
 
-    const responses = await conveneQuietly({
+    const responses = withoutSettled(
+      await conveneQuietly({
+        draftText,
+        newMaterial,
+        trajectory: digest,
+        brief,
+        client,
+        personas,
+      }),
+      decisions,
       draftText,
-      newMaterial,
-      trajectory: digest,
-      brief,
-      client,
-      personas,
-    });
+    );
     if (!current()) return [];
     if (responses.length === 0) {
       setStatus("idle");
@@ -440,6 +476,7 @@ export async function runPass(): Promise<PersonaFeedback[]> {
 
     if (!current()) return [];
     lastReadText = draftText;
+    rememberRead(folioId, draftText);
     state.pendingWords = 0;
     state.lastPassAt = timestamp;
     state.passesThisSession += 1;

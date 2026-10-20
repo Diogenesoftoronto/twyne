@@ -65,7 +65,11 @@ import { editorialDateline, folioNumeral } from "../../utils/editorial-format";
 import { startHouseSync } from "../../utils/house-sync";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
-import { markDirty, loadRoomSettingsLocally } from "../../utils/convex-sync";
+import {
+  markDirty,
+  loadPersonaNotesLocally,
+  loadRoomSettingsLocally,
+} from "../../utils/convex-sync";
 import {
   startBackgroundResearch,
   stopBackgroundResearch,
@@ -73,6 +77,7 @@ import {
   onDraftChanged,
 } from "../../utils/background-research";
 import {
+  roomReadKey,
   startBackgroundRoom,
   stopBackgroundRoom,
   onDraftChanged as onDraftChangedForRoom,
@@ -898,11 +903,15 @@ export default component$(() => {
     });
 
     const client = clientSig.value;
-    const [custom, roomSettings, seed] = await Promise.all([
-      loadPersonasFromIdb(),
-      loadRoomSettingsLocally(),
-      loadFolioContentFromIdb(folioId),
-    ]);
+    const [custom, roomSettings, seed, roomRead, roomNotes] = await Promise.all(
+      [
+        loadPersonasFromIdb(),
+        loadRoomSettingsLocally(),
+        loadFolioContentFromIdb(folioId),
+        loadMetaFromIdb<string>(roomReadKey(folioId)),
+        loadPersonaNotesLocally(folioId),
+      ],
+    );
     if (cancelled || store.activeFolioId !== folioId) return;
 
     // Direct BYOK, model-search, and MCP research do not require a hosted
@@ -920,7 +929,14 @@ export default component$(() => {
       folioId,
       personas: custom && custom.length > 0 ? custom : DEFAULT_PERSONAS,
       enabled: roomSettings.backgroundRoom !== false,
-      baselineText: paragraphTextFromHtml(seed ?? ""),
+      // Resume from what the room actually read. A folio it has never read
+      // (no record, no notes) starts empty, so the editors read the draft on
+      // their own; one with notes from before this record existed counts as
+      // read, so reopening it is quiet.
+      baselineText:
+        roomRead ??
+        (roomNotes.length > 0 ? paragraphTextFromHtml(seed ?? "") : ""),
+      currentText: paragraphTextFromHtml(seed ?? ""),
     });
   });
 
