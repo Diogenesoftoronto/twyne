@@ -173,6 +173,8 @@ export const ThreadsInstrument = component$<{
             label: `Sentence ${span.ordinal} · ${relationLabel(thread)}`,
             color: THREAD_COLORS[n % THREAD_COLORS.length],
             range,
+            resolveRange: () =>
+              threadInstrumentController()?.spanRange(spanId) ?? null,
             go: () => {
               threadInstrumentController()?.jump(spanId);
               document

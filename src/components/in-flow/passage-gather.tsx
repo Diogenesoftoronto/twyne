@@ -58,6 +58,7 @@ export const PassageGather = component$(() => {
   const live = useSignal<
     NoSerialize<{
       ranges: Map<string, Range>;
+      resolvers: Map<string, () => Range | null>;
       goes: Map<string, () => void>;
       opener: HTMLElement | null;
       openerKey: string | null;
@@ -117,7 +118,8 @@ export const PassageGather = component$(() => {
 
   const go = $((id: string) => {
     const custom = live.value?.goes.get(id);
-    const range = live.value?.ranges.get(id);
+    const resolve = live.value?.resolvers.get(id);
+    let range = resolve ? resolve() : live.value?.ranges.get(id);
     const shown = state.passages.find((passage) => passage.id === id);
     const matches = () =>
       !!range &&
@@ -130,7 +132,8 @@ export const PassageGather = component$(() => {
       return;
     }
     void close(() => {
-      // A remote edit can arrive during the closing transition too.
+      // A remote edit or decoration render can arrive during closing too.
+      if (resolve) range = resolve();
       if (!matches()) return;
       if (custom) custom();
       else revealPassage(range!);
@@ -164,6 +167,11 @@ export const PassageGather = component$(() => {
           : null);
       live.value = noSerialize({
         ranges,
+        resolvers: new Map(
+          ordered.flatMap((p) =>
+            p.resolveRange ? [[p.id, p.resolveRange] as const] : [],
+          ),
+        ),
         goes: new Map(
           ordered.flatMap((p) => (p.go ? [[p.id, p.go] as const] : [])),
         ),
