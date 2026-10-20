@@ -957,7 +957,7 @@ export const AntiTabulaRasa = component$(
                       step.field !== "format" && (
                         <input
                           key={step.field}
-                          value={store.answers[step.field!]}
+                          defaultValue={store.answers[step.field!]}
                           aria-labelledby="atr-question"
                           aria-describedby="atr-hint"
                           autoFocus
@@ -979,7 +979,7 @@ export const AntiTabulaRasa = component$(
                       <textarea
                         ref={textareaRef}
                         key={step.field}
-                        value={store.answers[step.field!]}
+                        defaultValue={store.answers[step.field!]}
                         aria-labelledby="atr-question"
                         aria-describedby="atr-hint"
                         autoFocus

@@ -2,6 +2,7 @@ import type { ConvexClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
 import type { JudgementSettings } from "../types";
 import { askExtraction } from "./extraction-client";
+import { backOffExtraction, extractionBackedOff } from "./extraction-budget";
 import { accountKnowledgeSnapshot } from "./account-knowledge";
 import { askJudgement, normalizeEndpointUrl } from "./judgement-client";
 import {
@@ -51,15 +52,18 @@ export async function clientPersonaResearch(
         ? endpoint
         : hostedJudge;
   const reserveNote = personaResearchBudget();
+  // Each service backs off on its own failures: a Clairic outage must not
+  // silence Jev judgements, nor the reverse.
   const quietOnFailure = async <T extends { ok: boolean }>(
     request: () => Promise<T>,
+    backOff: () => void,
   ): Promise<T> => {
     try {
       const result = await request();
-      if (!result.ok) backOffSystemOne();
+      if (!result.ok) backOff();
       return result;
     } catch {
-      backOffSystemOne();
+      backOff();
       throw new Error("research unavailable");
     }
   };
@@ -72,13 +76,21 @@ export async function clientPersonaResearch(
     ...(extraction
       ? {
           extract: (request: Parameters<typeof askExtraction>[1]) =>
-            quietOnFailure(() => askExtraction(client, request)),
+            extractionBackedOff()
+              ? Promise.resolve({ ok: false, error: "backing off" })
+              : quietOnFailure(
+                  () => askExtraction(client, request),
+                  () => backOffExtraction(),
+                ),
         }
       : {}),
     ...(judge
       ? {
           judge: (request: Parameters<typeof askJudgement>[1]) =>
-            quietOnFailure(() => askJudgement(client, request, settings)),
+            quietOnFailure(
+              () => askJudgement(client, request, settings),
+              () => backOffSystemOne(),
+            ),
         }
       : {}),
   };

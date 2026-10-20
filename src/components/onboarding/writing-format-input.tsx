@@ -19,7 +19,7 @@ export const WritingFormatInput = component$<WritingFormatInputProps>(
     <div>
       <div class="writing-format-control">
         <input
-          value={props.value}
+          defaultValue={props.value}
           {...({ list: "twyne-writing-formats" } as Record<string, string>)}
           aria-labelledby={props.labelledBy}
           aria-describedby={`${props.describedBy} writing-format-guidance`}

@@ -191,6 +191,43 @@ test("unfinished brief survives refresh, leaving for sign-in, cancellation and c
   );
 });
 
+test("typing continuously keeps the active brief field, caret, and answer through rerenders", async ({
+  page,
+}) => {
+  await openBrief(page);
+  const field = page.locator('[aria-labelledby="atr-question"]');
+  await field.fill("draft");
+  await field.evaluate((element: HTMLInputElement) => {
+    element.focus();
+    element.setSelectionRange(2, 2);
+  });
+
+  // Insert in the middle: a controlled value write on every keystroke can
+  // move the caret to the end even when the visible text remains correct.
+  await page.keyboard.type("XYZ");
+  await expect(field).toHaveValue("drXYZaft");
+  await expect(field).toBeFocused();
+  expect(
+    await field.evaluate((element: HTMLInputElement) => element.selectionStart),
+  ).toBe(5);
+
+  // Let queued persistence/renders settle and ensure the same mounted field
+  // still owns focus and the complete value.
+  await page.waitForTimeout(100);
+  await expect(field).toBeFocused();
+  await expect(field).toHaveValue("drXYZaft");
+
+  await page.getByRole("button", { name: "Next", exact: true }).click();
+  await expect(page.getByRole("progressbar")).toHaveAttribute(
+    "aria-valuenow",
+    "2",
+  );
+  await page.getByRole("button", { name: /Back$/ }).click();
+  await expect(page.locator('[aria-labelledby="atr-question"]')).toHaveValue(
+    "drXYZaft",
+  );
+});
+
 test("a failed filing retains every answer on refresh and can be retried", async ({
   page,
 }) => {
