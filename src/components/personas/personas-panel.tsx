@@ -13,6 +13,19 @@ import { Link } from "@qwik.dev/router";
 import { useConvexClient } from "../../utils/convex-context";
 import { renderMarkdown } from "../../utils/markdown";
 import {
+  clearNoteDecision,
+  decisionsDigest,
+  loadNoteDecisions,
+  saveNoteDecision,
+  withoutSettled,
+  type NoteDecision,
+  type NoteDecisionKind,
+} from "../../utils/note-decisions";
+import {
+  renderGroundedMarkdown,
+  revealQuoteFromEvent,
+} from "../../utils/quote-grounding";
+import {
   downloadBlob,
   exportRoomAnalysisMarkdown,
   safeFilename,
@@ -103,6 +116,10 @@ import {
 
 interface PersonasStore {
   feedback: PersonaFeedback[];
+  /** Latest manuscript text, so quotations in notes link to live passages. */
+  manuscript: string;
+  /** What the writer decided about notes: meant as written, or for later. */
+  decisions: NoteDecision[];
   aiFeedback: Record<
     string,
     { sentiment: "positive" | "negative"; reason?: string }
@@ -315,6 +332,8 @@ export const PersonasPanel = component$(
     const auth = useAuth();
     const store = useStore<PersonasStore>({
       feedback: [],
+      manuscript: "",
+      decisions: [],
       aiFeedback: {},
       isGenerating: false,
       expandedFeedback: new Set(),
@@ -371,6 +390,7 @@ export const PersonasPanel = component$(
         loadRoomSettingsLocally(),
       ]);
       if (notes.length > 0) store.feedback = notes;
+      store.decisions = await loadNoteDecisions(activeFolioId);
       store.roomSettings = settings;
       const grouped: Record<string, PersonaReply[]> = {};
       for (const r of replies) {
@@ -667,7 +687,13 @@ export const PersonasPanel = component$(
         // What the writer has been doing since the room last read. Costs
         // nothing to fetch and lets the editors respond to a direction rather
         // than to a cold snapshot.
-        const trajectory = await currentTrajectoryDigest();
+        const decisions = await loadNoteDecisions(activeFolioId);
+        const trajectory = [
+          await currentTrajectoryDigest(),
+          decisionsDigest(decisions, draftText),
+        ]
+          .filter(Boolean)
+          .join("\n\n");
         const posthogIdentity = await getPostHogIdentityContext();
         let responses: Array<{
           personaId: string;
@@ -918,6 +944,9 @@ export const PersonasPanel = component$(
           );
         }
 
+        // A passage the writer already settled stays settled until it changes.
+        responses = withoutSettled(responses, decisions, draftText);
+
         // Build PersonaFeedback[] from the responses, persisting each as we go.
         const timestamp = Date.now();
         const feedbackList: PersonaFeedback[] = [];
@@ -981,6 +1010,24 @@ export const PersonasPanel = component$(
         store.streamingNotes = {};
       }
     });
+
+    /** The writer settles a note: meant as written, or for later. */
+    const decideNote = $(
+      async (feedback: PersonaFeedback, kind: NoteDecisionKind | null) => {
+        if (!activeFolioId || !feedback.noteId) return;
+        store.decisions =
+          kind === null
+            ? await clearNoteDecision(activeFolioId, feedback.noteId)
+            : await saveNoteDecision(activeFolioId, {
+                noteId: feedback.noteId,
+                personaId: feedback.personaId,
+                anchor: feedback.anchor ?? "",
+                kind,
+                summary: feedback.feedback.replace(/\s+/g, " ").slice(0, 140),
+                at: Date.now(),
+              });
+      },
+    );
 
     const submitAiFeedback = $(
       async (
@@ -1689,7 +1736,19 @@ export const PersonasPanel = component$(
       };
       window.addEventListener("twyne:background-room", onBackgroundStatus);
 
+      // Quotations are re-resolved whenever the draft changes, so a link
+      // never points at a passage that has since been rewritten.
+      const onContent = (e: Event) => {
+        const text = (e as CustomEvent<{ text?: string }>).detail?.text;
+        if (typeof text === "string") store.manuscript = text;
+      };
+      window.addEventListener("twyne:content", onContent);
+      void readCurrentDraftText().then((text) => {
+        if (!store.manuscript) store.manuscript = text;
+      });
+
       cleanup(() => {
+        window.removeEventListener("twyne:content", onContent);
         window.removeEventListener("twyne:persona-reply", onReply);
         window.removeEventListener(
           "twyne:request-persona-thread",
@@ -2210,7 +2269,8 @@ export const PersonasPanel = component$(
                       class="mt-0.5 text-[10px] leading-4 text-[var(--color-ink-muted)]"
                       style="font-family: var(--font-serif);"
                     >
-                      Adds notes after {WORD_DELTA_THRESHOLD} new words.
+                      Reads on its own after {WORD_DELTA_THRESHOLD} new or
+                      rewritten words, once you pause.
                     </p>
                   </div>
                   <div class="flex items-center justify-between gap-3 text-[11px] text-[var(--color-ink)]">
@@ -2457,7 +2517,11 @@ export const PersonasPanel = component$(
                   class="mt-2 text-sm text-[var(--color-ink-light)]"
                   style="font-family: var(--font-serif); font-style: italic;"
                 >
-                  No notes yet. Write a few paragraphs, then get notes.
+                  {store.roomSettings.backgroundRoom === false
+                    ? "No notes yet. Reading on its own is off; get notes when you want them."
+                    : store.backgroundRoom?.status === "reading"
+                      ? "The editors are reading the draft now."
+                      : `No notes yet. The editors read the draft on their own once it reaches ${MIN_EDITOR_WORDS} words and you pause.`}
                 </p>
               </div>
             )}
@@ -2503,14 +2567,18 @@ export const PersonasPanel = component$(
                 // not a filed report — so it gets lighter chrome and says where
                 // it came from, and never looks like work the writer requested.
                 const isPassing = feedback.origin === "background";
+                const decision = store.decisions.find(
+                  (d) => d.noteId === feedback.noteId,
+                );
                 return (
                   <div
                     key={noteKey}
-                    class={
+                    class={[
                       isPassing
                         ? "desk-card passing-note feedback-enter"
-                        : "desk-card clipping feedback-enter"
-                    }
+                        : "desk-card clipping feedback-enter",
+                      { "is-settled": !!decision },
+                    ]}
                     style={{
                       ["--clip-color" as never]: personaColor,
                       ["--card-accent" as never]: personaColor,
@@ -2573,16 +2641,19 @@ export const PersonasPanel = component$(
                       }
                       onClick$={
                         store.compactView
-                          ? () => {
+                          ? (event: Event) => {
+                              if (revealQuoteFromEvent(event)) return;
                               const cur = new Set(store.expandedFeedback);
                               if (cur.has(noteKey)) cur.delete(noteKey);
                               else cur.add(noteKey);
                               store.expandedFeedback = cur;
                             }
-                          : undefined
+                          : (event: Event) => revealQuoteFromEvent(event)
                       }
-                      dangerouslySetInnerHTML={renderMarkdown(
+                      onKeyDown$={(event: Event) => revealQuoteFromEvent(event)}
+                      dangerouslySetInnerHTML={renderGroundedMarkdown(
                         feedback.feedback,
+                        store.manuscript,
                       )}
                     />
 
@@ -2654,7 +2725,16 @@ export const PersonasPanel = component$(
                             )}
                             <div
                               class="comment-markdown mt-0.5"
-                              dangerouslySetInnerHTML={renderMarkdown(r.text)}
+                              onClick$={(event: Event) =>
+                                revealQuoteFromEvent(event)
+                              }
+                              onKeyDown$={(event: Event) =>
+                                revealQuoteFromEvent(event)
+                              }
+                              dangerouslySetInnerHTML={renderGroundedMarkdown(
+                                r.text,
+                                store.manuscript,
+                              )}
                             />
                           </div>
                         ))}
@@ -2777,6 +2857,37 @@ export const PersonasPanel = component$(
                           >
                             ↩ reply
                           </button>
+                          {feedback.noteId &&
+                            (decision ? (
+                              <button
+                                class="card-key card-key--on"
+                                onClick$={() => decideNote(feedback, null)}
+                                title="Undo. The editors may raise this passage again."
+                              >
+                                {decision.kind === "intentional"
+                                  ? "✓ meant as written"
+                                  : "◷ for later"}
+                              </button>
+                            ) : (
+                              <>
+                                <button
+                                  class="card-key"
+                                  onClick$={() =>
+                                    decideNote(feedback, "intentional")
+                                  }
+                                  title="This is deliberate. The editors won't raise it again unless the passage changes."
+                                >
+                                  intentional
+                                </button>
+                                <button
+                                  class="card-key"
+                                  onClick$={() => decideNote(feedback, "later")}
+                                  title="Come back to this after the draft. The editors won't repeat it meanwhile."
+                                >
+                                  later
+                                </button>
+                              </>
+                            ))}
                           {feedback.anchor &&
                             effectiveLevel(
                               store.roomSettings,
@@ -3120,7 +3231,7 @@ function backgroundRoomLabel(s: BackgroundRoomSnapshot): string {
         WORD_DELTA_THRESHOLD - Math.max(0, s.pendingWords),
       );
       return remaining > 0
-        ? `The room reads on — ${remaining} more words`
+        ? `The room reads again after ${remaining} more new or rewritten words`
         : "The room is listening";
     }
   }

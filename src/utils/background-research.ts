@@ -40,6 +40,12 @@ import {
   runClientResearchWebSearch,
 } from "./ai-client";
 import { searchMcpServers, setMcpConvexClient } from "./mcp-research";
+import { askJudgement } from "./judgement-client";
+import {
+  candidateRequest,
+  claimCandidates,
+  confirmedTargets,
+} from "./research-candidates";
 import { runSearchBackend, searchBackend } from "./research-backends";
 import { loadAiSettingsFromIdb, loadApparatusSettingsFromIdb } from "./idb";
 import {
@@ -54,6 +60,7 @@ import {
   buildResearchSearchContext,
   buildResearchSearchInstructions,
   directedResearchTarget,
+  dossierResearchMode,
   selectFreshTargets,
   targetKey,
   rankSourcesForTarget,
@@ -79,7 +86,44 @@ interface ResearchState {
   lastError?: string;
   /** What the watcher is doing right now, for an observable headline. */
   phase: "idle" | "extracting" | "searching" | "saving" | "error";
+  /** Why the watcher is idle, so the panel never just says "watching". */
+  idleReason: ResearchIdleReason;
+  /** When a failed pass will try again on its own. */
+  nextRetryAt?: number;
 }
+
+/**
+ * Why no research is running. Each one is a different thing for the writer
+ * to know: waiting for them, nothing to do, a setup step, or a finished pass.
+ */
+export type ResearchIdleReason =
+  | "waiting"
+  | "too-short"
+  | "no-provider"
+  | "no-claims"
+  | "covered"
+  | "pass-done";
+
+/** The same states, short enough for a status line. */
+export const RESEARCH_IDLE_LABEL: Record<ResearchIdleReason, string> = {
+  waiting: "Waiting for a pause",
+  "too-short": "Draft too short",
+  "no-provider": "Sign in to research",
+  "no-claims": "No claims to source",
+  covered: "Claims covered",
+  "pass-done": "Pass finished",
+};
+
+export const RESEARCH_IDLE_COPY: Record<ResearchIdleReason, string> = {
+  waiting: "Waiting for you to pause. Research runs after a quiet moment.",
+  "too-short": "The draft is too short to check for claims yet.",
+  "no-provider":
+    "Automatic research starts when you sign in or choose an AI provider in Settings.",
+  "no-claims":
+    "Read the draft and found no claims that need a source right now.",
+  covered: "Every claim it found already has a source or was just checked.",
+  "pass-done": "Finished the last pass. Results are below.",
+};
 
 export type ResearchTargetStatus =
   | "queued"
@@ -127,6 +171,10 @@ interface ResearchSnapshot {
   lastTargets: Array<{ kind: string; anchor: string; query: string }>;
   /** Live per-claim pipeline state for the current/last pass. */
   phase: string;
+  /** Why the watcher is idle, when it is. */
+  idleReason: ResearchIdleReason;
+  /** When a failed pass retries on its own, if one is scheduled. */
+  nextRetryAt?: number;
   passActive: boolean;
   progress: ResearchProgressItem[];
   activity: ResearchActivityEntry[];
@@ -139,6 +187,7 @@ const state: ResearchState = {
   lastTickAt: 0,
   lastStatus: "idle",
   phase: "idle",
+  idleReason: "waiting",
 };
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -163,6 +212,35 @@ let passInFlight = false;
  */
 let researchGeneration = 0;
 
+/** Failed passes retry on their own, further apart each time. */
+const RETRY_DELAYS_MS = [30_000, 2 * 60_000, 10 * 60_000];
+let retryAttempt = 0;
+let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearRetry(): void {
+  if (retryTimer) clearTimeout(retryTimer);
+  retryTimer = null;
+}
+
+/**
+ * Try a failed pass again later without being asked. Gives up after the
+ * last delay and leaves the error and its retry button on screen.
+ */
+function scheduleRetry(): void {
+  clearRetry();
+  const delay = RETRY_DELAYS_MS[retryAttempt];
+  if (delay === undefined || !lastDraftText) return;
+  retryAttempt += 1;
+  state.nextRetryAt = Date.now() + delay;
+  const generation = researchGeneration;
+  retryTimer = setTimeout(() => {
+    retryTimer = null;
+    state.nextRetryAt = undefined;
+    if (generation !== researchGeneration) return;
+    void runOnce(lastDraftText, true);
+  }, delay);
+}
+
 const MAX_PROGRESS_ROWS = 8;
 const MAX_ACTIVITY_ROWS = 8;
 
@@ -177,6 +255,12 @@ function setStatus(
   if (error) state.lastError = error;
   else if (status !== "error") state.lastError = undefined;
   notify();
+}
+
+/** Go idle and say why. */
+function settle(reason: ResearchIdleReason): void {
+  state.idleReason = reason;
+  setStatus("idle", "idle");
 }
 
 function notify(): void {
@@ -198,6 +282,8 @@ export function snapshot(): ResearchSnapshot {
     provider: state.lastProvider,
     lastTargets: lastTargetSummary,
     phase: state.phase,
+    idleReason: state.idleReason,
+    nextRetryAt: state.nextRetryAt,
     passActive: passInFlight,
     progress: [...progressItems],
     activity: [...activityLog],
@@ -372,7 +458,11 @@ export async function researchSelection(
   } finally {
     if (generation === researchGeneration) {
       passInFlight = false;
-      setStatus("idle", "idle");
+      settle("pass-done");
+      // Claims whose search broke are tried again later on their own.
+      const failed = progressItems.filter((p) => p.status === "error");
+      for (const row of failed) recentTargetKeys.delete(row.key);
+      if (failed.length) scheduleRetry();
     }
   }
 }
@@ -499,6 +589,8 @@ export function onDraftChanged(draftText: string): void {
 
 export function stopBackgroundResearch(): void {
   cancelAccountResearchReview();
+  clearRetry();
+  retryAttempt = 0;
   if (debounceTimer) {
     clearTimeout(debounceTimer);
     debounceTimer = null;
@@ -516,6 +608,8 @@ export function startBackgroundResearch(args: {
   folioId: string | null;
 }): void {
   cancelAccountResearchReview();
+  clearRetry();
+  retryAttempt = 0;
   researchGeneration += 1;
   activeClient = args.client;
   // Share the client with the MCP layer, which also needs it for the relay
@@ -528,7 +622,7 @@ export function startBackgroundResearch(args: {
   activityLog = [];
   lastTargetSummary = [];
   passInFlight = false;
-  setStatus("idle", "idle");
+  settle("waiting");
 }
 
 function schedule(draftText: string, delay: number, force = false): void {
@@ -548,13 +642,18 @@ async function runOnce(
   const generation = researchGeneration;
   const folioId = activeFolioId;
   const trimmed = draftText.trim();
-  if (trimmed.length < MIN_DRAFT_CHARS) return;
+  if (trimmed.length < MIN_DRAFT_CHARS) {
+    settle("too-short");
+    return;
+  }
 
-  // The watcher decides "what needs a source" with AI. No AI, no auto-
-  // research; manual Sources still flow through as always.
+  // The watcher decides "what needs a source" with the writer's model when
+  // they have one, and otherwise with the text itself and Jev on Twyne's
+  // service. Only a signed-out writer with no model has no automatic path.
   const aiSettings = await loadAiSettingsFromIdb();
-  if (!aiSettings || !hasConfiguredAiProvider(aiSettings)) {
-    setStatus("idle", "idle");
+  const ownModel = !!aiSettings && hasConfiguredAiProvider(aiSettings);
+  if (!ownModel && !activeClient) {
+    settle("no-provider");
     return;
   }
 
@@ -574,28 +673,39 @@ async function runOnce(
   setStatus("running", "extracting");
   let result: { targets: ResearchTarget[]; provider: string } | null = null;
   try {
-    result = await runClientResearchExtract(
-      {
-        draftText: trimmed,
-        existingSources: existingTitles,
-        maxTargets: DEFAULT_TARGETS_PER_PASS,
-        instructions:
-          [buildDossierResearchInstructions(activeBrief), steeringInstructions]
-            .filter(Boolean)
-            .join("\n") || undefined,
-      },
-      aiSettings,
-    );
+    result = ownModel
+      ? await runClientResearchExtract(
+          {
+            draftText: trimmed,
+            existingSources: existingTitles,
+            maxTargets: DEFAULT_TARGETS_PER_PASS,
+            instructions:
+              [
+                buildDossierResearchInstructions(activeBrief),
+                steeringInstructions,
+              ]
+                .filter(Boolean)
+                .join("\n") || undefined,
+          },
+          aiSettings!,
+        )
+      : await extractOnService(trimmed);
   } catch (err) {
+    scheduleRetry();
     setStatus(
       "error",
       "error",
-      `Reading your draft failed — ${errorMessage(err, "the AI call errored")}. Fix your AI settings or retry.`,
+      `Reading your draft failed — ${errorMessage(err, "the AI call errored")}. ${
+        retryTimer
+          ? "It will try again on its own."
+          : "It stopped retrying; check your AI settings or sign-in, then retry."
+      }`,
     );
     return;
   }
+  retryAttempt = 0;
   if (!result?.targets.length) {
-    setStatus("idle", "idle");
+    settle("no-claims");
     return;
   }
 
@@ -608,7 +718,7 @@ async function runOnce(
     now - lastPassAt < PASS_TTL_MS &&
     fingerprintOf(result.targets) === lastPassFingerprint
   ) {
-    setStatus("idle", "idle");
+    settle("covered");
     return;
   }
   lastPassFingerprint = fingerprintOf(result.targets);
@@ -620,7 +730,7 @@ async function runOnce(
     recentKeys: recentTargetKeys,
   });
   if (fresh.length === 0) {
-    setStatus("idle", "idle");
+    settle("covered");
     return;
   }
 
@@ -654,6 +764,23 @@ async function runOnce(
       setStatus("idle", "idle");
     }
   }
+}
+
+/** Claims found by text rules and confirmed by Jev, for hosted writers. */
+async function extractOnService(
+  draft: string,
+): Promise<{ targets: ResearchTarget[]; provider: string } | null> {
+  const candidates = claimCandidates(draft);
+  if (!candidates.length) return null;
+  const result = await askJudgement(
+    activeClient,
+    candidateRequest(candidates, dossierResearchMode(activeBrief)),
+  );
+  if (!result.ok) {
+    throw new Error(result.error || "the claim check could not run");
+  }
+  const targets = confirmedTargets(candidates, result);
+  return targets.length ? { targets, provider: "hosted" } : null;
 }
 
 /* ── Provider routing (search API / model / MCP / hosted) ──────── */

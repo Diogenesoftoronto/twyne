@@ -160,3 +160,23 @@ describe("revision history", () => {
     ]);
   });
 });
+
+describe("describeRevision", () => {
+  test("says what changed and whose notes it reached", async () => {
+    const { describeRevision } = await import("./revision-history");
+    const text = describeRevision(
+      [
+        {
+          before: "The ferry left without her at dawn.",
+          after: "The ferry left.",
+        },
+        { before: "A cut line about weather.", after: null },
+        { before: null, after: "A new closing line." },
+      ],
+      [{ anchor: "The ferry left without her", personaName: "Marrow" }],
+    );
+    expect(text).toBe(
+      "Rewrote 1 passage, cut 1 passage and added 1 passage. The changes reach passages Marrow had notes on.",
+    );
+  });
+});

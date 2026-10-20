@@ -30,25 +30,45 @@ sustained writing, with a manual override in the review controls.
 
 ### The room reads as you write
 
-Convening the room is deliberate and expensive — five model calls over the
-whole manuscript. Alongside it, a background pass runs on a narrower brief:
-once you've written **~300 net new words** _and_ stopped typing for **two
-minutes**, all five editors read **only the new paragraphs**, plus a digest of
-how the draft has been moving.
+Twyne acts without being asked. The buttons remain, but as shortcuts rather
+than the way work starts.
 
-Those arrive as quieter "in passing" notes in the Cast panel. Two spend guards
-sit on top — a five-minute floor between passes and a per-session cap — because
-this runs without you asking. Turn it off with **Read as I write** in the room
-settings.
+- **The editors read on their own.** Once **200 words** are new or rewritten
+  since their last reading _and_ you have paused for **a minute**, all five
+  editors read the changed paragraphs, plus a digest of how the draft has been
+  moving. Rewrites count as much as new material. A folio they have never read
+  is read on its own once it reaches 500 words. What they last read is kept
+  per folio, so reopening a folio that already has notes stays quiet. Spend
+  guards: five minutes between passes and eight passes a session. Turn it off
+  with **Read as I write** in the room settings.
+- **Quotations lead to passages.** Every passage an editor quotes in a note or
+  reply links to the sentence it came from. Matching is literal: typography,
+  case and spacing are normalised, `…` elisions are followed within one
+  paragraph, and the note's own words choose between repeated phrases. A
+  quotation that is ambiguous, or no longer in the draft, stays unlinked and
+  says why. Links are re-checked whenever the draft changes.
+- **Settled notes stay settled.** Mark a note **intentional** or **later** and
+  that editor will not raise the same passage again until its text changes.
+  The decisions go to the editors as context too.
+- **Research needs no setup.** With your own model, it finds the claims that
+  need a source. Signed in without one, Twyne picks out figures, quotations,
+  appeals to authority and dated events from the text and Jev confirms which
+  really need a source. Fiction is read as fiction. A failed pass or claim
+  tries again after 30 seconds, 2 minutes and 10 minutes. The panel always
+  says why research is idle: waiting for a pause, draft too short, no claims,
+  all covered, or finished.
 
-The same digest goes along when you _do_ press Convene, so the deliberate pass
-knows the trajectory rather than re-reading a cold snapshot.
+The same digest goes along when you _do_ press **Get notes**, so the deliberate
+pass knows the trajectory rather than re-reading a cold snapshot.
 
 ### The rubric grades against _this_ piece
 
 The default signed-in check first attempts one typed judgement over the enabled
-criteria, including custom criteria. **Ask the editors** runs the separate room
-reading; Twyne also tries that path when the quick check is unavailable.
+criteria, including custom criteria. The editors then read each new version on
+their own, at most once every ten minutes, in the background so the grade stays
+on screen. Their notes survive later quick checks and say when they are about
+an earlier version. **Ask them now** reads the current version straight away;
+Twyne also takes the room path when the quick check is unavailable.
 
 In the room reading, the static feature scorer measures shape — sentence-length variance,
 type-token ratio, paragraph balance. It never reads the brief, so fluent prose

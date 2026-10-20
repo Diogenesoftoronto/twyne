@@ -1,5 +1,10 @@
 import { component$, type PropFunction } from "@qwik.dev/core";
 import { renderMarkdown } from "../../utils/markdown";
+import {
+  currentManuscript,
+  renderGroundedMarkdown,
+  revealQuoteFromEvent,
+} from "../../utils/quote-grounding";
 import { SpeakButton } from "../ui/speak-button";
 import { PersonaMasthead } from "../personas/persona-portrait";
 import type { NotePopover } from "./editor-state";
@@ -94,7 +99,12 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
           data-speech-id={`note-popover-${note.id}`}
           class="comment-markdown text-[0.95rem] leading-6 text-[var(--color-ink)]"
           style={{ fontFamily: "var(--font-serif)" }}
-          dangerouslySetInnerHTML={renderMarkdown(note.note)}
+          onClick$={(event: Event) => revealQuoteFromEvent(event)}
+          onKeyDown$={(event: Event) => revealQuoteFromEvent(event)}
+          dangerouslySetInnerHTML={renderGroundedMarkdown(
+            note.note,
+            currentManuscript(),
+          )}
         />
         {note.briefTitle && (
           <p
@@ -258,7 +268,12 @@ const PersonaReplyBubble = component$<{
     <div
       class="comment-markdown comment-markdown-on-color whitespace-pre-wrap"
       style={{ color: "var(--color-paper)" }}
-      dangerouslySetInnerHTML={renderMarkdown(text)}
+      onClick$={(event: Event) => revealQuoteFromEvent(event)}
+      onKeyDown$={(event: Event) => revealQuoteFromEvent(event)}
+      dangerouslySetInnerHTML={renderGroundedMarkdown(
+        text,
+        currentManuscript(),
+      )}
     />
   </div>
 ));

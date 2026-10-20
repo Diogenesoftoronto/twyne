@@ -12,6 +12,7 @@ import {
   whyNotReady,
 } from "./background-room";
 import { PERSONAS } from "./personas";
+import { MIN_EDITOR_WORDS } from "./draft-thresholds";
 
 /**
  * The background room spends the writer's model budget without being asked,
@@ -64,6 +65,16 @@ describe("startBackgroundRoom", () => {
     expect(snapshot().status).toBe("idle");
   });
 
+  /**
+   * A draft the room has never read is not "already read". It arms on its
+   * own when the folio opens, so the writer never has to convene it.
+   */
+  test("reads a draft it has never seen without being asked", () => {
+    start({ baselineText: "", currentText: doc(300) });
+    expect(snapshot().status).toBe("armed");
+    expect(whyNotReady()).toBeNull();
+  });
+
   test("switching folio resets the baseline rather than carrying it over", () => {
     start({ baselineText: doc(100) });
     onDraftChanged(doc(400));
@@ -77,6 +88,13 @@ describe("startBackgroundRoom", () => {
 });
 
 describe("the trigger", () => {
+  test("counts rewrites, not just growth", () => {
+    start({ baselineText: doc(300) });
+    // Same length, every word changed: a revision the room should read.
+    onDraftChanged(doc(300).replace(/word/g, "verb"));
+    expect(snapshot().status).toBe("armed");
+  });
+
   test("does not arm below the word threshold", () => {
     start({ baselineText: doc(100) });
     // 200 words baseline (two paragraphs of 100); add well under the threshold.
@@ -130,13 +148,13 @@ describe("spend guards", () => {
 
   test("refuses to run on a draft too short to be worth reading", () => {
     start({ baselineText: "" });
-    onDraftChanged(words(WORD_DELTA_THRESHOLD - 1));
+    onDraftChanged(words(MIN_EDITOR_WORDS - 1));
     expect(whyNotReady()).toBe("too-short");
   });
 
   test("becomes eligible at one complete folio", () => {
     start({ baselineText: "" });
-    onDraftChanged(words(WORD_DELTA_THRESHOLD));
+    onDraftChanged(words(MIN_EDITOR_WORDS));
     expect(whyNotReady()).toBeNull();
     expect(snapshot().status).toBe("armed");
   });

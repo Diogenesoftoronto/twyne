@@ -142,6 +142,23 @@ is live at once; dismissing it keeps it dismissed for that passage during the
 mounted conductor session. It leads while stuck and waits, with an explicit
 policy reason, in every other reading or at another passage.
 
+### Why two passages are side by side
+
+An echo card pairs the paragraph under the cursor with an earlier one, here or
+in another folio. In the same gather request as the echo's relevance Noul, a
+Choice names the relationship: unpaid promise, tension, echo, repetition, same
+subject, or shared vocabulary only. Code supplies the plain-language
+explanation for the chosen label (`ECHO_RELATIONS`, `echoReading`); System One
+selects rather than writes. When the judgement says shared vocabulary only, the
+card is not shown. Without a judgement the card says it was matched on shared
+words and has not been read for meaning.
+
+The card shows both ends: the matched passage and the one being written, each
+going to its own place in the manuscript (`focusAnchor(item, index)`). The
+reading is offered as an editorial interpretation, never as a defect.
+"That's the connection" records engagement in the flow profile; "Not how I read
+it" dismisses the card, which does not come back in the mounted session.
+
 `FlowSnapshot.heldKinds` is the pneumatic post's tally: held items by kind, beside
 the total `held`. It includes only policy-held items, including a waiting way in;
 dismissed items do not count. The margin can name what is waiting without showing
@@ -186,6 +203,8 @@ opens from replacing a more recently selected conversation.
 | Cadence and learned preferences    | [`flow-state.ts`](../src/utils/flow-state.ts), [`flow-profile.ts`](../src/utils/flow-profile.ts)                            |
 | Gathering and surfacing            | [`flow-conductor.ts`](../src/components/editor/extensions/flow-conductor.ts), [`flow-items.ts`](../src/utils/flow-items.ts) |
 | Conversation placement             | [`margin-surface.ts`](../src/utils/margin-surface.ts), [`flow-surface.tsx`](../src/components/in-flow/flow-surface.tsx)     |
+| Quotations linked to passages      | [`quote-grounding.ts`](../src/utils/quote-grounding.ts)                                                                     |
+| Settled notes                      | [`note-decisions.ts`](../src/utils/note-decisions.ts)                                                                       |
 
 ## Verification
 

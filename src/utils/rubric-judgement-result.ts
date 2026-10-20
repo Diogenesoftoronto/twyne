@@ -102,7 +102,7 @@ export function judgementRubricResult(input: {
     criteria,
     overallScore: overall,
     overallGrade: letter,
-    summary: `${gradeVerdict(overall)} A quick model check of ${criteria.length} criteria; ask the editors for written notes.`,
+    summary: `${gradeVerdict(overall)} A quick model check of ${criteria.length} criteria; the editors follow with written notes.`,
     timestamp: grade.at,
     judges: [],
     staticScore: input.staticScore,

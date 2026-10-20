@@ -13,6 +13,8 @@ export interface RevisionSnapshot {
   label: string;
   source: "automatic" | "manual" | "feedback" | "rubric";
   wordCount: number;
+  /** What the writer was trying to do in this revision, in their words. */
+  intent?: string;
 }
 
 export interface RevisionComparison {
@@ -154,6 +156,7 @@ export async function createRevisionSnapshot(args: {
   html: string;
   typstSource?: string;
   label?: string;
+  intent?: string;
   source?: RevisionSnapshot["source"];
   now?: number;
   force?: boolean;
@@ -195,6 +198,7 @@ export async function createRevisionSnapshot(args: {
       (source === "automatic" ? "Writing checkpoint" : "Saved revision"),
     source,
     wordCount: words(args.html).length,
+    ...(args.intent?.trim() ? { intent: args.intent.trim() } : {}),
   };
   await storage.save(
     historyKey(args.folioId),
@@ -292,6 +296,63 @@ export function compareRevisions(
     paragraphsBefore: paragraphs(beforeHtml),
     paragraphsAfter: paragraphs(afterHtml),
   };
+}
+
+/**
+ * Notes an editor left on a passage that this change rewrote or removed. The
+ * link is literal: the note's anchor sentence was in the old passage. That
+ * is evidence the change touched what the note was about, not proof that it
+ * answered it, and the panel words it that way.
+ */
+export function notesTouchedBy<T extends { anchor?: string }>(
+  change: RevisionPassageChange,
+  notes: readonly T[],
+): T[] {
+  if (!change.before) return [];
+  const squash = (text: string) =>
+    text.replace(/\s+/g, " ").trim().toLowerCase();
+  const before = squash(change.before);
+  const after = change.after ? squash(change.after) : "";
+  return notes.filter((note) => {
+    const anchor = note.anchor ? squash(note.anchor) : "";
+    return (
+      anchor.length > 12 && before.includes(anchor) && !after.includes(anchor)
+    );
+  });
+}
+
+/**
+ * One plain sentence saying what a revision did, from the changes alone: how
+ * many passages were rewritten, cut and added, and whose notes the rewrites
+ * touched. Written by Twyne so a checkpoint explains itself even when the
+ * writer never says what it was for.
+ */
+export function describeRevision<
+  T extends { anchor?: string; personaName: string },
+>(changes: readonly RevisionPassageChange[], notes: readonly T[]): string {
+  if (!changes.length) return "No change to the text.";
+  const rewritten = changes.filter((c) => c.before && c.after).length;
+  const cut = changes.filter((c) => c.before && !c.after).length;
+  const added = changes.filter((c) => !c.before && c.after).length;
+  const n = (count: number, word: string) =>
+    `${count} ${word}${count === 1 ? "" : "s"}`;
+  const parts = [
+    rewritten && `rewrote ${n(rewritten, "passage")}`,
+    cut && `cut ${n(cut, "passage")}`,
+    added && `added ${n(added, "passage")}`,
+  ].filter(Boolean) as string[];
+  const said = parts.join(", ").replace(/, ([^,]*)$/, " and $1");
+  const editors = [
+    ...new Set(
+      changes
+        .flatMap((c) => notesTouchedBy(c, notes))
+        .map((note) => note.personaName),
+    ),
+  ];
+  const touched = editors.length
+    ? ` The changes reach passages ${editors.join(", ").replace(/, ([^,]*)$/, " and $1")} had notes on.`
+    : "";
+  return `${said.charAt(0).toUpperCase()}${said.slice(1)}.${touched}`;
 }
 
 /**

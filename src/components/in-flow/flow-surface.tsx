@@ -168,6 +168,8 @@ interface SurfaceState {
   /** Dock mode: explicit open/closed; null follows the conductor's mode. */
   dockOpen: boolean | null;
   drafts: Record<string, string>;
+  /** Echo readings the writer accepted. */
+  agreed: Record<string, boolean>;
   busy: Record<string, boolean>;
   notices: Record<string, string>;
   /** The conductor turned focus on (the page is in zen by its hand). */
@@ -256,6 +258,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       dockRight: 16,
       dockOpen: null,
       drafts: {},
+      agreed: {},
       busy: {},
       notices: {},
       autoFocus: false,
@@ -1058,12 +1061,20 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
               onClick$={() =>
                 item.kind === "comment" || item.kind === "persona-note"
                   ? converse(item)
-                  : flowController()?.focusAnchor(item)
+                  : flowController()?.focusAnchor(
+                      item,
+                      // The carbon is the other passage, so go there.
+                      item.kind === "echo" && item.anchors.length > 1
+                        ? 1
+                        : undefined,
+                    )
               }
               title={
                 item.kind === "comment" || item.kind === "persona-note"
                   ? "Open the conversation"
-                  : "Go to the passage"
+                  : item.kind === "echo" && item.anchors.length > 1
+                    ? "Go to the other passage"
+                    : "Go to the passage"
               }
             >
               {item.kind !== "persona-note" || item.title ? (
@@ -1088,6 +1099,53 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
               <span class="flow-card__reply-by">{item.data?.replyAuthor}</span>
               {clip(reply ?? "", 420)}
             </p>
+          )}
+
+          {item.kind === "echo" && item.data?.relation && (
+            <div class="flow-relation">
+              <p class="flow-relation__why">
+                <span class="flow-relation__label">{item.data.relation}</span>{" "}
+                {item.data.explanation}
+              </p>
+              {item.data.passage && item.anchors.length > 1 && (
+                <button
+                  type="button"
+                  class="flow-relation__here"
+                  onClick$={() => flowController()?.focusAnchor(item, 0)}
+                  title="Go to the passage you are writing"
+                >
+                  <span class="flow-relation__here-label">This passage</span>
+                  {clip(item.data.passage, 160)}
+                </button>
+              )}
+              <div class="flow-relation__actions">
+                {state.agreed[item.id] ? (
+                  <span class="flow-way-in__hint" role="status">
+                    Kept as your reading.
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    class="flow-link"
+                    onClick$={() => {
+                      flowController()?.engage(item.id);
+                      state.agreed = { ...state.agreed, [item.id]: true };
+                    }}
+                    title="This is how the passages connect"
+                  >
+                    That's the connection
+                  </button>
+                )}
+                <button
+                  type="button"
+                  class="flow-link"
+                  onClick$={() => dismiss(item.id)}
+                  title="Set aside. This reading won't come back."
+                >
+                  Not how I read it
+                </button>
+              </div>
+            </div>
           )}
 
           {item.kind === "way-in" && (
