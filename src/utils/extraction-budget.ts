@@ -23,6 +23,10 @@ export function spendExtraction(now = Date.now()): void {
 export function backOffExtraction(now = Date.now()): void {
   backoffUntil = now + BACKOFF_MS;
 }
+/** Back-off only, without the rhythm per-session cap, for other Clairic callers. */
+export function extractionBackedOff(now = Date.now()): boolean {
+  return backoffUntil > now;
+}
 export function __resetExtractionBudgetForTests(): void {
   calls.length = 0;
   backoffUntil = 0;
