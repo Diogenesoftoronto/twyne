@@ -41,6 +41,11 @@ import {
   BROWSER_TTS_VOICES,
 } from "./browser-inference";
 import { segmentSpeechText } from "./speech-segments";
+import {
+  HOSTED_SPEECH_MODEL,
+  HOSTED_SPEECH_VOICES,
+  resolveHostedSpeechVoice,
+} from "./hosted-speech";
 import type {
   SpeechAlignmentRange,
   SpeechAlignmentSnapshot,
@@ -179,8 +184,8 @@ const state: SpeechState = {
 };
 
 let audio: HTMLAudioElement | null = null;
-/** Content-addressed clip cache: `${voice}::${text}` → object URL. */
-const cache = new Map<string, string>();
+/** Content-addressed clips retain the provider metadata that made their audio. */
+const cache = new Map<string, ResolvedClip>();
 /**
  * Synthesis calls in flight, keyed the same way as the cache. Prefetching the
  * next passage means a clip can be half-synthesised at the moment the writer
@@ -190,6 +195,9 @@ const cache = new Map<string, string>();
 interface ResolvedClip {
   url: string;
   key: string;
+  provider: string;
+  model: string;
+  voice: string;
 }
 const inFlight = new Map<string, Promise<ResolvedClip>>();
 const alignmentCache = new Map<string, SpeechAlignmentSnapshot>();
@@ -236,7 +244,7 @@ function setState(
   state.queueIndex = queue.length ? queueIndex : 0;
   state.queueLength = queue.length;
   state.label = queue[queueIndex]?.label ?? queue[queueIndex]?.author ?? null;
-  if (status === "idle" || status === "error") {
+  if (status === "idle" || status === "loading" || status === "error") {
     state.currentTime = 0;
     state.duration = 0;
   }
@@ -272,13 +280,13 @@ function cacheKey(
   ].join("::");
 }
 
-function remember(key: string, url: string): void {
-  cache.set(key, url);
+function remember(clip: ResolvedClip): void {
+  cache.set(clip.key, clip);
   while (cache.size > MAX_CACHED_CLIPS) {
     const oldest = cache.keys().next().value;
     if (oldest === undefined) break;
     const stale = cache.get(oldest);
-    if (stale) URL.revokeObjectURL(stale);
+    if (stale) URL.revokeObjectURL(stale.url);
     cache.delete(oldest);
     alignmentCache.delete(oldest);
   }
@@ -317,6 +325,11 @@ function resolveVoice(
 ): string | undefined {
   const provider = resolveNarrationConfig(settings, req)?.provider.type;
   const selected = pickVoiceForProvider(req.voices, req.voice, provider);
+  if (!provider) {
+    return resolveHostedSpeechVoice(
+      selected ?? settings.perFeature["voice-narration"]?.voice,
+    );
+  }
   if (provider === "supertonic") {
     // OpenAI names are not Supertonic embedding ids. Keep the cast distinct.
     const mapped: Record<string, string> = {
@@ -379,8 +392,24 @@ export async function currentSpeechVoiceMenu(): Promise<SpeechVoiceMenu | null> 
       },
       settings,
     );
-    return id ? [{ id, label: persona.name }] : [];
+    return id
+      ? [{ id, label: resolved ? persona.name : `${persona.name} · ${id}` }]
+      : [];
   });
+
+  if (!resolved) {
+    return {
+      provider: "ElevenLabs via Not Organic",
+      model: HOSTED_SPEECH_MODEL,
+      selected,
+      options: uniqueVoiceOptions([
+        ...castOptions,
+        ...HOSTED_SPEECH_VOICES.map((voice) => ({ id: voice, label: voice })),
+        { id: selected, label: `Current voice (${selected})` },
+      ]),
+      allowsCustom: true,
+    };
+  }
 
   if (providerType === "supertonic") {
     return {
@@ -725,21 +754,30 @@ async function synthesize(
 
   if (req.client && req.signedIn) {
     try {
-      const hostedVoice = resolveVoice(req, settings) ?? req.voice ?? "alloy";
+      const hostedVoice =
+        resolveVoice(req, settings) ?? resolveHostedSpeechVoice();
       const res = (await req.client.action(api.voice.synthesizeSpeech, {
         text,
         voice: hostedVoice,
         instructions: req.instructions,
-      })) as { audioBase64: string; mimeType: string };
+      })) as {
+        audioBase64: string;
+        mimeType: string;
+        provider?: string;
+        model?: string;
+        voice?: string;
+        alignment?: SpeechAlignmentSnapshot;
+      };
       const bytes = Uint8Array.from(atob(res.audioBase64), (c) =>
         c.charCodeAt(0),
       );
+      if (res.alignment) onAlignment?.(res.alignment);
       return {
         audio: new Blob([bytes], { type: res.mimeType }),
         mimeType: res.mimeType,
-        provider: "hosted",
-        model: "hosted",
-        voice: hostedVoice,
+        provider: res.provider ?? "notorganic",
+        model: res.model ?? HOSTED_SPEECH_MODEL,
+        voice: res.voice ?? hostedVoice,
       };
     } catch (err) {
       reportApplicationDiagnostic("twyne:speech:hosted-declined", err, {
@@ -775,8 +813,8 @@ async function resolveClip(req: SpeakRequest): Promise<ResolvedClip> {
   const voice = resolveVoice(spoken, settings) ?? spoken.voice ?? "alloy";
   const key = cacheKey(
     text,
-    resolved?.provider.id ?? "hosted",
-    resolved?.model ?? "hosted",
+    resolved?.provider.id ?? "notorganic",
+    resolved?.model ?? HOSTED_SPEECH_MODEL,
     voice,
     override?.responseFormat ?? "mp3",
     override?.speed,
@@ -790,12 +828,15 @@ async function resolveClip(req: SpeakRequest): Promise<ResolvedClip> {
     // very clip that is playing.
     cache.delete(key);
     cache.set(key, cached);
-    return { url: cached, key };
+    return cached;
   }
 
   const pending = inFlight.get(key);
   if (pending) return pending;
 
+  // A failed attempt may have published timestamps before its audio failed.
+  // Only the new attempt's timing belongs to the clip that will be cached.
+  alignmentCache.delete(key);
   const work = synthesize({ ...spoken, text }, (snapshot) => {
     alignmentCache.set(key, snapshot);
   })
@@ -803,8 +844,15 @@ async function resolveClip(req: SpeakRequest): Promise<ResolvedClip> {
       const url = result.audioStream
         ? await createStreamingAudioUrl(result.audioStream, result.mimeType)
         : URL.createObjectURL(result.audio!);
-      remember(key, url);
-      return { url, key };
+      const clip = {
+        url,
+        key,
+        provider: result.provider,
+        model: result.model,
+        voice: result.voice,
+      };
+      remember(clip);
+      return clip;
     })
     .finally(() => {
       inFlight.delete(key);
@@ -1015,14 +1063,12 @@ async function playCurrent(): Promise<void> {
     };
     await audio.play();
     if (mine === generation) {
-      const menu = await currentSpeechVoiceMenu();
-      if (mine !== generation) return;
       const alignment = alignmentCache.get(clip.key);
       state.alignment = alignment ? [...alignment.ranges] : [];
       state.alignmentProvider = alignment?.provider ?? null;
-      state.provider = menu?.provider ?? null;
-      state.model = menu?.model ?? null;
-      state.voice = menu?.selected ?? null;
+      state.provider = clip.provider;
+      state.model = clip.model;
+      state.voice = clip.voice;
       setState("playing", req.id);
       prefetchNext();
     }
@@ -1056,7 +1102,7 @@ async function playCurrent(): Promise<void> {
 
 /** Drop every cached clip and release its object URL. */
 export function clearSpeechCache(): void {
-  for (const url of cache.values()) URL.revokeObjectURL(url);
+  for (const clip of cache.values()) URL.revokeObjectURL(clip.url);
   cache.clear();
   alignmentCache.clear();
 }

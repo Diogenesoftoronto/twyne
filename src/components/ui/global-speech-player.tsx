@@ -12,10 +12,12 @@ import {
   buildSpeechTimeline,
   type SpeechTimeline,
 } from "../../utils/speech-follow-along";
+import { alignmentRangeAtTime } from "../../utils/speech-alignment";
 import {
-  alignmentRangeAtSourceOffset,
-  alignmentRangeAtTime,
-} from "../../utils/speech-alignment";
+  buildSpeechSourceMap,
+  mapSpeechSourceRange,
+  type SpeechSourceMap,
+} from "../../utils/speech-source-map";
 
 const SENTENCE_HIGHLIGHT = "twyne-speech-sentence";
 const WORD_HIGHLIGHT = "twyne-speech-word";
@@ -31,6 +33,9 @@ interface SpeechTextMap {
   text: string;
   slices: SpeechTextSlice[];
   timeline: SpeechTimeline;
+  sourceMap: SpeechSourceMap | null;
+  sourceText: string | null;
+  sourceOffset: number | null;
   /** Location of the exact clip text inside the rendered target. */
   spokenStart: number;
   spokenEnd: number;
@@ -91,32 +96,48 @@ function buildSpeechTextMap(root: HTMLElement): SpeechTextMap {
     }
     return root;
   };
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-    acceptNode(node) {
-      const parent = (node as Text).parentElement;
-      if (
-        !parent ||
-        parent.closest(
-          'button, input, select, textarea, script, style, [aria-hidden="true"], [data-speech-ignore]',
-        )
-      ) {
-        return NodeFilter.FILTER_REJECT;
-      }
-      if (
-        !(node as Text).data.trim() &&
-        parent === root &&
-        root.children.length
-      ) {
-        return NodeFilter.FILTER_REJECT;
-      }
-      return node.textContent?.length
-        ? NodeFilter.FILTER_ACCEPT
-        : NodeFilter.FILTER_REJECT;
+  const walker = document.createTreeWalker(
+    root,
+    NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+    {
+      acceptNode(node) {
+        const parent = node.parentElement;
+        if (
+          !parent ||
+          parent.closest(
+            'button, input, select, textarea, script, style, [aria-hidden="true"], [data-speech-ignore]',
+          )
+        ) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        if (node instanceof Element)
+          return node.tagName === "BR"
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_SKIP;
+        if (
+          !(node as Text).data.trim() &&
+          ((parent === root && root.children.length) ||
+            ["UL", "OL", "TABLE", "THEAD", "TBODY", "TR"].includes(
+              parent.tagName,
+            ))
+        ) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return node.textContent?.length
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_REJECT;
+      },
     },
-  });
+  );
 
   let node = walker.nextNode();
   while (node) {
+    if (node instanceof Element) {
+      parts.push("\n");
+      length += 1;
+      node = walker.nextNode();
+      continue;
+    }
     const textNode = node as Text;
     const value = textNode.data;
     const block = nearestBlock(textNode);
@@ -137,39 +158,26 @@ function buildSpeechTextMap(root: HTMLElement): SpeechTextMap {
   }
 
   const text = parts.join("");
-  let timeline = buildSpeechTimeline(text);
-  let spokenStart = 0;
-  let spokenEnd = text.length;
-  const spokenText = currentSpeechText();
-  if (root.dataset.speechSource === "plain" && spokenText) {
-    const requestedStart = currentSpeechSourceOffset();
-    const start =
-      requestedStart !== null &&
-      text.slice(requestedStart, requestedStart + spokenText.length) ===
-        spokenText
-        ? requestedStart
-        : text.indexOf(spokenText);
-    if (start >= 0) {
-      spokenStart = start;
-      spokenEnd = start + spokenText.length;
-      const spokenTimeline = buildSpeechTimeline(spokenText);
-      timeline = {
-        totalWeight: spokenTimeline.totalWeight,
-        words: spokenTimeline.words.map((word) => ({
-          ...word,
-          start: word.start + start,
-          end: word.end + start,
-          sentenceStart: word.sentenceStart + start,
-          sentenceEnd: word.sentenceEnd + start,
-        })),
-      };
-    }
-  }
+  const sourceText = currentSpeechText();
+  const sourceOffset = currentSpeechSourceOffset();
+  const sourceMap = sourceText
+    ? buildSpeechSourceMap(sourceText, text, {
+        sourceOffset:
+          root.dataset.speechSource === "plain" ? sourceOffset : null,
+        markdown: root.dataset.speechSource !== "plain",
+      })
+    : null;
+  const spokenStart = sourceMap?.renderedStart ?? 0;
+  const spokenEnd = sourceMap?.renderedEnd ?? text.length;
+  const timeline = buildSpeechTimeline(text);
   return {
     root,
     text,
     slices,
     timeline,
+    sourceMap,
+    sourceText,
+    sourceOffset,
     spokenStart,
     spokenEnd,
   };
@@ -182,7 +190,7 @@ function textRange(
 ): Range | null {
   if (!map.slices.length || end <= start) return null;
   const startSlice =
-    map.slices.find((slice) => start >= slice.start && start <= slice.end) ??
+    map.slices.find((slice) => start >= slice.start && start < slice.end) ??
     map.slices[0];
   const endSlice =
     map.slices.find((slice) => end >= slice.start && end <= slice.end) ??
@@ -360,6 +368,8 @@ export const GlobalSpeechPlayer = component$(() => {
         if (
           snapshot.id !== activeId ||
           !activeMap?.root.isConnected ||
+          activeMap.sourceText !== currentSpeechText() ||
+          activeMap.sourceOffset !== currentSpeechSourceOffset() ||
           activeMapDirty
         ) {
           clearActive();
@@ -397,12 +407,15 @@ export const GlobalSpeechPlayer = component$(() => {
           snapshot.alignment,
           snapshot.currentTime,
         );
-        const nativeStart = native
-          ? activeMap.spokenStart + native.sourceStart
+        const mapped = native
+          ? mapSpeechSourceRange(
+              activeMap.sourceMap,
+              native.sourceStart,
+              native.sourceEnd,
+            )
           : null;
-        const nativeEnd = native
-          ? activeMap.spokenStart + native.sourceEnd
-          : null;
+        const nativeStart = mapped?.start ?? null;
+        const nativeEnd = mapped?.end ?? null;
         const timelineWord =
           nativeStart === null
             ? null
@@ -410,9 +423,12 @@ export const GlobalSpeechPlayer = component$(() => {
                 (word) =>
                   nativeStart >= word.start && nativeStart < word.sentenceEnd,
               ) ?? null);
-        const sentenceStart =
-          timelineWord?.sentenceStart ?? activeMap.spokenStart;
-        const sentenceEnd = timelineWord?.sentenceEnd ?? activeMap.spokenEnd;
+        const sentenceStart = timelineWord
+          ? Math.max(timelineWord.sentenceStart, activeMap.spokenStart)
+          : activeMap.spokenStart;
+        const sentenceEnd = timelineWord
+          ? Math.min(timelineWord.sentenceEnd, activeMap.spokenEnd)
+          : activeMap.spokenEnd;
         const sentence = textRange(activeMap, sentenceStart, sentenceEnd);
         const word =
           native?.precision === "word" &&
@@ -444,10 +460,14 @@ export const GlobalSpeechPlayer = component$(() => {
         }
         const offset = caretOffsetFromPoint(activeMap, x, y);
         if (offset === null) return;
-        const native = alignmentRangeAtSourceOffset(
-          snapshot.alignment,
-          offset - activeMap.spokenStart,
-        );
+        const native = snapshot.alignment.find((range) => {
+          const mapped = mapSpeechSourceRange(
+            activeMap!.sourceMap,
+            range.sourceStart,
+            range.sourceEnd,
+          );
+          return mapped && offset >= mapped.start && offset < mapped.end;
+        });
         if (!native) return;
         seekSpeech(native.audioStart);
         didSeek = true;

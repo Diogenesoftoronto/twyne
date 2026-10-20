@@ -130,6 +130,8 @@ describe("hosted metering contract", () => {
       ["balanced", Number.MAX_SAFE_INTEGER, 500_000],
       ["reasoning", Number.MAX_SAFE_INTEGER, 2_000_000],
       ["reasoning", 100_000, 100_000],
+      ["speech-eleven-v4", Number.MAX_SAFE_INTEGER, 1_000_000],
+      ["speech-eleven-v4", 10_000, 10_000],
     ] as const) {
       let seen: Request | undefined;
       const route = await fixture(

@@ -14,6 +14,83 @@ export interface SpeechAlignmentSnapshot {
   ranges: SpeechAlignmentRange[];
 }
 
+/** fal returns consecutive character-alignment chunks with absolute clip times. */
+export function mapElevenLabsTimestamps(
+  source: string,
+  value: unknown,
+): SpeechAlignmentRange[] {
+  if (!Array.isArray(value)) return [];
+  let text = "";
+  const starts: number[] = [];
+  const ends: number[] = [];
+  let previous = 0;
+  for (const chunk of value) {
+    if (!chunk || typeof chunk !== "object") return [];
+    const {
+      characters,
+      character_start_times_seconds: from,
+      character_end_times_seconds: to,
+    } = chunk;
+    if (
+      !Array.isArray(characters) ||
+      !Array.isArray(from) ||
+      !Array.isArray(to) ||
+      characters.length !== from.length ||
+      characters.length !== to.length
+    )
+      return [];
+    for (let i = 0; i < characters.length; i += 1) {
+      const char = characters[i];
+      const start = from[i];
+      const end = to[i];
+      if (
+        typeof char !== "string" ||
+        char.length > 16 ||
+        typeof start !== "number" ||
+        typeof end !== "number" ||
+        !Number.isFinite(start) ||
+        !Number.isFinite(end) ||
+        start < previous ||
+        end < start
+      )
+        return [];
+      text += char;
+      // DOM/source offsets use UTF-16, including both halves of an emoji.
+      for (let unit = 0; unit < char.length; unit += 1) {
+        starts.push(start);
+        ends.push(end);
+      }
+      previous = start;
+    }
+    if (text.length > 50_000) return [];
+  }
+
+  const words = /[\p{L}\p{N}\p{M}]+(?:['’][\p{L}\p{N}\p{M}]+)*/gu;
+  const sourceWords = [...source.matchAll(words)];
+  let cursor = 0;
+  const ranges: SpeechAlignmentRange[] = [];
+  for (const word of text.matchAll(words)) {
+    const matched = sourceWords.findIndex(
+      (candidate, index) => index >= cursor && candidate[0] === word[0],
+    );
+    if (matched < 0) continue;
+    const sourceWord = sourceWords[matched];
+    const audioStart = starts[word.index];
+    const audioEnd = ends[word.index + word[0].length - 1];
+    if (audioEnd > audioStart) {
+      ranges.push({
+        sourceStart: sourceWord.index,
+        sourceEnd: sourceWord.index + sourceWord[0].length,
+        audioStart,
+        audioEnd,
+        precision: "word",
+      });
+    }
+    cursor = matched + 1;
+  }
+  return ranges;
+}
+
 export interface FishTimestampEvent {
   content?: string;
   chunk_seq?: number;

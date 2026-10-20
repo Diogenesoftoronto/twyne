@@ -55,6 +55,7 @@ export const NOTORGANIC_MODEL_ALIASES = [
   "embedding",
   "image",
   "audio",
+  "speech-eleven-v4",
   "realtime",
 ] as const;
 export type NotOrganicModelAlias = (typeof NOTORGANIC_MODEL_ALIASES)[number];
@@ -70,6 +71,7 @@ const NOTORGANIC_ALIAS_CEILINGS_MICROUSD: Record<NotOrganicModelAlias, number> =
     embedding: 100_000,
     image: 2_000_000,
     audio: 1_000_000,
+    "speech-eleven-v4": 1_000_000,
     realtime: 2_000_000,
   };
 

@@ -1,5 +1,43 @@
 import { expect, test, type Page } from "@playwright/test";
 
+test("signed-out desk offers sign-in from both charge views and preserves the return destination", async ({
+  page,
+}) => {
+  await page.route(/\/api\/auth\/get-session/, (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      headers: {
+        "access-control-allow-origin": route.request().headers().origin ?? "*",
+        "access-control-allow-credentials": "true",
+      },
+      body: "null",
+    }),
+  );
+  await page.route("https://id.notorganic.info/authorize**", (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: "<!doctype html><title>Not Organic sign-in fixture</title>",
+    }),
+  );
+
+  await page.goto("/desk/");
+  const signIn = page.getByRole("link", { name: "Sign in to view charges" });
+  await expect(signIn).toHaveCount(2);
+  await expect(page.getByText("Checking hosted charges…")).toHaveCount(0);
+  await signIn.last().click();
+  await expect(page).toHaveURL(/\/signin\/\?returnTo=%2Fdesk%2F$/);
+  await page.getByRole("button", { name: "Continue with Not Organic" }).click();
+  await expect(page).toHaveURL(/https:\/\/id\.notorganic\.info\/authorize\?/);
+
+  // Return to the app origin to inspect only the destination saved by the real PKCE flow.
+  await page.goto("/signin/");
+  const returnTo = await page.evaluate(() => {
+    const saved = sessionStorage.getItem("twyne:notorganic-sign-in");
+    return saved ? JSON.parse(saved).returnTo : undefined;
+  });
+  expect(returnTo).toBe("/desk/");
+});
+
 /** Exercise the real callback page and Better Auth client with synthetic responses. */
 async function signInCallback(page: Page, confirmSession: boolean) {
   let redeemed = false;

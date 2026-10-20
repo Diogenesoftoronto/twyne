@@ -37,7 +37,7 @@ function fixture() {
   const route = spyOn(notorganic, "notOrganicOpenAiRoute").mockReturnValue({
     baseURL: "https://gateway.example.test/v1",
     apiKey: "fixture-token",
-    model: "audio",
+    model: "speech-eleven-v4",
     headers: {
       "x-notorganic-product": "twyne",
       "x-notorganic-feature": "voice-narration",
@@ -64,22 +64,32 @@ function fixture() {
   const action = synthesizeSpeech as unknown as {
     _handler: (
       ctx: unknown,
-      args: { text: string; voice?: string; model?: string },
+      args: {
+        text: string;
+        voice?: string;
+        model?: string;
+        responseFormat?: "mp3" | "opus" | "pcm" | "wav";
+        instructions?: string;
+        speed?: number;
+      },
     ) => Promise<{
       audioBase64: string;
       provider: string;
       model: string;
       voice: string;
+      mimeType: string;
+      alignment?: { provider: string; ranges: unknown[] };
     }>;
   };
   return {
     requests,
     queries,
+    enabled,
     token,
     route,
     pro,
     run: (
-      args = {
+      args: Parameters<typeof action._handler>[1] = {
         text: "Read this aloud.",
         voice: "alloy",
         model: "untrusted-upstream-id",
@@ -111,25 +121,31 @@ test("hosted narration uses the verified linked wallet without requiring Pro", a
     did: "did:plc:fictionalwriter",
     sessionVersion: 4,
     feature: "voice-narration",
-    capabilities: ["infer:audio"],
+    capabilities: ["infer:speech-eleven-v4"],
   });
   expect(f.requests).toHaveLength(1);
   expect(f.requests[0].url).toBe(
     "https://gateway.example.test/v1/audio/speech",
   );
   expect(await f.requests[0].json()).toEqual({
-    model: "audio",
+    model: "speech-eleven-v4",
     input: "Read this aloud.",
-    voice: "alloy",
+    voice: "Chris",
     response_format: "mp3",
+    stream: false,
+    timestamps: true,
+    include_timestamps: true,
+    voice_settings: { stability: 0.5, similarity_boost: 0.75 },
   });
   expect(result).toMatchObject({
     audioBase64: "AQID",
     provider: "notorganic",
-    model: "audio",
-    voice: "alloy",
+    model: "speech-eleven-v4",
+    voice: "Chris",
+    mimeType: "audio/mpeg",
   });
   expect(f.pro).not.toHaveBeenCalled();
+  expect(f.route.mock.calls[0]?.[1]).toBe("speech-eleven-v4");
 });
 
 test("missing identity or verified link cannot spend account credit", async () => {
@@ -147,6 +163,17 @@ test("a credit rejection stays visible and never falls back to the legacy paid k
   f.reject();
   await expect(f.run()).rejects.toThrow("Add Not Organic wallet credit");
   expect(f.requests).toHaveLength(1);
+  expect(f.pro).not.toHaveBeenCalled();
+});
+
+test("disabled hosted narration cannot fall back to OpenAI", async () => {
+  const f = fixture();
+  f.enabled.mockReturnValue(false);
+  await expect(f.run()).rejects.toThrow(
+    "Hosted ElevenLabs narration is not configured",
+  );
+  expect(f.requests).toHaveLength(0);
+  expect(f.token).not.toHaveBeenCalled();
   expect(f.pro).not.toHaveBeenCalled();
 });
 
@@ -181,13 +208,99 @@ test("empty or JSON success responses do not become silent cached audio", async 
 
 test("changing the selected hosted voice changes the speech request", async () => {
   const f = fixture();
-  for (const voice of ["alloy", "shimmer", "echo", "ash", "onyx"]) {
+  for (const [voice, expected] of [
+    ["alloy", "Chris"],
+    ["shimmer", "Matilda"],
+    ["echo", "Daniel"],
+    ["ash", "George"],
+    ["onyx", "Alice"],
+    ["Aria", "Aria"],
+    ["EXAVITQu4vr4xnSDxMaL", "EXAVITQu4vr4xnSDxMaL"],
+  ]) {
     const result = await f.run({
       text: "A fictional note.",
       voice,
       model: "ignored-client-model",
     });
-    expect((await f.requests.at(-1)!.json()).voice).toBe(voice);
-    expect(result.voice).toBe(voice);
+    expect((await f.requests.at(-1)!.json()).voice).toBe(expected);
+    expect(result.voice).toBe(expected);
   }
+});
+
+test("unsupported ElevenLabs formats fail before requesting wallet access", async () => {
+  const f = fixture();
+  await expect(
+    f.run({ text: "A fictional note.", responseFormat: "wav" }),
+  ).rejects.toThrow("Hosted ElevenLabs narration supports MP3, Opus or PCM");
+  expect(f.token).not.toHaveBeenCalled();
+  expect(f.requests).toHaveLength(0);
+});
+
+test("hosted audio uses its actual MIME type and supported ElevenLabs controls", async () => {
+  const f = fixture();
+  f.respond(
+    new Response(new Uint8Array([1, 2, 3]), {
+      headers: { "content-type": "audio/ogg;codecs=opus" },
+    }),
+  );
+  const result = await f.run({
+    text: "A fictional note.",
+    voice: "Alice",
+    responseFormat: "opus",
+    instructions: "A private editorial direction, not spoken text.",
+    speed: 1.5,
+  });
+  expect(result.mimeType).toBe("audio/ogg");
+  expect(await f.requests[0].json()).toEqual({
+    model: "speech-eleven-v4",
+    input: "A fictional note.",
+    voice: "Alice",
+    response_format: "opus",
+    stream: false,
+    timestamps: true,
+    include_timestamps: true,
+    voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+  });
+});
+
+test("timed gateway audio preserves native word alignment for the exact requested clip", async () => {
+  const f = fixture();
+  f.respond(
+    Response.json({
+      audio_base64: "AQID",
+      content_type: "audio/mpeg",
+      timestamps: [
+        {
+          characters: ["H", "i", " ", "a", "g", "a", "i", "n", "."],
+          character_start_times_seconds: [
+            0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,
+          ],
+          character_end_times_seconds: [
+            0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+          ],
+        },
+      ],
+    }),
+  );
+  const result = await f.run({ text: "Hi again.", voice: "Alice" });
+  expect(result.audioBase64).toBe("AQID");
+  expect(result.alignment).toEqual({
+    provider: "elevenlabs",
+    ranges: [
+      {
+        sourceStart: 0,
+        sourceEnd: 2,
+        audioStart: 0,
+        audioEnd: 0.2,
+        precision: "word",
+      },
+      {
+        sourceStart: 3,
+        sourceEnd: 8,
+        audioStart: 0.3,
+        audioEnd: 0.8,
+        precision: "word",
+      },
+    ],
+  });
 });

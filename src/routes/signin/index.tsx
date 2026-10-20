@@ -1,5 +1,10 @@
 import { $, component$, useStore, useVisibleTask$ } from "@qwik.dev/core";
-import { Link, type DocumentHead, useNavigate } from "@qwik.dev/router";
+import {
+  Link,
+  type DocumentHead,
+  useLocation,
+  useNavigate,
+} from "@qwik.dev/router";
 import { AuthPanel } from "../../components/auth/auth-panel";
 import { useAuth } from "../../utils/auth-context";
 import { loadProjectBrief } from "../../utils/anti-tabula-rasa";
@@ -11,6 +16,7 @@ interface SignedInNextStepStore {
 
 export default component$(() => {
   const auth = useAuth();
+  const loc = useLocation();
   const nav = useNavigate();
   const store = useStore<SignedInNextStepStore>({ hasBrief: false });
 
@@ -145,7 +151,9 @@ export default component$(() => {
                 </div>
               </div>
             ) : (
-              <AuthPanel />
+              <AuthPanel
+                returnTo={loc.url.searchParams.get("returnTo") ?? undefined}
+              />
             )}
           </aside>
         </section>

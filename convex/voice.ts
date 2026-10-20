@@ -6,6 +6,11 @@ import { makeFunctionReference } from "convex/server";
 import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
 import { userIsPro } from "./lib/entitlement";
 import {
+  HOSTED_SPEECH_MODEL,
+  resolveHostedSpeechVoice,
+} from "../src/utils/hosted-speech";
+import { mapElevenLabsTimestamps } from "../src/utils/speech-alignment";
+import {
   reportedApplicationError,
   type ApplicationErrorCode,
 } from "./lib/applicationErrors";
@@ -49,6 +54,20 @@ export const synthesizeSpeech = action({
     provider: v.string(),
     model: v.string(),
     voice: v.string(),
+    alignment: v.optional(
+      v.object({
+        provider: v.string(),
+        ranges: v.array(
+          v.object({
+            sourceStart: v.number(),
+            sourceEnd: v.number(),
+            audioStart: v.number(),
+            audioEnd: v.number(),
+            precision: v.union(v.literal("word"), v.literal("segment")),
+          }),
+        ),
+      }),
+    ),
   }),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -58,7 +77,7 @@ export const synthesizeSpeech = action({
     if (!input) throw new Error("Nothing to read.");
     const responseFormat = args.responseFormat ?? "mp3";
 
-    // Rate limit: each synthesis is a paid OpenAI call. 20 per minute per
+    // Rate limit: each synthesis is a paid speech call. 20 per minute per
     // user is well above any real reading flow, and stops abuse of the
     // hosted key.
     await consumeRateLimit(ctx, {
@@ -68,6 +87,11 @@ export const synthesizeSpeech = action({
     });
 
     if (notOrganicEnabled()) {
+      if (!["mp3", "opus", "pcm"].includes(responseFormat)) {
+        throw new Error(
+          "Hosted ElevenLabs narration supports MP3, Opus or PCM audio.",
+        );
+      }
       const link = await ctx.runQuery(linkedDidReference, {
         productSubject: identity.subject || identity.tokenIdentifier,
       });
@@ -78,17 +102,17 @@ export const synthesizeSpeech = action({
       const token = await issueNotOrganicAccessToken({
         ...link,
         feature: "voice-narration",
-        capabilities: ["infer:audio"],
+        capabilities: [`infer:${HOSTED_SPEECH_MODEL}`],
       });
       const route = notOrganicOpenAiRoute(
         token,
-        "audio",
+        HOSTED_SPEECH_MODEL,
         "voice-narration",
         notOrganicIssuer(),
       );
       // The gateway authorizes and settles the linked account's credit. A
       // gateway rejection must never spend against the legacy OpenAI key.
-      const voice = args.voice ?? "alloy";
+      const voice = resolveHostedSpeechVoice(args.voice);
       const res = await route.fetch(`${route.baseURL}/audio/speech`, {
         method: "POST",
         headers: {
@@ -96,14 +120,18 @@ export const synthesizeSpeech = action({
           authorization: `Bearer ${route.apiKey}`,
           "content-type": "application/json",
         },
-        signal: AbortSignal.timeout(60_000),
+        signal: AbortSignal.timeout(150_000),
         body: JSON.stringify({
           model: route.model,
           input,
           voice,
           response_format: responseFormat,
-          ...(args.instructions ? { instructions: args.instructions } : {}),
-          ...(args.speed ? { speed: clampSpeed(args.speed) } : {}),
+          stream: false,
+          timestamps: true,
+          include_timestamps: true,
+          // ElevenLabs accepts audio tags in the input, not OpenAI's freeform
+          // instructions or speed parameters. Never read those directions aloud.
+          voice_settings: { stability: 0.5, similarity_boost: 0.75 },
         }),
       });
       if (!res.ok) {
@@ -140,12 +168,35 @@ export const synthesizeSpeech = action({
           },
         );
       }
-      const bytes = await res.arrayBuffer();
-      const contentType = res.headers
+      const rawBytes = await res.arrayBuffer();
+      let contentType = res.headers
         .get("content-type")
         ?.split(";")[0]
         .trim()
         .toLowerCase();
+      let payload: Record<string, unknown> | undefined;
+      if (contentType === "application/json") {
+        try {
+          const parsed: unknown = JSON.parse(
+            Buffer.from(rawBytes).toString("utf8"),
+          );
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed))
+            payload = parsed as Record<string, unknown>;
+        } catch {
+          /* Invalid envelopes are rejected below without leaking their contents. */
+        }
+      }
+      const bytes =
+        payload &&
+        typeof payload.audio_base64 === "string" &&
+        /^[A-Za-z0-9+/]+={0,2}$/.test(payload.audio_base64)
+          ? Buffer.from(payload.audio_base64, "base64")
+          : contentType === "application/json"
+            ? new Uint8Array(0)
+            : new Uint8Array(rawBytes);
+      if (payload && typeof payload.content_type === "string") {
+        contentType = payload.content_type.split(";")[0].trim().toLowerCase();
+      }
       if (
         !bytes.byteLength ||
         (contentType &&
@@ -167,54 +218,25 @@ export const synthesizeSpeech = action({
       }
       return {
         audioBase64: Buffer.from(bytes).toString("base64"),
-        mimeType: audioMimeType(responseFormat),
+        mimeType: contentType?.startsWith("audio/")
+          ? contentType
+          : responseFormat === "opus"
+            ? "audio/ogg"
+            : responseFormat === "pcm"
+              ? "audio/pcm"
+              : "audio/mpeg",
         responseFormat,
         provider: "notorganic",
         model: route.model,
         voice,
+        alignment: {
+          provider: "elevenlabs",
+          ranges: mapElevenLabsTimestamps(input, payload?.timestamps),
+        },
       };
     }
 
-    if (!(await userIsPro(ctx, identity.subject || identity.tokenIdentifier))) {
-      throw new Error("Voice narration is a Pro feature.");
-    }
-
-    const apiKey =
-      process.env.VOICE_OPENAI_API_KEY ?? process.env.OPENAI_API_KEY;
-    if (!apiKey) throw new Error("Hosted voice is not configured.");
-
-    const res = await fetch(`${OPENAI_AUDIO_BASE}/audio/speech`, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${apiKey}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model:
-          args.model ?? process.env.VOICE_OPENAI_MODEL ?? "gpt-4o-mini-tts",
-        input,
-        voice: args.voice ?? process.env.VOICE_OPENAI_VOICE ?? "alloy",
-        response_format: responseFormat,
-        ...(args.instructions ? { instructions: args.instructions } : {}),
-        ...(args.speed ? { speed: clampSpeed(args.speed) } : {}),
-      }),
-    });
-
-    if (!res.ok) {
-      const detail = await res.text().catch(() => "");
-      throw new Error(
-        `Hosted voice failed (${res.status}): ${detail.slice(0, 240)}`,
-      );
-    }
-
-    return {
-      audioBase64: Buffer.from(await res.arrayBuffer()).toString("base64"),
-      mimeType: audioMimeType(responseFormat),
-      responseFormat,
-      provider: "openai",
-      model: args.model ?? process.env.VOICE_OPENAI_MODEL ?? "gpt-4o-mini-tts",
-      voice: args.voice ?? process.env.VOICE_OPENAI_VOICE ?? "alloy",
-    };
+    throw new Error("Hosted ElevenLabs narration is not configured.");
   },
 });
 
@@ -224,8 +246,8 @@ const MAX_TRANSCRIBE_BYTES = 12 * 1024 * 1024;
 /**
  * Transcribe a recorded voice note.
  *
- * The mirror image of {@link synthesizeSpeech}: same identity check, same rate
- * limiter, same Pro gate, same key resolution. The audio arrives base64-encoded
+ * Uses the identity check and rate limiter, with its legacy Pro gate and
+ * transcription key. The audio arrives base64-encoded
  * because Convex actions take JSON — the client keeps the original Blob locally,
  * so nothing is lost by re-encoding for the wire.
  */
@@ -317,28 +339,5 @@ function extensionForMime(mimeType: string): string {
       return "mp3";
     default:
       return "webm";
-  }
-}
-
-function clampSpeed(speed: number): number {
-  if (!Number.isFinite(speed)) return 1;
-  return Math.max(0.25, Math.min(4, speed));
-}
-
-function audioMimeType(format: string): string {
-  switch (format) {
-    case "opus":
-      return "audio/opus";
-    case "aac":
-      return "audio/aac";
-    case "flac":
-      return "audio/flac";
-    case "wav":
-      return "audio/wav";
-    case "pcm":
-      return "audio/L16";
-    case "mp3":
-    default:
-      return "audio/mpeg";
   }
 }
