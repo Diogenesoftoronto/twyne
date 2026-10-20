@@ -181,6 +181,13 @@ export const RATE_LIMITS = {
   systemOne: { limit: 60, windowMs: 60_000 },
   /** System One, signed-in free tier: 20 per minute per user. */
   systemOneFree: { limit: 20, windowMs: 60_000 },
+  /**
+   * Clairic extraction, Pro tier. Same reasoning as System One: a persona may
+   * call it several times per note, and a pause may ask for a focus estimate.
+   */
+  extraction: { limit: 60, windowMs: 60_000 },
+  /** Clairic extraction, signed-in free tier. */
+  extractionFree: { limit: 20, windowMs: 60_000 },
   /** Handle claim attempts: 5 per minute per user. */
   handleClaim: { limit: 5, windowMs: 60_000 },
   /** Avatar upload URL requests: 10 per minute per user. */
