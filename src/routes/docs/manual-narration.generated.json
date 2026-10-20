@@ -2,147 +2,76 @@
   "marginalia": {
     "hash": "97ff70b4",
     "duration": 52.5,
-    "segments": [
-      0,
-      5.4,
-      30.52
-    ]
+    "segments": [0, 5.4, 30.52]
   },
   "getting-started": {
     "hash": "07dc73d2",
     "duration": 70.3,
-    "segments": [
-      0,
-      24.76,
-      41.2
-    ]
+    "segments": [0, 24.76, 41.2]
   },
   "dossier": {
     "hash": "e5f51733",
     "duration": 86.9,
-    "segments": [
-      0,
-      15.76,
-      46.52,
-      67.24
-    ]
+    "segments": [0, 15.76, 46.52, 67.24]
   },
   "house": {
     "hash": "813faf32",
     "duration": 84.5,
-    "segments": [
-      0,
-      12.84,
-      48.72,
-      70.88
-    ]
+    "segments": [0, 12.84, 48.72, 70.88]
   },
   "flow": {
     "hash": "01ceb27b",
     "duration": 92.6,
-    "segments": [
-      0,
-      9,
-      43.12,
-      65.96
-    ]
+    "segments": [0, 9, 43.12, 65.96]
   },
   "the-piece": {
     "hash": "26bfcd10",
     "duration": 81.2,
-    "segments": [
-      0,
-      16.88,
-      46.36,
-      67.4
-    ]
+    "segments": [0, 16.88, 46.36, 67.4]
   },
   "writing-instruments": {
     "hash": "993ac77f",
     "duration": 95.2,
-    "segments": [
-      0,
-      12,
-      38.12,
-      57,
-      82.36
-    ]
+    "segments": [0, 12, 38.12, 57, 82.36]
   },
   "room": {
     "hash": "38d1fc0e",
     "duration": 102.5,
-    "segments": [
-      0,
-      27.92,
-      53.76,
-      81.12
-    ]
+    "segments": [0, 27.92, 53.76, 81.12]
   },
   "rubric": {
     "hash": "b0cf8081",
     "duration": 79.6,
-    "segments": [
-      0,
-      9.24,
-      29.56,
-      62.84
-    ]
+    "segments": [0, 9.24, 29.56, 62.84]
   },
   "apparatus": {
     "hash": "e9e300c8",
     "duration": 79.9,
-    "segments": [
-      0,
-      10.68,
-      35.12,
-      62.36
-    ]
+    "segments": [0, 10.68, 35.12, 62.36]
   },
   "account-and-live": {
     "hash": "81557f7e",
     "duration": 53.6,
-    "segments": [
-      0,
-      3.84,
-      22.84
-    ]
+    "segments": [0, 3.84, 22.84]
   },
   "manuscript-tools": {
     "hash": "e9fba826",
     "duration": 66.6,
-    "segments": [
-      0,
-      9.52,
-      28.32,
-      48.88
-    ]
+    "segments": [0, 9.52, 28.32, 48.88]
   },
   "folios": {
     "hash": "0d5f36b2",
     "duration": 89,
-    "segments": [
-      0,
-      15.56,
-      54.92,
-      68.4
-    ]
+    "segments": [0, 15.56, 54.92, 68.4]
   },
   "byok": {
     "hash": "996d8443",
     "duration": 40.6,
-    "segments": [
-      0,
-      9.04,
-      34.2
-    ]
+    "segments": [0, 9.04, 34.2]
   },
   "privacy": {
     "hash": "acdf7b8e",
     "duration": 54,
-    "segments": [
-      0,
-      6.8,
-      34.36
-    ]
+    "segments": [0, 6.8, 34.36]
   }
 }
