@@ -68,7 +68,7 @@ import { UserCommentPanel } from "./user-comment-panel";
 import { PersonaNotePanel } from "./persona-note-panel";
 import {
   REVEAL_QUOTE_EVENT,
-  resolveQuotation,
+  resolveQuotationForReveal,
   type RevealQuoteDetail,
 } from "../../utils/quote-grounding";
 import { InsertPanels } from "./insert-panels";
@@ -2412,6 +2412,7 @@ export const TwyneEditor = component$(
             editor.state.doc,
             detail.quote,
             detail.context,
+            detail,
           );
           if (!range) return;
           editor.chain().focus().setTextSelection(range).run();
@@ -4494,6 +4495,7 @@ function findQuotationRange(
   doc: any,
   quote: string,
   context: string,
+  hint?: RevealQuoteDetail,
 ): { from: number; to: number } | null {
   let text = "";
   const positions: number[] = [];
@@ -4512,7 +4514,7 @@ function findQuotationRange(
     });
     return false;
   });
-  const result = resolveQuotation(quote, text, context);
+  const result = resolveQuotationForReveal(quote, text, context, hint);
   if (result.status !== "resolved") return null;
   const from = positions[result.from];
   const last = positions[result.to - 1];

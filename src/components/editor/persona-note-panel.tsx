@@ -1,10 +1,7 @@
+import { GroundedNote } from "../personas/grounded-note";
 import { component$, type PropFunction } from "@qwik.dev/core";
 import { renderMarkdown } from "../../utils/markdown";
-import {
-  currentManuscript,
-  renderGroundedMarkdown,
-  revealQuoteFromEvent,
-} from "../../utils/quote-grounding";
+import { revealQuoteFromEvent } from "../../utils/quote-grounding";
 import { SpeakButton } from "../ui/speak-button";
 import { PersonaMasthead } from "../personas/persona-portrait";
 import type { NotePopover } from "./editor-state";
@@ -95,16 +92,12 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
             {`« ${note.quote.length > 280 ? note.quote.slice(0, 279) + "…" : note.quote} »`}
           </blockquote>
         )}
-        <div
+        <GroundedNote
           data-speech-id={`note-popover-${note.id}`}
           class="comment-markdown text-[0.95rem] leading-6 text-[var(--color-ink)]"
           style={{ fontFamily: "var(--font-serif)" }}
           onClick$={(event: Event) => revealQuoteFromEvent(event)}
-          onKeyDown$={(event: Event) => revealQuoteFromEvent(event)}
-          dangerouslySetInnerHTML={renderGroundedMarkdown(
-            note.note,
-            currentManuscript(),
-          )}
+          text={note.note}
         />
         {note.briefTitle && (
           <p
@@ -265,15 +258,11 @@ const PersonaReplyBubble = component$<{
       onColor
       class="mb-2"
     />
-    <div
+    <GroundedNote
       class="comment-markdown comment-markdown-on-color whitespace-pre-wrap"
       style={{ color: "var(--color-paper)" }}
       onClick$={(event: Event) => revealQuoteFromEvent(event)}
-      onKeyDown$={(event: Event) => revealQuoteFromEvent(event)}
-      dangerouslySetInnerHTML={renderGroundedMarkdown(
-        text,
-        currentManuscript(),
-      )}
+      text={text}
     />
   </div>
 ));

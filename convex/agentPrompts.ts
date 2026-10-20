@@ -101,6 +101,10 @@ export interface AgentResponse {
    * scraped from the reply text.
    */
   anchor?: string;
+  /** Ordered, deduplicated verbatim passages captured by the research tools. */
+  anchors?: string[];
+  /** Bounded typed readings for multi-passage and near-miss note cards. */
+  extractions?: import("../src/utils/persona-research").PersonaExtractionReading[];
 }
 
 /* ── Prompt construction ────────────────────────────────────────── */
@@ -188,7 +192,16 @@ export function buildVoicePreview(persona: AgentPersona): string {
 }
 
 export function buildSystemPrompt(persona: AgentPersona): string {
-  return [buildPersonaPrompt(persona), renderNamed("editorial-protocol")]
+  const continuity =
+    persona.id === "editor" ||
+    /continuity|consistency/i.test(`${persona.role} ${persona.focus}`)
+      ? "Continuity research: use find_passages to collect both mentions, extract the stated dates, ages, durations, counts or names in one batch, and judge whether the passages concern the same event. Keep both passages as evidence. Never treat an absent value's guess as established."
+      : "";
+  return [
+    buildPersonaPrompt(persona),
+    renderNamed("editorial-protocol"),
+    continuity,
+  ]
     .join("\n\n")
     .replace(/\n{3,}/g, "\n\n");
 }

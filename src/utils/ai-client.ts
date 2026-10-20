@@ -64,6 +64,7 @@ import {
   type MemoForSynthesis,
 } from "../../convex/agentPrompts";
 import { buildQuoteTools } from "../../convex/agentTools";
+import type { ConvexClient } from "convex/browser";
 import { loadActiveFolioIdFromIdb, loadApparatusSettingsFromIdb } from "./idb";
 import {
   SseJsonDecoder,
@@ -1334,6 +1335,7 @@ export async function runClientAgent(
   settings: AiSettings,
   onText?: StreamText,
   adaptive?: AdaptiveClientEditorialOptions,
+  convexClient?: ConvexClient | null,
 ): Promise<AgentResponse | null> {
   const resolved = resolveFeatureConfigForPersona(
     settings,
@@ -1351,6 +1353,12 @@ export async function runClientAgent(
     // A persona can consult the writer's own knowledge bases while drafting a
     // note, but only from servers explicitly marked for it in Settings.
     const mcpTools = await loadMcpTools();
+    const { clientPersonaResearch } = await import("./persona-research-client");
+    const { mcpConvexClient } = await import("./mcp-research");
+    const research = await clientPersonaResearch(
+      convexClient ?? mcpConvexClient(),
+      settings.judgement,
+    );
 
     if (adaptive) {
       const result = await runAdaptiveEditorialDraft({
@@ -1361,9 +1369,12 @@ export async function runClientAgent(
         maxAttempts: adaptive.maxAttempts,
         onProgress: adaptive.onProgress,
         generate: async ({ attempt, reasoning, repair }) => {
-          const { tools: quoteTools, getAnchor } = buildQuoteTools(
-            req.draftText,
-          );
+          const {
+            tools: quoteTools,
+            getAnchor,
+            getAnchors,
+            getExtractions,
+          } = buildQuoteTools(req.draftText, research);
           let traceId: string | undefined;
           const text = await generateTrackedText({
             feature,
@@ -1395,6 +1406,8 @@ export async function runClientAgent(
             provider: resolved.provider.type as AgentResponse["provider"],
             traceId,
             anchor: getAnchor(),
+            anchors: getAnchors(),
+            extractions: getExtractions(),
           };
           return { value, text: cleaned, anchor: value.anchor };
         },
@@ -1408,7 +1421,12 @@ export async function runClientAgent(
     }
 
     const user = buildUserPrompt(req);
-    const { tools: quoteTools, getAnchor } = buildQuoteTools(req.draftText);
+    const {
+      tools: quoteTools,
+      getAnchor,
+      getAnchors,
+      getExtractions,
+    } = buildQuoteTools(req.draftText, research);
     const tools = { ...quoteTools, ...mcpTools };
     let traceId: string | undefined;
 
@@ -1443,6 +1461,8 @@ export async function runClientAgent(
       provider: resolved.provider.type as AgentResponse["provider"],
       traceId,
       anchor,
+      anchors: getAnchors(),
+      extractions: getExtractions(),
     };
   } catch (err) {
     reportApplicationDiagnostic("twyne:ai-client:generate", err);
