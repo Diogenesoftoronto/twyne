@@ -1,4 +1,5 @@
 import { defineSchema, defineTable } from "convex/server";
+import { noteEvidenceFields } from "./lib/noteEvidence";
 import { v } from "convex/values";
 import { taskFields } from "./instrumentTaskValidators";
 import { charterExceptionValidator } from "./lib/charterExceptionValidator";
@@ -376,6 +377,7 @@ export default defineSchema({
     feedback: v.string(),
     traceId: v.optional(v.string()),
     anchor: v.optional(v.string()),
+    ...noteEvidenceFields,
     briefTitle: v.optional(v.string()),
     createdAt: v.number(),
   })
