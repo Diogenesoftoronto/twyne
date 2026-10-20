@@ -12,6 +12,10 @@ import * as aiClient from "./ai-client";
 import * as orchestrator from "./ai-orchestrator";
 import { setBrowserTtsCapabilityOverride } from "./browser-inference";
 import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
+import {
+  alignmentRangeAtTime,
+  type SpeechAlignmentSnapshot,
+} from "./speech-alignment";
 
 const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
 const browserGlobalNames = [
@@ -161,14 +165,16 @@ describe("speechState", () => {
       signedIn: true,
     });
     const menu = await speakModule.currentSpeechVoiceMenu();
-    expect(calls[0].voice).toBe("alloy");
-    expect(menu?.selected).toBe("alloy");
-    expect(menu?.options.find((option) => option.id === "alloy")?.label).toBe(
-      "Le Lecteur",
+    expect(calls[0].voice).toBe("Chris");
+    expect(menu?.selected).toBe("Chris");
+    expect(menu?.options.find((option) => option.id === "Chris")?.label).toBe(
+      "Le Lecteur · Chris",
     );
     expect(speakModule.speechState().label).toBe("Le Lecteur");
-    await speakModule.restartSpeechWithVoice("onyx");
-    expect((await speakModule.currentSpeechVoiceMenu())?.selected).toBe("onyx");
+    await speakModule.restartSpeechWithVoice("Alice");
+    expect((await speakModule.currentSpeechVoiceMenu())?.selected).toBe(
+      "Alice",
+    );
     await speakModule.speak({
       id: "lecteur-next",
       text: "And here too.",
@@ -177,7 +183,7 @@ describe("speechState", () => {
       signedIn: true,
     });
     expect((await speakModule.currentSpeechVoiceMenu())?.selected).toBe(
-      "alloy",
+      "Chris",
     );
   });
   test("starts idle with nothing selected", () => {
@@ -209,6 +215,215 @@ describe("stopSpeech", () => {
 });
 
 describe("speak", () => {
+  const alignedText = "Read these words.";
+  const alignment: SpeechAlignmentSnapshot = {
+    provider: "elevenlabs",
+    ranges: [
+      {
+        sourceStart: 0,
+        sourceEnd: 4,
+        audioStart: 0,
+        audioEnd: 0.4,
+        precision: "word",
+      },
+      {
+        sourceStart: 5,
+        sourceEnd: 10,
+        audioStart: 0.5,
+        audioEnd: 0.9,
+        precision: "word",
+      },
+      {
+        sourceStart: 11,
+        sourceEnd: 17,
+        audioStart: 1,
+        audioEnd: 1.5,
+        precision: "word",
+      },
+    ],
+  };
+
+  test("hosted timestamps follow the exact audio text and playback position", async () => {
+    const texts: string[] = [];
+    const client = {
+      action: async (_ref: unknown, args: { text: string }) => {
+        texts.push(args.text);
+        return { audioBase64: "", mimeType: "audio/mpeg", alignment };
+      },
+    } as never;
+    await speakModule.speak({
+      id: "aligned-passage",
+      text: `  ${alignedText}  `,
+      client,
+      signedIn: true,
+    });
+    expect(texts).toEqual([alignedText]);
+    expect(speakModule.speechState()).toMatchObject({
+      status: "playing",
+      alignment: alignment.ranges,
+      alignmentProvider: "elevenlabs",
+    });
+    const audio = FakeAudio.instances[0];
+    audio.currentTime = 0.65;
+    audio.ontimeupdate?.();
+    const state = speakModule.speechState();
+    const word = alignmentRangeAtTime(state.alignment, state.currentTime);
+    expect(word?.precision).toBe("word");
+    expect(
+      speakModule
+        .currentSpeechText()
+        ?.slice(word?.sourceStart, word?.sourceEnd),
+    ).toBe("these");
+  });
+
+  test("replaying a cached hosted clip retains its word timings", async () => {
+    let calls = 0;
+    const client = {
+      action: async () => {
+        calls++;
+        return { audioBase64: "", mimeType: "audio/mpeg", alignment };
+      },
+    } as never;
+    const request = { text: alignedText, client, signedIn: true };
+    await speakModule.speak({ ...request, id: "first-aligned-read" });
+    speakModule.stopSpeech();
+    expect(speakModule.speechState().alignment).toEqual([]);
+    await speakModule.speak({ ...request, id: "cached-aligned-read" });
+    expect(calls).toBe(1);
+    expect(speakModule.speechState()).toMatchObject({
+      alignment: alignment.ranges,
+      alignmentProvider: "elevenlabs",
+    });
+  });
+
+  test("changing a hosted voice uses its own timings and restores cached timings when changed back", async () => {
+    const voices: Array<string | undefined> = [];
+    const slowerAlignment: SpeechAlignmentSnapshot = {
+      provider: "elevenlabs",
+      ranges: alignment.ranges.map((range) => ({
+        ...range,
+        audioStart: range.audioStart * 2,
+        audioEnd: range.audioEnd * 2,
+      })),
+    };
+    const client = {
+      action: async (_ref: unknown, args: { voice?: string }) => {
+        voices.push(args.voice);
+        return {
+          audioBase64: "",
+          mimeType: "audio/mpeg",
+          alignment: args.voice === "Alice" ? slowerAlignment : alignment,
+        };
+      },
+    } as never;
+    await speakModule.speak({
+      id: "voice-aligned-passage",
+      text: alignedText,
+      voice: "Chris",
+      client,
+      signedIn: true,
+    });
+    expect(speakModule.speechState().alignment).toEqual(alignment.ranges);
+    const audio = FakeAudio.instances[0];
+    audio.currentTime = 1.2;
+    audio.ontimeupdate?.();
+    expect(speakModule.speechState().currentTime).toBe(1.2);
+    await speakModule.restartSpeechWithVoice("Alice");
+    expect(speakModule.speechState()).toMatchObject({
+      voice: "Alice",
+      currentTime: 0,
+      alignment: slowerAlignment.ranges,
+    });
+    await speakModule.restartSpeechWithVoice("Chris");
+    expect(voices).toEqual(["Chris", "Alice"]);
+    expect(speakModule.speechState()).toMatchObject({
+      voice: "Chris",
+      alignment: alignment.ranges,
+    });
+  });
+
+  test("a hosted clip without timestamps clears the previous clip's alignment", async () => {
+    const client = {
+      action: async (_ref: unknown, args: { text: string }) => ({
+        audioBase64: "",
+        mimeType: "audio/mpeg",
+        ...(args.text === alignedText ? { alignment } : {}),
+      }),
+    } as never;
+    await speakModule.speak({
+      id: "with-timestamps",
+      text: alignedText,
+      client,
+      signedIn: true,
+    });
+    await speakModule.speak({
+      id: "without-timestamps",
+      text: "Another passage has no provider timestamps.",
+      client,
+      signedIn: true,
+    });
+    const audio = FakeAudio.instances[0];
+    audio.currentTime = 0.65;
+    audio.ontimeupdate?.();
+    expect(speakModule.speechState()).toMatchObject({
+      status: "playing",
+      alignment: [],
+      alignmentProvider: null,
+    });
+  });
+
+  for (const [index, voice] of [
+    "Alice",
+    "Matilda",
+    "Daniel",
+    "George",
+    "Chris",
+  ].entries()) {
+    const persona = PERSONAS[index];
+    test(`hosted ${persona.name} uses ${voice} in the request and picker`, async () => {
+      const voices: Array<string | undefined> = [];
+      const client = {
+        action: async (_ref: unknown, args: { voice?: string }) => {
+          voices.push(args.voice);
+          return {
+            audioBase64: "",
+            mimeType: "audio/mpeg",
+            provider: "notorganic",
+            model: "speech-eleven-v4",
+            voice: args.voice,
+          };
+        },
+      } as never;
+      await speakModule.speak({
+        id: persona.id,
+        text: "A fictional passage.",
+        author: persona.name,
+        client,
+        signedIn: true,
+      });
+      const menu = await speakModule.currentSpeechVoiceMenu();
+      expect(voices).toEqual([voice]);
+      expect(menu?.selected).toBe(voice);
+      expect(menu?.provider).toBe("ElevenLabs via Not Organic");
+      expect(menu?.model).toBe("speech-eleven-v4");
+      expect(menu?.options.find((option) => option.id === voice)?.label).toBe(
+        `${persona.name} · ${voice}`,
+      );
+      expect(menu?.options.map((option) => option.id)).toEqual([
+        "Alice",
+        "Matilda",
+        "Daniel",
+        "George",
+        "Chris",
+      ]);
+      expect(speakModule.speechState()).toMatchObject({
+        voice,
+        provider: "notorganic",
+        model: "speech-eleven-v4",
+      });
+    });
+  }
+
   test("hosted synthesis sends the resolved saved voice shown by the picker", async () => {
     const settings = aiClient.normalizeAiSettings(null);
     settings.perFeature["voice-narration"] = { voice: "shimmer" };
@@ -229,18 +444,54 @@ describe("speak", () => {
         client,
         signedIn: true,
       });
-      expect(voices).toEqual(["shimmer"]);
+      expect(voices).toEqual(["Matilda"]);
       expect((await speakModule.currentSpeechVoiceMenu())?.selected).toBe(
-        "shimmer",
+        "Matilda",
       );
-      await speakModule.restartSpeechWithVoice("cedar");
-      expect(voices).toEqual(["shimmer", "cedar"]);
-      expect((await speakModule.currentSpeechVoiceMenu())?.selected).toBe(
-        "cedar",
+      const publicVoiceId = "pNInz6obpgDQGcFmaJgB";
+      await speakModule.restartSpeechWithVoice(publicVoiceId);
+      expect(voices).toEqual(["Matilda", publicVoiceId]);
+      const menu = await speakModule.currentSpeechVoiceMenu();
+      expect(menu?.selected).toBe(publicVoiceId);
+      expect(menu?.allowsCustom).toBe(true);
+      expect(menu?.options.some((option) => option.id === publicVoiceId)).toBe(
+        true,
       );
+      expect(speakModule.speechState().voice).toBe(publicVoiceId);
     } finally {
       cached.mockRestore();
     }
+  });
+
+  test("cached hosted clips retain the metadata returned with their audio", async () => {
+    let calls = 0;
+    const client = {
+      action: async () => {
+        calls++;
+        return {
+          audioBase64: "",
+          mimeType: "audio/mpeg",
+          provider: "notorganic",
+          model: "fal-ai/elevenlabs/tts/eleven-v4",
+          voice: "Chris",
+        };
+      },
+    } as never;
+    for (const id of ["first-read", "cached-read"]) {
+      await speakModule.speak({
+        id,
+        text: "The same fictional passage.",
+        client,
+        signedIn: true,
+      });
+      expect(speakModule.speechState()).toMatchObject({
+        status: "playing",
+        provider: "notorganic",
+        model: "fal-ai/elevenlabs/tts/eleven-v4",
+        voice: "Chris",
+      });
+    }
+    expect(calls).toBe(1);
   });
   for (const scenario of [
     { signedIn: true, online: true, hosted: true },
@@ -284,7 +535,7 @@ describe("speak", () => {
         expect(hostedCalls).toBe(scenario.hosted ? 1 : 0);
         expect(local).toHaveBeenCalledTimes(scenario.hosted ? 0 : 1);
         expect((await speakModule.currentSpeechVoiceMenu())?.provider).toBe(
-          scenario.hosted ? "Twyne voice" : "Browser voice",
+          scenario.hosted ? "ElevenLabs via Not Organic" : "Browser voice",
         );
         // Reconnection must not reuse the offline clip or its voice menu.
         if (scenario.signedIn && !scenario.online) {
@@ -302,7 +553,7 @@ describe("speak", () => {
           });
           expect(hostedCalls).toBe(1);
           expect((await speakModule.currentSpeechVoiceMenu())?.provider).toBe(
-            "Twyne voice",
+            "ElevenLabs via Not Organic",
           );
         }
       } finally {
@@ -747,15 +998,15 @@ describe("speakQueue", () => {
     } as never;
 
     await speakModule.speakQueue(room(client), { ownerId: "room" });
-    await speakModule.restartSpeechWithVoice("cedar");
+    await speakModule.restartSpeechWithVoice("Daniel");
 
     const state = speakModule.speechState();
     expect(state.id).toBe("memo-1");
     expect(state.ownerId).toBe("room");
     expect(state.queueLength).toBe(3);
-    expect(state.voice).toBe("cedar");
+    expect(state.voice).toBe("Daniel");
     expect(
-      calls.some((call) => call.text === "one" && call.voice === "cedar"),
+      calls.some((call) => call.text === "one" && call.voice === "Daniel"),
     ).toBe(true);
   });
 

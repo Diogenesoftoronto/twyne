@@ -12,12 +12,7 @@ export const HostedCost = component$<{
   <div class="mb-6 border-y border-[var(--color-ink)] py-4" aria-live="polite">
     <h3 class="font-display text-lg">Hosted wallet charges</h3>
     {props.state === "signed-out" ? (
-      <p class="mt-2 text-sm">
-        <Link href="/signin/" class="underline">
-          Sign in
-        </Link>{" "}
-        to see your hosted AI charges.
-      </p>
+      <p class="mt-2 text-sm">Sign in to see your hosted AI charges.</p>
     ) : props.state === "loading" ? (
       <p class="mt-2 text-sm" role="status">
         Checking hosted charges…
@@ -55,7 +50,14 @@ export const HostedCost = component$<{
       </>
     )}
     <div class="mt-3 flex flex-wrap items-center gap-4 text-sm">
-      {props.state !== "signed-out" && (
+      {props.state === "signed-out" ? (
+        <Link
+          href="/signin/?returnTo=%2Fdesk%2F"
+          class="btn-paper inline-flex min-h-11 items-center"
+        >
+          Sign in to view charges
+        </Link>
+      ) : (
         <button
           type="button"
           class="btn-paper"

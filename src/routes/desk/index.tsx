@@ -432,6 +432,11 @@ export default component$(() => {
           : "local";
   const accountId =
     auth.value.provider === "convex" ? auth.value.user?.analyticsId : undefined;
+  // Subscribe the route render so nested billing views receive each transition.
+  const hostedBilling = {
+    state: hostedState.value,
+    summary: hostedSummary.value,
+  };
 
   return (
     <main class="min-h-screen bg-[var(--color-paper)] px-4 py-8 text-[var(--color-ink)] sm:px-8">
@@ -458,8 +463,8 @@ export default component$(() => {
           writingDays={store.writingDays}
           folioCount={store.folioCount}
           metrics={store.summary.overall}
-          hostedState={hostedState.value}
-          hostedSummary={hostedSummary.value}
+          hostedState={hostedBilling.state}
+          hostedSummary={hostedBilling.summary}
           sourceState={sourceState}
           combined={store.remoteState === "ready"}
           writingDaysLabel={
@@ -511,8 +516,8 @@ export default component$(() => {
             <UsageCost
               summary={store.summary}
               totalsOnly={preset.value === "all"}
-              hostedState={hostedState.value}
-              hostedSummary={hostedSummary.value}
+              hostedState={hostedBilling.state}
+              hostedSummary={hostedBilling.summary}
               onRefreshHosted$={$(() => {
                 hostedRevision.value += 1;
               })}

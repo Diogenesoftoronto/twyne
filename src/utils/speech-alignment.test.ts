@@ -4,7 +4,93 @@ import {
   alignmentRangeAtSourceOffset,
   alignmentRangeAtTime,
   mapFishTimestampEvent,
+  mapElevenLabsTimestamps,
 } from "./speech-alignment";
+
+function elevenChunk(text: string, offset = 0) {
+  const characters = Array.from(text);
+  return {
+    characters,
+    character_start_times_seconds: characters.map(
+      (_, index) => offset + index * 0.1,
+    ),
+    character_end_times_seconds: characters.map(
+      (_, index) => offset + (index + 1) * 0.1,
+    ),
+  };
+}
+
+describe("ElevenLabs character timing", () => {
+  test("joins provider chunks into word spans without restarting the audio clock", () => {
+    const ranges = mapElevenLabsTimestamps("The light stays on.", [
+      elevenChunk("The li"),
+      elevenChunk("ght stays on.", 0.6),
+    ]);
+    expect(ranges.map((range) => [range.sourceStart, range.sourceEnd])).toEqual(
+      [
+        [0, 3],
+        [4, 9],
+        [10, 15],
+        [16, 18],
+      ],
+    );
+    expect(ranges[1].audioStart).toBeCloseTo(0.4);
+    expect(ranges[1].audioEnd).toBeCloseTo(0.9);
+    expect(alignmentRangeAtTime(ranges, 1.2)?.sourceStart).toBe(10);
+  });
+
+  test("keeps UTF-16 offsets, repeated words and punctuation attached to the exact source", () => {
+    const source = "😀 Café, café — don't stop. Stop!";
+    const ranges = mapElevenLabsTimestamps(source, [elevenChunk(source)]);
+    expect(
+      ranges.map((range) => source.slice(range.sourceStart, range.sourceEnd)),
+    ).toEqual(["Café", "café", "don't", "stop", "Stop"]);
+    expect(ranges[0].sourceStart).toBe(3);
+    expect(ranges[1].sourceStart).toBe(9);
+  });
+
+  test("normalization mismatches omit unverified words instead of inventing times", () => {
+    const source = "Wait 20 minutes, then wait.";
+    const ranges = mapElevenLabsTimestamps(source, [
+      elevenChunk("Wait twenty minutes then wait"),
+    ]);
+    expect(
+      ranges.map((range) => source.slice(range.sourceStart, range.sourceEnd)),
+    ).toEqual(["Wait", "minutes", "then", "wait"]);
+  });
+
+  test("missing, malformed and backwards provider timings never become word highlights", () => {
+    for (const value of [
+      null,
+      {},
+      [],
+      [
+        {
+          characters: ["a"],
+          character_start_times_seconds: [],
+          character_end_times_seconds: [1],
+        },
+      ],
+      [
+        {
+          characters: ["a"],
+          character_start_times_seconds: [-1],
+          character_end_times_seconds: [0],
+        },
+      ],
+      [
+        {
+          characters: ["a"],
+          character_start_times_seconds: [1],
+          character_end_times_seconds: [NaN],
+        },
+      ],
+      [elevenChunk("one", 1), elevenChunk("two", 0)],
+    ]) {
+      expect(mapElevenLabsTimestamps("a one two", value)).toEqual([]);
+    }
+  });
+});
 
 describe("SseJsonDecoder", () => {
   test("parses frames split across arbitrary network chunks", () => {

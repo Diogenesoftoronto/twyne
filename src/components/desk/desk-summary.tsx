@@ -1,4 +1,5 @@
 import { component$ } from "@qwik.dev/core";
+import { Link } from "@qwik.dev/router";
 import type { UsageMetrics } from "../../utils/usage-summary";
 import type { HostedUsageSummary } from "../../utils/hosted-usage";
 import type { HostedCostState } from "./hosted-cost";
@@ -59,28 +60,41 @@ export const DeskSummary = component$<{
             `${props.folioCount.toLocaleString()} folio${props.folioCount === 1 ? "" : "s"}`,
           ],
           ["Editorial actions", props.metrics.logicalActions.toLocaleString()],
-          [
-            props.hostedState
-              ? "Hosted wallet charges"
-              : "Recorded actual cost",
-            props.hostedState === "ready" && props.hostedSummary
-              ? props.hostedSummary.settledRequests > 0
-                ? `$${(props.hostedSummary.billedMicrousd / 1_000_000).toFixed(4)}${props.hostedSummary.truncated || props.hostedSummary.unresolvedRequests > 0 ? " (partial)" : ""}`
-                : "No confirmed charges"
-              : props.hostedState === "signed-out"
-                ? "Sign in to view"
-                : props.hostedState === "loading"
-                  ? "Checking…"
-                  : props.hostedState === "error"
-                    ? "Unavailable"
-                    : `$${(props.metrics.actualCostMicrousd / 1_000_000).toFixed(4)}`,
-          ],
         ].map(([label, value]) => (
           <div key={label} class="py-2">
             <dt class="text-[var(--color-ink-muted)]">{label}</dt>
             <dd class="font-display text-lg tabular-nums">{value}</dd>
           </div>
         ))}
+        <div class="py-2">
+          <dt class="text-[var(--color-ink-muted)]">
+            {props.hostedState
+              ? "Hosted wallet charges"
+              : "Recorded actual cost"}
+          </dt>
+          <dd class="font-display text-lg tabular-nums">
+            {props.hostedState === "signed-out" ? (
+              <Link
+                href="/signin/?returnTo=%2Fdesk%2F"
+                class="btn-paper mt-1 inline-flex min-h-11 items-center"
+              >
+                Sign in to view charges
+              </Link>
+            ) : props.hostedState === "ready" && props.hostedSummary ? (
+              props.hostedSummary.settledRequests > 0 ? (
+                `$${(props.hostedSummary.billedMicrousd / 1_000_000).toFixed(4)}${props.hostedSummary.truncated || props.hostedSummary.unresolvedRequests > 0 ? " (partial)" : ""}`
+              ) : (
+                "No confirmed charges"
+              )
+            ) : props.hostedState === "loading" ? (
+              "Checking…"
+            ) : props.hostedState === "error" ? (
+              "Unavailable"
+            ) : (
+              `$${(props.metrics.actualCostMicrousd / 1_000_000).toFixed(4)}`
+            )}
+          </dd>
+        </div>
       </dl>
       <p class="mt-4 font-semibold uppercase tracking-[0.1em]">Provenance</p>
       <p class="mt-1 text-[var(--color-ink-muted)]">

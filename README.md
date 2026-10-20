@@ -68,12 +68,12 @@ pass is recorded, so the panel shows the run of grades rather than a snapshot.
 
 ## Voice
 
-| What                                       | Needs                                             |
-| ------------------------------------------ | ------------------------------------------------- |
-| Hear an editor, memo, or review read aloud | BYOK speech provider, or Twyne-hosted voice (Pro) |
-| Read the selection (or whole draft) aloud  | same                                              |
-| Record a spoken margin note                | microphone + BYOK or hosted **transcription**     |
-| Answer the interview out loud              | same                                              |
+| What                                       | Needs                                                                  |
+| ------------------------------------------ | ---------------------------------------------------------------------- |
+| Hear an editor, memo, or review read aloud | BYOK speech provider, or ElevenLabs v4 through your Not Organic wallet |
+| Read the selection (or whole draft) aloud  | same                                                                   |
+| Record a spoken margin note                | microphone + BYOK or hosted **transcription**                          |
+| Answer the interview out loud              | same                                                                   |
 
 Each of the five editors has their own voice, per provider — Fish Audio names
 voices by id and OpenAI by name, so the mapping is per-provider rather than one
