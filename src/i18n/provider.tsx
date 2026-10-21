@@ -1,4 +1,8 @@
 import {
+  recordPreferenceChange,
+  PREFERENCES_APPLIED,
+} from "../utils/preference-outbox";
+import {
   component$,
   createContextId,
   Slot,
@@ -30,8 +34,12 @@ const LanguageContext = createContextId<Signal<LanguagePreference>>(
 );
 export const useLanguagePreference = () => useContext(LanguageContext);
 
-export function persistLanguagePreference(preference: LanguagePreference) {
+export function persistLanguagePreference(
+  preference: LanguagePreference,
+  sync = true,
+) {
   document.documentElement.dataset.twyneLanguagePreference = preference;
+  if (sync) recordPreferenceChange("language", { preference });
   try {
     localStorage.setItem(LANGUAGE_PREFERENCE_KEY, preference);
   } catch {
@@ -66,6 +74,16 @@ const LanguageSync = component$(() => {
         );
       };
       sync();
+      const onPreferences = () => {
+        preference.value = normalizeLanguagePreference(
+          document.documentElement.dataset.twyneLanguagePreference,
+        );
+        sync();
+      };
+      window.addEventListener(PREFERENCES_APPLIED, onPreferences);
+      cleanup(() =>
+        window.removeEventListener(PREFERENCES_APPLIED, onPreferences),
+      );
       window.addEventListener("languagechange", sync);
       cleanup(() => window.removeEventListener("languagechange", sync));
     },

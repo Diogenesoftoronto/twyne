@@ -3,6 +3,7 @@ import { noteEvidenceFields } from "./lib/noteEvidence";
 import { v } from "convex/values";
 import { taskFields } from "./instrumentTaskValidators";
 import { charterExceptionValidator } from "./lib/charterExceptionValidator";
+import { preferenceKind } from "./preferenceValidators";
 
 /**
  * One item of a per-user collection.
@@ -84,6 +85,12 @@ const usageMetricFields = {
 };
 
 export default defineSchema({
+  accountPreferences: defineTable({
+    userId: v.string(),
+    kind: preferenceKind,
+    json: v.string(),
+    revision: v.number(),
+  }).index("by_userId_and_kind", ["userId", "kind"]),
   // Content-free frozen export bytes make retrying a revision idempotent.
   tractionExportSnapshots: defineTable({
     date: v.string(),

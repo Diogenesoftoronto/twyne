@@ -1,3 +1,4 @@
+import { recordPreferenceChange } from "./preference-outbox";
 /**
  * IndexedDB layer for Twyne. Browser-only — every public function
  * returns safe defaults (empty array / null) when `window` is undefined.
@@ -930,10 +931,12 @@ export async function loadWriterSettingsFromIdb(): Promise<WriterSettings> {
 
 export async function saveWriterSettingsToIdb(
   settings: WriterSettings,
+  sync = true,
 ): Promise<void> {
   if (!getLocalStorage() && !hasIndexedDb()) return;
   const normalized = normalizeWriterSettings(settings);
   writeLocalStorageJson(WRITER_SETTINGS_STORAGE_KEY, normalized);
+  if (sync) recordPreferenceChange("writer", normalized);
   if (!hasIndexedDb()) return;
   try {
     const rec: MetaRecord = {
@@ -980,10 +983,12 @@ export async function loadApparatusSettingsFromIdb(): Promise<ApparatusSettings>
 
 export async function saveApparatusSettingsToIdb(
   settings: ApparatusSettings,
+  sync = true,
 ): Promise<void> {
   if (!getLocalStorage() && !hasIndexedDb()) return;
   const normalized = normalizeApparatusSettings(settings);
   writeLocalStorageJson(APPARATUS_SETTINGS_STORAGE_KEY, normalized);
+  if (sync) recordPreferenceChange("apparatus", normalized);
   if (!hasIndexedDb()) return;
   try {
     const rec: MetaRecord = {
@@ -1430,7 +1435,10 @@ function announceAiSettingsSaved(): void {
   window.dispatchEvent(new CustomEvent("twyne:ai-settings-saved"));
 }
 
-export async function saveAiSettingsToIdb(settings: AiSettings): Promise<void> {
+export async function saveAiSettingsToIdb(
+  settings: AiSettings,
+  sync = true,
+): Promise<void> {
   // Capture before yielding: callers often pass mutable Qwik store proxies.
   const snapshot = toStorable(settings);
   aiSettingsRevision += 1;
@@ -1472,6 +1480,7 @@ export async function saveAiSettingsToIdb(settings: AiSettings): Promise<void> {
         }
       }
     }
+    if (sync) recordPreferenceChange("ai", snapshot);
     announceAiSettingsSaved();
   });
   // Failed saves must reject to the caller without poisoning later retries.

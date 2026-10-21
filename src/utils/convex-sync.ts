@@ -1,4 +1,5 @@
 import type { NoteFact } from "./note-evidence";
+import { recordPreferenceChange } from "./preference-outbox";
 import { api } from "../../convex/_generated/api";
 import type { ConvexClient } from "convex/browser";
 import type {
@@ -957,6 +958,13 @@ async function handleUserChanged(
 
   if (hasRemoteData) {
     await mergeFromRemote(local, remote);
+    // The workspace may have mounted before authentication finished. Updating
+    // IndexedDB alone leaves that view showing its pre-sign-in local draft.
+    window.dispatchEvent(
+      new CustomEvent("twyne:remote-sync", {
+        detail: { revision: remote.syncRevision, reason: "hydration" },
+      }),
+    );
   }
 
   state.hydratedFromRemote = true;
@@ -1224,10 +1232,15 @@ async function mergeFromRemote(
     }
   }
 
-  // Folios — newer-wins.
-  if (remote.foliosUpdatedAt > lastFoliosUpdate(local.folios)) {
-    await saveFoliosToIdb(remote.folios);
+  // Merge individual folios. A new device's freshly created empty draft must
+  // not hide the entire older cloud library just because its timestamp wins.
+  const folios = new Map(remote.folios.map((folio) => [folio.id, folio]));
+  for (const folio of local.folios) {
+    const remoteFolio = folios.get(folio.id);
+    if (!remoteFolio || folio.updatedAt > remoteFolio.updatedAt)
+      folios.set(folio.id, folio);
   }
+  await saveFoliosToIdb([...folios.values()]);
 
   // Folio content — per-folio, newer-wins.
   for (const fc of remote.folioContent) {
@@ -1321,9 +1334,6 @@ async function mergeFromRemote(
   for (const section of ALL_PUSH_SECTIONS) state.dirtySections.add(section);
 }
 
-function lastFoliosUpdate(folios: Folio[]): number {
-  return folios.reduce((m, f) => Math.max(m, f.updatedAt ?? 0), 0);
-}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function lastPersonasUpdate(personas: Persona[]): number {
   // Personas don't have an updatedAt — fall back to file mtime via a fresh read.
@@ -1516,10 +1526,11 @@ const ROOM_SETTINGS_PATH = "/room-settings.json";
 
 export async function saveRoomSettingsLocally(
   settings: RoomSettings,
+  sync = true,
 ): Promise<void> {
   if (typeof window === "undefined") return;
   await writeFileAsJson(ROOM_SETTINGS_PATH, settings);
-  markDirty();
+  if (sync) recordPreferenceChange("room", settings);
 }
 
 export async function loadRoomSettingsLocally(): Promise<RoomSettings> {

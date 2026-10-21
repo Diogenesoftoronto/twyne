@@ -23,6 +23,7 @@ import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 
 const originalWindow = globalThis.window;
 const originalLocalStorage = globalThis.localStorage;
+const syncRefreshes: Array<{ html: string }> = [];
 const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
 const localStorageShim = (() => {
   const store: Record<string, string> = {};
@@ -47,7 +48,11 @@ Object.defineProperty(globalThis, "window", {
     localStorage: localStorageShim,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
-    dispatchEvent: () => true,
+    dispatchEvent: (event: Event) => {
+      if (event.type === "twyne:remote-sync")
+        syncRefreshes.push({ html: folioHtml });
+      return true;
+    },
   },
 });
 Object.defineProperty(globalThis, "localStorage", {
@@ -352,6 +357,7 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
 
 afterEach(() => {
   clearConvexSyncContext();
+  syncRefreshes.length = 0;
   lixFiles.clear();
   metaStore.clear();
   writtenLixFiles.length = 0;
@@ -385,6 +391,39 @@ afterAll(() => {
 });
 
 describe("folio sync (convex-sync)", () => {
+  test("a fresh local draft cannot hide older cloud folios on sign-in", async () => {
+    foliosStore = [{ ...SAMPLE_FOLIOS[0], updatedAt: 1000 }];
+    const cloudFolio = { ...SAMPLE_FOLIOS[0], id: "cloud-folio", updatedAt: 3 };
+    const client = makeClient({
+      queryResult: {
+        ...emptyRemoteSnapshot(),
+        syncRevision: 1,
+        folios: [cloudFolio],
+        foliosUpdatedAt: 3,
+      },
+    });
+    setConvexSyncContext(client as never, "fresh-device");
+    await tick();
+    expect(foliosStore.map((folio) => folio.id)).toEqual(["cloud-folio", "f1"]);
+  });
+  test("initial cloud hydration refreshes the mounted workspace after storage is updated", async () => {
+    const remoteHtml = "<p>draft from another device</p>";
+    const client = makeClient({
+      queryResult: {
+        ...emptyRemoteSnapshot(),
+        syncRevision: 7,
+        folios: SAMPLE_FOLIOS,
+        foliosUpdatedAt: 3,
+        folioContent: [{ folioId: "f1", html: remoteHtml, updatedAt: 3 }],
+      },
+    });
+    setConvexSyncContext(client as never, "returning-writer");
+    await tick();
+    await tick();
+    expect(folioHtml).toBe(remoteHtml);
+    expect(syncRefreshes).toEqual([{ html: remoteHtml }]);
+  });
+
   test("sends canonical native source alongside its HTML projection", async () => {
     folioTypstSource = "#let native = 42\nHello";
     const client = makeClient();
