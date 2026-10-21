@@ -51,6 +51,8 @@ import type * as mcp from "../mcp.js";
 import type * as native from "../native.js";
 import type * as personaNoteStreams from "../personaNoteStreams.js";
 import type * as posthog from "../posthog.js";
+import type * as preferenceValidators from "../preferenceValidators.js";
+import type * as preferences from "../preferences.js";
 import type * as profiles from "../profiles.js";
 import type * as providerIdentity from "../providerIdentity.js";
 import type * as publicDesk from "../publicDesk.js";
@@ -119,6 +121,8 @@ declare const fullApi: ApiFromModules<{
   native: typeof native;
   personaNoteStreams: typeof personaNoteStreams;
   posthog: typeof posthog;
+  preferenceValidators: typeof preferenceValidators;
+  preferences: typeof preferences;
   profiles: typeof profiles;
   providerIdentity: typeof providerIdentity;
   publicDesk: typeof publicDesk;

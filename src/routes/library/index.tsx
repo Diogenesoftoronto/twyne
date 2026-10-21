@@ -62,20 +62,31 @@ export default component$(() => {
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(async () => {
-    const folios = await loadFoliosFromIdb();
-    const cards: FolioCard[] = [];
-    for (const f of folios) {
-      const html = await loadFolioContentFromIdb(f.id);
-      const text = stripHtml(html).replace(/\s+/g, " ").trim();
-      cards.push({
-        ...f,
-        words: text ? text.split(/\s+/).length : 0,
-        preview: text.slice(0, 220),
-      });
-    }
-    store.cards = cards;
-    store.loaded = true;
+  useVisibleTask$(async ({ cleanup }) => {
+    let generation = 0;
+    const refresh = async () => {
+      const current = ++generation;
+      const folios = await loadFoliosFromIdb();
+      const cards: FolioCard[] = [];
+      for (const f of folios) {
+        const html = await loadFolioContentFromIdb(f.id);
+        const text = stripHtml(html).replace(/\s+/g, " ").trim();
+        cards.push({
+          ...f,
+          words: text ? text.split(/\s+/).length : 0,
+          preview: text.slice(0, 220),
+        });
+      }
+      if (current !== generation) return;
+      store.cards = cards;
+      store.loaded = true;
+    };
+    window.addEventListener("twyne:remote-sync", refresh);
+    cleanup(() => {
+      generation++;
+      window.removeEventListener("twyne:remote-sync", refresh);
+    });
+    await refresh();
   });
 
   useStylesScoped$(`

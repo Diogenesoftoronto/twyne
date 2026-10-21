@@ -230,6 +230,7 @@ type Phase =
         | "handles"
         | "providerIdentity"
         | "rateBuckets"
+        | "accountPreferences"
         | "aliasRequests";
     };
 
@@ -249,6 +250,7 @@ const PHASES: readonly Phase[] = [
   { kind: "rateBuckets" },
   // Append to preserve numeric phases of existing in-progress deletion jobs.
   { kind: "aliasRequests" },
+  { kind: "accountPreferences" },
 ];
 
 async function deleteRows(ctx: MutationCtx, rows: Row[]) {
@@ -261,6 +263,14 @@ async function deletePhase(
   phase: Phase,
   job: { ownerId: string; productSubject: string; email?: string },
 ): Promise<number> {
+  if (phase.kind === "accountPreferences")
+    return await deleteRows(
+      ctx,
+      await ctx.db
+        .query("accountPreferences")
+        .withIndex("by_userId_and_kind", (q) => q.eq("userId", job.ownerId))
+        .take(DELETE_BATCH_SIZE),
+    );
   if (phase.kind === "user")
     return await deleteRows(
       ctx,

@@ -57,6 +57,11 @@ describeConvex("account deletion", () => {
       },
     });
     await owner.mutation(api.profiles.claimHandle, { handle: "delete-me" });
+    await owner.mutation(api.preferences.put, {
+      kind: "appearance",
+      json: '{"preset":"nightpress"}',
+      expectedRevision: 0,
+    });
     await owner.mutation(api.profiles.requestAdditionalAlias, {
       handle: "requested-alias",
     });
@@ -85,12 +90,17 @@ describeConvex("account deletion", () => {
         .withIndex("by_userId", (q) => q.eq("userId", ownerId))
         .unique(),
       jobs: await ctx.db.query("accountDeletionJobs").take(10),
+      preferences: await ctx.db
+        .query("accountPreferences")
+        .withIndex("by_userId_and_kind", (q) => q.eq("userId", ownerId))
+        .take(6),
       aliasRequests: await ctx.db.query("aliasRequests").collect(),
     }));
     expect(state.ownerEvents).toEqual([]);
     expect(state.otherEvents).toHaveLength(1);
     expect(state.handle).toBeNull();
     expect(state.jobs).toEqual([]);
+    expect(state.preferences).toEqual([]);
     expect(state.aliasRequests).toEqual([]);
   });
 });

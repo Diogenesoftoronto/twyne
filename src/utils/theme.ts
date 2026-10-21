@@ -1,3 +1,4 @@
+import { recordPreferenceChange } from "./preference-outbox";
 /**
  * Appearance preferences — which palette the room is printed in.
  *
@@ -297,7 +298,10 @@ export function readThemePreference(): ThemePreference {
   }
 }
 
-export function writeThemePreference(preference: ThemePreference): void {
+export function writeThemePreference(
+  preference: ThemePreference,
+  sync = true,
+): void {
   const storage = getStorage();
   if (!storage) return;
   try {
@@ -305,6 +309,7 @@ export function writeThemePreference(preference: ThemePreference): void {
       THEME_STORAGE_KEY,
       JSON.stringify(normalizeThemePreference(preference)),
     );
+    if (sync) recordPreferenceChange("appearance", preference);
   } catch {
     /* storage full or disabled — the preference is a hint, not a requirement. */
   }

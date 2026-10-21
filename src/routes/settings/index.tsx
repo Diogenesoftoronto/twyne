@@ -1,3 +1,4 @@
+import { PREFERENCES_APPLIED } from "../../utils/preference-outbox";
 import { PublicDeskSettings } from "../../components/desk/public-desk";
 import { AccountKnowledge } from "../../components/knowledge/account-knowledge";
 import { component$, useStore, useVisibleTask$, $ } from "@qwik.dev/core";
@@ -91,7 +92,6 @@ import { reportApplicationDiagnostic } from "../../utils/application-diagnostics
 import {
   DEFAULT_THEME_PREFERENCE,
   THEME_PRESETS,
-  THEME_SYNC_STAMP_KEY,
   THEME_TOKENS,
   WCAG_AA_CONTRAST,
   applyTheme,
@@ -576,60 +576,32 @@ export default component$(() => {
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(async () => {
-    // Local preferences must be ready independently of the remote catalog.
-    const [raw, writer, apparatus] = await Promise.all([
-      loadAiSettingsFromIdb(),
-      loadWriterSettingsFromIdb(),
-      loadApparatusSettingsFromIdb(),
-    ]);
-    store.settings = normalizeAiSettings(raw);
-    store.writerStyle = writer.interviewStyle;
-    store.writerProfile = writer.profile;
-    store.defaultCitationStyle = apparatus.defaultCitationStyle;
-    store.aiEnhanceCitations = apparatus.aiEnhanceCitations;
-    store.flagMissingSources = apparatus.flagMissingSources;
-    store.autoInsertFootnotes = apparatus.autoInsertFootnotes;
-    store.researchProvider = apparatus.researchProvider;
-    store.searchBackend = { ...apparatus.searchBackend };
-    store.maxResults = apparatus.maxResults;
-    store.mcpServers = apparatus.mcpServers.map((s) => ({ ...s }));
-    store.theme = readThemePreference();
-    store.themeCustomOpen = Boolean(store.theme.custom);
-    store.loaded = true;
-
-    // Reconcile with the account afterwards, never before: the bootstrap
-    // script already painted from localStorage, and a signed-in device that
-    // has since been re-themed locally should not be overwritten by a stale
-    // remote record. Newer wins.
-    const client =
-      auth.value.provider === "convex" && auth.value.user
-        ? convexClientSig.value
-        : null;
-    if (!client) return;
-    try {
-      const remote = await client.query(api.sync.getAppearance, {});
-      if (!remote) return;
-      const localStamp = Number(
-        localStorage.getItem(THEME_SYNC_STAMP_KEY) ?? 0,
-      );
-      if (remote.updatedAt <= localStamp) return;
-      const preference = normalizeThemePreference({
-        preset: remote.preset,
-        custom: remote.custom,
-      });
-      store.theme = preference;
-      store.themeCustomOpen = Boolean(preference.custom);
-      writeThemePreference(preference);
-      localStorage.setItem(THEME_SYNC_STAMP_KEY, String(remote.updatedAt));
-      applyTheme(
-        preference,
-        document.documentElement,
-        window.matchMedia("(prefers-color-scheme: dark)").matches,
-      );
-    } catch {
-      /* the local palette stands. */
-    }
+  useVisibleTask$(async ({ cleanup }) => {
+    const refresh = async () => {
+      // Local preferences must be ready independently of the remote catalog.
+      const [raw, writer, apparatus] = await Promise.all([
+        loadAiSettingsFromIdb(),
+        loadWriterSettingsFromIdb(),
+        loadApparatusSettingsFromIdb(),
+      ]);
+      store.settings = normalizeAiSettings(raw);
+      store.writerStyle = writer.interviewStyle;
+      store.writerProfile = writer.profile;
+      store.defaultCitationStyle = apparatus.defaultCitationStyle;
+      store.aiEnhanceCitations = apparatus.aiEnhanceCitations;
+      store.flagMissingSources = apparatus.flagMissingSources;
+      store.autoInsertFootnotes = apparatus.autoInsertFootnotes;
+      store.researchProvider = apparatus.researchProvider;
+      store.searchBackend = { ...apparatus.searchBackend };
+      store.maxResults = apparatus.maxResults;
+      store.mcpServers = apparatus.mcpServers.map((s) => ({ ...s }));
+      store.theme = readThemePreference();
+      store.themeCustomOpen = Boolean(store.theme.custom);
+      store.loaded = true;
+    };
+    window.addEventListener(PREFERENCES_APPLIED, refresh);
+    cleanup(() => window.removeEventListener(PREFERENCES_APPLIED, refresh));
+    await refresh();
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -873,28 +845,8 @@ export default component$(() => {
       applyTheme(preference, document.documentElement, prefersDark);
     }
     writeThemePreference(preference);
-    try {
-      localStorage.setItem(THEME_SYNC_STAMP_KEY, String(Date.now()));
-    } catch {
-      /* storage disabled — sync just falls back to "remote wins". */
-    }
-
     store.themeToast = "Appearance saved";
     setTimeout(() => (store.themeToast = null), 1800);
-
-    const client =
-      auth.value.provider === "convex" && auth.value.user
-        ? convexClientSig.value
-        : null;
-    if (!client) return;
-    try {
-      await client.mutation(api.sync.putAppearance, {
-        preset: preference.preset,
-        custom: preference.custom,
-      });
-    } catch {
-      /* offline or signed out mid-flight — local already has the truth. */
-    }
   });
 
   const refreshProviderModels = $(async (id: string) => {
@@ -2029,8 +1981,8 @@ export default component$(() => {
               </h2>
               <p class="text-xs text-[var(--color-ink-light)] mt-1 max-w-2xl">
                 This private context helps the room address you as a person
-                while you draft. It stays in this browser and is not part of
-                your public profile.
+                while you draft. It syncs with your account when you sign in and
+                is not part of your public profile.
               </p>
               <div class="mt-4 grid gap-4 sm:grid-cols-3">
                 <label class="block">

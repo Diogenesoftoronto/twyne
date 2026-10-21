@@ -1,3 +1,4 @@
+import { PREFERENCES_APPLIED } from "../../utils/preference-outbox";
 import {
   component$,
   useStore,
@@ -6,8 +7,6 @@ import {
   useVisibleTask$,
 } from "@qwik.dev/core";
 import { Link } from "@qwik.dev/router";
-import { useConvexClient } from "../../utils/convex-context";
-import { api } from "../../../convex/_generated/api";
 import type { Persona, RoomSettings, AssistanceLevel } from "../../types";
 import { DEFAULT_ROOM_SETTINGS } from "../../types";
 import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
@@ -133,7 +132,6 @@ interface BoardStore {
 }
 
 export default component$(() => {
-  const clientSig = useConvexClient();
   const store = useStore<BoardStore>({
     personas: DEFAULT_PERSONAS,
     editingId: null,
@@ -180,6 +178,15 @@ export default component$(() => {
     if (custom && custom.length > 0) store.personas = custom;
     store.roomSettings = settings;
     store.hasLoadedSettings = true;
+  });
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    const refresh = async () => {
+      store.roomSettings = await loadRoomSettingsLocally();
+    };
+    window.addEventListener(PREFERENCES_APPLIED, refresh);
+    cleanup(() => window.removeEventListener(PREFERENCES_APPLIED, refresh));
   });
 
   useStylesScoped$(`
@@ -251,14 +258,6 @@ export default component$(() => {
   const persistSettings = $(async (next: RoomSettings) => {
     store.roomSettings = next;
     await saveRoomSettingsLocally(next);
-    const client = clientSig.value;
-    if (client) {
-      try {
-        await client.mutation(api.sync.putRoomSettings, { settings: next });
-      } catch {
-        /* sync will retry */
-      }
-    }
   });
 
   const startEditing = $((p: Persona) => {

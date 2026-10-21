@@ -269,6 +269,20 @@ export const AuthProvider = component$(() => {
     );
     const client = track(() => convexClient.value);
     setAccountKnowledgeContext(account ? (client ?? null) : null, account);
+    let cancelled = false;
+    let stopPreferences: (() => void) | undefined;
+    cleanup(() => {
+      cancelled = true;
+      stopPreferences?.();
+    });
+    if (account && client) {
+      void import("./account-preferences").then(
+        ({ startAccountPreferences }) => {
+          if (!cancelled)
+            stopPreferences = startAccountPreferences(client, account);
+        },
+      );
+    }
     cleanup(() => setAccountKnowledgeContext(null, null));
   });
 

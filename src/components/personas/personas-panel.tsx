@@ -1,3 +1,4 @@
+import { PREFERENCES_APPLIED } from "../../utils/preference-outbox";
 import { GroundedNote } from "./grounded-note";
 import { NoteEvidenceList } from "./note-evidence-list";
 import { evidenceFields, noteEvidence } from "../../utils/note-evidence";
@@ -1777,6 +1778,23 @@ export const PersonasPanel = component$(
       });
     });
 
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ cleanup }) => {
+      const refresh = async () => {
+        const [room, writer, ai] = await Promise.all([
+          loadRoomSettingsLocally(),
+          loadWriterSettingsFromIdb(),
+          loadAiSettingsFromIdb(),
+        ]);
+        store.roomSettings = room;
+        store.writerProfile = writer.profile;
+        store.aiSettings = normalizeAiSettings(ai);
+        setBackgroundRoomEnabled(room.backgroundRoom !== false);
+      };
+      window.addEventListener(PREFERENCES_APPLIED, refresh);
+      cleanup(() => window.removeEventListener(PREFERENCES_APPLIED, refresh));
+    });
+
     /* ── Tunable assistance: settings + propose edits ──────────── */
 
     const persistSettings = $(async (next: RoomSettings) => {
@@ -1785,17 +1803,6 @@ export const PersonasPanel = component$(
       // a writer who turns it off wants silence now, not after a reload.
       setBackgroundRoomEnabled(next.backgroundRoom !== false);
       await saveRoomSettingsLocally(next);
-      const client =
-        auth.value.provider === "convex" && auth.value.user
-          ? clientSig.value
-          : null;
-      if (client) {
-        try {
-          await client.mutation(api.sync.putRoomSettings, { settings: next });
-        } catch {
-          /* sync will retry */
-        }
-      }
     });
 
     /**

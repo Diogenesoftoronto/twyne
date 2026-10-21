@@ -60,10 +60,17 @@ export default component$(() => {
       </p>
       <p class="doc-p">
         Synced data may include your projects, briefs, folios, comments,
-        citations, persona settings, publishing state, timestamps, and other
+        citations, private writer context, language, appearance, model choices,
+        research and persona settings, publishing state, timestamps, and other
         records needed to keep the writing workspace consistent across devices.
         We do not sell your synced writing or use it to train general-purpose AI
         models.
+      </p>
+
+      <p class="doc-p">
+        Your own API keys, endpoint addresses, search credentials, and MCP
+        connections remain on the device where you configured them. Preference
+        sync does not copy those credentials to our backend or another device.
       </p>
 
       <h2 id="authentication" class="doc-h2">
