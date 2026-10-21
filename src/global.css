@@ -5292,7 +5292,8 @@ a {
   width: 100%;
   padding: 0.05rem 0 0.05rem 0.5rem;
   border: 0;
-  border-left: 1px solid color-mix(in srgb, var(--card-accent, currentColor) 45%, transparent);
+  border-left: 1px solid
+    color-mix(in srgb, var(--card-accent, currentColor) 45%, transparent);
   background: none;
   font-family: var(--font-serif);
   font-style: italic;
@@ -5301,7 +5302,9 @@ a {
   color: inherit;
   text-align: left;
   cursor: pointer;
-  transition: color 0.16s ease, border-color 0.16s ease;
+  transition:
+    color 0.16s ease,
+    border-color 0.16s ease;
 }
 .note-evidence__passage:hover,
 .note-evidence__passage:focus-visible,
@@ -8379,8 +8382,14 @@ a {
 }
 .flow-relation__why {
   margin: 0;
-  color: var(--color-ink-light);
+  color: var(--color-ink);
   font: 0.78rem/1.45 var(--font-serif);
+  overflow-wrap: anywhere;
+}
+.flow-relation__heading {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-weight: 600;
 }
 .flow-relation__label {
   color: var(--flow-accent, var(--color-ink));

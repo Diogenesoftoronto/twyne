@@ -162,7 +162,11 @@ import {
 import { reconcileCurrentCommentAnchors } from "../../utils/comment-reconciliation";
 import { bindNetworkStatusEvents } from "../../utils/convex-sync";
 import { applyDocumentMeta } from "../../utils/document";
-import { CommentMark, removeCommentMarkById } from "./extensions/comment-mark";
+import {
+  CommentMark,
+  removeCommentMarkById,
+  syncCommentMarkResolution,
+} from "./extensions/comment-mark";
 import {
   PersonaNoteMark,
   removePersonaNoteMarkById,
@@ -439,12 +443,12 @@ export const TwyneEditor = component$(
     }
     /* Zen mode: quiet the manuscript down to plain text while writing.
        The marks (and their data) are untouched — only the visual
-       highlighting is suppressed, so nothing is lost on toggle-off.
-       The toolbar and all marks fade out, reappearing on hover so the
-       writer can still reach tools. */
+       highlighting and hover previews are suppressed, so nothing is lost
+       on toggle-off. */
     .twyne-editor.zen-mode .twyne-persona-note {
-      background: none;
-      border-bottom: none;
+      background: none !important;
+      border-bottom: none !important;
+      animation: none !important;
       cursor: text;
     }
     .twyne-editor.zen-mode .ProseMirror .twyne-comment-mark {
@@ -457,18 +461,18 @@ export const TwyneEditor = component$(
       border-bottom: none;
       cursor: text;
     }
+    .twyne-editor.zen-mode .twyne-suggestion {
+      background: none !important;
+      text-decoration: none;
+    }
     .twyne-editor.zen-mode .twyne-endnote {
       color: var(--color-ink-muted);
       background: none;
     }
-    /* Fade out the toolbar in zen mode. It reappears on hover so tools
-       remain reachable. */
+    /* Keep the toolbar quiet even while the pointer passes over it. */
     .twyne-editor.zen-mode .twyne-toolbar {
       opacity: 0.15;
       transition: opacity 0.3s ease;
-    }
-    .twyne-editor.zen-mode .twyne-toolbar:hover {
-      opacity: 1;
     }
     .persona-note-thread {
       max-height: 240px;
@@ -1972,12 +1976,16 @@ export const TwyneEditor = component$(
           }
         };
         el.addEventListener("mouseover", (e) => {
+          if (store.zenMode) {
+            clearHoverTimer();
+            return;
+          }
           const target = e.target as HTMLElement;
           const noteSpan = target.closest(
             ".twyne-persona-note",
           ) as HTMLElement | null;
           const writerCommentSpan = target.closest(
-            ".twyne-comment-mark",
+            '.twyne-comment-mark:not([data-comment-resolved="true"])',
           ) as HTMLElement | null;
           const chip = target.closest(
             ".twyne-mark-anchor",
@@ -1998,6 +2006,7 @@ export const TwyneEditor = component$(
             if (!commentId) return;
             clearHoverTimer();
             hoverTimer = setTimeout(() => {
+              if (store.zenMode) return;
               hoveredWriterCommentId = commentId;
               openWriterComment(commentId, writerCommentSpan);
             }, 350);
@@ -2015,6 +2024,7 @@ export const TwyneEditor = component$(
           if (!anchor) return;
           clearHoverTimer();
           hoverTimer = setTimeout(() => {
+            if (store.zenMode) return;
             buildAndPin(anchor, false);
           }, 350);
         });
@@ -3144,23 +3154,31 @@ export const TwyneEditor = component$(
       });
     });
 
-    // Marginalia list deletion routes through the editor so the stored thread
-    // and its document mark cannot diverge.
+    // Keep struck-thread highlights in step with the local thread records,
+    // including initial load, undo, and changes made from the Marginalia list.
     // eslint-disable-next-line qwik/no-use-visible-task
-    useVisibleTask$(({ cleanup }) => {
+    useVisibleTask$(({ cleanup, track }) => {
+      const editor = track(() => store.editor);
+      const folioId = track(() => store.activeFolioId);
+      let refresh = 0;
+      let disposed = false;
+      let knownComments: ReadonlyArray<{ id: string; resolved: boolean }> = [];
       const onDeleteUserComment = (event: Event) => {
         const detail = (event as CustomEvent<{ commentId?: string }>).detail;
         if (!detail?.commentId) return;
         void deleteUserCommentLocal(detail.commentId);
       };
       const onUserCommentsChanged = () => {
-        const open = store.userCommentPopover;
-        if (!open || open.mode !== "thread") return;
-        const openId = open.id;
+        const request = ++refresh;
         void loadUserComments().then((all) => {
-          const latest = all.find((comment) => comment.id === openId);
+          if (disposed || request !== refresh) return;
+          knownComments = all.filter((comment) => comment.folioId === folioId);
+          if (editor && !editor.isDestroyed && store.editor === editor)
+            syncCommentMarkResolution(editor, knownComments);
           const current = store.userCommentPopover;
-          if (!latest || !current || current.id !== openId) return;
+          if (!current || current.mode !== "thread") return;
+          const latest = all.find((comment) => comment.id === current.id);
+          if (!latest) return;
           store.userCommentPopover = {
             ...current,
             author: latest.author,
@@ -3197,7 +3215,19 @@ export const TwyneEditor = component$(
         "twyne:user-comments-changed",
         onUserCommentsChanged,
       );
+      const onTransaction = ({
+        transaction,
+      }: {
+        transaction: { docChanged: boolean };
+      }) => {
+        if (transaction.docChanged && editor && !editor.isDestroyed)
+          syncCommentMarkResolution(editor, knownComments);
+      };
+      editor?.on("transaction", onTransaction);
+      onUserCommentsChanged();
       cleanup(() => {
+        disposed = true;
+        editor?.off("transaction", onTransaction);
         window.removeEventListener(
           "twyne:delete-user-comment",
           onDeleteUserComment,
@@ -3904,6 +3934,20 @@ export const TwyneEditor = component$(
         window.removeEventListener(FOLIO_CONTENT_SAVED, followKit);
         window.removeEventListener("twyne:zen-mode", followZenChoice);
       });
+    });
+
+    // Entering Zen also closes previews that were already open or loading.
+    // Draft text lives in threadDrafts and remains available when reopened.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ track }) => {
+      if (!track(() => store.zenMode)) return;
+      threadRequest.value++;
+      store.notePopover = null;
+      store.suggestionPopover = null;
+      store.selectionAction = null;
+      const comment = store.userCommentPopover;
+      store.userCommentPopover =
+        comment?.mode === "compose" ? { ...comment, visible: false } : null;
     });
 
     const selectSlashCommand = $(async (commandId: EditorCommandId) => {

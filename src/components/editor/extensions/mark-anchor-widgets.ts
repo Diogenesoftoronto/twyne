@@ -59,6 +59,7 @@ function buildDecorations(doc: PmNode): DecorationSet {
     for (const mark of node.marks) {
       const kind = kindFor(mark.type.name);
       if (!kind) continue;
+      if (kind === "comment" && mark.attrs.resolved) continue;
       const id = idForMark(mark);
       if (!id) continue;
 

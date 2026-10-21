@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { withEditor } from "./test-harness";
-import { removeCommentMarkById } from "./extensions/comment-mark";
+import {
+  removeCommentMarkById,
+  syncCommentMarkResolution,
+} from "./extensions/comment-mark";
+import { MarkAnchorWidgets } from "./extensions/mark-anchor-widgets";
 
 /**
  * The CommentMark is the bridge between a passage of text and a
@@ -12,6 +16,42 @@ import { removeCommentMarkById } from "./extensions/comment-mark";
  * `user-comments.test.ts`.
  */
 describe("CommentMark", () => {
+  test("striking quiets only that thread; reopening restores its highlight and chip", async () => {
+    await withEditor(
+      {
+        content: "<p>one shared passage</p>",
+        extensions: [MarkAnchorWidgets],
+      },
+      ({ editor, host }) => {
+        editor.commands.setTextSelection({ from: 1, to: 19 });
+        editor.commands.setComment({ id: "first" });
+        editor.commands.setComment({ id: "second" });
+        syncCommentMarkResolution(editor, [
+          { id: "first", resolved: true },
+          { id: "second", resolved: false },
+        ]);
+        const first = () =>
+          host.querySelector<HTMLElement>('[data-comment-id="first"]')!;
+        const second = () =>
+          host.querySelector<HTMLElement>('[data-comment-id="second"]')!;
+        expect(first().style.background).toBe("");
+        expect(first().style.borderBottom).toBe("");
+        expect(first().dataset.commentResolved).toBe("true");
+        expect(second().style.borderBottom).not.toBe("");
+        expect(host.querySelector('[data-anchor-id="first"]')).toBeNull();
+        expect(host.querySelector('[data-anchor-id="second"]')).not.toBeNull();
+        const html = editor.getHTML();
+        editor.commands.setContent(html);
+        expect(first().dataset.commentResolved).toBe("true");
+        syncCommentMarkResolution(editor, [{ id: "first", resolved: false }]);
+        expect(first().dataset.commentResolved).toBeUndefined();
+        expect(first().style.borderBottom).not.toBe("");
+        expect(host.querySelector('[data-anchor-id="first"]')).not.toBeNull();
+        expect(editor.getText()).toBe("one shared passage");
+      },
+    );
+  });
+
   test("setComment applies the mark with the supplied id", async () => {
     await withEditor(
       { content: "<p>highlighted passage</p>" },

@@ -527,7 +527,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             ];
           }),
         );
-        if (!controller || !focus) {
+        if (props.zen || !controller || !focus) {
           state.lines = [];
           state.marks = [];
           state.brackets = [];
@@ -692,8 +692,11 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       // Hovering a marked passage in the text peeks its card, even one that
       // is waiting — the writer asked by pointing at it.
       const onOver = (event: Event) => {
+        if (props.zen) return;
         const target = event.target as Element | null;
-        const comment = target?.closest<HTMLElement>("[data-comment-id]");
+        const comment = target?.closest<HTMLElement>(
+          '[data-comment-id]:not([data-comment-resolved="true"])',
+        );
         const note = target?.closest<HTMLElement>("[data-persona-note-id]");
         const chip = target?.closest<HTMLElement>(".twyne-mark-anchor");
         const chipKind = chip?.dataset.anchorKind;
@@ -850,10 +853,11 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
     /** A pointer held still on a card gathers its passages. */
     const arm = $((id: string, card: HTMLElement) => {
       clearTimeout(hold.gather);
+      if (props.zen) return;
       if (!state.links[id] || hold.spent === id) return;
       state.armingId = id;
       hold.gather = setTimeout(() => {
-        if (state.armingId === id && state.hoverId === id) {
+        if (!props.zen && state.armingId === id && state.hoverId === id) {
           hold.spent = id;
           void gather(
             id,
@@ -1020,6 +1024,19 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             </span>
           )}
 
+          {item.kind === "echo" && (
+            <div class="flow-relation">
+              <p class="flow-relation__why">
+                <strong class="flow-relation__heading">
+                  {item.data?.relation || "Shared words"}
+                </strong>
+                {item.data?.explanation ||
+                  item.byline ||
+                  "This passage may connect to the one you are reading."}
+              </p>
+            </div>
+          )}
+
           {item.kind === "work" && item.work ? (
             <a
               class={`flow-work flow-work--${item.work.medium}`}
@@ -1101,13 +1118,9 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             </p>
           )}
 
-          {item.kind === "echo" && item.data?.relation && (
+          {item.kind === "echo" && (
             <div class="flow-relation">
-              <p class="flow-relation__why">
-                <span class="flow-relation__label">{item.data.relation}</span>{" "}
-                {item.data.explanation}
-              </p>
-              {item.data.passage && item.anchors.length > 1 && (
+              {item.data?.passage && item.anchors.length > 1 && (
                 <button
                   type="button"
                   class="flow-relation__here"
@@ -1119,6 +1132,16 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
                 </button>
               )}
               <div class="flow-relation__actions">
+                {item.anchors.length > 1 && (
+                  <button
+                    type="button"
+                    class="flow-link"
+                    data-gather-opener={`flow:${item.id}`}
+                    onClick$={(_, el) => gather(item.id, el)}
+                  >
+                    Compare passages
+                  </button>
+                )}
                 {state.agreed[item.id] ? (
                   <span class="flow-way-in__hint" role="status">
                     Kept as your reading.
