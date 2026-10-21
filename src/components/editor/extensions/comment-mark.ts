@@ -66,6 +66,13 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
           return { "data-comment-color": attributes.color };
         },
       },
+      resolved: {
+        default: false,
+        parseHTML: (element) =>
+          element.getAttribute("data-comment-resolved") === "true",
+        renderHTML: (attributes) =>
+          attributes.resolved ? { "data-comment-resolved": "true" } : {},
+      },
     };
   },
 
@@ -86,7 +93,10 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
         ...this.options.HTMLAttributes,
         ...HTMLAttributes,
         class: "twyne-comment-mark",
-        style: `background: color-mix(in srgb, ${color} 18%, transparent); border-bottom: 2px solid ${color}; cursor: text;`,
+        style:
+          HTMLAttributes["data-comment-resolved"] === "true"
+            ? "cursor: text;"
+            : `background: color-mix(in srgb, ${color} 18%, transparent); border-bottom: 2px solid ${color}; cursor: text;`,
       },
       0,
     ];
@@ -113,6 +123,37 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
     };
   },
 });
+
+/** Keep the anchor for reopening a struck thread, but quiet its annotation. */
+export function syncCommentMarkResolution(
+  editor: Editor,
+  comments: ReadonlyArray<{ id: string; resolved: boolean }>,
+): void {
+  const resolution = new Map(comments.map((c) => [c.id, c.resolved]));
+  const { state } = editor;
+  const type = state.schema.marks.commentMark;
+  if (!type) return;
+  const tr = state.tr;
+  state.doc.descendants((node, pos) => {
+    if (!node.isText) return;
+    for (const mark of node.marks) {
+      const resolved = resolution.get(mark.attrs.id);
+      if (
+        mark.type !== type ||
+        resolved === undefined ||
+        mark.attrs.resolved === resolved
+      )
+        continue;
+      tr.removeMark(pos, pos + node.nodeSize, mark);
+      tr.addMark(
+        pos,
+        pos + node.nodeSize,
+        type.create({ ...mark.attrs, resolved }),
+      );
+    }
+  });
+  if (tr.docChanged) editor.view.dispatch(tr.setMeta("addToHistory", false));
+}
 
 /** Remove one comment id without disturbing another mark on the same quote. */
 export function removeCommentMarkById(
