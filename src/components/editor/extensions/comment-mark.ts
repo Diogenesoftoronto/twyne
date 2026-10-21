@@ -129,6 +129,7 @@ export function syncCommentMarkResolution(
   editor: Editor,
   comments: ReadonlyArray<{ id: string; resolved: boolean }>,
 ): void {
+  if (comments.length === 0) return;
   const resolution = new Map(comments.map((c) => [c.id, c.resolved]));
   const { state } = editor;
   const type = state.schema.marks.commentMark;
