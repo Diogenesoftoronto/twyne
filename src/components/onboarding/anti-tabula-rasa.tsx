@@ -2,6 +2,7 @@ import { currentModelLocale } from "../../i18n/model-language";
 import {
   useComputed$,
   component$,
+  Fragment,
   $,
   useStore,
   useSignal,
@@ -763,464 +764,463 @@ export const AntiTabulaRasa = component$(
     if (!draftReady.value && !store.submitting)
       return <p role="status">Restoring the brief…</p>;
 
-    return (
-      <DossierFolio
-        surface="form"
-        stampKind={mode === "refine" ? "revised" : "filed"}
-        filingState={
-          filingState === "filed"
-            ? "filed"
-            : store.submitting
-              ? "filing"
-              : filingState
-        }
-        chrome={
-          <DossierTopBar
-            backHref={chromeBackHref}
-            backLabel={chromeBackLabel}
-            mode="form"
-            switchHref=""
-            showStartOver={chromeShowStartOver ?? false}
-            variant="inset"
-            onSwitch$={onSwitchSurface$}
-            onStartOver$={onStartOver$ ?? $(() => {})}
-          />
-        }
-        overlays={
-          <>
-            {store.submitting && (
-              <div
-                class="fixed top-4 right-4 flex items-center gap-2 rounded-full px-2.5 py-1"
-                style="z-index: 60; background: var(--color-paper-2); border: 1px solid var(--color-paper-3);"
+    // Call the hook-free layout helper directly. In Qwik beta.42, rendering
+    // it as an inline JSX component replaces its root on parent updates.
+    // Strength results must reconcile this tree without unmounting the field.
+    return DossierFolio({
+      surface: "form",
+      stampKind: mode === "refine" ? "revised" : "filed",
+      filingState:
+        filingState === "filed"
+          ? "filed"
+          : store.submitting
+            ? "filing"
+            : filingState,
+      chrome: (
+        <DossierTopBar
+          backHref={chromeBackHref}
+          backLabel={chromeBackLabel}
+          mode="form"
+          switchHref=""
+          showStartOver={chromeShowStartOver ?? false}
+          variant="inset"
+          onSwitch$={onSwitchSurface$}
+          onStartOver$={onStartOver$ ?? $(() => {})}
+        />
+      ),
+      overlays: (
+        <>
+          {store.submitting && (
+            <div
+              class="fixed top-4 right-4 flex items-center gap-2 rounded-full px-2.5 py-1"
+              style="z-index: 60; background: var(--color-paper-2); border: 1px solid var(--color-paper-3);"
+            >
+              <span
+                class="block h-2 w-2 rounded-full"
+                style="background: var(--color-vermilion); animation: pulse 1.5s ease-in-out infinite;"
+              />
+              <span
+                class="text-[10px] tracking-wider text-[var(--color-ink-muted)]"
+                style="font-family: var(--font-typewriter); text-transform: uppercase;"
               >
-                <span
-                  class="block h-2 w-2 rounded-full"
-                  style="background: var(--color-vermilion); animation: pulse 1.5s ease-in-out infinite;"
-                />
-                <span
-                  class="text-[10px] tracking-wider text-[var(--color-ink-muted)]"
-                  style="font-family: var(--font-typewriter); text-transform: uppercase;"
-                >
-                  Sending
-                </span>
-              </div>
-            )}
-
-            {draftStorageError.value && (
-              <p role="alert" class="error-slip">
-                {draftStorageError.value}
-              </p>
-            )}
-            {store.submitError && (
-              <div
-                class="fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded"
-                style="z-index: 60; background: var(--color-vermilion); color: var(--color-paper-soft); font-family: var(--font-mono); font-size: 0.875rem;"
-              >
-                ⚠ {store.submitError}
-              </div>
-            )}
-          </>
-        }
-        dossier={
-          <div class="flex min-h-full flex-col">
-            <DossierPreview
-              answers={store.answers}
-              probes={store.probes}
-              attachments={store.attachments}
-              editions={briefEditions}
-              strengths={strengths}
-              strengthReading={strength.reading}
-              briefSufficiency={strength.sufficiency}
-              recentProbeId={store.recentProbeId}
-              recentProbeRevision={store.recentProbeRevision}
-              activeField={STEPS[store.step]?.field}
-              existingMaterialWords={countWords(store.existingMaterial)}
-              mode={mode}
-              reviewedFieldCount={
-                mode === "refine" ? 7 : Math.min(store.step, 7)
-              }
-              draftReview={draftReview}
-              draftReviewLoading={draftReviewLoading}
-              draftReviewError={draftReviewError}
-              onJumpToField$={jumpToField}
-              onReadDraft$={onReadDraft$ ? readDraft : undefined}
-              onApplyObservation$={
-                onApplyDraftObservation$ ? applyDraftObservation : undefined
-              }
-              onDismissObservation$={
-                onDismissDraftObservation$ ? dismissDraftObservation : undefined
-              }
-            />
-          </div>
-        }
-        leaf={
-          <>
-            {/* ── RIGHT LEAF: the interview itself ───────────────────────── */}
-            <div class="shrink-0 px-5 pt-3">
-              <div class="flex items-baseline justify-between gap-3">
-                <p class="dept-label truncate">{step.department}</p>
-                <p class="dept-label shrink-0">
-                  Folio {store.step + 1} of {STEPS.length}
-                </p>
-              </div>
-              <div
-                class="mt-1.5 h-[3px] w-full overflow-hidden bg-[var(--color-paper-2)]"
-                role="progressbar"
-                aria-label="Interview progress"
-                aria-valuemin={1}
-                aria-valuemax={STEPS.length}
-                aria-valuenow={store.step + 1}
-              >
-                <div
-                  class="h-full transition-[width] duration-300"
-                  style={{
-                    width: `${progress}%`,
-                    background:
-                      "linear-gradient(90deg, var(--color-vermilion) 0%, var(--color-mustard) 100%)",
-                  }}
-                />
-              </div>
+                Sending
+              </span>
             </div>
+          )}
 
-            {/*
+          {draftStorageError.value && (
+            <p role="alert" class="error-slip">
+              {draftStorageError.value}
+            </p>
+          )}
+          {store.submitError && (
+            <div
+              class="fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded"
+              style="z-index: 60; background: var(--color-vermilion); color: var(--color-paper-soft); font-family: var(--font-mono); font-size: 0.875rem;"
+            >
+              ⚠ {store.submitError}
+            </div>
+          )}
+        </>
+      ),
+      dossier: (
+        <div class="flex min-h-full flex-col">
+          <DossierPreview
+            answers={store.answers}
+            probes={store.probes}
+            attachments={store.attachments}
+            editions={briefEditions}
+            strengths={strengths}
+            strengthReading={strength.reading}
+            briefSufficiency={strength.sufficiency}
+            recentProbeId={store.recentProbeId}
+            recentProbeRevision={store.recentProbeRevision}
+            activeField={STEPS[store.step]?.field}
+            existingMaterialWords={countWords(store.existingMaterial)}
+            mode={mode}
+            reviewedFieldCount={mode === "refine" ? 7 : Math.min(store.step, 7)}
+            draftReview={draftReview}
+            draftReviewLoading={draftReviewLoading}
+            draftReviewError={draftReviewError}
+            onJumpToField$={jumpToField}
+            onReadDraft$={onReadDraft$ ? readDraft : undefined}
+            onApplyObservation$={
+              onApplyDraftObservation$ ? applyDraftObservation : undefined
+            }
+            onDismissObservation$={
+              onDismissDraftObservation$ ? dismissDraftObservation : undefined
+            }
+          />
+        </div>
+      ),
+      leaf: (
+        <Fragment key="brief-interview">
+          {/* ── RIGHT LEAF: the interview itself ───────────────────────── */}
+          <div class="shrink-0 px-5 pt-3">
+            <div class="flex items-baseline justify-between gap-3">
+              <p class="dept-label truncate">{step.department}</p>
+              <p class="dept-label shrink-0">
+                Folio {store.step + 1} of {STEPS.length}
+              </p>
+            </div>
+            <div
+              class="mt-1.5 h-[3px] w-full overflow-hidden bg-[var(--color-paper-2)]"
+              role="progressbar"
+              aria-label="Interview progress"
+              aria-valuemin={1}
+              aria-valuemax={STEPS.length}
+              aria-valuenow={store.step + 1}
+            >
+              <div
+                class="h-full transition-[width] duration-300"
+                style={{
+                  width: `${progress}%`,
+                  background:
+                    "linear-gradient(90deg, var(--color-vermilion) 0%, var(--color-mustard) 100%)",
+                }}
+              />
+            </div>
+          </div>
+
+          {/*
                   The question sits on the vertical centre of its leaf. A short
                   answer used to leave half a column of dead paper below it;
                   centring turns that into margin on both sides, and a long
                   step (Particulars, prior material) simply grows and scrolls
                   inside this frame instead of pushing the page.
                 */}
-            <div class="folio-column flex-1">
-              <div
-                key={store.step}
-                class="folio-shift flex min-h-full flex-col justify-between px-5 py-4"
-              >
-                {/*
+          <div class="folio-column flex-1">
+            <div
+              key={store.step}
+              class="folio-shift flex min-h-full flex-col justify-between px-5 py-4"
+            >
+              {/*
                   The sheet above, curling out of the platen: the answer you
                   just gave, greyed back and clickable. It is what turns the
                   empty half of this column into the rest of the document
                   rather than a hole.
                 */}
-                <GhostSheet
-                  position="above"
-                  step={STEPS[store.step - 1]}
-                  value={
-                    STEPS[store.step - 1]?.field
-                      ? store.answers[STEPS[store.step - 1]!.field!]
-                      : ""
-                  }
-                  onJump$={$(() => goToStep(store.step - 1))}
-                />
+              <GhostSheet
+                position="above"
+                step={STEPS[store.step - 1]}
+                value={
+                  STEPS[store.step - 1]?.field
+                    ? store.answers[STEPS[store.step - 1]!.field!]
+                    : ""
+                }
+                onJump$={$(() => goToStep(store.step - 1))}
+              />
 
-                {/* The sheet actually in the platen, floated between them. */}
-                <div class="my-auto">
-                  <div class="flex items-baseline gap-3">
-                    <span
-                      class="leading-none ink-bleed"
-                      style="font-family: var(--font-display); font-weight: 700; font-size: 2.5rem; color: var(--color-vermilion); font-style: italic;"
-                    >
-                      {step.numeral}.
-                    </span>
-                    <p
-                      id="atr-question"
-                      class="text-[1.4rem] leading-tight text-[var(--color-ink)]"
-                      style="font-family: var(--font-display); font-weight: 600;"
-                    >
-                      {step.question}
-                    </p>
-                  </div>
-                  <p
-                    id="atr-hint"
-                    class="mt-1.5 ml-[3rem] text-[0.85rem] leading-6 text-[var(--color-ink-light)]"
-                    style="font-family: var(--font-serif); font-style: italic;"
+              {/* The sheet actually in the platen, floated between them. */}
+              <div class="my-auto">
+                <div class="flex items-baseline gap-3">
+                  <span
+                    class="leading-none ink-bleed"
+                    style="font-family: var(--font-display); font-weight: 700; font-size: 2.5rem; color: var(--color-vermilion); font-style: italic;"
                   >
-                    {step.hint}
+                    {step.numeral}.
+                  </span>
+                  <p
+                    id="atr-question"
+                    class="text-[1.4rem] leading-tight text-[var(--color-ink)]"
+                    style="font-family: var(--font-display); font-weight: 600;"
+                  >
+                    {step.question}
                   </p>
+                </div>
+                <p
+                  id="atr-hint"
+                  class="mt-1.5 ml-[3rem] text-[0.85rem] leading-6 text-[var(--color-ink-light)]"
+                  style="font-family: var(--font-serif); font-style: italic;"
+                >
+                  {step.hint}
+                </p>
 
-                  <div class="mt-4">
-                    {step.kind === "input" && step.field === "format" && (
-                      <WritingFormatInput
-                        value={store.answers.format}
-                        labelledBy="atr-question"
-                        describedBy="atr-hint"
-                        onValueChange$={$((value: string) => {
-                          store.answers = {
-                            ...store.answers,
-                            format: value,
-                          };
-                          void persistDraft();
-                        })}
-                        onCommit$={goNext}
-                      />
-                    )}
-                    {step.kind === "input" &&
-                      step.field &&
-                      step.field !== "format" && (
-                        <input
-                          key={step.field}
-                          defaultValue={store.answers[step.field!]}
-                          aria-labelledby="atr-question"
-                          aria-describedby="atr-hint"
-                          autoFocus
-                          onInput$={(e) => {
-                            store.answers[step.field!] = (
-                              e.target as HTMLInputElement
-                            ).value;
-                            void persistDraft();
-                          }}
-                          onKeyDown$={(e) => {
-                            if (e.key === "Enter") goNext();
-                          }}
-                          placeholder={step.placeholder}
-                          class="carriage-input w-full border-b-2 border-[var(--color-ink)] bg-transparent px-1 py-2 text-lg text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic focus:outline-none"
-                          style="font-family: var(--font-display); font-weight: 500;"
-                        />
-                      )}
-                    {step.kind === "textarea" && step.field && (
-                      <textarea
-                        ref={textareaRef}
+                <div class="mt-4">
+                  {step.kind === "input" && step.field === "format" && (
+                    <WritingFormatInput
+                      key="format"
+                      value={store.answers.format}
+                      labelledBy="atr-question"
+                      describedBy="atr-hint"
+                      onValueChange$={$((value: string) => {
+                        store.answers = {
+                          ...store.answers,
+                          format: value,
+                        };
+                        void persistDraft();
+                      })}
+                      onCommit$={goNext}
+                    />
+                  )}
+                  {step.kind === "input" &&
+                    step.field &&
+                    step.field !== "format" && (
+                      <input
                         key={step.field}
-                        defaultValue={store.answers[step.field!]}
+                        value={store.answers[step.field!]}
                         aria-labelledby="atr-question"
                         aria-describedby="atr-hint"
                         autoFocus
                         onInput$={(e) => {
                           store.answers[step.field!] = (
-                            e.target as HTMLTextAreaElement
+                            e.target as HTMLInputElement
                           ).value;
                           void persistDraft();
                         }}
                         onKeyDown$={(e) => {
-                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                            goNext();
-                          }
+                          if (e.key === "Enter") goNext();
                         }}
                         placeholder={step.placeholder}
-                        rows={step.rows || 4}
+                        class="carriage-input w-full border-b-2 border-[var(--color-ink)] bg-transparent px-1 py-2 text-lg text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic focus:outline-none"
+                        style="font-family: var(--font-display); font-weight: 500;"
+                      />
+                    )}
+                  {step.kind === "textarea" && step.field && (
+                    <textarea
+                      ref={textareaRef}
+                      key={step.field}
+                      value={store.answers[step.field!]}
+                      aria-labelledby="atr-question"
+                      aria-describedby="atr-hint"
+                      autoFocus
+                      onInput$={(e) => {
+                        store.answers[step.field!] = (
+                          e.target as HTMLTextAreaElement
+                        ).value;
+                        void persistDraft();
+                      }}
+                      onKeyDown$={(e) => {
+                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                          goNext();
+                        }
+                      }}
+                      placeholder={step.placeholder}
+                      rows={step.rows || 4}
+                      class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-3 text-base leading-7 text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic focus:border-[var(--color-vermilion)] focus:outline-none"
+                      style="font-family: var(--font-serif); border-radius: 2px;"
+                    />
+                  )}
+                  {step.field && strengths[step.field] && (
+                    <AnswerStrength
+                      strength={strengths[step.field]!}
+                      reading={strength.reading[step.field]}
+                      quickOnly={strength.unavailable}
+                    />
+                  )}
+                  {step.kind === "import" && (
+                    <div>
+                      <textarea
+                        ref={textareaRef}
+                        value={store.existingMaterial}
+                        aria-labelledby="atr-question"
+                        aria-describedby="atr-hint"
+                        onInput$={(e) => {
+                          store.existingMaterial = (
+                            e.target as HTMLTextAreaElement
+                          ).value;
+                          if (store.importedFilename) {
+                            store.importedFilename = "";
+                          }
+                          void persistDraft();
+                        }}
+                        placeholder={step.placeholder}
+                        rows={8}
                         class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-3 text-base leading-7 text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic focus:border-[var(--color-vermilion)] focus:outline-none"
                         style="font-family: var(--font-serif); border-radius: 2px;"
                       />
-                    )}
-                    {step.field && strengths[step.field] && (
-                      <AnswerStrength
-                        strength={strengths[step.field]!}
-                        reading={strength.reading[step.field]}
-                        quickOnly={strength.unavailable}
-                      />
-                    )}
-                    {step.kind === "import" && (
-                      <div>
-                        <textarea
-                          ref={textareaRef}
-                          value={store.existingMaterial}
-                          aria-labelledby="atr-question"
-                          aria-describedby="atr-hint"
-                          onInput$={(e) => {
-                            store.existingMaterial = (
-                              e.target as HTMLTextAreaElement
-                            ).value;
-                            if (store.importedFilename) {
-                              store.importedFilename = "";
-                            }
-                            void persistDraft();
-                          }}
-                          placeholder={step.placeholder}
-                          rows={8}
-                          class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-3 text-base leading-7 text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic focus:border-[var(--color-vermilion)] focus:outline-none"
-                          style="font-family: var(--font-serif); border-radius: 2px;"
-                        />
 
-                        <div class="mt-3 flex flex-wrap items-center gap-3">
-                          <label
-                            class="btn-paper cursor-pointer"
-                            title="Upload a .txt, .md, or .html file"
-                          >
-                            ⇪ Upload a file
-                            <input
-                              type="file"
-                              accept=".txt,.md,.markdown,.html,.htm,text/plain,text/markdown,text/html"
-                              onChange$={handleFile}
-                              class="hidden"
-                            />
-                          </label>
+                      <div class="mt-3 flex flex-wrap items-center gap-3">
+                        <label
+                          class="btn-paper cursor-pointer"
+                          title="Upload a .txt, .md, or .html file"
+                        >
+                          ⇪ Upload a file
+                          <input
+                            type="file"
+                            accept=".txt,.md,.markdown,.html,.htm,text/plain,text/markdown,text/html"
+                            onChange$={handleFile}
+                            class="hidden"
+                          />
+                        </label>
 
-                          {store.existingMaterial && (
-                            <>
-                              <span
-                                class="text-xs text-[var(--color-ink-muted)]"
-                                style="font-family: var(--font-typewriter); letter-spacing: 0.12em;"
-                              >
-                                {store.importedFilename
-                                  ? `Filed · ${store.importedFilename}`
-                                  : "Pasted"}
-                                {" · "}
-                                {
-                                  store.existingMaterial.trim().split(/\s+/)
-                                    .length
-                                }{" "}
-                                words
-                              </span>
-                              <button
-                                onClick$={clearMaterial}
-                                class="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] underline"
-                                style="font-family: var(--font-typewriter); letter-spacing: 0.12em;"
-                              >
-                                Clear
-                              </button>
-                            </>
-                          )}
-
-                          {!store.existingMaterial && (
+                        {store.existingMaterial && (
+                          <>
                             <span
-                              class="text-xs text-[var(--color-ink-muted)] italic"
-                              style="font-family: var(--font-serif);"
+                              class="text-xs text-[var(--color-ink-muted)]"
+                              style="font-family: var(--font-typewriter); letter-spacing: 0.12em;"
                             >
-                              .txt, .md, .html accepted — optional
+                              {store.importedFilename
+                                ? `Filed · ${store.importedFilename}`
+                                : "Pasted"}
+                              {" · "}
+                              {
+                                store.existingMaterial.trim().split(/\s+/)
+                                  .length
+                              }{" "}
+                              words
                             </span>
-                          )}
-                        </div>
+                            <button
+                              onClick$={clearMaterial}
+                              class="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] underline"
+                              style="font-family: var(--font-typewriter); letter-spacing: 0.12em;"
+                            >
+                              Clear
+                            </button>
+                          </>
+                        )}
+
+                        {!store.existingMaterial && (
+                          <span
+                            class="text-xs text-[var(--color-ink-muted)] italic"
+                            style="font-family: var(--font-serif);"
+                          >
+                            .txt, .md, .html accepted — optional
+                          </span>
+                        )}
                       </div>
-                    )}
-                    {step.kind === "probes" && (
-                      <div class="space-y-3">
-                        {store.probesLoading && (
-                          <div
-                            class="flex items-center gap-2 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-3 py-2 text-sm text-[var(--color-ink-muted)]"
-                            style="font-family: var(--font-typewriter);"
+                    </div>
+                  )}
+                  {step.kind === "probes" && (
+                    <div class="space-y-3">
+                      {store.probesLoading && (
+                        <div
+                          class="flex items-center gap-2 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-3 py-2 text-sm text-[var(--color-ink-muted)]"
+                          style="font-family: var(--font-typewriter);"
+                          role="status"
+                        >
+                          <span
+                            class="h-2 w-2 rounded-full bg-[var(--color-mustard)] interview-stream-pulse"
+                            aria-hidden="true"
+                          />
+                          The room is sharpening the questions. Local questions
+                          are ready while it reads.
+                        </div>
+                      )}
+                      {store.probesError && (
+                        <ApplicationNotice
+                          error={store.probesError}
+                          variant="warning"
+                          compact
+                          busy={store.probesLoading}
+                          onRetry$={retryProbes}
+                          recoveryLabel="Use local questions"
+                          onRecovery$={$(() => {
+                            store.probesError = null;
+                            store.probesSource = "local";
+                          })}
+                          showReference={false}
+                        />
+                      )}
+                      {!store.probesLoading &&
+                        !store.probesError &&
+                        store.probesSource === "local" && (
+                          <p
+                            class="text-sm text-[var(--color-ink-muted)]"
+                            style="font-family: var(--font-serif);"
                             role="status"
                           >
-                            <span
-                              class="h-2 w-2 rounded-full bg-[var(--color-mustard)] interview-stream-pulse"
-                              aria-hidden="true"
-                            />
-                            The room is sharpening the questions. Local
-                            questions are ready while it reads.
-                          </div>
+                            These questions were prepared on this device from
+                            the brief above. They work without an account or
+                            provider.
+                          </p>
                         )}
-                        {store.probesError && (
-                          <ApplicationNotice
-                            error={store.probesError}
-                            variant="warning"
-                            compact
-                            busy={store.probesLoading}
-                            onRetry$={retryProbes}
-                            recoveryLabel="Use local questions"
-                            onRecovery$={$(() => {
-                              store.probesError = null;
-                              store.probesSource = "local";
-                            })}
-                            showReference={false}
-                          />
-                        )}
-                        {!store.probesLoading &&
-                          !store.probesError &&
-                          store.probesSource === "local" && (
-                            <p
-                              class="text-sm text-[var(--color-ink-muted)]"
-                              style="font-family: var(--font-serif);"
-                              role="status"
-                            >
-                              These questions were prepared on this device from
-                              the brief above. They work without an account or
-                              provider.
-                            </p>
-                          )}
-                        {store.probes.map((probe) => (
-                          <div key={probe.id}>
-                            <p
-                              class="text-sm text-[var(--color-ink)]"
-                              style="font-family: var(--font-serif);"
-                            >
-                              {probe.prompt}
-                            </p>
-                            <ProbeInput
-                              probe={probe}
-                              onAnswer$={answerFormProbe}
-                            />
-                          </div>
-                        ))}
-                        {store.probes.length === 0 && (
-                          <button
-                            type="button"
-                            onClick$={retryProbes}
-                            class="btn-paper"
+                      {store.probes.map((probe) => (
+                        <div key={probe.id}>
+                          <p
+                            class="text-sm text-[var(--color-ink)]"
+                            style="font-family: var(--font-serif);"
                           >
-                            Prepare questions
-                          </button>
-                        )}
-                      </div>
-                    )}
-                    {step.kind === "attachments" && (
-                      <DossierAttachmentsEditor
-                        attachments={store.attachments}
-                        onChange$={(next) => {
-                          store.attachments = next;
-                          void persistDraft();
-                        }}
-                      />
-                    )}
-                  </div>
+                            {probe.prompt}
+                          </p>
+                          <ProbeInput
+                            probe={probe}
+                            onAnswer$={answerFormProbe}
+                          />
+                        </div>
+                      ))}
+                      {store.probes.length === 0 && (
+                        <button
+                          type="button"
+                          onClick$={retryProbes}
+                          class="btn-paper"
+                        >
+                          Prepare questions
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {step.kind === "attachments" && (
+                    <DossierAttachmentsEditor
+                      attachments={store.attachments}
+                      onChange$={(next) => {
+                        store.attachments = next;
+                        void persistDraft();
+                      }}
+                    />
+                  )}
                 </div>
-
-                <GhostSheet
-                  position="below"
-                  step={STEPS[store.step + 1]}
-                  value=""
-                  onJump$={$(() => goToStep(store.step + 1))}
-                />
               </div>
-            </div>
 
-            {/*
+              <GhostSheet
+                position="below"
+                step={STEPS[store.step + 1]}
+                value=""
+                onJump$={$(() => goToStep(store.step + 1))}
+              />
+            </div>
+          </div>
+
+          {/*
                   The old footer spent its middle on ten anonymous dots. The
                   same width now carries the department index: it shows which
                   sections are filed and jumps to any of them.
                 */}
-            <div class="shrink-0 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-2)]/50 px-5 py-2.5">
-              <div class="flex items-center justify-between gap-3">
-                <button
-                  onClick$={goBack}
-                  disabled={store.step === 0}
-                  class="btn-paper shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  ← Back
-                </button>
+          <div class="shrink-0 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-2)]/50 px-5 py-2.5">
+            <div class="flex items-center justify-between gap-3">
+              <button
+                onClick$={goBack}
+                disabled={store.step === 0}
+                class="btn-paper shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                ← Back
+              </button>
 
-                <nav
-                  class="flex min-w-0 items-center justify-center gap-0.5 overflow-x-auto"
-                  aria-label="Folio sections"
-                >
-                  {STEPS.map((entry, i) => (
-                    <button
-                      key={entry.numeral}
-                      type="button"
-                      class="folio-rail-step shrink-0"
-                      data-filled={isStepFiled(i) ? "true" : "false"}
-                      aria-current={i === store.step ? "step" : undefined}
-                      title={`${entry.numeral} · ${entry.department}`}
-                      onClick$={() => goToStep(i)}
-                    >
-                      {entry.numeral}
-                    </button>
-                  ))}
-                </nav>
+              <nav
+                class="flex min-w-0 items-center justify-center gap-0.5 overflow-x-auto"
+                aria-label="Folio sections"
+              >
+                {STEPS.map((entry, i) => (
+                  <button
+                    key={entry.numeral}
+                    type="button"
+                    class="folio-rail-step shrink-0"
+                    data-filled={isStepFiled(i) ? "true" : "false"}
+                    aria-current={i === store.step ? "step" : undefined}
+                    title={`${entry.numeral} · ${entry.department}`}
+                    onClick$={() => goToStep(i)}
+                  >
+                    {entry.numeral}
+                  </button>
+                ))}
+              </nav>
 
-                <button
-                  onClick$={goNext}
-                  class="btn-press shrink-0"
-                  disabled={store.submitting}
-                >
-                  {store.submitting
-                    ? "Sending…"
-                    : store.step === STEPS.length - 1
-                      ? "Send to press"
-                      : "Next"}
-                </button>
-              </div>
+              <button
+                onClick$={goNext}
+                class="btn-press shrink-0"
+                disabled={store.submitting}
+              >
+                {store.submitting
+                  ? "Sending…"
+                  : store.step === STEPS.length - 1
+                    ? "Send to press"
+                    : "Next"}
+              </button>
             </div>
-          </>
-        }
-      />
-    );
+          </div>
+        </Fragment>
+      ),
+    });
   },
 );
 
