@@ -157,7 +157,7 @@ export const roomSuite: Suite<RoomCase> = {
             visible.filter((plant) => coveredBy(plant).length > 0).length,
             visible.length,
           ) ?? 1,
-        explanation: `${testCase.plants.length - visible.length} plant(s) sit in the middle the editors' 4,500-character clamp drops`,
+        explanation: `${testCase.plants.length - visible.length} plant(s) fall outside the context sampled for the editors`,
       },
       expected_editor: {
         score: ratio(expectedHit.length, testCase.plants.length),
