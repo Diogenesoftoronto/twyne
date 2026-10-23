@@ -66,6 +66,12 @@ export async function ensureDataset(
   name: string,
   rows: Array<Record<string, string | number | boolean> & { case_id: string }>,
 ): Promise<{ id: string; name: string; examples: Map<string, string> }> {
+  const expected = new Set(rows.map((row) => row.case_id));
+  if (expected.size !== rows.length) {
+    throw new Error(
+      `Duplicate case_id in the corpus for Arize dataset ${name}`,
+    );
+  }
   let id: string | null = null;
   try {
     const found = jsonFrom(
@@ -106,12 +112,32 @@ export async function ensureDataset(
     id = created.id;
   }
   const exported = jsonFrom(
-    await ax(["datasets", "export", id, "--stdout"]),
+    // A plain REST export returns one page, even for a 126-case corpus.
+    await ax(["datasets", "export", id, "--all", "--stdout"]),
   ) as Array<{ id: string; additional_properties?: { case_id?: string } }>;
+  if (!Array.isArray(exported)) {
+    throw new Error(`Arize dataset ${name} did not export an example array`);
+  }
   const examples = new Map<string, string>();
   for (const example of exported) {
     const caseId = example.additional_properties?.case_id;
-    if (caseId) examples.set(caseId, example.id);
+    if (!caseId || !example.id || !expected.has(caseId)) {
+      throw new Error(
+        `Arize dataset ${name} exported an unexpected or invalid example`,
+      );
+    }
+    if (examples.has(caseId)) {
+      throw new Error(
+        `Arize dataset ${name} exported duplicate case_id ${caseId}`,
+      );
+    }
+    examples.set(caseId, example.id);
+  }
+  const missing = [...expected].filter((caseId) => !examples.has(caseId));
+  if (missing.length) {
+    throw new Error(
+      `Arize dataset ${name} is missing ${missing.length} of ${rows.length} case mappings after full export`,
+    );
   }
   return { id, name, examples };
 }

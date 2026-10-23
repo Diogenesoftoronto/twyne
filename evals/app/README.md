@@ -247,6 +247,16 @@ bun run eval:app -- --suite room --model notorganic --judge notorganic --arize -
   side by side in the Arize UI. Runs also carry `case_id`, `app_model`,
   `driver`, `judge`, `latency_ms` and `trace_id`.
 
+Dataset resolution uses a full `ax datasets export --all` and requires one
+unique example mapping for every case before creating an experiment. For a
+complete experiment readback:
+
+```sh
+ax experiments export EXPERIMENT_ID --all --stdout
+```
+
+Default exports return only one page.
+
 Arize needs a number in every row of a score column and reads labels as text,
 so the upload is made rectangular. `harness` measures execution success; quality
 is conditional on a successful run in both Arize and local statistics. A quality
