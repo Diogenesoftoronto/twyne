@@ -20,7 +20,7 @@ import { withResponseLanguage } from "../src/i18n/model-language";
 
 import { action, type ActionCtx } from "./_generated/server";
 import { makeFunctionReference } from "convex/server";
-import { v } from "convex/values";
+import { v, type ObjectType } from "convex/values";
 import { generateText, stepCountIs, streamText, type LanguageModel } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { createOpenAI, openai } from "@ai-sdk/openai";
@@ -72,7 +72,10 @@ import {
 import "./arizeTracing";
 import { tracingEnabled, flushArize } from "./arizeTracing";
 import { captureServerAiGeneration } from "./posthog";
-import type { ServerAiObservabilityContext } from "./posthog";
+import type {
+  CaptureServerAiGenerationArgs,
+  ServerAiObservabilityContext,
+} from "./posthog";
 import {
   createAiTraceId,
   normalizeAiUsage,
@@ -97,6 +100,11 @@ import {
 } from "../src/utils/draft-thresholds";
 import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
 import {
+  callerFromIdentity,
+  callerFromTokenIdentifier,
+  type HostedCaller,
+} from "./lib/authIdentity";
+import {
   issueNotOrganicAccessToken,
   notOrganicEnabled,
   notOrganicIssuer,
@@ -113,6 +121,7 @@ import {
   runAdaptiveEditorialDraft,
   type EditorialReasoningLevel,
 } from "../src/utils/adaptive-editorial-draft";
+import type { EditorialOperation } from "../src/utils/editorial-policy";
 import { reviewEditorialNote } from "../src/utils/editorial-note-review";
 import type { WritingLensCaller } from "../src/utils/writing-lenses";
 import {
@@ -121,16 +130,26 @@ import {
   type GenerationStreamSnapshot,
 } from "../src/utils/generation-stream";
 import { prompt as renderNamed } from "../src/utils/prompts";
+import {
+  normalizeInterviewDossierDraft,
+  type InterviewConfidence,
+} from "../src/utils/interview-dossier-draft";
 import { api, internal } from "./_generated/api";
 
 /* ── Provider selection ─────────────────────────────────────────── */
 
 interface ProviderConfig {
   model: LanguageModel;
-  label: "rivet" | "anthropic" | "openai" | "portkey";
+  label: "rivet" | "anthropic" | "openai";
   /** Default model id used by this provider. */
   modelId: string;
 }
+
+/**
+ * Who a hosted call is for; see `lib/authIdentity`. Re-exported so the
+ * integration module can name the type it hands the cores.
+ */
+export { callerFromTokenIdentifier, type HostedCaller };
 
 const writeInterviewStreamReference = makeFunctionReference<
   "mutation",
@@ -280,26 +299,6 @@ function pickLegacyProvider(): ProviderConfig | null {
     };
   }
 
-  const portkeyKey = process.env.PORTKEY_API_KEY;
-  if (portkeyKey) {
-    const modelId =
-      process.env.PORTKEY_DEFAULT_MODEL ?? "@neuralwatt/qwen3.5-397b-fast";
-    const portkey = createOpenAI({
-      baseURL: (
-        process.env.PORTKEY_BASE_URL ?? "https://api.portkey.ai/v1"
-      ).replace(/\/$/, ""),
-      // Portkey accepts the key as a standard bearer token; the @provider
-      // prefix on the model id routes to the Model Catalog provider, so no
-      // extra headers are needed.
-      apiKey: portkeyKey,
-    });
-    return {
-      model: portkey.chat(modelId),
-      label: "portkey",
-      modelId,
-    };
-  }
-
   if (process.env.ANTHROPIC_API_KEY) {
     const modelId = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
     return {
@@ -330,14 +329,13 @@ const linkedDidReference = makeFunctionReference<
 /** Hosted Not Organic failures must never spend against our legacy provider keys. */
 async function pickProvider(
   ctx: ActionCtx,
+  caller: HostedCaller,
   feature: string,
   alias: NotOrganicModelAlias = "balanced",
 ): Promise<ProviderConfig | null> {
   if (!notOrganicEnabled()) return pickLegacyProvider();
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) throw new Error("Sign in before using hosted AI.");
   const link = await ctx.runQuery(linkedDidReference, {
-    productSubject: identity.subject || identity.tokenIdentifier,
+    productSubject: caller.subject,
   });
   if (!link)
     throw new Error("Link your Not Organic account before using hosted AI.");
@@ -391,7 +389,7 @@ function classifyType(text: string, fallback: FeedbackType): FeedbackType {
 /* ── LLM call wrapper ───────────────────────────────────────────── */
 
 /**
- * Twyne sets no output ceiling.
+ * Twyne gives every hosted call a generous output ceiling.
  *
  * These call sites used to carry per-feature budgets — 380 tokens for a note,
  * 200 for a judge — sized against how long the visible answer ought to run.
@@ -400,12 +398,19 @@ function classifyType(text: string, fallback: FeedbackType): FeedbackType {
  * strips to nothing and a template is filed in its place. Nothing about that
  * looks like a failure to the writer.
  *
- * The ceiling was never what kept an answer short — the prompts do that — so
- * leaving it unset costs nothing. Each provider falls back to its own model
- * maximum, and generation is billed on what a model writes rather than on what
- * it was permitted to write.
+ * Leaving the ceiling unset did not fix that. It was meant to let each provider
+ * fall back to its model maximum, but Not Organic falls back to a default near
+ * 4,000 tokens, and all three of its text aliases route to one reasoning model
+ * that can think past it: the app evals saw judges and research extraction
+ * return HTTP 200, `finish_reason: "length"`, about 18,000 characters of
+ * reasoning and no answer. With 16,000 tokens of room the same research
+ * extraction answered in 20 seconds.
+ *
+ * The prompts are still what keep an answer short; this is headroom, and
+ * generation is billed on what a model writes rather than on what it was
+ * permitted to write. The name is kept for its many call sites.
  */
-const NO_OUTPUT_CEILING = undefined;
+export const NO_OUTPUT_CEILING = 16_000;
 
 /**
  * How often a generation in flight republishes itself, at most. Ten times a
@@ -520,6 +525,29 @@ async function trackedStreamNote(
   return result;
 }
 
+/**
+ * A note the editorial review would not release: vetoed by the policy gate,
+ * or still below the quality bar after its repairs. This is a verdict about
+ * one editor's note, not a provider failure, so a room drops that editor and
+ * keeps the rest — as the browser's own gate does — instead of failing all
+ * five.
+ */
+export class EditorialNoteWithheld extends Error {
+  constructor(readonly reason: string) {
+    super(`editorial-draft-${reason}`);
+    this.name = "EditorialNoteWithheld";
+  }
+}
+
+/** The drafting loop writes notes; a rubric judge never enters it. */
+function noteOperation(
+  instruction: AgentRequest["instruction"],
+): EditorialOperation {
+  return instruction === undefined || instruction === "judge"
+    ? "feedback"
+    : instruction;
+}
+
 function initialEditorialReasoning(
   instruction: AgentRequest["instruction"],
 ): EditorialReasoningLevel {
@@ -537,7 +565,7 @@ function initialEditorialReasoning(
 /** The hosted equivalent of the BYOK adaptive drafting loop. */
 async function runAdaptiveHostedLlm(
   ctx: ActionCtx,
-  ownerId: string,
+  caller: HostedCaller,
   provider: ProviderConfig,
   req: AgentRequest,
   feature: "persona-feedback" | "persona-reply" | "persona-analysis",
@@ -557,9 +585,12 @@ async function runAdaptiveHostedLlm(
     color: "",
     icon: "",
   };
+  // The review goes through the caller-taking judgement path, so a note is
+  // gated the same way whether the writer is in the browser or on a token.
   const systemOneCaller: WritingLensCaller = async (request) => {
     try {
-      const result = await ctx.runAction(api.systemOne.ask, {
+      const result = await ctx.runAction(internal.systemOne.askAs, {
+        ownerId: caller.tokenIdentifier,
         ...request,
         state: Object.fromEntries(
           Object.entries(request.state).map(([key, value]) => [
@@ -590,9 +621,9 @@ async function runAdaptiveHostedLlm(
     });
   }
 
-  const research = await hostedPersonaResearch(ctx);
+  const research = await hostedPersonaResearch(ctx, caller);
   const result = await runAdaptiveEditorialDraft({
-    operation: req.instruction ?? "feedback",
+    operation: noteOperation(req.instruction),
     initialReasoning: initialEditorialReasoning(req.instruction),
     maxReasoning: "high",
     generate: async ({ attempt, reasoning, repair }) => {
@@ -605,7 +636,8 @@ async function runAdaptiveHostedLlm(
           reasoning === "high" ? "reasoning" : "balanced";
         try {
           generationProvider =
-            (await pickProvider(ctx, feature, alias)) ?? generationProvider;
+            (await pickProvider(ctx, caller, feature, alias)) ??
+            generationProvider;
         } catch {
           // The first provider already proved usable; keep it if an adaptive
           // alias cannot be resolved for this retry.
@@ -629,7 +661,7 @@ async function runAdaptiveHostedLlm(
         : createAiTraceId(`${feature}:draft-${attempt}`);
       const capture: HostedUsageCapture = {
         ctx,
-        ownerId,
+        ownerId: caller.tokenIdentifier,
         provider: generationProvider,
         feature,
         traceId: usageTraceId,
@@ -716,12 +748,19 @@ async function runAdaptiveHostedLlm(
     review: (candidate) =>
       reviewEditorialNote(systemOneCaller, {
         note: candidate.text,
-        quote: candidate.anchor,
+        // A note can quote several passages (`anchors`); the grounding check
+        // must see all of them, or a claim about the second reads as
+        // unanchored and the note is vetoed for evidence it did quote.
+        quote: [
+          ...new Set([candidate.anchor, ...(candidate.value.anchors ?? [])]),
+        ]
+          .filter((passage): passage is string => !!passage?.trim())
+          .join("\n\n"),
         draft: req.draftText,
         persona: reviewPersona,
         brief: req.brief,
         profile,
-        operation: req.instruction ?? "feedback",
+        operation: noteOperation(req.instruction),
         userMessage: req.userMessage,
       }),
   });
@@ -738,7 +777,10 @@ async function runAdaptiveHostedLlm(
         status: "error",
       });
     }
-    throw new Error(`editorial-draft-${result.receipt.reason ?? "withheld"}`);
+    const reason = result.receipt.reason ?? "withheld";
+    if (reason === "generation-unavailable")
+      throw new Error(`editorial-draft-${reason}`);
+    throw new EditorialNoteWithheld(reason);
   }
 
   if (stream) {
@@ -757,7 +799,7 @@ async function runAdaptiveHostedLlm(
 
 async function runLlm(
   ctx: ActionCtx,
-  ownerId: string,
+  caller: HostedCaller,
   provider: ProviderConfig,
   req: AgentRequest,
   feature:
@@ -775,7 +817,7 @@ async function runLlm(
   ) {
     return runAdaptiveHostedLlm(
       ctx,
-      ownerId,
+      caller,
       provider,
       req,
       feature,
@@ -793,7 +835,7 @@ async function runLlm(
   const temperature =
     req.persona.temperature ?? (provider.label === "openai" ? 0.6 : 0.4);
   const start = Date.now();
-  const research = await hostedPersonaResearch(ctx);
+  const research = await hostedPersonaResearch(ctx, caller);
   const { tools, getAnchor, getAnchors, getExtractions } = buildQuoteTools(
     req.draftText,
     research,
@@ -801,7 +843,7 @@ async function runLlm(
   const usageTraceId = observability?.traceId ?? createAiTraceId(feature);
   const capture: HostedUsageCapture = {
     ctx,
-    ownerId,
+    ownerId: caller.tokenIdentifier,
     provider,
     feature,
     traceId: usageTraceId,
@@ -953,6 +995,122 @@ async function runPlainLlm(
   return visible.trim();
 }
 
+/* ── A second chance for the judges ─────────────────────────────── */
+
+/** One hosted judgement: where it goes, how it parses, what observability hears. */
+interface SecondChanceGeneration {
+  ctx: ActionCtx;
+  caller: HostedCaller;
+  /** The feature the provider was picked under; the retry is picked under it too. */
+  feature: string;
+  /** The feature usage and observability file the attempts under. */
+  usageFeature: AiFeature & CaptureServerAiGenerationArgs["feature"];
+  provider: ProviderConfig;
+  system: string;
+  prompt: string;
+  temperature: number;
+  functionId: string;
+  /** Extra telemetry metadata, such as which persona is judging. */
+  metadata?: Record<string, string>;
+  /** When set, each attempt is captured as a generation of its own. */
+  observe?: {
+    req: CaptureServerAiGenerationArgs["req"];
+    spanName: string;
+    evalSignals?: CaptureServerAiGenerationArgs["evalSignals"];
+  };
+}
+
+/**
+ * Run a generation and, when its visible text is empty or does not parse, run
+ * it once more on the `balanced` alias with the same prompts.
+ *
+ * The judges ask the `reasoning` alias with no output ceiling, and about one
+ * call in five that model spends its whole budget thinking: HTTP 200,
+ * `finish_reason: "length"`, pages of reasoning and no answer. Before this
+ * helper the empty slot was filled with a canned local heuristic, labelled
+ * local but averaged into the grade as if an editor had read the draft. Now
+ * the question is put again to a model that answers, and only if that too
+ * comes back empty is the judgement reported as missing; what missing means
+ * is the caller's decision, since each judge has its own shape.
+ *
+ * Both attempts record usage. Without Not Organic there is no second alias
+ * to pick, so the retry re-uses the same legacy provider.
+ */
+async function generateWithSecondChance<T>(
+  gen: SecondChanceGeneration,
+  parse: (visibleText: string) => T | null,
+): Promise<{ value: T; provider: ProviderConfig } | null> {
+  const capture = newHostedUsageCapture(
+    gen.ctx,
+    gen.caller.tokenIdentifier,
+    gen.provider,
+    gen.usageFeature,
+  );
+  const attemptOn = async (provider: ProviderConfig, attempt: 1 | 2) => {
+    const start = Date.now();
+    const { text } = await trackedGenerateText(
+      { ...capture, provider },
+      attempt,
+      {
+        model: provider.model,
+        system: gen.system,
+        prompt: gen.prompt,
+        temperature: gen.temperature,
+        maxOutputTokens: NO_OUTPUT_CEILING,
+        experimental_telemetry: {
+          isEnabled: tracingEnabled,
+          functionId:
+            attempt === 1 ? gen.functionId : `${gen.functionId}:second-chance`,
+          metadata: {
+            feature: gen.usageFeature,
+            provider: provider.label,
+            model: provider.modelId,
+            attempt,
+            ...gen.metadata,
+          },
+        },
+      },
+    );
+    const visibleText = stripReasoningTags(text);
+    if (gen.observe) {
+      await captureServerAiGeneration({
+        feature: gen.usageFeature,
+        provider: provider.label,
+        model: provider.modelId,
+        req: gen.observe.req,
+        output: visibleText,
+        latencyMs: Date.now() - start,
+        temperature: gen.temperature,
+        maxTokens: NO_OUTPUT_CEILING,
+        spanName: gen.observe.spanName,
+        evalSignals: gen.observe.evalSignals,
+      });
+    }
+    return parse(visibleText);
+  };
+
+  const first = await attemptOn(gen.provider, 1);
+  if (first !== null) return { value: first, provider: gen.provider };
+
+  const second = notOrganicEnabled()
+    ? await pickProvider(gen.ctx, gen.caller, gen.feature, "balanced")
+    : gen.provider;
+  if (!second) return null;
+  console.warn(
+    `[twyne:agents] ${gen.functionId}: nothing usable from ${gen.provider.modelId}; asking ${second.modelId} once more`,
+  );
+  const retried = await attemptOn(second, 2);
+  return retried !== null ? { value: retried, provider: second } : null;
+}
+
+/** A plain-text answer parses when anything is left after the reasoning is stripped. */
+function nonEmptyText(visibleText: string): string | null {
+  const trimmed = visibleText.trim();
+  return trimmed ? trimmed : null;
+}
+
+const JUDGE_SIGNALS = { twyne_expected_format: "json_score_rationale" };
+
 function defaultTypeForPersona(p: AgentPersona): FeedbackType {
   switch (p.id) {
     case "devil":
@@ -1096,8 +1254,6 @@ type InterviewMessage = {
   text: string;
 };
 
-type InterviewConfidence = "high" | "medium" | "low";
-
 type InterviewTurnResult =
   | {
       kind: "question";
@@ -1124,16 +1280,6 @@ type InterviewTurnResult =
       model: string;
       traceId?: string;
     };
-
-const INTERVIEW_FIELDS = [
-  "workingTitle",
-  "format",
-  "audience",
-  "goal",
-  "tone",
-  "constraints",
-  "successSignal",
-] as const satisfies ReadonlyArray<keyof ProjectInterviewAnswers>;
 
 /**
  * The interviewer's contract. Three optional tagged segments, all parsed by
@@ -1172,35 +1318,6 @@ function interviewSystemPrompt(
   return base.replace(/\n+$/g, "\n");
 }
 
-function normalizeInterviewDossierDraft(value: unknown) {
-  if (!value || typeof value !== "object") return null;
-  const obj = value as Record<string, unknown>;
-  const briefSource =
-    obj.brief && typeof obj.brief === "object"
-      ? (obj.brief as Record<string, unknown>)
-      : obj;
-  const confidenceSource =
-    obj.confidence && typeof obj.confidence === "object"
-      ? (obj.confidence as Record<string, unknown>)
-      : {};
-
-  const brief: Partial<ProjectInterviewAnswers> = {};
-  const confidence: Partial<
-    Record<keyof ProjectInterviewAnswers, InterviewConfidence>
-  > = {};
-  for (const field of INTERVIEW_FIELDS) {
-    const raw = briefSource[field];
-    if (typeof raw === "string" && raw.trim()) {
-      brief[field] = raw.trim();
-    }
-    const c = confidenceSource[field];
-    if (c === "high" || c === "medium" || c === "low") {
-      confidence[field] = c;
-    }
-  }
-  return Object.keys(brief).length > 0 ? { brief, confidence } : null;
-}
-
 function parseInterviewTurnResult(
   text: string,
   provider: string,
@@ -1233,21 +1350,25 @@ function parseInterviewTurnResult(
     /SYNTHESIZE:\s*(\{[\s\S]*?\})\s*(\{[\s\S]*?\})?/,
   );
   if (legacySynthMatch) {
+    let draft: ReturnType<typeof normalizeInterviewDossierDraft> = null;
     try {
-      return {
-        kind: "synthesis",
-        brief: JSON.parse(legacySynthMatch[1]) as ProjectInterviewAnswers,
+      draft = normalizeInterviewDossierDraft({
+        brief: JSON.parse(legacySynthMatch[1]) as unknown,
         confidence: legacySynthMatch[2]
-          ? (JSON.parse(legacySynthMatch[2]) as Partial<
-              Record<keyof ProjectInterviewAnswers, InterviewConfidence>
-            >)
+          ? (JSON.parse(legacySynthMatch[2]) as unknown)
           : {},
-        provider,
-        model,
-      };
+      });
     } catch {
       throw applicationError("malformed_response");
     }
+    if (!draft) throw applicationError("malformed_response");
+    return {
+      kind: "synthesis",
+      brief: draft.brief as ProjectInterviewAnswers,
+      confidence: draft.confidence,
+      provider,
+      model,
+    };
   }
 
   const dossierSegment = extractTaggedJson(visibleText, "DOSSIER");
@@ -1296,214 +1417,236 @@ const responseLocaleValidator = v.optional(
   ),
 );
 
+const runInterviewTurnArgs = {
+  responseLocale: responseLocaleValidator,
+  messages: v.array(
+    v.object({
+      author: v.union(v.literal("writer"), v.literal("interviewer")),
+      text: v.string(),
+    }),
+  ),
+  mode: v.union(v.literal("first-run"), v.literal("refine")),
+  currentBrief: briefValidator,
+  streamId: v.optional(v.string()),
+  /**
+   * Manuscript text the writer has already drafted, surfaced by the
+   * dossier refinery's "Start over" flow. When present, the system
+   * prompt reads it as the starting context for the conversation so the
+   * AI asks questions that fit the work-in-progress instead of
+   * rediscovering it from scratch.
+   */
+  startingMaterial: v.optional(v.string()),
+};
+
 export const runInterviewTurn = action({
-  args: {
-    responseLocale: responseLocaleValidator,
-    messages: v.array(
-      v.object({
-        author: v.union(v.literal("writer"), v.literal("interviewer")),
-        text: v.string(),
-      }),
-    ),
-    mode: v.union(v.literal("first-run"), v.literal("refine")),
-    currentBrief: briefValidator,
-    streamId: v.optional(v.string()),
-    /**
-     * Manuscript text the writer has already drafted, surfaced by the
-     * dossier refinery's "Start over" flow. When present, the system
-     * prompt reads it as the starting context for the conversation so the
-     * AI asks questions that fit the work-in-progress instead of
-     * rediscovering it from scratch.
-     */
-    startingMaterial: v.optional(v.string()),
-  },
+  args: runInterviewTurnArgs,
   handler: async (ctx, args): Promise<InterviewTurnResult> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw applicationError("authentication_required");
     }
-    const provider = await pickProvider(ctx, "interview-turn", "balanced");
-    if (!provider) {
-      throw applicationError("provider_unavailable", {
-        recovery: "open_settings",
-      });
-    }
+    return runInterviewTurnCore(ctx, callerFromIdentity(identity), args);
+  },
+});
 
-    const transcript = (args.messages as InterviewMessage[])
-      .map((m) => `${m.author === "writer" ? "Writer" : "You"}: ${m.text}`)
-      .join("\n");
-    const temperature = provider.label === "openai" ? 0.6 : 0.4;
-    const maxTokens = NO_OUTPUT_CEILING;
-    const traceId = createAiTraceId("interview-turn");
-    const start = Date.now();
-    const input = JSON.stringify({
-      mode: args.mode,
-      transcript,
-      startingMaterial: args.startingMaterial,
+/** The interviewer's turn, for whoever `caller` is; see {@link runInterviewTurn}. */
+async function runInterviewTurnCore(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  args: ObjectType<typeof runInterviewTurnArgs>,
+): Promise<InterviewTurnResult> {
+  const provider = await pickProvider(
+    ctx,
+    caller,
+    "interview-turn",
+    "balanced",
+  );
+  if (!provider) {
+    throw applicationError("provider_unavailable", {
+      recovery: "open_settings",
     });
-    const usageCapture: HostedUsageCapture = {
-      ctx,
-      ownerId: identity.tokenIdentifier,
-      provider,
-      feature: "interview-turn",
-      traceId,
-    };
-    let providerSettled = false;
-    try {
-      const generation = {
-        model: provider.model,
-        system: withResponseLanguage(
-          interviewSystemPrompt(
-            args.mode,
-            (args.currentBrief ?? null) as ProjectBrief | null,
-            args.startingMaterial ?? null,
-          ),
-          args.responseLocale,
+  }
+
+  const transcript = (args.messages as InterviewMessage[])
+    .map((m) => `${m.author === "writer" ? "Writer" : "You"}: ${m.text}`)
+    .join("\n");
+  const temperature = provider.label === "openai" ? 0.6 : 0.4;
+  const maxTokens = NO_OUTPUT_CEILING;
+  const traceId = createAiTraceId("interview-turn");
+  const start = Date.now();
+  const input = JSON.stringify({
+    mode: args.mode,
+    transcript,
+    startingMaterial: args.startingMaterial,
+  });
+  const usageCapture: HostedUsageCapture = {
+    ctx,
+    ownerId: caller.tokenIdentifier,
+    provider,
+    feature: "interview-turn",
+    traceId,
+  };
+  let providerSettled = false;
+  try {
+    const generation = {
+      model: provider.model,
+      system: withResponseLanguage(
+        interviewSystemPrompt(
+          args.mode,
+          (args.currentBrief ?? null) as ProjectBrief | null,
+          args.startingMaterial ?? null,
         ),
-        prompt: transcript,
-        temperature,
-        maxOutputTokens: maxTokens,
-        experimental_telemetry: {
-          isEnabled: tracingEnabled,
-          functionId: "interview-turn",
-          metadata: {
-            feature: "interview-turn",
-            provider: provider.label,
-            model: provider.modelId,
-            mode: args.mode,
-          },
-        },
-      };
-      let text: string;
-      let usage;
-      if (args.streamId) {
-        let rawText = "";
-        let nativeReasoning = "";
-        const worthWriting = createPublishGate(STREAM_PUBLISH_INTERVAL_MS);
-        const streamed = streamText(generation);
-        for await (const part of streamed.fullStream) {
-          if (part.type === "text-delta") rawText += part.text;
-          if (part.type === "reasoning-delta") nativeReasoning += part.text;
-          if (
-            part.type === "text-delta" ||
-            part.type === "reasoning-delta" ||
-            part.type === "reasoning-end"
-          ) {
-            const snapshot = createInterviewStreamSnapshot(
-              rawText,
-              nativeReasoning,
-            );
-            if (!worthWriting({ ...snapshot, status: "running" })) continue;
-            await ctx.runMutation(writeInterviewStreamReference, {
-              userId: identity.subject || identity.tokenIdentifier,
-              streamId: args.streamId,
-              ...snapshot,
-              status: "running",
-            });
-          }
-        }
-        text = await streamed.text;
-        usage = normalizeAiUsage(await streamed.totalUsage);
-        providerSettled = true;
-        await recordHostedAttempt(usageCapture, 1, "completed", usage);
-        const finalSnapshot = createInterviewStreamSnapshot(
-          text,
-          nativeReasoning,
-        );
-        await ctx.runMutation(writeInterviewStreamReference, {
-          userId: identity.subject || identity.tokenIdentifier,
-          streamId: args.streamId,
-          ...finalSnapshot,
-          status: "complete",
-        });
-      } else {
-        const result = await trackedGenerateText(usageCapture, 1, generation);
-        providerSettled = true;
-        text = result.text;
-        usage = normalizeAiUsage(result.totalUsage);
-      }
-      await captureServerAiGeneration({
-        feature: "interview-turn",
-        provider: provider.label,
-        model: provider.modelId,
-        generationInput: input,
-        output: text,
-        latencyMs: Date.now() - start,
-        temperature,
-        maxTokens,
-        spanName: "interview-turn",
-        usage,
-        observability: {
-          distinctId: identity.tokenIdentifier,
-          traceId,
-        },
-        evalSignals: {
-          twyne_interview_mode: args.mode,
-          twyne_any_protocol_markers: ["DOSSIER:", "PROBE:", "SYNTHESIZE:"],
-        },
-      });
-      await flushArize();
-      return parseInterviewTurnResult(
-        text,
-        provider.label,
-        provider.modelId,
-        args.messages as InterviewMessage[],
-        traceId,
-      );
-    } catch (error) {
-      if (!providerSettled) {
-        await recordHostedAttempt(usageCapture, 1, "failed").catch(
-          () => undefined,
-        );
-      }
-      if (error instanceof Error && error.name === "ConvexError") {
-        await flushArize();
-        throw error;
-      }
-      await captureServerAiGeneration({
-        feature: "interview-turn",
-        provider: provider.label,
-        model: provider.modelId,
-        generationInput: input,
-        latencyMs: Date.now() - start,
-        temperature,
-        maxTokens,
-        spanName: "interview-turn",
-        observability: {
-          distinctId: identity.tokenIdentifier,
-          traceId,
-        },
-        error,
-      });
-      if (args.streamId) {
-        await ctx
-          .runMutation(writeInterviewStreamReference, {
-            userId: identity.subject || identity.tokenIdentifier,
-            streamId: args.streamId,
-            text: "",
-            reasoning: "",
-            phase: "answer",
-            status: "error",
-          })
-          .catch(() => undefined);
-      }
-      if (error instanceof Error && error.name === "ConvexError") {
-        throw error;
-      }
-      throw reportedApplicationError(
-        "agents.interview-turn",
-        "provider_unavailable",
-        error,
-        { recovery: "retry" },
-        {
+        args.responseLocale,
+      ),
+      prompt: transcript,
+      temperature,
+      maxOutputTokens: maxTokens,
+      experimental_telemetry: {
+        isEnabled: tracingEnabled,
+        functionId: "interview-turn",
+        metadata: {
+          feature: "interview-turn",
           provider: provider.label,
           model: provider.modelId,
           mode: args.mode,
         },
+      },
+    };
+    let text: string;
+    let usage;
+    if (args.streamId) {
+      let rawText = "";
+      let nativeReasoning = "";
+      const worthWriting = createPublishGate(STREAM_PUBLISH_INTERVAL_MS);
+      const streamed = streamText(generation);
+      for await (const part of streamed.fullStream) {
+        if (part.type === "text-delta") rawText += part.text;
+        if (part.type === "reasoning-delta") nativeReasoning += part.text;
+        if (
+          part.type === "text-delta" ||
+          part.type === "reasoning-delta" ||
+          part.type === "reasoning-end"
+        ) {
+          const snapshot = createInterviewStreamSnapshot(
+            rawText,
+            nativeReasoning,
+          );
+          if (!worthWriting({ ...snapshot, status: "running" })) continue;
+          await ctx.runMutation(writeInterviewStreamReference, {
+            userId: caller.subject,
+            streamId: args.streamId,
+            ...snapshot,
+            status: "running",
+          });
+        }
+      }
+      text = await streamed.text;
+      usage = normalizeAiUsage(await streamed.totalUsage);
+      providerSettled = true;
+      await recordHostedAttempt(usageCapture, 1, "completed", usage);
+      const finalSnapshot = createInterviewStreamSnapshot(
+        text,
+        nativeReasoning,
+      );
+      await ctx.runMutation(writeInterviewStreamReference, {
+        userId: caller.subject,
+        streamId: args.streamId,
+        ...finalSnapshot,
+        status: "complete",
+      });
+    } else {
+      const result = await trackedGenerateText(usageCapture, 1, generation);
+      providerSettled = true;
+      text = result.text;
+      usage = normalizeAiUsage(result.totalUsage);
+    }
+    await captureServerAiGeneration({
+      feature: "interview-turn",
+      provider: provider.label,
+      model: provider.modelId,
+      generationInput: input,
+      output: text,
+      latencyMs: Date.now() - start,
+      temperature,
+      maxTokens,
+      spanName: "interview-turn",
+      usage,
+      observability: {
+        distinctId: caller.tokenIdentifier,
+        traceId,
+      },
+      evalSignals: {
+        twyne_interview_mode: args.mode,
+        twyne_any_protocol_markers: ["DOSSIER:", "PROBE:", "SYNTHESIZE:"],
+      },
+    });
+    await flushArize();
+    return parseInterviewTurnResult(
+      text,
+      provider.label,
+      provider.modelId,
+      args.messages as InterviewMessage[],
+      traceId,
+    );
+  } catch (error) {
+    if (!providerSettled) {
+      await recordHostedAttempt(usageCapture, 1, "failed").catch(
+        () => undefined,
       );
     }
-  },
-});
+    if (error instanceof Error && error.name === "ConvexError") {
+      await flushArize();
+      throw error;
+    }
+    await captureServerAiGeneration({
+      feature: "interview-turn",
+      provider: provider.label,
+      model: provider.modelId,
+      generationInput: input,
+      latencyMs: Date.now() - start,
+      temperature,
+      maxTokens,
+      spanName: "interview-turn",
+      observability: {
+        distinctId: caller.tokenIdentifier,
+        traceId,
+      },
+      error,
+    });
+    if (args.streamId) {
+      await ctx
+        .runMutation(writeInterviewStreamReference, {
+          userId: caller.subject,
+          streamId: args.streamId,
+          text: "",
+          reasoning: "",
+          phase: "answer",
+          status: "error",
+        })
+        .catch(() => undefined);
+    }
+    if (error instanceof Error && error.name === "ConvexError") {
+      throw error;
+    }
+    throw reportedApplicationError(
+      "agents.interview-turn",
+      "provider_unavailable",
+      error,
+      { recovery: "retry" },
+      {
+        provider: provider.label,
+        model: provider.modelId,
+        mode: args.mode,
+      },
+    );
+  }
+}
+
+const runDossierCheckArgs = {
+  responseLocale: responseLocaleValidator,
+  brief: projectBriefValidator,
+  draftText: v.string(),
+};
 
 /**
  * Compare the live manuscript with the filed dossier on Twyne's hosted
@@ -1511,145 +1654,186 @@ export const runInterviewTurn = action({
  * this action is the signed-in fallback promised by onboarding.
  */
 export const runDossierCheck = action({
-  args: {
-    responseLocale: responseLocaleValidator,
-    brief: projectBriefValidator,
-    draftText: v.string(),
-  },
+  args: runDossierCheckArgs,
   handler: async (ctx, args): Promise<DossierCheckResult> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw applicationError("authentication_required");
+    return runDossierCheckCore(ctx, callerFromIdentity(identity), args);
+  },
+});
 
-    await consumeRateLimit(ctx, {
-      action: "agent:dossier-check",
-      identifier: identity.tokenIdentifier,
-      ...RATE_LIMITS.agentFeedback,
+/** The dossier check for an explicit caller; see {@link runDossierCheck}. */
+async function runDossierCheckCore(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  args: ObjectType<typeof runDossierCheckArgs>,
+): Promise<DossierCheckResult> {
+  await consumeRateLimit(ctx, {
+    action: "agent:dossier-check",
+    identifier: caller.tokenIdentifier,
+    ...RATE_LIMITS.agentFeedback,
+  });
+
+  if (!args.draftText.trim()) {
+    throw applicationError("validation_failed", {
+      message: "Write something before asking the room to read the draft.",
     });
+  }
 
-    if (!args.draftText.trim()) {
-      throw applicationError("validation_failed", {
-        message: "Write something before asking the room to read the draft.",
-      });
-    }
-
-    const provider = await pickProvider(ctx, "dossier-check", "balanced");
-    if (!provider) {
-      throw applicationError("provider_unavailable", {
-        recovery: "open_settings",
-      });
-    }
-
-    const system = withResponseLanguage(
-      renderNamed("dossier-check-system"),
-      args.responseLocale,
-    );
-    const user = renderNamed("dossier-check-user", {
-      dossier: JSON.stringify(args.brief.answers),
-      draft: args.draftText,
+  const provider = await pickProvider(ctx, caller, "dossier-check", "balanced");
+  if (!provider) {
+    throw applicationError("provider_unavailable", {
+      recovery: "open_settings",
     });
-    const temperature = 0.2;
-    const maxTokens = NO_OUTPUT_CEILING;
-    const start = Date.now();
-    const usageCapture: HostedUsageCapture = {
-      ctx,
-      ownerId: identity.tokenIdentifier,
-      provider,
-      feature: "dossier-check",
-      traceId: createAiTraceId("dossier-check"),
-    };
+  }
 
-    try {
-      const { text, totalUsage } = await trackedGenerateText(usageCapture, 1, {
-        model: provider.model,
-        system,
-        prompt: user,
-        temperature,
-        maxOutputTokens: maxTokens,
-        experimental_telemetry: {
-          isEnabled: tracingEnabled,
-          functionId: "dossier_check",
-          metadata: {
-            feature: "dossier-check",
-            provider: provider.label,
-            model: provider.modelId,
-          },
-        },
-      });
-      const visibleText = stripReasoningTags(text);
-      const parsed = parseDossierCheckResult(
-        visibleText,
-        provider.label,
-        args.brief.answers,
-      );
+  const system = withResponseLanguage(
+    renderNamed("dossier-check-system"),
+    args.responseLocale,
+  );
+  const user = renderNamed("dossier-check-user", {
+    dossier: JSON.stringify(args.brief.answers),
+    draft: args.draftText,
+  });
+  const temperature = 0.2;
+  const maxTokens = NO_OUTPUT_CEILING;
+  const start = Date.now();
+  const usageCapture: HostedUsageCapture = {
+    ctx,
+    ownerId: caller.tokenIdentifier,
+    provider,
+    feature: "dossier-check",
+    traceId: createAiTraceId("dossier-check"),
+  };
 
-      await captureServerAiGeneration({
-        feature: "dossier-check",
-        provider: provider.label,
-        model: provider.modelId,
-        generationInput: JSON.stringify({
-          brief: args.brief.answers,
-          draftText: args.draftText,
-        }),
-        output: visibleText,
-        latencyMs: Date.now() - start,
-        temperature,
-        maxTokens,
-        spanName: "dossier_check",
-        usage: normalizeAiUsage(totalUsage),
-        observability: {
-          distinctId: identity.tokenIdentifier,
-        },
-        evalSignals: {
-          twyne_expected_format: "json_dossier_observations",
-        },
-      });
-      await flushArize();
-
-      if (!parsed) {
-        throw applicationError("malformed_response", {
-          recovery: "retry",
-        });
-      }
-      return parsed;
-    } catch (error) {
-      // Parsing failures are deliberate, structured application errors. They
-      // were already captured with the provider output above, so preserve the
-      // malformed-response diagnosis instead of recording it a second time
-      // and relabeling it as provider_unavailable.
-      if (error instanceof Error && error.name === "ConvexError") {
-        throw error;
-      }
-      await captureServerAiGeneration({
-        feature: "dossier-check",
-        provider: provider.label,
-        model: provider.modelId,
-        generationInput: JSON.stringify({
-          brief: args.brief.answers,
-          draftText: args.draftText,
-        }),
-        latencyMs: Date.now() - start,
-        temperature,
-        maxTokens,
-        spanName: "dossier_check",
-        observability: {
-          distinctId: identity.tokenIdentifier,
-        },
-        error,
-      });
-      await flushArize();
-      throw reportedApplicationError(
-        "agents.dossier-check",
-        "provider_unavailable",
-        error,
-        { recovery: "retry" },
-        {
+  try {
+    const { text, totalUsage } = await trackedGenerateText(usageCapture, 1, {
+      model: provider.model,
+      system,
+      prompt: user,
+      temperature,
+      maxOutputTokens: maxTokens,
+      experimental_telemetry: {
+        isEnabled: tracingEnabled,
+        functionId: "dossier_check",
+        metadata: {
+          feature: "dossier-check",
           provider: provider.label,
           model: provider.modelId,
         },
-      );
+      },
+    });
+    const visibleText = stripReasoningTags(text);
+    const parsed = parseDossierCheckResult(
+      visibleText,
+      provider.label,
+      args.brief.answers,
+    );
+
+    await captureServerAiGeneration({
+      feature: "dossier-check",
+      provider: provider.label,
+      model: provider.modelId,
+      generationInput: JSON.stringify({
+        brief: args.brief.answers,
+        draftText: args.draftText,
+      }),
+      output: visibleText,
+      latencyMs: Date.now() - start,
+      temperature,
+      maxTokens,
+      spanName: "dossier_check",
+      usage: normalizeAiUsage(totalUsage),
+      observability: {
+        distinctId: caller.tokenIdentifier,
+      },
+      evalSignals: {
+        twyne_expected_format: "json_dossier_observations",
+      },
+    });
+    await flushArize();
+
+    if (!parsed) {
+      throw applicationError("malformed_response", {
+        recovery: "retry",
+      });
     }
-  },
-});
+    return parsed;
+  } catch (error) {
+    // Parsing failures are deliberate, structured application errors. They
+    // were already captured with the provider output above, so preserve the
+    // malformed-response diagnosis instead of recording it a second time
+    // and relabeling it as provider_unavailable.
+    if (error instanceof Error && error.name === "ConvexError") {
+      throw error;
+    }
+    await captureServerAiGeneration({
+      feature: "dossier-check",
+      provider: provider.label,
+      model: provider.modelId,
+      generationInput: JSON.stringify({
+        brief: args.brief.answers,
+        draftText: args.draftText,
+      }),
+      latencyMs: Date.now() - start,
+      temperature,
+      maxTokens,
+      spanName: "dossier_check",
+      observability: {
+        distinctId: caller.tokenIdentifier,
+      },
+      error,
+    });
+    await flushArize();
+    throw reportedApplicationError(
+      "agents.dossier-check",
+      "provider_unavailable",
+      error,
+      { recovery: "retry" },
+      {
+        provider: provider.label,
+        model: provider.modelId,
+      },
+    );
+  }
+}
+
+const runPersonaArgs = {
+  responseLocale: responseLocaleValidator,
+  persona: personaValidator,
+  brief: briefValidator,
+  draftText: v.string(),
+  writerProfile: writerProfileValidator,
+  anchor: v.optional(v.string()),
+  priorMessages: v.optional(
+    v.array(
+      v.object({
+        author: v.union(v.literal("user"), v.literal("persona")),
+        text: v.string(),
+      }),
+    ),
+  ),
+  userMessage: v.optional(v.string()),
+  instruction: v.optional(
+    v.union(
+      v.literal("feedback"),
+      v.literal("elaborate"),
+      v.literal("riff"),
+      v.literal("rewrite-suggestion"),
+    ),
+  ),
+  observability: v.optional(
+    v.object({
+      anonymousId: v.optional(v.string()),
+      sessionId: v.optional(v.string()),
+      folioId: v.optional(v.string()),
+      editorialActionId: v.optional(v.string()),
+    }),
+  ),
+  // Present when the panel is watching. The note then publishes itself into
+  // `personaNoteStreams` as it is written instead of landing in one jump.
+  streamId: v.optional(v.string()),
+};
 
 /**
  * Run a single persona agent. Returns the agent's note and metadata.
@@ -1661,75 +1845,47 @@ export const runDossierCheck = action({
  * in free accounts use the real configured provider when one exists.
  */
 export const runPersona = action({
-  args: {
-    responseLocale: responseLocaleValidator,
-    persona: personaValidator,
-    brief: briefValidator,
-    draftText: v.string(),
-    writerProfile: writerProfileValidator,
-    anchor: v.optional(v.string()),
-    priorMessages: v.optional(
-      v.array(
-        v.object({
-          author: v.union(v.literal("user"), v.literal("persona")),
-          text: v.string(),
-        }),
-      ),
-    ),
-    userMessage: v.optional(v.string()),
-    instruction: v.optional(
-      v.union(
-        v.literal("feedback"),
-        v.literal("elaborate"),
-        v.literal("riff"),
-        v.literal("rewrite-suggestion"),
-      ),
-    ),
-    observability: v.optional(
-      v.object({
-        anonymousId: v.optional(v.string()),
-        sessionId: v.optional(v.string()),
-        folioId: v.optional(v.string()),
-        editorialActionId: v.optional(v.string()),
-      }),
-    ),
-    // Present when the panel is watching. The note then publishes itself into
-    // `personaNoteStreams` as it is written instead of landing in one jump.
-    streamId: v.optional(v.string()),
-  },
+  args: runPersonaArgs,
   handler: async (ctx, args): Promise<AgentResponse> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw applicationError("authentication_required");
-
-    // Rate limit on the host-provider path only — the local generator is
-    // free, but we gate all calls so a noisy client can't bypass with a
-    // draft that's just above MIN_EDITOR_WORDS.
-    await consumeRateLimit(ctx, {
-      action: "agent:feedback",
-      identifier: identity.tokenIdentifier,
-      ...RATE_LIMITS.agentFeedback,
-    });
-
-    const req: AgentRequest = {
-      responseLocale: args.responseLocale,
-      persona: args.persona as AgentPersona,
-      brief: (args.brief ?? null) as ProjectBrief | null,
-      draftText: args.draftText,
-      writerProfile: args.writerProfile,
-      anchor: args.anchor,
-      priorMessages: args.priorMessages as AgentRequest["priorMessages"],
-      userMessage: args.userMessage,
-      instruction: args.instruction,
-    };
-    if (countWords(req.draftText) < MIN_EDITOR_WORDS) {
-      throw applicationError("validation_failed", {
-        message:
-          "Write a little more before asking an editor to read the draft.",
-      });
-    }
-    return runHostedAgent(ctx, req, args.observability, args.streamId);
+    return runPersonaCore(ctx, callerFromIdentity(identity), args);
   },
 });
+
+/** One editor's note for an explicit caller; see {@link runPersona}. */
+async function runPersonaCore(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  args: ObjectType<typeof runPersonaArgs>,
+): Promise<AgentResponse> {
+  // Rate limit on the host-provider path only — the local generator is
+  // free, but we gate all calls so a noisy client can't bypass with a
+  // draft that's just above MIN_EDITOR_WORDS.
+  await consumeRateLimit(ctx, {
+    action: "agent:feedback",
+    identifier: caller.tokenIdentifier,
+    ...RATE_LIMITS.agentFeedback,
+  });
+
+  const req: AgentRequest = {
+    responseLocale: args.responseLocale,
+    persona: args.persona as AgentPersona,
+    brief: (args.brief ?? null) as ProjectBrief | null,
+    draftText: args.draftText,
+    writerProfile: args.writerProfile,
+    anchor: args.anchor,
+    priorMessages: args.priorMessages as AgentRequest["priorMessages"],
+    userMessage: args.userMessage,
+    instruction: args.instruction,
+  };
+  if (countWords(req.draftText) < MIN_EDITOR_WORDS) {
+    throw applicationError("validation_failed", {
+      message: "Write a little more before asking an editor to read the draft.",
+    });
+  }
+  return runHostedAgent(ctx, caller, req, args.observability, args.streamId);
+}
 
 /* ── Suggested rewrites (editors propose edits) ─────────────────────── */
 
@@ -1767,6 +1923,16 @@ function parseRewriteOutput(
   );
 }
 
+const suggestRewriteArgs = {
+  responseLocale: responseLocaleValidator,
+  persona: personaValidator,
+  brief: briefValidator,
+  draftText: v.string(),
+  writerProfile: writerProfileValidator,
+  original: v.string(),
+  level: v.union(v.literal("sentence"), v.literal("paragraph")),
+};
+
 /**
  * Propose a rewrite of a specific passage, in the persona's voice. Returns a
  * structured replacement + rationale so the editor can render an inline
@@ -1774,147 +1940,174 @@ function parseRewriteOutput(
  * this once per target span under the room's level/budget settings.
  */
 export const suggestRewrite = action({
-  args: {
-    responseLocale: responseLocaleValidator,
-    persona: personaValidator,
-    brief: briefValidator,
-    draftText: v.string(),
-    writerProfile: writerProfileValidator,
-    original: v.string(),
-    level: v.union(v.literal("sentence"), v.literal("paragraph")),
-  },
+  args: suggestRewriteArgs,
   handler: async (ctx, args): Promise<RewriteResult> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw applicationError("authentication_required");
+    return suggestRewriteCore(ctx, callerFromIdentity(identity), args);
+  },
+});
 
-    // Rate limit: the markup pass fans this out once per target span, so
-    // we allow a higher budget than the single-shot feedback path.
-    await consumeRateLimit(ctx, {
-      action: "agent:rewrite",
-      identifier: identity.tokenIdentifier,
-      ...RATE_LIMITS.agentRewrite,
+/** A proposed rewrite for an explicit caller; see {@link suggestRewrite}. */
+async function suggestRewriteCore(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  args: ObjectType<typeof suggestRewriteArgs>,
+): Promise<RewriteResult> {
+  // Rate limit: the markup pass fans this out once per target span, so
+  // we allow a higher budget than the single-shot feedback path.
+  await consumeRateLimit(ctx, {
+    action: "agent:rewrite",
+    identifier: caller.tokenIdentifier,
+    ...RATE_LIMITS.agentRewrite,
+  });
+
+  const persona = args.persona as AgentPersona;
+  if (countWords(args.draftText) < MIN_MARKUP_WORDS) {
+    throw applicationError("validation_failed", {
+      message: "Write a little more before asking the room to propose an edit.",
     });
+  }
+  const provider = await pickProvider(
+    ctx,
+    caller,
+    "persona-rewrite",
+    "balanced",
+  );
+  if (!provider) {
+    throw applicationError("provider_unavailable", {
+      recovery: "open_settings",
+    });
+  }
 
-    const persona = args.persona as AgentPersona;
-    if (countWords(args.draftText) < MIN_MARKUP_WORDS) {
-      throw applicationError("validation_failed", {
-        message:
-          "Write a little more before asking the room to propose an edit.",
-      });
-    }
-    const provider = await pickProvider(ctx, "persona-rewrite", "balanced");
-    if (!provider) {
-      throw applicationError("provider_unavailable", {
-        recovery: "open_settings",
-      });
-    }
+  const system = withResponseLanguage(
+    buildSystemPrompt(persona, { tools: false }),
+    args.responseLocale,
+  );
+  const sizeRule =
+    args.level === "sentence"
+      ? "Keep the replacement to a single sentence."
+      : "The replacement may be up to one paragraph, but no longer than the original.";
+  const user =
+    buildUserPrompt({
+      persona,
+      brief: (args.brief ?? null) as ProjectBrief | null,
+      draftText: args.draftText,
+      writerProfile: args.writerProfile,
+      instruction: "rewrite-suggestion",
+    }) +
+    "\n\n" +
+    renderNamed("blocks/rewrite-task", { sizeRule, original: args.original });
 
-    const system = withResponseLanguage(
-      buildSystemPrompt(persona),
-      args.responseLocale,
+  try {
+    const start = Date.now();
+    const temperature = persona.temperature ?? 0.4;
+    const maxTokens = NO_OUTPUT_CEILING;
+    const { text } = await trackedGenerateText(
+      {
+        ctx,
+        ownerId: caller.tokenIdentifier,
+        provider,
+        feature: "persona-rewrite",
+        traceId: createAiTraceId("persona-rewrite"),
+      },
+      1,
+      {
+        model: provider.model,
+        system,
+        prompt: user,
+        temperature,
+        maxOutputTokens: maxTokens,
+        experimental_telemetry: {
+          isEnabled: tracingEnabled,
+          functionId: "persona_rewrite",
+          metadata: {
+            feature: "persona-rewrite",
+            persona: persona.id,
+            provider: provider.label,
+            model: provider.modelId,
+            level: args.level,
+          },
+        },
+      },
     );
-    const sizeRule =
-      args.level === "sentence"
-        ? "Keep the replacement to a single sentence."
-        : "The replacement may be up to one paragraph, but no longer than the original.";
-    const user =
-      buildUserPrompt({
+    const visibleText = stripReasoningTags(text);
+    await captureServerAiGeneration({
+      feature: "persona-rewrite",
+      provider: provider.label,
+      model: provider.modelId,
+      req: {
         persona,
         brief: (args.brief ?? null) as ProjectBrief | null,
         draftText: args.draftText,
         writerProfile: args.writerProfile,
         instruction: "rewrite-suggestion",
-      }) +
-      `\n\nREWRITE TASK: Rewrite the PASSAGE below in your voice, preserving its meaning but doing the work better. ${sizeRule}\n` +
-      `Respond as JSON only, no prose: {"replacement": "<rewritten passage as plain text>", "rationale": "<one sentence, in your voice>"}\n\n` +
-      `PASSAGE:\n"${args.original}"`;
-
-    try {
-      const start = Date.now();
-      const temperature = persona.temperature ?? 0.4;
-      const maxTokens = NO_OUTPUT_CEILING;
-      const { text } = await trackedGenerateText(
-        {
-          ctx,
-          ownerId: identity.tokenIdentifier,
-          provider,
-          feature: "persona-rewrite",
-          traceId: createAiTraceId("persona-rewrite"),
-        },
-        1,
-        {
-          model: provider.model,
-          system,
-          prompt: user,
-          temperature,
-          maxOutputTokens: maxTokens,
-          experimental_telemetry: {
-            isEnabled: tracingEnabled,
-            functionId: "persona_rewrite",
-            metadata: {
-              feature: "persona-rewrite",
-              persona: persona.id,
-              provider: provider.label,
-              model: provider.modelId,
-              level: args.level,
-            },
-          },
-        },
-      );
-      const visibleText = stripReasoningTags(text);
-      await captureServerAiGeneration({
-        feature: "persona-rewrite",
-        provider: provider.label,
-        model: provider.modelId,
-        req: {
-          persona,
-          brief: (args.brief ?? null) as ProjectBrief | null,
-          draftText: args.draftText,
-          writerProfile: args.writerProfile,
-          instruction: "rewrite-suggestion",
-        },
-        output: visibleText,
-        latencyMs: Date.now() - start,
-        temperature,
-        maxTokens,
-        spanName: "persona_rewrite",
-        evalSignals: {
-          twyne_expected_format: "json_rewrite",
-          twyne_rewrite_level: args.level,
-        },
-      });
-      const parsed = parseRewriteOutput(visibleText);
-      if (parsed) {
-        await flushArize();
-        return { ...parsed, provider: provider.label };
-      }
-      throw applicationError("malformed_response");
-    } catch (err) {
-      if (err instanceof Error && err.name === "ConvexError") throw err;
-      await captureServerAiGeneration({
-        feature: "persona-rewrite",
-        provider: provider.label,
-        model: provider.modelId,
-        req: {
-          persona,
-          brief: (args.brief ?? null) as ProjectBrief | null,
-          draftText: args.draftText,
-          instruction: "rewrite-suggestion",
-        },
-        latencyMs: 0,
-        spanName: "persona_rewrite",
-        error: err,
-      });
-      throw reportedApplicationError(
-        "agents.persona-rewrite",
-        "provider_unavailable",
-        err,
-        { recovery: "retry" },
-        { provider: provider.label, model: provider.modelId },
-      );
+      },
+      output: visibleText,
+      latencyMs: Date.now() - start,
+      temperature,
+      maxTokens,
+      spanName: "persona_rewrite",
+      evalSignals: {
+        twyne_expected_format: "json_rewrite",
+        twyne_rewrite_level: args.level,
+      },
+    });
+    const parsed = parseRewriteOutput(visibleText);
+    if (parsed) {
+      await flushArize();
+      return { ...parsed, provider: provider.label };
     }
-  },
-});
+    throw applicationError("malformed_response");
+  } catch (err) {
+    if (err instanceof Error && err.name === "ConvexError") throw err;
+    await captureServerAiGeneration({
+      feature: "persona-rewrite",
+      provider: provider.label,
+      model: provider.modelId,
+      req: {
+        persona,
+        brief: (args.brief ?? null) as ProjectBrief | null,
+        draftText: args.draftText,
+        instruction: "rewrite-suggestion",
+      },
+      latencyMs: 0,
+      spanName: "persona_rewrite",
+      error: err,
+    });
+    throw reportedApplicationError(
+      "agents.persona-rewrite",
+      "provider_unavailable",
+      err,
+      { recovery: "retry" },
+      { provider: provider.label, model: provider.modelId },
+    );
+  }
+}
+
+const conveneRoomArgs = {
+  responseLocale: responseLocaleValidator,
+  personas: v.array(personaValidator),
+  brief: briefValidator,
+  draftText: v.string(),
+  writerProfile: writerProfileValidator,
+  anchors: v.optional(v.record(v.string(), v.string())),
+  /** Passages written since the room last read — the background pass. */
+  newMaterial: v.optional(v.string()),
+  /** Prose digest of how the draft has been moving. */
+  trajectory: v.optional(v.string()),
+  observability: v.optional(
+    v.object({
+      anonymousId: v.optional(v.string()),
+      sessionId: v.optional(v.string()),
+      folioId: v.optional(v.string()),
+      editorialActionId: v.optional(v.string()),
+    }),
+  ),
+  // Present when the panel is watching. Each editor then fills their own
+  // card as they write, rather than five notes appearing at once at the end.
+  streamId: v.optional(v.string()),
+};
 
 /**
  * Run the full editorial board in parallel — convene the room. Each
@@ -1924,110 +2117,112 @@ export const suggestRewrite = action({
  * any persona whose LLM call fails.
  */
 export const conveneRoom = action({
-  args: {
-    responseLocale: responseLocaleValidator,
-    personas: v.array(personaValidator),
-    brief: briefValidator,
-    draftText: v.string(),
-    writerProfile: writerProfileValidator,
-    anchors: v.optional(v.record(v.string(), v.string())),
-    /** Passages written since the room last read — the background pass. */
-    newMaterial: v.optional(v.string()),
-    /** Prose digest of how the draft has been moving. */
-    trajectory: v.optional(v.string()),
-    observability: v.optional(
-      v.object({
-        anonymousId: v.optional(v.string()),
-        sessionId: v.optional(v.string()),
-        folioId: v.optional(v.string()),
-        editorialActionId: v.optional(v.string()),
-      }),
-    ),
-    // Present when the panel is watching. Each editor then fills their own
-    // card as they write, rather than five notes appearing at once at the end.
-    streamId: v.optional(v.string()),
-  },
+  args: conveneRoomArgs,
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw applicationError("authentication_required");
-    // Rate limit: convene fans out to one LLM call per persona, making it
-    // one of the most expensive endpoints.
-    await consumeRateLimit(ctx, {
-      action: "agent:room",
-      identifier: identity.tokenIdentifier,
-      ...RATE_LIMITS.agentRoom,
-    });
-    const brief = (args.brief ?? null) as ProjectBrief | null;
-    const short = countWords(args.draftText) < MIN_EDITOR_WORDS;
-    const provider = short
-      ? null
-      : await pickProvider(ctx, "convene-room", "balanced");
-    if (short) {
-      throw applicationError("validation_failed", {
-        message: "Write a little more before convening the room.",
-      });
-    }
-    if (!provider) {
-      throw applicationError("provider_unavailable", {
-        recovery: "open_settings",
-      });
-    }
-
-    const tasks = args.personas.map(async (pRaw) => {
-      const persona = pRaw as AgentPersona;
-      const anchor = args.anchors?.[persona.id];
-      const req: AgentRequest = {
-        responseLocale: args.responseLocale,
-        persona,
-        brief,
-        draftText: args.draftText,
-        writerProfile: args.writerProfile,
-        anchor,
-        instruction: "feedback",
-        newMaterial: args.newMaterial,
-        trajectory: args.trajectory,
-      };
-      try {
-        // A background pass reads only the new material, so it needs far
-        // fewer tokens than a full convene — and should cost less too.
-        return await runLlm(
-          ctx,
-          identity.tokenIdentifier,
-          provider,
-          req,
-          "persona-feedback",
-          NO_OUTPUT_CEILING,
-          { ...args.observability, distinctId: identity.tokenIdentifier },
-          args.streamId
-            ? {
-                ctx,
-                userId: identity.subject || identity.tokenIdentifier,
-                streamId: args.streamId,
-                personaId: persona.id,
-              }
-            : undefined,
-        );
-      } catch (err) {
-        throw reportedApplicationError(
-          "agents.convene-room",
-          "provider_unavailable",
-          err,
-          { recovery: "retry" },
-          {
-            provider: provider.label,
-            model: provider.modelId,
-          },
-        );
-      }
-    });
-
-    const results = await Promise.all(tasks);
-    return results.map((r, i) => ({
-      personaId: args.personas[i].id,
-      ...r,
-    }));
+    return conveneRoomCore(ctx, callerFromIdentity(identity), args);
   },
 });
+
+/** The convened room for an explicit caller; see {@link conveneRoom}. */
+async function conveneRoomCore(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  args: ObjectType<typeof conveneRoomArgs>,
+) {
+  // Rate limit: convene fans out to one LLM call per persona, making it
+  // one of the most expensive endpoints.
+  await consumeRateLimit(ctx, {
+    action: "agent:room",
+    identifier: caller.tokenIdentifier,
+    ...RATE_LIMITS.agentRoom,
+  });
+  const brief = (args.brief ?? null) as ProjectBrief | null;
+  const short = countWords(args.draftText) < MIN_EDITOR_WORDS;
+  const provider = short
+    ? null
+    : await pickProvider(ctx, caller, "convene-room", "balanced");
+  if (short) {
+    throw applicationError("validation_failed", {
+      message: "Write a little more before convening the room.",
+    });
+  }
+  if (!provider) {
+    throw applicationError("provider_unavailable", {
+      recovery: "open_settings",
+    });
+  }
+
+  const tasks = args.personas.map(async (pRaw) => {
+    const persona = pRaw as AgentPersona;
+    const anchor = args.anchors?.[persona.id];
+    const req: AgentRequest = {
+      responseLocale: args.responseLocale,
+      persona,
+      brief,
+      draftText: args.draftText,
+      writerProfile: args.writerProfile,
+      anchor,
+      instruction: "feedback",
+      newMaterial: args.newMaterial,
+      trajectory: args.trajectory,
+    };
+    try {
+      // A background pass reads only the new material, so it needs far
+      // fewer tokens than a full convene — and should cost less too.
+      return await runLlm(
+        ctx,
+        caller,
+        provider,
+        req,
+        "persona-feedback",
+        NO_OUTPUT_CEILING,
+        { ...args.observability, distinctId: caller.tokenIdentifier },
+        args.streamId
+          ? {
+              ctx,
+              userId: caller.subject,
+              streamId: args.streamId,
+              personaId: persona.id,
+            }
+          : undefined,
+      );
+    } catch (err) {
+      if (err instanceof EditorialNoteWithheld) return err;
+      throw reportedApplicationError(
+        "agents.convene-room",
+        "provider_unavailable",
+        err,
+        { recovery: "retry" },
+        {
+          provider: provider.label,
+          model: provider.modelId,
+        },
+      );
+    }
+  });
+
+  const results = await Promise.all(tasks);
+  const released = results.flatMap((r, i) =>
+    r instanceof EditorialNoteWithheld
+      ? []
+      : [{ personaId: args.personas[i].id, ...r }],
+  );
+  // Editors whose notes the review withheld are simply absent; the caller
+  // learns who from the ids. Only a room with nothing to show is an error.
+  if (released.length === 0) {
+    const first = results.find((r) => r instanceof EditorialNoteWithheld);
+    throw reportedApplicationError(
+      "agents.convene-room",
+      "provider_unavailable",
+      first,
+      { recovery: "retry" },
+      { provider: provider.label, model: provider.modelId },
+    );
+  }
+  return released;
+}
 
 /**
  * The expanded cast analysis: each editor writes a full-page memo on the whole
@@ -2053,15 +2248,16 @@ export const analyzeRoom = action({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw applicationError("authentication_required");
+    const caller = callerFromIdentity(identity);
     await consumeRateLimit(ctx, {
       action: "agent:room",
-      identifier: identity.tokenIdentifier,
+      identifier: caller.tokenIdentifier,
       ...RATE_LIMITS.agentRoom,
     });
     const brief = (args.brief ?? null) as ProjectBrief | null;
     const longEnough = countWords(args.draftText) >= MIN_EDITOR_WORDS;
     const provider = longEnough
-      ? await pickProvider(ctx, "analyze-room", "reasoning")
+      ? await pickProvider(ctx, caller, "analyze-room", "reasoning")
       : null;
     if (!longEnough) {
       throw applicationError("validation_failed", {
@@ -2088,14 +2284,14 @@ export const analyzeRoom = action({
         try {
           const r = await runLlm(
             ctx,
-            identity.tokenIdentifier,
+            caller,
             provider,
             req,
             "persona-analysis",
             1600,
             {
               ...args.observability,
-              distinctId: identity.tokenIdentifier,
+              distinctId: caller.tokenIdentifier,
             },
           );
           return { personaId: persona.id, ...r };
@@ -2124,7 +2320,7 @@ export const analyzeRoom = action({
       synthesis = await runPlainLlm(
         {
           ctx,
-          ownerId: identity.tokenIdentifier,
+          ownerId: caller.tokenIdentifier,
           provider,
           feature: "room-synthesis",
           traceId: createAiTraceId("room-synthesis"),
@@ -2151,58 +2347,73 @@ export const analyzeRoom = action({
   },
 });
 
+const reviewRubricArgs = {
+  responseLocale: responseLocaleValidator,
+  brief: briefValidator,
+  draftText: v.string(),
+  combined: v.number(),
+  grade: v.string(),
+  judgeMean: v.number(),
+  minJudge: v.number(),
+  staticTotal: v.number(),
+  judges: v.array(
+    v.object({
+      personaId: v.string(),
+      score: v.number(),
+      rationale: v.string(),
+    }),
+  ),
+  staticFeedback: v.array(v.string()),
+};
+
 /**
  * The full-page narrative review for the rubric. Given the already-computed
  * judge scores and static-feature notes, write the prose that explains the
  * grade. Returns an empty review when hosting is unavailable.
  */
 export const reviewRubric = action({
-  args: {
-    responseLocale: responseLocaleValidator,
-    brief: briefValidator,
-    draftText: v.string(),
-    combined: v.number(),
-    grade: v.string(),
-    judgeMean: v.number(),
-    minJudge: v.number(),
-    staticTotal: v.number(),
-    judges: v.array(
-      v.object({
-        personaId: v.string(),
-        score: v.number(),
-        rationale: v.string(),
-      }),
-    ),
-    staticFeedback: v.array(v.string()),
-  },
+  args: reviewRubricArgs,
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
-    await consumeRateLimit(ctx, {
-      action: "agent:feedback",
-      identifier: identity.tokenIdentifier,
-      ...RATE_LIMITS.agentFeedback,
-    });
-    const provider = await pickProvider(ctx, "rubric-review", "reasoning");
-    if (!provider) {
-      return { review: "", provider: "local" };
-    }
-    const brief = (args.brief ?? null) as ProjectBrief | null;
-    try {
-      const review = await runPlainLlm(
-        {
-          ctx,
-          ownerId: identity.tokenIdentifier,
-          provider,
-          feature: "rubric-review",
-          traceId: createAiTraceId("rubric-review"),
-        },
+    return reviewRubricCore(ctx, callerFromIdentity(identity), args);
+  },
+});
+
+/** The narrative rubric review for an explicit caller; see {@link reviewRubric}. */
+async function reviewRubricCore(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  args: ObjectType<typeof reviewRubricArgs>,
+) {
+  await consumeRateLimit(ctx, {
+    action: "agent:feedback",
+    identifier: caller.tokenIdentifier,
+    ...RATE_LIMITS.agentFeedback,
+  });
+  const provider = await pickProvider(
+    ctx,
+    caller,
+    "rubric-review",
+    "reasoning",
+  );
+  if (!provider) {
+    return { review: "", provider: "local" };
+  }
+  const brief = (args.brief ?? null) as ProjectBrief | null;
+  try {
+    const written = await generateWithSecondChance(
+      {
+        ctx,
+        caller,
+        feature: "rubric-review",
+        usageFeature: "rubric-review",
         provider,
-        withResponseLanguage(
+        system: withResponseLanguage(
           buildRubricReviewSystemPrompt(),
           args.responseLocale,
         ),
-        buildRubricReviewPrompt({
+        prompt: buildRubricReviewPrompt({
           combined: args.combined,
           grade: args.grade,
           judgeMean: args.judgeMean,
@@ -2213,16 +2424,20 @@ export const reviewRubric = action({
           brief,
           draftText: args.draftText,
         }),
-        NO_OUTPUT_CEILING,
-        "rubric-review",
-      );
-      return { review, provider: provider.label };
-    } catch (err) {
-      console.error("[twyne:agents] rubric review failed:", err);
-      return { review: "", provider: "local" };
-    }
-  },
-});
+        temperature: 0.4,
+        functionId: "rubric-review",
+      },
+      nonEmptyText,
+    );
+    await flushArize();
+    if (!written) return { review: "", provider: "local" };
+    return { review: written.value, provider: written.provider.label };
+  } catch (err) {
+    console.error("[twyne:agents] rubric review failed:", err);
+    await flushArize();
+    return { review: "", provider: "local" };
+  }
+}
 
 /**
  * Judge the draft as a given persona would. Used by the multi-judge
@@ -2239,19 +2454,25 @@ export const judgeDraft = action({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
+    const caller = callerFromIdentity(identity);
     const persona = args.persona as AgentPersona;
     const brief = (args.brief ?? null) as ProjectBrief | null;
     if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
       return localJudge(persona, brief, args.draftText);
     }
-    const provider = await pickProvider(ctx, "rubric-judge", "reasoning");
+    const provider = await pickProvider(
+      ctx,
+      caller,
+      "rubric-judge",
+      "reasoning",
+    );
 
     if (!provider) {
       return localJudge(persona, brief, args.draftText);
     }
 
     const system = withResponseLanguage(
-      buildSystemPrompt(persona),
+      buildSystemPrompt(persona, { tools: false }),
       args.responseLocale,
     );
     const rubricSuffix = renderNamed("blocks/persona-rubric-judge-suffix", {
@@ -2262,68 +2483,43 @@ export const judgeDraft = action({
         persona,
         brief,
         draftText: args.draftText,
-        instruction: "feedback",
+        instruction: "judge",
       }) +
       "\n" +
       rubricSuffix;
 
     try {
-      const start = Date.now();
-      const temperature = persona.temperature ?? 0.2;
-      const maxTokens = NO_OUTPUT_CEILING;
-      const { text } = await trackedGenerateText(
-        newHostedUsageCapture(
-          ctx,
-          identity.tokenIdentifier,
-          provider,
-          "rubric-judge",
-        ),
-        1,
+      const judged = await generateWithSecondChance(
         {
-          model: provider.model,
+          ctx,
+          caller,
+          feature: "rubric-judge",
+          usageFeature: "rubric-judge",
+          provider,
           system,
           prompt: user,
-          temperature,
-          maxOutputTokens: maxTokens,
-          experimental_telemetry: {
-            isEnabled: tracingEnabled,
-            functionId: "rubric_judge",
-            metadata: {
-              feature: "rubric-judge",
-              persona: persona.id,
-              provider: provider.label,
-              model: provider.modelId,
+          temperature: persona.temperature ?? 0.2,
+          functionId: "rubric_judge",
+          metadata: { persona: persona.id },
+          observe: {
+            req: {
+              persona,
+              brief,
+              draftText: args.draftText,
+              instruction: "feedback",
             },
+            spanName: "rubric_judge",
+            evalSignals: JUDGE_SIGNALS,
           },
         },
+        parseJudgeOutput,
       );
-      const visibleText = stripReasoningTags(text);
-      await captureServerAiGeneration({
-        feature: "rubric-judge",
-        provider: provider.label,
-        model: provider.modelId,
-        req: {
-          persona,
-          brief,
-          draftText: args.draftText,
-          instruction: "feedback",
-        },
-        output: visibleText,
-        latencyMs: Date.now() - start,
-        temperature,
-        maxTokens,
-        spanName: "rubric_judge",
-        evalSignals: { twyne_expected_format: "json_score_rationale" },
-      });
-      const parsed = parseJudgeOutput(visibleText);
-      if (parsed) {
-        await flushArize();
-        return { ...parsed, provider: provider.label };
-      }
+      await flushArize();
+      if (judged) return { ...judged.value, provider: judged.provider.label };
     } catch (err) {
       console.error(`[twyne:agents] ${persona.id} judge call failed:`, err);
+      await flushArize();
     }
-    await flushArize();
     return localJudge(persona, brief, args.draftText);
   },
 });
@@ -2339,6 +2535,12 @@ function localSufficiency(
   return { score, rationale: feedback, provider: "local" };
 }
 
+const judgeEvidenceArgs = {
+  responseLocale: responseLocaleValidator,
+  brief: briefValidator,
+  draftText: v.string(),
+};
+
 /**
  * A dedicated LLM judge for evidence quality: does each load-bearing claim
  * actually have support, or is the draft papered over with citation-shaped
@@ -2347,108 +2549,95 @@ function localSufficiency(
  * heuristic in `scoreStaticFeatures` only runs as the offline/local fallback.
  */
 export const judgeEvidence = action({
-  args: {
-    responseLocale: responseLocaleValidator,
-    brief: briefValidator,
-    draftText: v.string(),
-  },
+  args: judgeEvidenceArgs,
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
-    const brief = (args.brief ?? null) as ProjectBrief | null;
-    if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
-      return localEvidence(brief, args.draftText);
-    }
-    const provider = await pickProvider(
-      ctx,
-      "rubric-judge-evidence",
-      "reasoning",
-    );
-    if (!provider) {
-      return localEvidence(brief, args.draftText);
-    }
-
-    const goal = brief?.answers.goal || "no goal stated in the brief";
-    const audience = brief?.answers.audience || "a general reader";
-    const staticNote = describeEvidenceStatic(args.draftText);
-    const system = withResponseLanguage(
-      buildEvidenceJudgeSystemPrompt(),
-      args.responseLocale,
-    );
-    const user = buildEvidenceJudgePrompt({
-      goal,
-      audience,
-      draftText: args.draftText,
-      staticNote,
-    });
-
-    try {
-      const start = Date.now();
-      const temperature = 0.2;
-      const maxTokens = NO_OUTPUT_CEILING;
-      const { text } = await trackedGenerateText(
-        newHostedUsageCapture(
-          ctx,
-          identity.tokenIdentifier,
-          provider,
-          "rubric-judge",
-        ),
-        1,
-        {
-          model: provider.model,
-          system,
-          prompt: user,
-          temperature,
-          maxOutputTokens: maxTokens,
-          experimental_telemetry: {
-            isEnabled: tracingEnabled,
-            functionId: "rubric_judge_evidence",
-            metadata: {
-              feature: "rubric-judge",
-              persona: "evidence",
-              provider: provider.label,
-              model: provider.modelId,
-            },
-          },
-        },
-      );
-      const visibleText = stripReasoningTags(text);
-      await captureServerAiGeneration({
-        feature: "rubric-judge",
-        provider: provider.label,
-        model: provider.modelId,
-        req: {
-          persona: {
-            id: "evidence",
-            name: "Evidence Judge",
-            role: "Research editor",
-            description:
-              "Judges whether the draft's evidence actually supports its claims.",
-            focus: "Quality of evidence and grounding of claims",
-          },
-          brief,
-          draftText: args.draftText,
-          instruction: "feedback",
-        },
-        output: visibleText,
-        latencyMs: Date.now() - start,
-        temperature,
-        maxTokens,
-        spanName: "rubric_judge_evidence",
-        evalSignals: { twyne_expected_format: "json_score_rationale" },
-      });
-      const parsed = parseJudgeOutput(visibleText);
-      if (parsed) {
-        await flushArize();
-        return { ...parsed, provider: provider.label };
-      }
-    } catch (err) {
-      console.error("[twyne:agents] evidence judge call failed:", err);
-    }
-    await flushArize();
-    return localEvidence(brief, args.draftText);
+    return judgeEvidenceCore(ctx, callerFromIdentity(identity), args);
   },
 });
+
+/** The evidence judge for an explicit caller; see {@link judgeEvidence}. */
+async function judgeEvidenceCore(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  args: ObjectType<typeof judgeEvidenceArgs>,
+) {
+  const brief = (args.brief ?? null) as ProjectBrief | null;
+  if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
+    return localEvidence(brief, args.draftText);
+  }
+  const provider = await pickProvider(
+    ctx,
+    caller,
+    "rubric-judge-evidence",
+    "reasoning",
+  );
+  if (!provider) {
+    return localEvidence(brief, args.draftText);
+  }
+
+  const goal = brief?.answers.goal || "no goal stated in the brief";
+  const audience = brief?.answers.audience || "a general reader";
+  const staticNote = describeEvidenceStatic(args.draftText);
+  const system = withResponseLanguage(
+    buildEvidenceJudgeSystemPrompt(),
+    args.responseLocale,
+  );
+  const user = buildEvidenceJudgePrompt({
+    goal,
+    audience,
+    draftText: args.draftText,
+    staticNote,
+  });
+
+  try {
+    const judged = await generateWithSecondChance(
+      {
+        ctx,
+        caller,
+        feature: "rubric-judge-evidence",
+        usageFeature: "rubric-judge",
+        provider,
+        system,
+        prompt: user,
+        temperature: 0.2,
+        functionId: "rubric_judge_evidence",
+        metadata: { persona: "evidence" },
+        observe: {
+          req: {
+            persona: {
+              id: "evidence",
+              name: "Evidence Judge",
+              role: "Research editor",
+              description:
+                "Judges whether the draft's evidence actually supports its claims.",
+              focus: "Quality of evidence and grounding of claims",
+            },
+            brief,
+            draftText: args.draftText,
+            instruction: "feedback",
+          },
+          spanName: "rubric_judge_evidence",
+          evalSignals: JUDGE_SIGNALS,
+        },
+      },
+      parseJudgeOutput,
+    );
+    await flushArize();
+    if (judged) return { ...judged.value, provider: judged.provider.label };
+  } catch (err) {
+    console.error("[twyne:agents] evidence judge call failed:", err);
+    await flushArize();
+  }
+  return localEvidence(brief, args.draftText);
+}
+
+const judgeIntegrityArgs = {
+  responseLocale: responseLocaleValidator,
+  brief: briefValidator,
+  draftText: v.string(),
+};
 
 /**
  * A dedicated LLM judge for bullshit resistance: confident-sounding prose
@@ -2459,109 +2648,90 @@ export const judgeEvidence = action({
  * only run as the offline/local fallback.
  */
 export const judgeIntegrity = action({
-  args: {
-    responseLocale: responseLocaleValidator,
-    brief: briefValidator,
-    draftText: v.string(),
-  },
+  args: judgeIntegrityArgs,
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
-    const brief = (args.brief ?? null) as ProjectBrief | null;
-    if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
-      return localIntegrity(args.draftText);
-    }
-    const provider = await pickProvider(
-      ctx,
-      "rubric-judge-integrity",
-      "reasoning",
-    );
-    if (!provider) {
-      return localIntegrity(args.draftText);
-    }
-
-    const goal = brief?.answers.goal || "no goal stated in the brief";
-    const audience = brief?.answers.audience || "a general reader";
-    const staticNote = describeIntegrityStatic(args.draftText);
-    const system = withResponseLanguage(
-      buildIntegrityJudgeSystemPrompt(),
-      args.responseLocale,
-    );
-    const user = buildIntegrityJudgePrompt({
-      goal,
-      audience,
-      draftText: args.draftText,
-      staticNote,
-    });
-
-    try {
-      const start = Date.now();
-      const temperature = 0.2;
-      const maxTokens = NO_OUTPUT_CEILING;
-      const { text } = await trackedGenerateText(
-        newHostedUsageCapture(
-          ctx,
-          identity.tokenIdentifier,
-          provider,
-          "rubric-judge",
-        ),
-        1,
-        {
-          model: provider.model,
-          system,
-          prompt: user,
-          temperature,
-          maxOutputTokens: maxTokens,
-          experimental_telemetry: {
-            isEnabled: tracingEnabled,
-            functionId: "rubric_judge_integrity",
-            metadata: {
-              feature: "rubric-judge",
-              persona: "integrity",
-              provider: provider.label,
-              model: provider.modelId,
-            },
-          },
-        },
-      );
-      const visibleText = stripReasoningTags(text);
-      await captureServerAiGeneration({
-        feature: "rubric-judge",
-        provider: provider.label,
-        model: provider.modelId,
-        req: {
-          persona: {
-            id: "integrity",
-            name: "Integrity Judge",
-            role: "Bullshit detector",
-            description:
-              "Judges whether the draft's confident prose is actually earning its claims.",
-            focus:
-              "Bullshit resistance: vague filler, fake specificity, universal claims, polished emptiness",
-          },
-          brief,
-          draftText: args.draftText,
-          instruction: "feedback",
-        },
-        output: visibleText,
-        latencyMs: Date.now() - start,
-        temperature,
-        maxTokens,
-        spanName: "rubric_judge_integrity",
-        evalSignals: { twyne_expected_format: "json_score_rationale" },
-      });
-      const parsed = parseJudgeOutput(visibleText);
-      if (parsed) {
-        await flushArize();
-        return { ...parsed, provider: provider.label };
-      }
-    } catch (err) {
-      console.error("[twyne:agents] integrity judge call failed:", err);
-    }
-    await flushArize();
-    return localIntegrity(args.draftText);
+    return judgeIntegrityCore(ctx, callerFromIdentity(identity), args);
   },
 });
+
+/** The integrity judge for an explicit caller; see {@link judgeIntegrity}. */
+async function judgeIntegrityCore(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  args: ObjectType<typeof judgeIntegrityArgs>,
+) {
+  const brief = (args.brief ?? null) as ProjectBrief | null;
+  if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
+    return localIntegrity(args.draftText);
+  }
+  const provider = await pickProvider(
+    ctx,
+    caller,
+    "rubric-judge-integrity",
+    "reasoning",
+  );
+  if (!provider) {
+    return localIntegrity(args.draftText);
+  }
+
+  const goal = brief?.answers.goal || "no goal stated in the brief";
+  const audience = brief?.answers.audience || "a general reader";
+  const staticNote = describeIntegrityStatic(args.draftText);
+  const system = withResponseLanguage(
+    buildIntegrityJudgeSystemPrompt(),
+    args.responseLocale,
+  );
+  const user = buildIntegrityJudgePrompt({
+    goal,
+    audience,
+    draftText: args.draftText,
+    staticNote,
+  });
+
+  try {
+    const judged = await generateWithSecondChance(
+      {
+        ctx,
+        caller,
+        feature: "rubric-judge-integrity",
+        usageFeature: "rubric-judge",
+        provider,
+        system,
+        prompt: user,
+        temperature: 0.2,
+        functionId: "rubric_judge_integrity",
+        metadata: { persona: "integrity" },
+        observe: {
+          req: {
+            persona: {
+              id: "integrity",
+              name: "Integrity Judge",
+              role: "Bullshit detector",
+              description:
+                "Judges whether the draft's confident prose is actually earning its claims.",
+              focus:
+                "Bullshit resistance: vague filler, fake specificity, universal claims, polished emptiness",
+            },
+            brief,
+            draftText: args.draftText,
+            instruction: "feedback",
+          },
+          spanName: "rubric_judge_integrity",
+          evalSignals: JUDGE_SIGNALS,
+        },
+      },
+      parseJudgeOutput,
+    );
+    await flushArize();
+    if (judged) return { ...judged.value, provider: judged.provider.label };
+  } catch (err) {
+    console.error("[twyne:agents] integrity judge call failed:", err);
+    await flushArize();
+  }
+  return localIntegrity(args.draftText);
+}
 
 /* ── Local fallbacks for the dedicated judges ──────────────────── */
 
@@ -2628,6 +2798,12 @@ function describeIntegrityStatic(draftText: string): string {
   )}%; duplicated paragraphs: ${(f.duplicateParagraphRatio * 100).toFixed(0)}%.`;
 }
 
+const judgeSufficiencyArgs = {
+  responseLocale: responseLocaleValidator,
+  brief: briefValidator,
+  draftText: v.string(),
+};
+
 /**
  * A dedicated LLM judge for one question only: does the draft develop
  * enough on-topic material to justify reaching its stated thesis/goal?
@@ -2636,107 +2812,88 @@ function describeIntegrityStatic(draftText: string): string {
  * `scoreSufficiency` only runs as the offline/local fallback.
  */
 export const judgeSufficiency = action({
-  args: {
-    responseLocale: responseLocaleValidator,
-    brief: briefValidator,
-    draftText: v.string(),
-  },
+  args: judgeSufficiencyArgs,
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
-    const brief = (args.brief ?? null) as ProjectBrief | null;
-    if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
-      return localSufficiency(brief, args.draftText);
-    }
-    const provider = await pickProvider(
-      ctx,
-      "rubric-judge-sufficiency",
-      "reasoning",
-    );
-    if (!provider) {
-      return localSufficiency(brief, args.draftText);
-    }
-
-    const goal = brief?.answers.goal || "no goal stated in the brief";
-    const audience = brief?.answers.audience || "a general reader";
-    const system = withResponseLanguage(
-      renderNamed("sufficiency-judge-system"),
-      args.responseLocale,
-    );
-    const user = renderNamed("sufficiency-judge-user", {
-      goal,
-      audience,
-      draftText: args.draftText,
-    });
-
-    try {
-      const start = Date.now();
-      const temperature = 0.2;
-      const maxTokens = NO_OUTPUT_CEILING;
-      const { text } = await trackedGenerateText(
-        newHostedUsageCapture(
-          ctx,
-          identity.tokenIdentifier,
-          provider,
-          "rubric-judge",
-        ),
-        1,
-        {
-          model: provider.model,
-          system,
-          prompt: user,
-          temperature,
-          maxOutputTokens: maxTokens,
-          experimental_telemetry: {
-            isEnabled: tracingEnabled,
-            functionId: "rubric_judge_sufficiency",
-            metadata: {
-              feature: "rubric-judge",
-              persona: "sufficiency",
-              provider: provider.label,
-              model: provider.modelId,
-            },
-          },
-        },
-      );
-      const visibleText = stripReasoningTags(text);
-      await captureServerAiGeneration({
-        feature: "rubric-judge",
-        provider: provider.label,
-        model: provider.modelId,
-        req: {
-          persona: {
-            id: "sufficiency",
-            name: "Sufficiency Judge",
-            role: "Developmental editor",
-            description:
-              "Judges whether the draft develops enough on-topic material to earn its goal.",
-            focus:
-              "Sufficiency of development relative to the stated thesis/goal",
-          },
-          brief,
-          draftText: args.draftText,
-          instruction: "feedback",
-        },
-        output: visibleText,
-        latencyMs: Date.now() - start,
-        temperature,
-        maxTokens,
-        spanName: "rubric_judge_sufficiency",
-        evalSignals: { twyne_expected_format: "json_score_rationale" },
-      });
-      const parsed = parseJudgeOutput(visibleText);
-      if (parsed) {
-        await flushArize();
-        return { ...parsed, provider: provider.label };
-      }
-    } catch (err) {
-      console.error("[twyne:agents] sufficiency judge call failed:", err);
-    }
-    await flushArize();
-    return localSufficiency(brief, args.draftText);
+    return judgeSufficiencyCore(ctx, callerFromIdentity(identity), args);
   },
 });
+
+/** The sufficiency judge for an explicit caller; see {@link judgeSufficiency}. */
+async function judgeSufficiencyCore(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  args: ObjectType<typeof judgeSufficiencyArgs>,
+) {
+  const brief = (args.brief ?? null) as ProjectBrief | null;
+  if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
+    return localSufficiency(brief, args.draftText);
+  }
+  const provider = await pickProvider(
+    ctx,
+    caller,
+    "rubric-judge-sufficiency",
+    "reasoning",
+  );
+  if (!provider) {
+    return localSufficiency(brief, args.draftText);
+  }
+
+  const goal = brief?.answers.goal || "no goal stated in the brief";
+  const audience = brief?.answers.audience || "a general reader";
+  const system = withResponseLanguage(
+    renderNamed("sufficiency-judge-system"),
+    args.responseLocale,
+  );
+  const user = renderNamed("sufficiency-judge-user", {
+    goal,
+    audience,
+    draftText: args.draftText,
+  });
+
+  try {
+    const judged = await generateWithSecondChance(
+      {
+        ctx,
+        caller,
+        feature: "rubric-judge-sufficiency",
+        usageFeature: "rubric-judge",
+        provider,
+        system,
+        prompt: user,
+        temperature: 0.2,
+        functionId: "rubric_judge_sufficiency",
+        metadata: { persona: "sufficiency" },
+        observe: {
+          req: {
+            persona: {
+              id: "sufficiency",
+              name: "Sufficiency Judge",
+              role: "Developmental editor",
+              description:
+                "Judges whether the draft develops enough on-topic material to earn its goal.",
+              focus:
+                "Sufficiency of development relative to the stated thesis/goal",
+            },
+            brief,
+            draftText: args.draftText,
+            instruction: "feedback",
+          },
+          spanName: "rubric_judge_sufficiency",
+          evalSignals: JUDGE_SIGNALS,
+        },
+      },
+      parseJudgeOutput,
+    );
+    await flushArize();
+    if (judged) return { ...judged.value, provider: judged.provider.label };
+  } catch (err) {
+    console.error("[twyne:agents] sufficiency judge call failed:", err);
+    await flushArize();
+  }
+  return localSufficiency(brief, args.draftText);
+}
 
 /* ── Target fit: the relevance gate ─────────────────────────────── */
 
@@ -2769,6 +2926,12 @@ function localTargetFit(
   };
 }
 
+const judgeTargetFitArgs = {
+  responseLocale: responseLocaleValidator,
+  brief: briefValidator,
+  draftText: v.string(),
+};
+
 /**
  * A dedicated LLM judge for one question only: does this content serve THIS
  * audience, THIS goal, in THIS format — at all? It is deliberately blind to
@@ -2780,106 +2943,95 @@ function localTargetFit(
  * static weight in the combined grade by it.
  */
 export const judgeTargetFit = action({
-  args: {
-    responseLocale: responseLocaleValidator,
-    brief: briefValidator,
-    draftText: v.string(),
-  },
+  args: judgeTargetFitArgs,
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw applicationError("authentication_required");
-    const brief = (args.brief ?? null) as ProjectBrief | null;
-    if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
-      return localTargetFit(brief, args.draftText);
-    }
-    const provider = await pickProvider(
-      ctx,
-      "rubric-judge-target-fit",
-      "reasoning",
-    );
-    if (!provider) {
-      return localTargetFit(brief, args.draftText);
-    }
-
-    const system = withResponseLanguage(
-      buildTargetFitJudgeSystemPrompt(),
-      args.responseLocale,
-    );
-    const user = buildTargetFitJudgePrompt({
-      ...targetFitCommission(brief),
-      draftText: args.draftText,
-      particulars: probeParticularsBlock(brief),
-    });
-
-    try {
-      const start = Date.now();
-      const temperature = 0.2;
-      const maxTokens = NO_OUTPUT_CEILING;
-      const { text } = await trackedGenerateText(
-        newHostedUsageCapture(
-          ctx,
-          identity.tokenIdentifier,
-          provider,
-          "rubric-judge",
-        ),
-        1,
-        {
-          model: provider.model,
-          system,
-          prompt: user,
-          temperature,
-          maxOutputTokens: maxTokens,
-          experimental_telemetry: {
-            isEnabled: tracingEnabled,
-            functionId: "rubric_judge_target_fit",
-            metadata: {
-              feature: "rubric-judge",
-              persona: "target-fit",
-              provider: provider.label,
-              model: provider.modelId,
-            },
-          },
-        },
-      );
-      const visibleText = stripReasoningTags(text);
-      await captureServerAiGeneration({
-        feature: "rubric-judge",
-        provider: provider.label,
-        model: provider.modelId,
-        req: {
-          persona: {
-            id: "target-fit",
-            name: "Target Fit Judge",
-            role: "Commissioning editor",
-            description:
-              "Judges whether the draft serves the commissioned audience and goal at all.",
-            focus: "Relevance to the stated audience, goal and format",
-          },
-          brief,
-          draftText: args.draftText,
-          instruction: "feedback",
-        },
-        output: visibleText,
-        latencyMs: Date.now() - start,
-        temperature,
-        maxTokens,
-        spanName: "rubric_judge_target_fit",
-        evalSignals: { twyne_expected_format: "json_score_rationale" },
-      });
-      const parsed = parseJudgeOutput(visibleText);
-      if (parsed) {
-        await flushArize();
-        return { ...parsed, provider: provider.label };
-      }
-    } catch (err) {
-      console.error("[twyne:agents] target-fit judge call failed:", err);
-    }
-    await flushArize();
-    return localTargetFit(brief, args.draftText);
+    return judgeTargetFitCore(ctx, callerFromIdentity(identity), args);
   },
 });
 
+/** The target-fit judge for an explicit caller; see {@link judgeTargetFit}. */
+async function judgeTargetFitCore(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  args: ObjectType<typeof judgeTargetFitArgs>,
+) {
+  const brief = (args.brief ?? null) as ProjectBrief | null;
+  if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
+    return localTargetFit(brief, args.draftText);
+  }
+  const provider = await pickProvider(
+    ctx,
+    caller,
+    "rubric-judge-target-fit",
+    "reasoning",
+  );
+  if (!provider) {
+    return localTargetFit(brief, args.draftText);
+  }
+
+  const system = withResponseLanguage(
+    buildTargetFitJudgeSystemPrompt(),
+    args.responseLocale,
+  );
+  const user = buildTargetFitJudgePrompt({
+    ...targetFitCommission(brief),
+    draftText: args.draftText,
+    particulars: probeParticularsBlock(brief),
+  });
+
+  try {
+    const judged = await generateWithSecondChance(
+      {
+        ctx,
+        caller,
+        feature: "rubric-judge-target-fit",
+        usageFeature: "rubric-judge",
+        provider,
+        system,
+        prompt: user,
+        temperature: 0.2,
+        functionId: "rubric_judge_target_fit",
+        metadata: { persona: "target-fit" },
+        observe: {
+          req: {
+            persona: {
+              id: "target-fit",
+              name: "Target Fit Judge",
+              role: "Commissioning editor",
+              description:
+                "Judges whether the draft serves the commissioned audience and goal at all.",
+              focus: "Relevance to the stated audience, goal and format",
+            },
+            brief,
+            draftText: args.draftText,
+            instruction: "feedback",
+          },
+          spanName: "rubric_judge_target_fit",
+          evalSignals: JUDGE_SIGNALS,
+        },
+      },
+      parseJudgeOutput,
+    );
+    await flushArize();
+    if (judged) return { ...judged.value, provider: judged.provider.label };
+  } catch (err) {
+    console.error("[twyne:agents] target-fit judge call failed:", err);
+    await flushArize();
+  }
+  return localTargetFit(brief, args.draftText);
+}
+
 /* ── Writer-defined rubric criteria ─────────────────────────────── */
+
+const judgeCustomCriterionArgs = {
+  responseLocale: responseLocaleValidator,
+  brief: briefValidator,
+  draftText: v.string(),
+  label: v.string(),
+  description: v.string(),
+};
 
 /**
  * Judge the draft against a criterion the writer wrote themselves.
@@ -2890,101 +3042,93 @@ export const judgeTargetFit = action({
  * real score, without Twyne having to anticipate the criterion.
  */
 export const judgeCustomCriterion = action({
-  args: {
-    responseLocale: responseLocaleValidator,
-    brief: briefValidator,
-    draftText: v.string(),
-    label: v.string(),
-    description: v.string(),
-  },
+  args: judgeCustomCriterionArgs,
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw applicationError("authentication_required");
-    await consumeRateLimit(ctx, {
-      action: "agent:feedback",
-      identifier: identity.tokenIdentifier,
-      ...RATE_LIMITS.agentFeedback,
-    });
-
-    const brief = (args.brief ?? null) as ProjectBrief | null;
-    const label = args.label.trim().slice(0, 120);
-    if (!label) {
-      throw applicationError("validation_failed", {
-        message: "A custom criterion needs a name.",
-      });
-    }
-    if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
-      return {
-        score: 5,
-        rationale: `The draft is too short to judge against "${label}" yet.`,
-        provider: "local" as const,
-      };
-    }
-    const provider = await pickProvider(
-      ctx,
-      "rubric-judge-custom",
-      "reasoning",
-    );
-    if (!provider) {
-      throw applicationError("provider_unavailable", {
-        recovery: "open_settings",
-      });
-    }
-
-    const system = withResponseLanguage(
-      buildCustomCriterionSystemPrompt(),
-      args.responseLocale,
-    );
-    const user = buildCustomCriterionPrompt({
-      ...targetFitCommission(brief),
-      label,
-      description: args.description,
-      draftText: args.draftText,
-    });
-
-    try {
-      const { text } = await trackedGenerateText(
-        newHostedUsageCapture(
-          ctx,
-          identity.tokenIdentifier,
-          provider,
-          "rubric-judge",
-        ),
-        1,
-        {
-          model: provider.model,
-          system,
-          prompt: user,
-          temperature: 0.2,
-          maxOutputTokens: NO_OUTPUT_CEILING,
-          experimental_telemetry: {
-            isEnabled: tracingEnabled,
-            functionId: "rubric_judge_custom",
-            metadata: {
-              feature: "rubric-judge",
-              persona: "custom",
-              provider: provider.label,
-              model: provider.modelId,
-            },
-          },
-        },
-      );
-      const parsed = parseJudgeOutput(stripReasoningTags(text));
-      await flushArize();
-      if (parsed) return { ...parsed, provider: provider.label };
-      throw applicationError("malformed_response");
-    } catch (err) {
-      if (err instanceof Error && err.name === "ConvexError") throw err;
-      throw reportedApplicationError(
-        "agents.rubric-judge-custom",
-        "provider_unavailable",
-        err,
-        { recovery: "retry" },
-        { provider: provider.label, model: provider.modelId },
-      );
-    }
+    return judgeCustomCriterionCore(ctx, callerFromIdentity(identity), args);
   },
 });
+
+/** A writer-defined criterion judged for an explicit caller; see {@link judgeCustomCriterion}. */
+async function judgeCustomCriterionCore(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  args: ObjectType<typeof judgeCustomCriterionArgs>,
+) {
+  await consumeRateLimit(ctx, {
+    action: "agent:feedback",
+    identifier: caller.tokenIdentifier,
+    ...RATE_LIMITS.agentFeedback,
+  });
+
+  const brief = (args.brief ?? null) as ProjectBrief | null;
+  const label = args.label.trim().slice(0, 120);
+  if (!label) {
+    throw applicationError("validation_failed", {
+      message: "A custom criterion needs a name.",
+    });
+  }
+  if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
+    return {
+      score: 5,
+      rationale: `The draft is too short to judge against "${label}" yet.`,
+      provider: "local" as const,
+    };
+  }
+  const provider = await pickProvider(
+    ctx,
+    caller,
+    "rubric-judge-custom",
+    "reasoning",
+  );
+  if (!provider) {
+    throw applicationError("provider_unavailable", {
+      recovery: "open_settings",
+    });
+  }
+
+  const system = withResponseLanguage(
+    buildCustomCriterionSystemPrompt(),
+    args.responseLocale,
+  );
+  const user = buildCustomCriterionPrompt({
+    ...targetFitCommission(brief),
+    label,
+    description: args.description,
+    draftText: args.draftText,
+  });
+
+  try {
+    const judged = await generateWithSecondChance(
+      {
+        ctx,
+        caller,
+        feature: "rubric-judge-custom",
+        usageFeature: "rubric-judge",
+        provider,
+        system,
+        prompt: user,
+        temperature: 0.2,
+        functionId: "rubric_judge_custom",
+        metadata: { persona: "custom" },
+      },
+      parseJudgeOutput,
+    );
+    await flushArize();
+    if (judged) return { ...judged.value, provider: judged.provider.label };
+    throw applicationError("malformed_response");
+  } catch (err) {
+    if (err instanceof Error && err.name === "ConvexError") throw err;
+    throw reportedApplicationError(
+      "agents.rubric-judge-custom",
+      "provider_unavailable",
+      err,
+      { recovery: "retry" },
+      { provider: provider.label, model: provider.modelId },
+    );
+  }
+}
 
 /**
  * Propose criteria fitted to this particular piece. The writer accepts them
@@ -3001,15 +3145,17 @@ export const suggestRubricCriteria = action({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw applicationError("authentication_required");
+    const caller = callerFromIdentity(identity);
     await consumeRateLimit(ctx, {
       action: "agent:feedback",
-      identifier: identity.tokenIdentifier,
+      identifier: caller.tokenIdentifier,
       ...RATE_LIMITS.agentFeedback,
     });
 
     const brief = (args.brief ?? null) as ProjectBrief | null;
     const provider = await pickProvider(
       ctx,
+      caller,
       "rubric-suggest-criteria",
       "reasoning",
     );
@@ -3057,7 +3203,7 @@ Respond as JSON, and only JSON, in this exact shape:
       const { text } = await trackedGenerateText(
         newHostedUsageCapture(
           ctx,
-          identity.tokenIdentifier,
+          caller.tokenIdentifier,
           provider,
           "rubric-judge",
         ),
@@ -3132,137 +3278,148 @@ function parseSuggestedCriteria(
   return [];
 }
 
+const judgeRoomArgs = {
+  responseLocale: responseLocaleValidator,
+  personas: v.array(personaValidator),
+  brief: briefValidator,
+  draftText: v.string(),
+};
+
 /**
  * Run all five judges in parallel, then a single overall-summary call
  * that takes the judges' rationales and produces a one-paragraph
  * editorial note. Used by the multi-judge rubric panel.
  */
 export const judgeRoom = action({
-  args: {
-    responseLocale: responseLocaleValidator,
-    personas: v.array(personaValidator),
-    brief: briefValidator,
-    draftText: v.string(),
-  },
+  args: judgeRoomArgs,
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
-    const brief = (args.brief ?? null) as ProjectBrief | null;
-    const provider =
-      countWords(args.draftText) >= MIN_RUBRIC_WORDS
-        ? await pickProvider(ctx, "rubric-judge-room", "reasoning")
-        : null;
-    const canHost =
-      countWords(args.draftText) >= MIN_RUBRIC_WORDS && !!provider;
-    if (!canHost) {
-      return args.personas.map((p) => {
-        const persona = p as AgentPersona;
-        return {
-          ...localJudge(persona, brief, args.draftText),
-          personaId: persona.id,
-        };
-      });
-    }
+    return judgeRoomCore(ctx, callerFromIdentity(identity), args);
+  },
+});
 
-    const judgeTasks = args.personas.map((p) =>
-      (async () => {
-        const persona = p as AgentPersona;
-        if (!provider) {
-          return {
-            ...localJudge(persona, brief, args.draftText),
-            personaId: persona.id,
-          };
-        }
-        try {
-          const system = withResponseLanguage(
-            buildSystemPrompt(persona),
-            args.responseLocale,
-          );
-          const user =
-            buildUserPrompt({
-              persona,
-              brief,
-              draftText: args.draftText,
-              instruction: "feedback",
-            }) +
-            `
+/** The five judges for an explicit caller; see {@link judgeRoom}. */
+/** One editor's verdict in the room, with who gave it. */
+interface RoomJudgeResult {
+  personaId: string;
+  score: number;
+  rationale: string;
+  provider: string;
+}
+
+async function judgeRoomCore(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  args: ObjectType<typeof judgeRoomArgs>,
+) {
+  const brief = (args.brief ?? null) as ProjectBrief | null;
+  const provider =
+    countWords(args.draftText) >= MIN_RUBRIC_WORDS
+      ? await pickProvider(ctx, caller, "rubric-judge-room", "reasoning")
+      : null;
+  const canHost = countWords(args.draftText) >= MIN_RUBRIC_WORDS && !!provider;
+  if (!canHost) {
+    return args.personas.map((p) => {
+      const persona = p as AgentPersona;
+      return {
+        ...localJudge(persona, brief, args.draftText),
+        personaId: persona.id,
+      };
+    });
+  }
+
+  // Each editor is asked once on the reasoning alias and, if nothing usable
+  // comes back, once more on the balanced one. An editor who still has not
+  // answered is left out of the room rather than impersonated by a heuristic:
+  // the grade averages whoever actually read the draft, and the caller learns
+  // who is missing from the ids absent here.
+  const judgeTasks = args.personas.map((p) =>
+    (async (): Promise<RoomJudgeResult | null> => {
+      const persona = p as AgentPersona;
+      if (!provider) return null;
+      try {
+        const system = withResponseLanguage(
+          buildSystemPrompt(persona, { tools: false }),
+          args.responseLocale,
+        );
+        const user =
+          buildUserPrompt({
+            persona,
+            brief,
+            draftText: args.draftText,
+            instruction: "judge",
+          }) +
+          `
 
 JUDGE TASK: Give the draft an integer score from 1 to 10. 5 is "doing the work but with clear issues." 7 is "in good shape." 9 is "publishable as-is." Be honest.
 
 Do not reward confident-sounding bullshit. Penalize generic filler, repeated paragraphs, unsupported universal claims, vibes without evidence, fake specificity, and any passage that sounds polished while dodging the stated audience/goal.
 
 Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voice>"}`;
-          const start = Date.now();
-          const temperature = 0.2;
-          const maxTokens = NO_OUTPUT_CEILING;
-          const { text } = await trackedGenerateText(
-            newHostedUsageCapture(
-              ctx,
-              identity.tokenIdentifier,
-              provider,
-              "rubric-judge",
-            ),
-            1,
-            {
-              model: provider.model,
-              system,
-              prompt: user,
-              temperature,
-              maxOutputTokens: maxTokens,
-              experimental_telemetry: {
-                isEnabled: tracingEnabled,
-                functionId: "rubric_judge_room",
-                metadata: {
-                  feature: "rubric-judge",
-                  persona: persona.id,
-                  provider: provider.label,
-                  model: provider.modelId,
-                },
+        const judged = await generateWithSecondChance(
+          {
+            ctx,
+            caller,
+            feature: "rubric-judge-room",
+            usageFeature: "rubric-judge",
+            provider,
+            system,
+            prompt: user,
+            temperature: 0.2,
+            functionId: "rubric_judge_room",
+            metadata: { persona: persona.id },
+            observe: {
+              req: {
+                persona,
+                brief,
+                draftText: args.draftText,
+                instruction: "feedback",
               },
+              spanName: "rubric_judge_room",
+              evalSignals: JUDGE_SIGNALS,
             },
-          );
-          const visibleText = stripReasoningTags(text);
-          await captureServerAiGeneration({
-            feature: "rubric-judge",
-            provider: provider.label,
-            model: provider.modelId,
-            req: {
-              persona,
-              brief,
-              draftText: args.draftText,
-              instruction: "feedback",
-            },
-            output: visibleText,
-            latencyMs: Date.now() - start,
-            temperature,
-            maxTokens,
-            spanName: "rubric_judge_room",
-            evalSignals: { twyne_expected_format: "json_score_rationale" },
-          });
-          const parsed = parseJudgeOutput(visibleText);
-          if (parsed) {
-            await flushArize();
-            return { ...parsed, personaId: persona.id };
-          }
-        } catch (err) {
-          console.error(`[twyne:agents] ${persona.id} judge call failed:`, err);
-        }
+          },
+          parseJudgeOutput,
+        );
         await flushArize();
-        return {
-          ...localJudge(persona, brief, args.draftText),
-          personaId: persona.id,
-        };
-      })(),
-    );
+        if (judged) {
+          return {
+            ...judged.value,
+            personaId: persona.id,
+            provider: judged.provider.label,
+          };
+        }
+      } catch (err) {
+        console.error(`[twyne:agents] ${persona.id} judge call failed:`, err);
+        await flushArize();
+      }
+      return null;
+    })(),
+  );
 
-    return await Promise.all(judgeTasks);
-  },
-});
+  const judged = (await Promise.all(judgeTasks)).filter(
+    (j): j is RoomJudgeResult => j !== null,
+  );
+  // A room where nobody answered is a provider failure, and the panel reads
+  // "every judge local" as exactly that; keep saying it the way it listens.
+  if (judged.length === 0) {
+    return args.personas.map((p) => {
+      const persona = p as AgentPersona;
+      return {
+        ...localJudge(persona, brief, args.draftText),
+        personaId: persona.id,
+      };
+    });
+  }
+  return judged;
+}
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 
 async function runHostedAgent(
   ctx: ActionCtx,
+  caller: HostedCaller,
   req: AgentRequest,
   observability?: ServerAiObservabilityContext,
   streamId?: string,
@@ -3271,26 +3428,23 @@ async function runHostedAgent(
     req.userMessage || req.priorMessages?.length
       ? "persona-reply"
       : "persona-feedback";
-  const provider = await pickProvider(ctx, feature, "balanced");
+  const provider = await pickProvider(ctx, caller, feature, "balanced");
   if (!provider) {
     throw applicationError("provider_unavailable", {
       recovery: "open_settings",
     });
   }
   try {
-    const identity = await ctx.auth.getUserIdentity();
-    const userId = identity?.subject || identity?.tokenIdentifier;
-    if (!identity) throw applicationError("authentication_required");
     return await runLlm(
       ctx,
-      identity.tokenIdentifier,
+      caller,
       provider,
       req,
       feature,
       NO_OUTPUT_CEILING,
-      { ...observability, distinctId: identity?.tokenIdentifier },
-      streamId && userId
-        ? { ctx, userId, streamId, personaId: req.persona.id }
+      { ...observability, distinctId: caller.tokenIdentifier },
+      streamId
+        ? { ctx, userId: caller.subject, streamId, personaId: req.persona.id }
         : undefined,
     );
   } catch (err) {
@@ -3357,4 +3511,26 @@ function localJudge(
 
 /* ── Internal: allow other Convex files to call the runner. ─────── */
 
-export { runLlm, pickProvider };
+export {
+  runLlm,
+  pickProvider,
+  generateWithSecondChance,
+  conveneRoomCore,
+  runPersonaCore,
+  suggestRewriteCore,
+  runDossierCheckCore,
+  runInterviewTurnCore,
+  reviewRubricCore,
+  judgeRoomCore,
+  judgeSufficiencyCore,
+  judgeEvidenceCore,
+  judgeIntegrityCore,
+  judgeTargetFitCore,
+  judgeCustomCriterionCore,
+  personaValidator,
+  briefValidator,
+  projectBriefValidator,
+  writerProfileValidator,
+  responseLocaleValidator,
+};
+export type { InterviewTurnResult };

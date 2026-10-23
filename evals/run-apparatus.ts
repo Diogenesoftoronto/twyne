@@ -16,9 +16,9 @@
  * the evaluable quality is the relevance judgement downstream of it).
  *
  * Usage:
- *   PORTKEY_API_KEY=pk-xxx bun run eval:apparatus
+ *   bun run eval:apparatus
  *
- * Calls the hosted Portkey gateway; see evals/llm-client.ts.
+ * Calls the Not Organic gateway; see evals/llm-client.ts.
  *
  * Writes evals/apparatus-scores.json.
  */

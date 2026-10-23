@@ -4,6 +4,10 @@ import { internal } from "./_generated/api";
 import { authComponent, createAuth } from "./auth";
 import { reportError } from "./lib/errors";
 import { tokenIdentifierFromIssuerAndSubject } from "./lib/authIdentity";
+import {
+  isIntegrationAiOperation,
+  runIntegrationAiOperation,
+} from "./lib/integrationAiRequests";
 
 /* ── Shared-Lix auth helpers ───────────────────────────────────────
  * The /lsp/* routes are hit by the Lix SDK's sync process, which uses raw
@@ -99,10 +103,35 @@ function integrationPublicError(error: unknown): string {
     "can hold at most",
     "At most 100 citations",
     "Each citation",
+    "Too many requests",
   ];
   return safeFragments.some((fragment) => message.includes(fragment))
     ? message
     : "Integration request failed";
+}
+
+const APPLICATION_ERROR_STATUS: Record<string, number> = {
+  authentication_required: 401,
+  permission_denied: 403,
+  validation_failed: 400,
+  not_found: 404,
+  conflict: 409,
+  rate_limited: 429,
+  configuration_required: 503,
+  provider_unavailable: 503,
+  malformed_response: 502,
+  timeout: 504,
+};
+
+/** `applicationError` payloads survive the action boundary as `error.data`. */
+function integrationApplicationError(
+  error: unknown,
+): { code: string; message: string; status: number } | null {
+  const data = (error as { data?: unknown } | null)?.data;
+  if (!data || typeof data !== "object") return null;
+  const { code, message } = data as { code?: unknown; message?: unknown };
+  if (typeof code !== "string" || typeof message !== "string") return null;
+  return { code, message, status: APPLICATION_ERROR_STATUS[code] ?? 500 };
 }
 
 function integrationRecord(value: unknown): Record<string, unknown> | null {
@@ -263,16 +292,40 @@ http.route({
           });
           break;
         default:
-          return integrationError("Unknown operation", 400);
+          // The model-backed operations: the room, rewrites, the rubric, the
+          // dossier check and the interview, parsed and dispatched by
+          // `lib/integrationAiRequests` so this block stays a switch.
+          if (!isIntegrationAiOperation(body.operation)) {
+            return integrationError("Unknown operation", 400);
+          }
+          data = await runIntegrationAiOperation(
+            ctx,
+            auth.userId,
+            body.operation,
+            body,
+          );
+          break;
       }
       return integrationJson({ ok: true, data });
     } catch (error) {
+      // The AI cores throw structured application errors (`ConvexError` with
+      // a code and a writer-facing message). Those messages are written to be
+      // shown, so they pass through with a status that matches the code.
+      const application = integrationApplicationError(error);
+      if (application) {
+        return integrationJson(
+          { ok: false, error: application.message, code: application.code },
+          application.status,
+        );
+      }
       const message = integrationPublicError(error);
       const status = message.includes("changed since it was read")
         ? 409
-        : message === "Integration request failed"
-          ? 500
-          : 400;
+        : message.includes("Too many requests")
+          ? 429
+          : message === "Integration request failed"
+            ? 500
+            : 400;
       return integrationError(message, status);
     }
   }),

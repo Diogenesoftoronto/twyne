@@ -2,10 +2,10 @@
 
 `evals/optimize_prompts.py` runs the
 [vendored `prompt-learning` SDK](../tools/prompt-learning/TOOLS_PATCHES.md)
-against one of our `.md` prompt files. Three things make it usable where
-the upstream SDK was not: the SDK is locally patched to accept modern
-models (`gpt-5`, `claude-sonnet-5`, `gemini-3.1-pro`, …) and to route
-through our Portkey gateway.
+against one of our `.md` prompt files. The wrapper supplies a Not Organic
+provider and accepts the hosted text aliases `fast`, `balanced`, and `reasoning`.
+The shared TypeScript client handles assertion exchange, DPoP, metering and
+idempotency; the Python provider reserves the approved per-call ceiling.
 
 ## One-time setup
 
@@ -42,15 +42,13 @@ the eval output with `rubric-scores.json` and emits a CSV.
 ```bash
 # dry-run: load + parse everything, skip the optimizer (no API call)
 bun run prompts:optimize:dry -- --prompt integrity-judge-system \
-    --csv evals/datasets/integrity-judge.csv --model gpt-5
+    --csv evals/datasets/integrity-judge.csv --model reasoning
 
-# real run (needs OPENAI_API_KEY + OPENAI_BASE_URL in env, or Portkey creds)
-export OPENAI_API_KEY="$(skate get portkey_twyne_api_key)"
-export OPENAI_BASE_URL="https://api.portkey.ai/v1"
-export PORTKEY_PROVIDER="openai"
-export PORTKEY_VIRTUAL_KEY="<from Portkey dashboard>"
-bun run prompts:optimize -- --prompt integrity-judge-system \
-    --csv evals/datasets/integrity-judge.csv --model gpt-5 --budget 2.00
+# Real run: load Not Organic assertion settings, TWYNE_EVAL_DID, and an
+# approved TWYNE_EVAL_MAX_COST_MICROUSD from your protected secret store.
+# See README.notorganic.md. No upstream key belongs in this tool.
+python evals/optimize_prompts.py --prompt integrity-judge-system \
+    --csv evals/datasets/integrity-judge.csv --model reasoning --budget 2.00
 ```
 
 The driver writes `prompts/integrity-judge-system.md.new` (not in place)
@@ -64,10 +62,11 @@ bun test  # verify regression tests still pass
 
 ## Cost guardrails
 
-`--budget` is a USD ceiling for the optimizer's own LLM calls. The SDK
-aborts gracefully when the budget runs out, returning whatever candidate
-it had at that point. A typical run on 50 rows with `gpt-5` lands around
-**$0.30–$1.00** depending on prompt length; start with `--budget 2.00`.
+`--budget` is a required USD ceiling for a live run. The subprocess provider
+reserves the entire `TWYNE_EVAL_MAX_COST_MICROUSD` before every logical call,
+including uncertain failures. This conservative accounting may stop before
+actual charges reach the run ceiling. The gateway separately enforces wallet
+access and the per-call ceiling. Failed or incomplete runs do not stage a prompt.
 
 ## Inspecting candidate quality
 
@@ -77,9 +76,8 @@ is _always_ a candidate. The decision to take it is yours, in the diff
 review. Treat the output as "a colleague proposed this", not "the system
 decided this".
 
-## When the patches are no longer needed
+## Updating the SDK
 
-If/when upstream lands (a) the modern-model allowlist natively and
-(b) gateway support, drop the three patches in
-`tools/prompt-learning/optimizer_sdk/{constants,prompt_learning_optimizer,tiktoken_splitter}.py`
-and delete `TOOLS_PATCHES.md`. See that file for the upgrade recipe.
+Preserve the custom provider injection interface and run the offline contracts
+when updating the vendored SDK. See `TOOLS_PATCHES.md` for the integration and
+`README.notorganic.md` for server-only configuration.

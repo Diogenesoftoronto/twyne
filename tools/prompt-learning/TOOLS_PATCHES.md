@@ -1,53 +1,28 @@
-# Patches applied to the vendored `prompt-learning` SDK
+# Twyne integration of the vendored prompt-learning SDK
 
-The upstream SDK pinned to `main` only accepts `["o1", "o3", "gpt-4o", "gpt-4",
-"gpt-3.5-turbo", "gpt-3.5"]` in its `SUPPORTED_MODELS` allowlist, hardcodes an
-OpenAI client with no `base_url` threading, and falls back to `tiktoken` for
-cost budgeting (which has no encoders for Claude/Gemini or for any GPT-5.x
-variant). Together those three things blocked us from using modern models
-through our Portkey gateway.
+Twyne invokes this SDK from `evals/optimize_prompts.py` with a dedicated
+`NotOrganicOptimizerProvider`. It starts `evals/notorganic-chat.ts` as a Bun
+subprocess and exchanges prompts/results over stdin/stdout. No local HTTP
+listener is exposed. The TypeScript client reuses the application assertion
+exchange, DPoP signing, approved generation ceiling, and retry idempotency.
 
-We bake the three patches locally so the next upgrade from upstream is a
-visible diff. Each patch is wrapped in a `# twyne extension (see
-TOOLS_PATCHES.md):` comment so `git grep "twyne extension"` finds it later.
+Live runs require an explicitly selected account DID, assertion signing
+configuration, a per-call ceiling, and `--budget`. The Python provider reserves
+the full per-call ceiling before dispatch, conservatively bounding the run.
+The wrapper refuses to write a candidate when the SDK catches a provider error.
+See `evals/README.notorganic.md` for setup and offline checks.
 
-## Patches
+The local model allowlist includes the hosted text aliases `fast`, `balanced`,
+and `reasoning`. The SDK's approximate token counter is selected for this custom
+provider. Modern direct-model names remain in the vendored allowlist for
+upstream compatibility; the Twyne wrapper accepts only hosted aliases.
 
-### `optimizer_sdk/constants.py` — extend `SUPPORTED_MODELS`
+When upgrading the vendored SDK, preserve the provider injection interface and
+rerun Twyne's client and optimizer contract tests. Do not reintroduce upstream
+credential routing in the Twyne wrapper.
 
-Append the modern OpenAI, Anthropic, and Google model names that we want
-to be able to call via Portkey. The SDK's allowlist was the only thing
-keeping us from naming e.g. `gpt-5` or `claude-sonnet-5`.
-
-### `optimizer_sdk/prompt_learning_optimizer.py` — read `OPENAI_BASE_URL`
-
-The OpenAI fallback path constructs `OpenAI(api_key=...)` with no way to
-route through a gateway. We add three env-var hooks:
-
-- `OPENAI_BASE_URL` — sets the gateway URL.
-- `PORTKEY_PROVIDER` — sets the `x-portkey-provider` header (e.g. `openai`,
-  `anthropic`, `google`).
-- `PORTKEY_VIRTUAL_KEY` — sets the `x-portkey-api-key` header for a virtual
-  key configured in the Portkey dashboard.
-
-Net change: three short lines when env vars are unset (the SDK still calls
-raw OpenAI as before), and a route through Portkey when they are set.
-
-### `optimizer_sdk/tiktoken_splitter.py` — modern-model fallback
-
-`gpt-5.6-*`, `claude-*`, and `gemini-*` have no `tiktoken` encoders. The
-SDK uses `tiktoken` to estimate tokens for cost budgeting and batch sizing
-only, not for any correctness, so falling through to the `gpt-4` encoder
-for these is an adequate length proxy.
-
-## How to upgrade from upstream
-
-```bash
-# from the repo root
-git clone --depth 1 https://github.com/Arize-ai/prompt-learning.git /tmp/upstream-pl
-diff -ru tools/prompt-learning/optimizer_sdk/ /tmp/upstream-pl/optimizer_sdk/
-# apply the same three local patches, in the same files
-```
-
-The intent is that when upstream accepts modern models natively (or grows
-its own gateway support), we delete this file and undo the patches.
+The wrapper imports the actual vendored optimizer module. The SDK no longer
+imports an unused removed Phoenix class. This snapshot lacked the two default
+meta-prompt constants required at import time; explicit local revision templates
+now preserve task constraints and placeholders. MetaPrompt no longer writes
+raw prompt/dataset contents to an unsolicited `metaprompt.txt` file.

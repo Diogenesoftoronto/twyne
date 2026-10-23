@@ -81,8 +81,6 @@ class MetaPrompt:
 
         if annotations:
             content = content.replace("{annotations}", "\n".join(annotations))
-        with open("metaprompt.txt", "w") as f:
-            f.write(content)
         return content
 
     def format_template_with_vars(

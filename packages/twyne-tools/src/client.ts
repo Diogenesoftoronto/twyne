@@ -4,6 +4,22 @@ import {
   type Credentials,
 } from "./config.js";
 import type {
+  AskEditorInput,
+  CheckDossierInput,
+  ConveneRoomInput,
+  DossierCheckResult,
+  EditorNote,
+  EditorSummary,
+  FindResearchTargetsInput,
+  GradeDraftInput,
+  InterviewTurnInput,
+  InterviewTurnResult,
+  RubricGrade,
+  ResearchTargetsResult,
+  ResearchSourcesResult,
+  SearchResearchSourcesInput,
+  SuggestRewriteInput,
+  SuggestRewriteResult,
   CitationEntry,
   Folio,
   FolioBundle,
@@ -122,6 +138,77 @@ export class TwyneClient {
 
   listFolios(signal?: AbortSignal): Promise<Folio[]> {
     return this.request({ operation: "folios.list" }, signal);
+  }
+
+  private modelRequest<T>(
+    operation: string,
+    input: object,
+    signal?: AbortSignal,
+  ): Promise<T> {
+    const fields = Object.fromEntries(
+      Object.entries(input).filter(([, value]) => value !== undefined),
+    );
+    return this.request({ ...fields, operation }, signal);
+  }
+
+  listEditors(signal?: AbortSignal): Promise<EditorSummary[]> {
+    return this.request({ operation: "editors.list" }, signal);
+  }
+
+  conveneRoom(
+    input: ConveneRoomInput,
+    signal?: AbortSignal,
+  ): Promise<{ notes: EditorNote[] }> {
+    return this.modelRequest("room.convene", input, signal);
+  }
+
+  askEditor(
+    input: AskEditorInput,
+    signal?: AbortSignal,
+  ): Promise<{ note: EditorNote }> {
+    return this.modelRequest("editor.ask", input, signal);
+  }
+
+  suggestRewrite(
+    input: SuggestRewriteInput,
+    signal?: AbortSignal,
+  ): Promise<SuggestRewriteResult> {
+    return this.modelRequest("rewrite.suggest", input, signal);
+  }
+
+  gradeDraft(
+    input: GradeDraftInput,
+    signal?: AbortSignal,
+  ): Promise<RubricGrade> {
+    return this.modelRequest("rubric.grade", input, signal);
+  }
+
+  checkDossier(
+    input: CheckDossierInput,
+    signal?: AbortSignal,
+  ): Promise<DossierCheckResult> {
+    return this.modelRequest("dossier.check", input, signal);
+  }
+
+  interviewTurn(
+    input: InterviewTurnInput,
+    signal?: AbortSignal,
+  ): Promise<InterviewTurnResult> {
+    return this.modelRequest("interview.turn", input, signal);
+  }
+
+  findResearchTargets(
+    input: FindResearchTargetsInput,
+    signal?: AbortSignal,
+  ): Promise<ResearchTargetsResult> {
+    return this.modelRequest("research.targets", input, signal);
+  }
+
+  searchResearchSources(
+    input: SearchResearchSourcesInput,
+    signal?: AbortSignal,
+  ): Promise<ResearchSourcesResult> {
+    return this.modelRequest("research.sources", input, signal);
   }
 
   getFolio(

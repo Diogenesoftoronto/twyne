@@ -24,25 +24,42 @@
  * lighter runtime starts faster for what is a ~380 ms call.
  */
 
-import { action, type ActionCtx } from "./_generated/server";
+import { action, internalAction, type ActionCtx } from "./_generated/server";
 import { makeFunctionReference } from "convex/server";
-import { v } from "convex/values";
+import { v, type ObjectType } from "convex/values";
 import {
   directJudgementKey,
   judgementQuestions,
   validJudgementResponse,
 } from "./lib/judgementContract";
+import {
+  judgementTransport,
+  type JudgementTransport,
+} from "./lib/hostedTransports";
+import {
+  callerFromIdentity,
+  callerFromTokenIdentifier,
+  type HostedCaller,
+} from "./lib/authIdentity";
 import { userIsPro } from "./lib/entitlement";
 import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
 import {
   issueNotOrganicAccessToken,
-  notOrganicEnabled,
   notOrganicIssuer,
   providerJsonRequest,
 } from "./lib/notorganic";
 
-/** Direct TypeSafe endpoint. Local development only — see the module header. */
-const DIRECT_ENDPOINT = "https://api.typesafe.ai/v1/systemone";
+/**
+ * Direct TypeSafe endpoint. Local development only — see the module header.
+ * `TYPESAFE_BASE_URL` points it elsewhere when set, which is how a test stands
+ * a stub in for Jev; it has no effect on the Not Organic path.
+ */
+function directEndpoint(): string {
+  const base = process.env.TYPESAFE_BASE_URL?.trim();
+  return base
+    ? `${base.replace(/\/$/, "")}/v1/systemone`
+    : "https://api.typesafe.ai/v1/systemone";
+}
 const DEFAULT_MODEL = "jev-latest";
 
 /**
@@ -81,18 +98,11 @@ function directApiKey(): string | null {
   return directJudgementKey(process.env);
 }
 
-export type JudgementTransport = "notorganic" | "direct" | "none";
+export type { JudgementTransport };
 
-/**
- * Not Organic wins whenever it is enabled, even if a direct key is also
- * present. A deployment that has both is a developer machine mid-migration,
- * and silently preferring the local key there would mean shipping a surface
- * that was never exercised against the real boundary.
- */
+/** See `judgementTransport` in `lib/hostedTransports` for the precedence rule. */
 function transport(): JudgementTransport {
-  if (notOrganicEnabled()) return "notorganic";
-  if (directApiKey()) return "direct";
-  return "none";
+  return judgementTransport();
 }
 
 /** Whether the deployment can answer at all, so the client can hide the tier. */
@@ -129,15 +139,13 @@ export interface JudgementResponse {
  */
 async function askNotOrganic(
   ctx: ActionCtx,
+  caller: HostedCaller,
   body: Record<string, unknown>,
 ): Promise<
   { ok: true; body: JudgementResponse } | { ok: false; error: string }
 > {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) return { ok: false, error: "signed out" };
-
   const link = await ctx.runQuery(linkedDidReference, {
-    productSubject: identity.subject || identity.tokenIdentifier,
+    productSubject: caller.subject,
   });
   if (!link) return { ok: false, error: "account not linked" };
 
@@ -193,7 +201,7 @@ async function askDirect(
 > {
   let res: Response;
   try {
-    res = await fetch(DIRECT_ENDPOINT, {
+    res = await fetch(directEndpoint(), {
       method: "POST",
       signal: AbortSignal.timeout(30_000),
       headers: {
@@ -228,46 +236,81 @@ async function askDirect(
   }
 }
 
+const askArgs = {
+  state: v.record(v.string(), v.string()),
+  questions: v.record(v.string(), questionValidator),
+  model: v.optional(v.string()),
+  /**
+   * The writer's own TypeSafe key. TypeSafe's API refuses browser requests,
+   * so a bring-your-own-key judgement is relayed from here. The key is used
+   * for this one request and never stored or logged.
+   */
+  apiKey: v.optional(v.string()),
+};
+
+const askReturns = v.object({
+  ok: v.boolean(),
+  model: v.optional(v.string()),
+  answers: v.optional(v.record(v.string(), v.any())),
+  usage: v.optional(
+    v.object({ input_tokens: v.number(), output_tokens: v.number() }),
+  ),
+  transport: v.optional(
+    v.union(
+      v.literal("notorganic"),
+      v.literal("direct"),
+      v.literal("none"),
+      v.literal("byok"),
+    ),
+  ),
+  error: v.optional(v.string()),
+});
+
+interface AskResult {
+  ok: boolean;
+  model?: string;
+  answers?: Record<string, unknown>;
+  usage?: { input_tokens: number; output_tokens: number };
+  transport?: JudgementTransport | "byok";
+  error?: string;
+}
+
 export const ask = action({
-  args: {
-    state: v.record(v.string(), v.string()),
-    questions: v.record(v.string(), questionValidator),
-    model: v.optional(v.string()),
-    /**
-     * The writer's own TypeSafe key. TypeSafe's API refuses browser requests,
-     * so a bring-your-own-key judgement is relayed from here. The key is used
-     * for this one request and never stored or logged.
-     */
-    apiKey: v.optional(v.string()),
+  args: askArgs,
+  returns: askReturns,
+  handler: async (ctx, args): Promise<AskResult> => {
+    const identity = await ctx.auth.getUserIdentity();
+    return askCore(ctx, identity ? callerFromIdentity(identity) : null, args);
   },
-  returns: v.object({
-    ok: v.boolean(),
-    model: v.optional(v.string()),
-    answers: v.optional(v.record(v.string(), v.any())),
-    usage: v.optional(
-      v.object({ input_tokens: v.number(), output_tokens: v.number() }),
+});
+
+/**
+ * The same judgement for a caller the server already trusts — the owner of a
+ * personal access token, or the editors' review and research during a note.
+ * Spends the owner's quota and rate limit exactly as {@link ask} would.
+ */
+export const askAs = internalAction({
+  args: { ownerId: v.string(), ...askArgs },
+  returns: askReturns,
+  handler: async (ctx, { ownerId, ...args }): Promise<AskResult> =>
+    askCore(
+      ctx,
+      { tokenIdentifier: ownerId, subject: subjectOf(ownerId) },
+      args,
     ),
-    transport: v.optional(
-      v.union(
-        v.literal("notorganic"),
-        v.literal("direct"),
-        v.literal("none"),
-        v.literal("byok"),
-      ),
-    ),
-    error: v.optional(v.string()),
-  }),
-  handler: async (
-    ctx,
-    args,
-  ): Promise<{
-    ok: boolean;
-    model?: string;
-    answers?: Record<string, unknown>;
-    usage?: { input_tokens: number; output_tokens: number };
-    transport?: JudgementTransport | "byok";
-    error?: string;
-  }> => {
+});
+
+/**
+ * The judgement itself. `caller` is null only on the public path when nobody
+ * is signed in; the checks before the sign-in gate keep their order so an
+ * anonymous call with no questions still hears "no questions", as before.
+ */
+async function askCore(
+  ctx: ActionCtx,
+  caller: HostedCaller | null,
+  args: ObjectType<typeof askArgs>,
+): Promise<AskResult> {
+  {
     const ownKey = args.apiKey?.trim();
     if (ownKey !== undefined && (ownKey.length < 8 || ownKey.length > 512))
       return { ok: false, transport: "byok", error: "unauthorized" };
@@ -290,8 +333,7 @@ export const ask = action({
       return { ok: false, error: "state too large" };
     }
 
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return { ok: false, error: "signed out" };
+    if (!caller) return { ok: false, error: "signed out" };
     let questions;
     try {
       questions = judgementQuestions(args.questions);
@@ -299,14 +341,11 @@ export const ask = action({
       return { ok: false, error: "malformed" };
     }
     // The writer's own key spends the writer's own quota, not Twyne's.
-    if (identity && via !== "byok") {
-      const isPro = await userIsPro(
-        ctx,
-        identity.subject || identity.tokenIdentifier,
-      );
+    if (via !== "byok") {
+      const isPro = await userIsPro(ctx, caller.subject);
       await consumeRateLimit(ctx, {
         action: "systemOne:ask",
-        identifier: identity.tokenIdentifier,
+        identifier: caller.tokenIdentifier,
         ...(isPro ? RATE_LIMITS.systemOne : RATE_LIMITS.systemOneFree),
       });
     }
@@ -323,7 +362,7 @@ export const ask = action({
       via === "byok"
         ? await askDirect(ownKey!, payload)
         : via === "notorganic"
-          ? await askNotOrganic(ctx, {
+          ? await askNotOrganic(ctx, caller, {
               state: args.state,
               questions,
               ...(args.model ? { model: args.model } : {}),
@@ -340,5 +379,10 @@ export const ask = action({
       answers: result.body.answers,
       usage: result.body.usage,
     };
-  },
-});
+  }
+}
+
+/** The product subject of a stored owner id; see `lib/authIdentity`. */
+function subjectOf(ownerId: string): string {
+  return callerFromTokenIdentifier(ownerId).subject;
+}

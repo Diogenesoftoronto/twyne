@@ -15,22 +15,16 @@
  *
  * All probes share the same rubric wording as `evals/judge.ts`'s
  * FAITHFULNESS_TEMPLATE so verdicts are directly comparable to the real eval
- * pipeline. The harness reuses:
- *
- *   - Header-only Bifrost auth (NEVER a bearer; Bifrost 401s on it).
- *   - Retry-with-backoff caller that covers 5xx / 504 / 408 AND 429
- *     `concurrent_budget_exceeded` — this suite makes ~60 sequential calls
- *     and the gateway caps concurrency, so 429 backpressure is expected.
- *   - Defensive JSON parsing (strip ``` fences, extract first {...}).
- *
- * All calls are SEQUENTIAL — never fire concurrent requests. Bifrost caps
- * concurrent calls per virtual key.
+ * pipeline. Calls use the shared Not Organic assertion, DPoP, metering,
+ * idempotency and retry contracts. Probes run sequentially.
  *
  * Usage:
- *   BIFROST_BASE_URL=https://... BIFROST_API_KEY=sk_bf_xxx \
- *     JUDGE_MODEL=neuralwatt/qwen3.5-397b-fast bun run eval:robustness
- *   # optional:
- *   JUDGE_MODEL_2=neuralwatt/kimi-k2.6 bun run eval:robustness
+ *   bun run eval:robustness
+ *   # optional second hosted alias:
+ *   JUDGE_MODEL_2=balanced bun run eval:robustness
+ *
+ * See evals/README.notorganic.md for the explicit funding DID, signing
+ * configuration and per-call ceiling required before a paid run.
  *
  * Writes evals/robustness-scores.json. Process exits non-zero on hard failure
  * (network/parse after retries) OR on any FAIL of probes 1, 2, 3, 4, 5, or 6.
@@ -39,13 +33,11 @@
 import { writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { chatCompletion, JUDGE_MODEL, evalConfiguration } from "./llm-client";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCORES_PATH = resolve(HERE, "robustness-scores.json");
 
-const BIFROST_BASE_URL = process.env.BIFROST_BASE_URL;
-const BIFROST_API_KEY = process.env.BIFROST_API_KEY;
-const JUDGE_MODEL = process.env.JUDGE_MODEL ?? "neuralwatt/qwen3.5-397b-fast";
 const JUDGE_MODEL_2 = process.env.JUDGE_MODEL_2 ?? "";
 
 // ---------------------------------------------------------------------------
@@ -282,130 +274,17 @@ const F_VERBOSE_GENERIC =
   `before you ship it. Proofread for typos and consistency.`;
 
 // ---------------------------------------------------------------------------
-// Bifrost caller (header-only auth, retry on 5xx/504/408 + 429 + network).
-// All calls are issued SEQUENTIALLY — Bifrost caps concurrency.
+// Hosted caller — retries retain the shared logical generation identity.
 // ---------------------------------------------------------------------------
 
-const RETRY_DELAYS_MS = [1_500, 4_000, 8_000];
-const MAX_ATTEMPTS = 4;
-
-interface BifrostError extends Error {
-  status?: number;
-}
-
-async function callBifrostOnce(
-  body: Record<string, unknown>,
-  signal: AbortSignal,
-): Promise<string> {
-  const res = await fetch(
-    `${BIFROST_BASE_URL!.replace(/\/$/, "")}/chat/completions`,
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-bifrost-api-key": BIFROST_API_KEY ?? "",
-      },
-      body: JSON.stringify(body),
-      signal,
-    },
-  );
-  if (!res.ok) {
-    const text = await res.text();
-    const err: BifrostError = new Error(
-      `Bifrost ${res.status}: ${text.slice(0, 300)}`,
-    );
-    err.status = res.status;
-    throw err;
-  }
-  const json = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const content = json.choices?.[0]?.message?.content;
-  if (typeof content !== "string") {
-    throw new Error("Bifrost response missing choices[0].message.content");
-  }
-  return content;
-}
-
-function sleep(ms: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const t = setTimeout(resolve, ms);
-    if (signal.aborted) {
-      clearTimeout(t);
-      reject(signal.reason ?? new Error("aborted"));
-      return;
-    }
-    signal.addEventListener(
-      "abort",
-      () => {
-        clearTimeout(t);
-        reject(signal.reason ?? new Error("aborted"));
-      },
-      { once: true },
-    );
-  });
-}
-
-/**
- * Retry wrapper. Retries on:
- *   - network errors (TypeError, FetchError, UndiciError)
- *   - HTTP 5xx, 504, 408, and 429 (concurrent_budget_exceeded from Bifrost)
- *
- * All other 4xx propagate immediately. The per-call AbortSignal is owned by
- * the caller and is left untouched across attempts.
- */
-async function callBifrostWithRetry(
-  body: Record<string, unknown>,
-  signal: AbortSignal,
-): Promise<string> {
-  let lastErr: Error | null = null;
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
-    try {
-      return await callBifrostOnce(body, signal);
-    } catch (err) {
-      const e = err as BifrostError;
-      lastErr = e;
-      const isAbort = e.name === "AbortError";
-      const status = e.status;
-      const retryableNetwork =
-        e instanceof TypeError ||
-        e.name === "FetchError" ||
-        e.name === "UndiciError";
-      const retryableStatus =
-        typeof status === "number" &&
-        (status === 504 || status === 408 || status === 429 || status >= 500);
-      const shouldRetry =
-        attempt < MAX_ATTEMPTS - 1 &&
-        !isAbort &&
-        (retryableNetwork || retryableStatus);
-      if (!shouldRetry) throw e;
-      const delay =
-        RETRY_DELAYS_MS[Math.min(attempt, RETRY_DELAYS_MS.length - 1)];
-      await sleep(delay, signal);
-    }
-  }
-  throw lastErr ?? new Error("Bifrost call failed");
-}
-
-async function callBifrost(
+async function callHosted(
   system: string,
   user: string,
   model: string,
   temperature: number,
   signal: AbortSignal,
 ): Promise<string> {
-  if (!BIFROST_BASE_URL) {
-    throw new Error("BIFROST_BASE_URL is required");
-  }
-  const body: Record<string, unknown> = {
-    model,
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ],
-    temperature,
-  };
-  return callBifrostWithRetry(body, signal);
+  return chatCompletion({ system, user, model, temperature, signal });
 }
 
 // ---------------------------------------------------------------------------
@@ -480,7 +359,7 @@ async function judgeGrounded(
   model: string = JUDGE_MODEL,
   temperature: number = 0,
 ): Promise<LlmVerdict> {
-  const raw = await callBifrost(
+  const raw = await callHosted(
     GROUNDED_SYSTEM(["grounded", "generic"]),
     prompt,
     model,
@@ -498,7 +377,7 @@ async function judgePairwise(
   signal: AbortSignal,
   model: string = JUDGE_MODEL,
 ): Promise<LlmVerdict> {
-  const raw = await callBifrost(
+  const raw = await callHosted(
     GROUNDED_SYSTEM(["a", "b"]),
     PAIRWISE_RUBRIC(draft, a, b, first),
     model,
@@ -1252,12 +1131,7 @@ interface RobustnessArtifact {
 }
 
 async function main(): Promise<void> {
-  if (!BIFROST_BASE_URL || !BIFROST_API_KEY) {
-    console.error(
-      "[twyne:robustness] BIFROST_BASE_URL and BIFROST_API_KEY are required",
-    );
-    process.exit(1);
-  }
+  evalConfiguration();
 
   console.log(
     `[twyne:robustness] judge=${JUDGE_MODEL}` +

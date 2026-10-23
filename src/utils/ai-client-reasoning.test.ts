@@ -16,7 +16,12 @@ import type { ClientUsageAttemptInput } from "./usage-ledger";
 
 /** Replies handed to the mocked provider, one per call. */
 let replies: string[] = [];
-let calls: { prompt: string; system?: string }[] = [];
+let calls: {
+  prompt: string;
+  system?: string;
+  model: unknown;
+  providerOptions?: unknown;
+}[] = [];
 let usageAttempts: ClientUsageAttemptInput[] = [];
 
 // These mocks are process-global under Bun's full-suite worker, so re-register
@@ -39,11 +44,15 @@ mock.module("ai", () => ({
   generateText: async ({
     prompt,
     system,
+    model,
+    providerOptions,
   }: {
     prompt: string;
     system?: string;
+    model: unknown;
+    providerOptions?: unknown;
   }) => {
-    calls.push({ prompt, system });
+    calls.push({ prompt, system, model, providerOptions });
     return {
       text: replies[calls.length - 1] ?? "",
       totalUsage: { inputTokens: 10, outputTokens: 10 },
@@ -67,9 +76,17 @@ mock.module("./ai-evals", () => ({
 // plain `./ai-client` import here can resolve to that mock instead of the
 // real module. Import a private instance — same pattern ai-orchestrator.test.ts
 // and ai-client-browser.test.ts use to stay immune to cross-file mocks.
-const { runClientAgent, setClientUsageRecorderForTests } = await import(
-  `./ai-client?ai-client-reasoning-test=${Date.now()}`
-);
+const {
+  runClientAgent,
+  runClientJudge,
+  runClientEvidenceJudge,
+  runClientIntegrityJudge,
+  runClientTargetFitJudge,
+  runClientCustomCriterionJudge,
+  runClientRubricReview,
+  runClientRewrite,
+  setClientUsageRecorderForTests,
+} = await import(`./ai-client?ai-client-reasoning-test=${Date.now()}`);
 
 const DRAFT =
   "Most companies treat AI like a vending machine. You put a prompt in, and a polished paragraph comes out. The paragraph never disappoints anyone.";
@@ -230,3 +247,151 @@ describe("language reaches the model provider", () => {
     }
   });
 });
+
+describe("client rubric readers retry once without inventing scores", () => {
+  const judgeCases = [
+    ["persona", (config: AiSettings) => runClientJudge(request(), config)],
+    [
+      "evidence",
+      (config: AiSettings) => runClientEvidenceJudge(request(), config),
+    ],
+    [
+      "integrity",
+      (config: AiSettings) => runClientIntegrityJudge(request(), config),
+    ],
+    [
+      "target fit",
+      (config: AiSettings) => runClientTargetFitJudge(request(), config),
+    ],
+    [
+      "custom criterion",
+      (config: AiSettings) =>
+        runClientCustomCriterionJudge(
+          {
+            ...request(),
+            label: "Clarity",
+            description: "Explain the point plainly.",
+          },
+          config,
+        ),
+    ],
+  ] as const;
+  const valid = JSON.stringify({
+    score: 8,
+    rationale: "The claim is supported.",
+  });
+
+  for (const [name, judge] of judgeCases) {
+    test(`${name}: empty then valid retries the same model with lower reasoning`, async () => {
+      replies = ["", valid];
+      const config = settings();
+      config.providers[0]!.modelReasoning = {
+        "LFM2.5-2.6B": { type: "effort", value: "high" },
+      };
+      expect(await judge(config)).toEqual({
+        score: 8,
+        rationale: "The claim is supported.",
+        provider: "openai-compatible",
+      });
+      expect(calls).toHaveLength(2);
+      expect(calls[1]!.model).toBe(calls[0]!.model);
+      expect(calls[1]!.system).toBe(calls[0]!.system);
+      expect(calls[1]!.prompt).toBe(
+        `${calls[0]!.prompt}\n\nAnswer now with only the requested JSON object.`,
+      );
+      expect(calls[0]!.providerOptions).toEqual({
+        openai: { reasoningEffort: "high" },
+      });
+      expect(calls[1]!.providerOptions).toEqual({
+        openai: { reasoningEffort: "low" },
+      });
+      expect(usageAttempts.map((attempt) => attempt.attempt)).toEqual([1, 2]);
+      expect(
+        new Set(usageAttempts.map((attempt) => attempt.traceId)).size,
+      ).toBe(1);
+      expect(config.providers[0]!.modelReasoning["LFM2.5-2.6B"]!.value).toBe(
+        "high",
+      );
+    });
+
+    test(`${name}: invalid visible output also retries`, async () => {
+      replies = ["I cannot decide yet.", valid];
+      expect((await judge(settings()))?.score).toBe(8);
+      expect(calls).toHaveLength(2);
+      // Unknown models must not acquire an unsupported reasoning parameter.
+      expect(calls[1]!.providerOptions).toBeUndefined();
+    });
+
+    test(`${name}: two empty replies return null`, async () => {
+      replies = ["", ""];
+      expect(await judge(settings())).toBeNull();
+      expect(calls).toHaveLength(2);
+    });
+
+    test(`${name}: hidden reasoning is never promoted to a score`, async () => {
+      replies = [`<think>${valid}`, `<think>${valid}`];
+      expect(await judge(settings())).toBeNull();
+      expect(calls).toHaveLength(2);
+    });
+
+    test(`${name}: a valid first reading needs no retry`, async () => {
+      replies = [valid];
+      expect((await judge(settings()))?.score).toBe(8);
+      expect(calls).toHaveLength(1);
+    });
+  }
+
+  const reviewRequest = {
+    combined: 70,
+    grade: "B",
+    judgeMean: 8,
+    minJudge: 8,
+    staticTotal: 7,
+    judges: [],
+    staticFeedback: [],
+    brief: null,
+    draftText: DRAFT,
+  };
+
+  test("review retries empty content with a prose instruction", async () => {
+    replies = ["", "  Support the second claim.  "];
+    expect((await runClientRubricReview(reviewRequest, settings()))?.text).toBe(
+      "Support the second claim.",
+    );
+    expect(calls).toHaveLength(2);
+    expect(calls[1]!.prompt).toBe(
+      `${calls[0]!.prompt}\n\nAnswer now with only the requested review.`,
+    );
+  });
+
+  test("review stays null when both attempts contain only reasoning", async () => {
+    replies = ["<think>Still reading", "<think>Still reading"];
+    expect(await runClientRubricReview(reviewRequest, settings())).toBeNull();
+    expect(calls).toHaveLength(2);
+  });
+});
+
+test.each(["sentence", "paragraph"] as const)(
+  "%s rewrite uses the shared fact-preserving task",
+  async (level) => {
+    const original = "Ada visited Toronto on 3 May to explain habeas corpus.";
+    replies = [
+      JSON.stringify({ replacement: original, rationale: "Keep the facts." }),
+    ];
+    const result = await runClientRewrite(
+      { ...request(), original, level },
+      settings(),
+    );
+    expect(result?.replacement).toBe(original);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.prompt).toContain(
+      "Keep every name, number, date, place and term of art",
+    );
+    expect(calls[0]!.prompt).toContain(`PASSAGE:\n"${original}"`);
+    expect(calls[0]!.prompt).toContain(
+      level === "sentence"
+        ? "Keep the replacement to a single sentence."
+        : "The replacement may be up to one paragraph, but no longer than the original.",
+    );
+  },
+);

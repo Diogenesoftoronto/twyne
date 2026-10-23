@@ -110,6 +110,5 @@ export const shapeFeedback = {
   },
   unjudgedFit:
     "Not checked this time, so nothing is held down. Connect an AI provider in Settings to check the draft against the brief.",
-  unreachableEditor:
-    "This editor couldn't be reached, so this 5/10 is a placeholder, not a reading.",
+  unjudgedEditor: "Didn't return a score this time; not counted in the grade.",
 };

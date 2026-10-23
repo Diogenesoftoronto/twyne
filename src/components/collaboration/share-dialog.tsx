@@ -16,7 +16,6 @@ import { api } from "../../../convex/_generated/api";
 import {
   promoteToShared,
   requestActiveDraftSnapshot,
-  startPresence,
   stopPresence,
   stopWatchingRemote,
 } from "../../utils/collaboration";
@@ -60,8 +59,10 @@ export const ShareDialog = component$(
   (props: {
     folioId: string;
     folioName: string;
-    onShared$?: PropFunction<(lixId: string, draftHtml?: string) => void>;
-    onUnshared$?: PropFunction<() => void>;
+    onShared$?: PropFunction<
+      (lixId: string, folioId: string, draftHtml?: string) => Promise<boolean>
+    >;
+    onUnshared$?: PropFunction<(folioId: string) => void>;
   }) => {
     const clientSig = useConvexClient();
     const auth = useAuth();
@@ -86,28 +87,47 @@ export const ShareDialog = component$(
     const presenceSig = useSignal<PresenceUser[]>([]);
 
     // eslint-disable-next-line qwik/no-use-visible-task
-    useVisibleTask$(async ({ track }) => {
+    useVisibleTask$(async ({ track, cleanup }) => {
       const client = track(clientSig);
       const authState = track(auth);
       const folioId = track(() => props.folioId);
       if (!client || !hasAuthenticatedConvexIdentity(authState)) return;
+      let active = true;
+      const accountId = authState.user?.id;
+      const isCurrent = () =>
+        active &&
+        props.folioId === folioId &&
+        auth.value.user?.id === accountId &&
+        hasAuthenticatedConvexIdentity(auth.value);
+      cleanup(() => {
+        active = false;
+      });
 
       // Check if this folio is already shared.
       try {
         const shares = await client.query(api.collaboration.listMyShares, {});
+        if (!isCurrent()) return;
         const match = shares.find((s) => s.folioId === folioId);
         if (match) {
+          // Membership is known even when opening waits for a local review.
           store.shared = true;
           store.lixId = match.lixId;
-          props.onShared$?.(match.lixId);
+          const opened = await props.onShared$?.(match.lixId, folioId);
+          if (!isCurrent() || opened === false) return;
+          store.shared = true;
+          store.lixId = match.lixId;
         } else {
           // The active folio changed and the new one is not shared.
           store.shared = false;
           store.lixId = null;
-          props.onUnshared$?.();
+          await props.onUnshared$?.(folioId);
         }
-      } catch {
-        // Not shared yet — that's fine.
+      } catch (error) {
+        if (isCurrent())
+          store.error = normalizeApplicationError(error, {
+            source: "convex",
+            metadata: { operation: "open-own-share" },
+          });
       }
     });
 
@@ -153,18 +173,32 @@ export const ShareDialog = component$(
       if (!client || !hasAuthenticatedConvexIdentity(auth.value)) return;
       store.sharing = true;
       store.error = null;
+      const folioId = props.folioId;
+      const folioName = props.folioName;
+      const accountId = auth.value.user?.id;
+      const isCurrent = () =>
+        props.folioId === folioId &&
+        auth.value.user?.id === accountId &&
+        hasAuthenticatedConvexIdentity(auth.value);
       try {
-        const draftHtml = requestActiveDraftSnapshot(props.folioId);
-        const { lixId } = await promoteToShared(
+        const draftHtml = requestActiveDraftSnapshot(folioId);
+        const result = await promoteToShared(
           client,
-          props.folioId,
-          props.folioName,
+          folioId,
+          folioName,
           draftHtml,
+          { isCurrent },
         );
+        if (!result || !isCurrent()) return;
+        const { lixId } = result;
+        const opened = await props.onShared$?.(
+          lixId,
+          folioId,
+          result.alreadyShared ? undefined : draftHtml,
+        );
+        if (!isCurrent() || opened === false) return;
         store.lixId = lixId;
         store.shared = true;
-        props.onShared$?.(lixId, draftHtml);
-        startPresence(client, lixId, accountDisplayName(auth.value.user));
       } catch (error) {
         reportApplicationDiagnostic("twyne:collaboration:share", error, {
           operation: "share-folio",
@@ -266,10 +300,13 @@ export const ShareDialog = component$(
         !hasAuthenticatedConvexIdentity(auth.value)
       )
         return;
+      const folioId = props.folioId;
+      const lixId = store.lixId;
       try {
         await client.mutation(api.collaboration.unshareFolio, {
-          lixId: store.lixId,
+          lixId,
         });
+        if (props.folioId !== folioId || store.lixId !== lixId) return;
         stopPresence();
         stopWatchingRemote();
         store.confirmingUnshare = false;
@@ -277,7 +314,7 @@ export const ShareDialog = component$(
         store.lixId = null;
         store.collaborators = [];
         presenceSig.value = [];
-        props.onUnshared$?.();
+        await props.onUnshared$?.(folioId);
       } catch (error) {
         reportApplicationDiagnostic("twyne:collaboration:unshare", error, {
           operation: "unshare-folio",
@@ -361,14 +398,16 @@ export const ShareDialog = component$(
           <>
             <div
               class="fixed inset-0"
-              style="z-index: var(--z-overlay);"
+              // The click-catcher must sit beneath the panel, or every
+              // click inside the panel lands here and closes it.
+              style="z-index: var(--z-dropdown);"
               onClick$={() => {
                 store.open = false;
               }}
             />
             <div
               class="absolute right-0 top-full mt-2 w-80 max-w-[92vw] folio p-4 space-y-3 whitespace-normal [overflow-wrap:anywhere]"
-              style="z-index: var(--z-dropdown);"
+              style="z-index: calc(var(--z-dropdown) + 1);"
             >
               <div class="flex items-center justify-between">
                 <p
@@ -513,6 +552,18 @@ export const ShareDialog = component$(
                   </div>
 
                   {/* Invite link + unshare */}
+                  <button
+                    class="text-xs underline underline-offset-4"
+                    onClick$={async () => {
+                      if (!store.lixId) return;
+                      const { showSharedRecovery } = await import(
+                        "./shared-reconciliation-dialog"
+                      );
+                      await showSharedRecovery(store.lixId);
+                    }}
+                  >
+                    View recovery copies
+                  </button>
                   <div class="flex gap-2 pt-2 border-t border-[var(--color-paper-3)]">
                     <button
                       onClick$={copyInviteLink}

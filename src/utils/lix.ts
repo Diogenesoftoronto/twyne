@@ -4,7 +4,8 @@ import { reconcileTypstSource } from "./typst/document";
  * Lix-backed document store. The bibliography, the draft blocks, and the
  * change proposals all live inside one in-memory Lix blob that gets
  * persisted to IndexedDB. A single Lix instance is lazily opened per tab;
- * subsequent calls re-use it.
+ * subsequent calls re-use it. A shared folio's draft lives in a separate
+ * synced Lix (see "Shared session" below).
  *
  * The heavy work is delegated to `@lix-js/sdk` + `@lix-js/plugin-json`.
  * The file-backed primitives (`readFileAsJson` / `writeFileAsJson`) treat
@@ -22,7 +23,13 @@ import {
 } from "@lix-js/sdk";
 import { plugin as jsonPlugin } from "@lix-js/plugin-json";
 import type { LixChangeProposal, LixVersion } from "../types";
-import { loadLixBlobFromIdb, saveLixBlobToIdb } from "./idb";
+import {
+  loadLixBlobFromIdb,
+  saveLixBlobToIdb,
+  loadSharedLixSnapshotFromIdb,
+  saveSharedLixSnapshotToIdb,
+  type SharedLixSnapshot,
+} from "./idb";
 
 export const DRAFT_PATH = "/draft.json";
 export const BRIEF_PATH = "/brief.json";
@@ -35,7 +42,6 @@ type LixInstance = Awaited<ReturnType<typeof openLixInMemory>>;
 
 let _lix: LixInstance | null = null;
 let _lixPromise: Promise<LixInstance> | null = null;
-let _lixGeneration = 0;
 let _autosaveTimer: ReturnType<typeof setInterval> | null = null;
 let _dirty = false;
 
@@ -43,7 +49,6 @@ export async function getLix(): Promise<LixInstance> {
   if (_lix) return _lix;
   if (_lixPromise) return _lixPromise;
 
-  const generation = _lixGeneration;
   const opening: Promise<LixInstance> = (async () => {
     const existingBlob = await loadLixBlobFromIdb();
 
@@ -52,14 +57,6 @@ export async function getLix(): Promise<LixInstance> {
       providePlugins: [jsonPlugin as unknown as any],
       keyValues: [{ key: "lix_sync", value: "false" }],
     });
-
-    // A shared document may have replaced the singleton while IndexedDB and
-    // SQLite were still opening. Never let that older local instance win the
-    // race and silently become active again.
-    if (generation !== _lixGeneration) {
-      await closeLix({ lix: opened });
-      return getLix();
-    }
 
     _lix = opened;
     startAutosave();
@@ -77,28 +74,256 @@ export async function getLix(): Promise<LixInstance> {
   return opening;
 }
 
-/**
- * Install an already-opened Lix as the one app-wide instance.
+/* ── Shared session: one folio's draft, synced through the relay ──
  *
- * Joining used to leave the shared database in a local variable while every
- * reader and writer continued using the original local singleton. Swapping it
- * here makes the editor, proposal helpers, autosave, and remote polling all
- * observe the same database. Cached mirror state belongs to the old database
- * and must be cleared with it.
+ * A shared document is its own Lix holding a single folio's manuscript. It
+ * lives beside the local store, never in place of it: the local store carries
+ * every folio, the bibliography and pending suggestions, so swapping it in
+ * would push all of that to collaborators, and persisting the shared copy
+ * would overwrite a collaborator's own work. Draft reads and writes for the
+ * shared folio route here; everything else stays local and unsynced.
  */
-export async function replaceLix(next: LixInstance): Promise<void> {
-  const previous = _lix;
-  _lixGeneration += 1;
-  _lix = next;
-  _lixPromise = Promise.resolve(next);
-  _dirty = false;
-  mirroredBlocks.clear();
-  mirroredSources.clear();
-  mirroredOrder.clear();
-  startAutosave();
 
-  if (previous && previous !== next) {
-    await closeLix({ lix: previous });
+interface SharedSession {
+  lixId: string;
+  folioId: string;
+  lix: LixInstance;
+  durable: boolean;
+  saving: Promise<void>;
+  checkpointDraft: SharedLixSnapshot["draft"];
+}
+
+let _shared: SharedSession | null = null;
+
+async function lixFor(folioId: string): Promise<LixInstance> {
+  return _shared?.folioId === folioId ? _shared.lix : getLix();
+}
+
+function forgetMirror(folioId: string) {
+  mirroredBlocks.delete(folioId);
+  mirroredSources.delete(folioId);
+  mirroredOrder.delete(folioId);
+}
+
+export function sharedSessionLixId(): string | null {
+  return _shared?.lixId ?? null;
+}
+
+/** Open an empty Lix that will hold only `folioId`'s manuscript. */
+export async function openShareableLix(
+  folioId: string,
+  isCurrent: () => boolean = () => true,
+): Promise<string | null> {
+  const lix = await openLixInMemory({
+    providePlugins: [jsonPlugin as unknown as any],
+    keyValues: [{ key: "lix_sync", value: "false" }],
+  });
+  const row = await lix.db
+    .selectFrom("key_value")
+    .where("key", "=", "lix_id")
+    .select("value")
+    .executeTakeFirstOrThrow();
+  if (
+    !(await installSharedLix(row.value, folioId, lix, {
+      durable: false,
+      isCurrent,
+    }))
+  ) {
+    await closeLix({ lix });
+    return null;
+  }
+  return row.value;
+}
+
+/** Make `lix` the shared document for `folioId`, closing any previous one. */
+export async function installSharedLix(
+  lixId: string,
+  folioId: string,
+  lix: LixInstance,
+  options: { isCurrent?: () => boolean; durable?: boolean } = {},
+): Promise<boolean> {
+  if (options.isCurrent?.() === false) return false;
+  const next: SharedSession = {
+    lixId,
+    folioId,
+    lix,
+    durable: options.durable ?? true,
+    saving: Promise.resolve(),
+    checkpointDraft: await loadFolioContentSnapshotFromIdb(folioId),
+  };
+  await persistSharedSession(next);
+  if (options.isCurrent?.() === false) return false;
+  await closeSharedLix();
+  if (options.isCurrent?.() === false) return false;
+  _shared = next;
+  forgetMirror(folioId);
+  startAutosave();
+  return true;
+}
+
+/** Restore the document's vector clock and unsent changes before pulling. */
+export async function openCachedSharedLix(
+  lixId: string,
+  folioId: string,
+): Promise<LixInstance | null> {
+  const cached = await loadSharedLixSnapshotFromIdb(lixId);
+  if (!cached || cached.folioId !== folioId) return null;
+  const lix = await openLixInMemory({
+    blob: cached.blob,
+    providePlugins: [jsonPlugin as unknown as any],
+    keyValues: [{ key: "lix_sync", value: "false" }],
+  });
+  try {
+    const draft = await loadFolioContentSnapshotFromIdb(folioId);
+    // The editor can commit to IndexedDB before its Lix debounce runs. Only
+    // replay content changed since this checkpoint; an older unchanged local
+    // snapshot must not roll back remote changes already in the cached Lix.
+    if (
+      draft &&
+      (draft.html !== cached.draft?.html ||
+        draft.typstSource !== cached.draft?.typstSource)
+    ) {
+      const blocks = splitBlocks(draft.html);
+      await lix.db.transaction().execute(async (db) => {
+        await db
+          .deleteFrom("key_value")
+          .where("key", "like", `tw:draft:${folioId}:%`)
+          .execute();
+        await db
+          .insertInto("key_value")
+          .values([
+            ...blocks.map((block) => ({
+              key: blockKey(folioId, block.id),
+              value: block.html,
+            })),
+            {
+              key: orderKey(folioId),
+              value: JSON.stringify(blocks.map((block) => block.id)),
+            },
+            ...(draft.typstSource !== undefined
+              ? [{ key: sourceKey(folioId), value: draft.typstSource }]
+              : []),
+          ])
+          .execute();
+      });
+    }
+    return lix;
+  } catch (error) {
+    await closeLix({ lix });
+    throw error;
+  }
+}
+
+/** Prepare a reviewed copy while sync is still disabled. */
+export async function writeSharedDraft(
+  lix: LixInstance,
+  folioId: string,
+  draft: import("./shared-reconciliation").SharedDraftCopy,
+): Promise<void> {
+  const blocks = splitBlocks(draft.html);
+  await lix.db.transaction().execute(async (db) => {
+    await db
+      .deleteFrom("key_value")
+      .where("key", "like", `tw:draft:${folioId}:%`)
+      .execute();
+    await db
+      .insertInto("key_value")
+      .values([
+        ...blocks.map((block) => ({
+          key: blockKey(folioId, block.id),
+          value: block.html,
+        })),
+        {
+          key: orderKey(folioId),
+          value: JSON.stringify(blocks.map((block) => block.id)),
+        },
+        ...(draft.typstSource !== undefined
+          ? [{ key: sourceKey(folioId), value: draft.typstSource }]
+          : []),
+      ])
+      .execute();
+  });
+}
+
+export async function readSharedDraft(lix: LixInstance, folioId: string) {
+  const blocks = await getDraftBlocks(folioId, lix);
+  const source = await kvGet(lix, sourceKey(folioId));
+  return {
+    html: blocks.map((block) => block.html).join(""),
+    ...(source !== null ? { typstSource: source } : {}),
+  };
+}
+
+async function persistSharedSession(session: SharedSession): Promise<void> {
+  if (!session.durable) return;
+  const saving = session.saving
+    .catch(() => undefined)
+    .then(async () => {
+      const draft = await loadFolioContentSnapshotFromIdb(session.folioId);
+      const blocks = await getDraftBlocks(session.folioId, session.lix);
+      const source = await kvGet(session.lix, sourceKey(session.folioId));
+      if (
+        draft &&
+        draft.html === blocks.map((block) => block.html).join("") &&
+        (draft.typstSource ?? null) === source
+      ) {
+        session.checkpointDraft = {
+          html: draft.html,
+          typstSource: draft.typstSource,
+        };
+      }
+      const blob = await toBlob({ lix: session.lix });
+      await saveSharedLixSnapshotToIdb(session.lixId, {
+        folioId: session.folioId,
+        blob,
+        draft: session.checkpointDraft,
+      });
+    });
+  session.saving = saving;
+  await saving;
+}
+
+export async function persistSharedLix(): Promise<void> {
+  if (_shared) await persistSharedSession(_shared);
+}
+
+export async function sharedLixBlob(): Promise<Blob> {
+  if (!_shared) throw new Error("No shared document is open.");
+  return toBlob({ lix: _shared.lix });
+}
+
+/** Point the shared document at the relay and let the SDK start syncing. */
+export async function enableSharedSync(
+  serverUrl: string,
+  lix: LixInstance | null = _shared?.lix ?? null,
+): Promise<void> {
+  if (!lix) throw new Error("No shared document is open.");
+  for (const [key, value] of [
+    ["lix_server_url", serverUrl],
+    ["lix_sync", "true"],
+  ]) {
+    await kvUpsert(lix, key, value);
+  }
+  if (_shared?.lix === lix) {
+    _shared.durable = true;
+    await persistSharedSession(_shared);
+  }
+}
+
+/**
+ * Close the shared document. Closing its database stops the sync loop. With
+ * `lixId`, only that document is closed, so a late close cannot tear down a
+ * session opened for the next folio.
+ */
+export async function closeSharedLix(lixId?: string): Promise<void> {
+  const previous = _shared;
+  if (!previous || (lixId && previous.lixId !== lixId)) return;
+  _shared = null;
+  forgetMirror(previous.folioId);
+  try {
+    await persistSharedSession(previous);
+  } finally {
+    await closeLix({ lix: previous.lix });
   }
 }
 
@@ -109,14 +334,14 @@ function markDirty() {
 function startAutosave() {
   if (_autosaveTimer) return;
   _autosaveTimer = setInterval(async () => {
-    if (!_dirty || !_lix) return;
+    if (!_dirty || (!_lix && !_shared)) return;
     _dirty = false;
     await persistToIdb();
   }, AUTOSAVE_INTERVAL_MS);
 
   if (typeof window !== "undefined") {
     window.addEventListener("beforeunload", () => {
-      if (_dirty && _lix) {
+      if (_dirty && (_lix || _shared)) {
         _dirty = false;
         void persistToIdb();
       }
@@ -125,9 +350,11 @@ function startAutosave() {
 }
 
 export async function persistToIdb() {
-  if (!_lix) return;
-  const blob = await toBlob({ lix: _lix });
-  await saveLixBlobToIdb(blob);
+  await persistSharedLix();
+  if (_lix) {
+    const blob = await toBlob({ lix: _lix });
+    await saveLixBlobToIdb(blob);
+  }
 }
 
 export async function readFileAsJson<T>(path: string): Promise<T | null> {
@@ -168,8 +395,7 @@ export async function writeFileAsJson(
 
 /* ── key_value primitives ───────────────────────────────────────── */
 
-async function kvGet(key: string): Promise<string | null> {
-  const lix = await getLix();
+async function kvGet(lix: LixInstance, key: string): Promise<string | null> {
   const row = await lix.db
     .selectFrom("key_value")
     .where("key", "=", key)
@@ -178,8 +404,11 @@ async function kvGet(key: string): Promise<string | null> {
   return row?.value ?? null;
 }
 
-async function kvUpsert(key: string, value: string): Promise<void> {
-  const lix = await getLix();
+async function kvUpsert(
+  lix: LixInstance,
+  key: string,
+  value: string,
+): Promise<void> {
   const existing = await lix.db
     .selectFrom("key_value")
     .where("key", "=", key)
@@ -226,8 +455,7 @@ export function splitBlocks(html: string): DraftBlock[] {
  * What we last wrote to Lix, per folio: block id → html, plus the serialized
  * order. Lets a mirror skip blocks the writer did not touch.
  *
- * Safe between singleton replacements because `replaceLix()` clears both
- * caches when a joined database becomes active. If a remote change-set
+ * Session changes clear this folio's caches. If a remote change-set
  * overwrites a block underneath us, the local html is by definition unchanged
  * too, so skipping the write is the correct outcome — the remote value wins,
  * which is the point of pulling it.
@@ -240,7 +468,7 @@ const sourceKey = (folioId: string) => `tw:draft:${folioId}:typst`;
 export async function getDraftTypstSource(
   folioId: string,
 ): Promise<string | null> {
-  return kvGet(sourceKey(folioId));
+  return kvGet(await lixFor(folioId), sourceKey(folioId));
 }
 
 /**
@@ -289,7 +517,7 @@ export async function syncDraftToLix(
   if (!changed.length && !removed.length && !orderChanged && !sourceChanged)
     return;
 
-  const lix = await getLix();
+  const lix = await lixFor(folioId);
   const staleKeys = [
     ...changed.map((b) => blockKey(folioId, b.id)),
     ...removed.map((id) => blockKey(folioId, id)),
@@ -311,15 +539,26 @@ export async function syncDraftToLix(
   mirroredBlocks.set(folioId, next);
   mirroredOrder.set(folioId, order);
   markDirty();
+  if (_shared?.lix === lix) await persistSharedSession(_shared);
 }
 
-export async function getDraftBlocks(folioId: string): Promise<DraftBlock[]> {
-  const order = await kvGet(orderKey(folioId));
+export async function getDraftBlocks(
+  folioId: string,
+  lix?: LixInstance,
+): Promise<DraftBlock[]> {
+  lix ??= await lixFor(folioId);
+  const rows = await lix.db
+    .selectFrom("key_value")
+    .where("key", "like", `tw:draft:${folioId}:%`)
+    .select(["key", "value"])
+    .execute();
+  const values = new Map(rows.map((row) => [row.key, row.value]));
+  const order = values.get(orderKey(folioId));
   if (!order) return [];
   const ids = JSON.parse(order) as string[];
   const blocks: DraftBlock[] = [];
   for (const id of ids) {
-    const html = await kvGet(blockKey(folioId, id));
+    const html = values.get(blockKey(folioId, id));
     if (html != null) blocks.push({ id, html });
   }
   return blocks;
@@ -339,7 +578,7 @@ export async function writeBlockInVersion(
   const lix = await getLix();
   const current = await getCurrentVersion();
   await switchVersion({ lix, to: { id: versionId } });
-  await kvUpsert(blockKey(folioId, blockId), html);
+  await kvUpsert(lix, blockKey(folioId, blockId), html);
   await switchVersion({ lix, to: { id: current.id } });
   markDirty();
 }
@@ -374,7 +613,7 @@ export async function acceptBlockEdit(
   blockId: string,
 ): Promise<string | null> {
   await mergeAgentChanges(versionId);
-  return kvGet(blockKey(folioId, blockId));
+  return kvGet(await getLix(), blockKey(folioId, blockId));
 }
 
 export async function getCurrentVersion(): Promise<LixVersion> {

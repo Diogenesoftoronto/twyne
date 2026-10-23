@@ -26,7 +26,7 @@
  *   kind_accuracy — of matched targets, how many carried the expected kind
  *   mode          — dossierResearchMode() vs the expected mode (no API call)
  *
- * Env: PORTKEY_API_KEY (see evals/llm-client.ts). The mode check runs without it.
+ * Env: Not Organic eval configuration (see evals/README.notorganic.md). The mode check runs without it.
  */
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -154,12 +154,12 @@ function fmtPct(x: number | null): string {
 
 async function main(): Promise<void> {
   const dataset = readDataset();
-  const modeOnly = !process.env.PORTKEY_API_KEY;
+  const modeOnly = process.argv.includes("--mode-only");
 
   if (modeOnly) {
     // The Dossier→mode decision is pure and worth checking on its own; it is
     // what puts the extract pass into fiction or nonfiction discipline.
-    console.log("[twyne:extract] no PORTKEY_API_KEY — mode checks only\n");
+    console.log("[twyne:extract] --mode-only — mode checks only\n");
     let bad = 0;
     for (const row of dataset) {
       const actual = dossierResearchMode(briefFrom(row.answers));

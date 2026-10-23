@@ -12,10 +12,24 @@
  * configured, so the panel never breaks entirely.
  */
 
-import { action } from "./_generated/server";
+import { action, internalAction, type ActionCtx } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { userIsPro } from "./lib/entitlement";
 import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
+import { applicationError } from "./lib/applicationErrors";
+import {
+  callerFromIdentity,
+  callerFromTokenIdentifier,
+  type HostedCaller,
+} from "./lib/authIdentity";
+import {
+  createDpopFetch,
+  issueNotOrganicAccessToken,
+  notOrganicEnabled,
+  notOrganicIssuer,
+  NOTORGANIC_PRODUCT,
+} from "./lib/notorganic";
 
 /* ── Public shape ──────────────────────────────────────────────── */
 
@@ -28,6 +42,16 @@ export interface Source {
   date?: string;
   why?: string;
 }
+
+export const sourceValidator = v.object({
+  title: v.string(),
+  url: v.string(),
+  snippet: v.string(),
+  author: v.optional(v.string()),
+  publisher: v.optional(v.string()),
+  date: v.optional(v.string()),
+  why: v.optional(v.string()),
+});
 
 export interface FetchedSource {
   title: string;
@@ -44,7 +68,7 @@ export interface FetchedSource {
  * Which upstream the hosted path calls, chosen by env so the deployment can
  * change vendors without a code change:
  *
- *   RESEARCH_PROVIDER   tinyfish | exa | tavily | brave | serper | custom
+ *   RESEARCH_PROVIDER   notorganic | tinyfish | exa | tavily | brave | serper | custom
  *   RESEARCH_API_KEY    the key for that provider
  *   RESEARCH_SEARCH_URL overrides the built-in endpoint (required for custom)
  *   RESEARCH_FETCH_URL  url→markdown endpoint, if the provider has one
@@ -52,7 +76,14 @@ export interface FetchedSource {
  * TINYFISH_API_KEY is still honoured so existing deployments keep working.
  */
 
-type ProviderId = "tinyfish" | "exa" | "tavily" | "brave" | "serper" | "custom";
+type KeyProviderId =
+  | "tinyfish"
+  | "exa"
+  | "tavily"
+  | "brave"
+  | "serper"
+  | "custom";
+type ProviderId = KeyProviderId | "notorganic";
 
 interface ProviderSpec {
   searchUrl: string;
@@ -68,7 +99,7 @@ interface ProviderSpec {
   path: (body: unknown) => unknown;
 }
 
-const PROVIDERS: Record<ProviderId, ProviderSpec> = {
+const PROVIDERS: Record<KeyProviderId, ProviderSpec> = {
   tinyfish: {
     searchUrl: "https://api.search.tinyfish.ai/v1/search",
     fetchUrl: "https://api.fetch.tinyfish.ai/v1/fetch",
@@ -180,7 +211,9 @@ function providerId(): ProviderId {
   const raw = (process.env.RESEARCH_PROVIDER ?? "tinyfish")
     .trim()
     .toLowerCase();
-  return raw in PROVIDERS ? (raw as ProviderId) : "tinyfish";
+  return raw === "notorganic" || Object.hasOwn(PROVIDERS, raw)
+    ? (raw as ProviderId)
+    : "tinyfish";
 }
 
 /** The configured key, falling back to the original TinyFish-only variable. */
@@ -224,24 +257,37 @@ function normalize(value: unknown, limit: number): Source[] {
 async function providerSearch(
   query: string,
   context: string,
+  limit: number,
 ): Promise<Source[]> {
   const key = researchApiKey();
-  const spec = PROVIDERS[providerId()];
-  if (!key && providerId() !== "custom") return [];
+  const id = providerId();
+  if (id === "notorganic") throw applicationError("configuration_required");
+  const spec = PROVIDERS[id];
   try {
-    const { url, init } = spec.search(key, query, context, 8);
-    if (!url) return [];
-    const res = await fetch(url, init);
-    if (!res.ok) return [];
-    return normalize(spec.path(await res.json()), 8);
+    const { url, init } = spec.search(key, query, context, limit);
+    const res = await fetch(url, {
+      ...init,
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!res.ok) {
+      await res.body?.cancel();
+      throw new Error("search failed");
+    }
+    const rows = spec.path(await res.json());
+    if (!Array.isArray(rows)) throw new Error("invalid search response");
+    return normalize(rows, limit);
   } catch {
-    return [];
+    throw applicationError("provider_unavailable", {
+      message: "The search service could not answer. Try again shortly.",
+    });
   }
 }
 
 async function providerFetch(url: string): Promise<FetchedSource | null> {
   const key = researchApiKey();
-  const spec = PROVIDERS[providerId()];
+  const id = providerId();
+  if (id === "notorganic") return null;
+  const spec = PROVIDERS[id];
   const endpoint = process.env.RESEARCH_FETCH_URL?.trim() || spec.fetchUrl;
   if (!key || !endpoint) return null;
   try {
@@ -318,42 +364,201 @@ function localFetch(url: string): FetchedSource {
 
 /* ── Convex actions ───────────────────────────────────────────── */
 
+/* ── Not Organic web search ───────────────────────────────────── */
+
+/**
+ * `RESEARCH_PROVIDER=notorganic`: search through Not Organic's metered
+ * `/v1/web/search` as the writer's own linked account. Hosted inference is
+ * already paid from that wallet, so research needs no separate search key —
+ * which matters because a deployment with no `RESEARCH_API_KEY` gives every
+ * hosted writer placeholder results and an Apparatus that never finds a
+ * source. The per-search ceiling is `NOTORGANIC_SEARCH_MAX_COST_MICROUSD`.
+ */
+const NOTORGANIC_SEARCH_DEFAULT_MAX_COST_MICROUSD = 50_000;
+
+function notOrganicSearchSelected(): boolean {
+  return (
+    (process.env.RESEARCH_PROVIDER ?? "").trim().toLowerCase() ===
+      "notorganic" && notOrganicEnabled()
+  );
+}
+
+function notOrganicSearchCeiling(): number {
+  const raw = Number(process.env.NOTORGANIC_SEARCH_MAX_COST_MICROUSD);
+  return Number.isSafeInteger(raw) && raw > 0
+    ? raw
+    : NOTORGANIC_SEARCH_DEFAULT_MAX_COST_MICROUSD;
+}
+
+/** Not Organic's result rows, mapped onto the Apparatus' `Source`. */
+export function notOrganicSources(body: unknown, limit: number): Source[] {
+  const results = (body as { results?: unknown } | null)?.results;
+  if (!Array.isArray(results)) return [];
+  return normalize(
+    results.map((row) => {
+      const r = (row ?? {}) as Record<string, unknown>;
+      return {
+        title: r.title,
+        url: r.url,
+        snippet: r.snippet,
+        date: r.published_at,
+        publisher: typeof r.url === "string" ? hostOf(r.url) : undefined,
+      };
+    }),
+    limit,
+  );
+}
+
+function hostOf(url: string): string | undefined {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return undefined;
+  }
+}
+
+async function notOrganicSearch(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  query: string,
+  limit: number,
+): Promise<Source[]> {
+  const link = await ctx.runQuery(
+    internal.providerIdentity.getLinkedDidBySubject,
+    { productSubject: caller.subject },
+  );
+  if (!link)
+    throw applicationError("configuration_required", {
+      message: "Link your Not Organic account before using hosted research.",
+    });
+  try {
+    const token = await issueNotOrganicAccessToken({
+      did: link.did,
+      feature: "research",
+      capabilities: ["web:search"],
+      sessionVersion: link.sessionVersion,
+    });
+    const res = await createDpopFetch(token, fetch)(
+      `${notOrganicIssuer()}/v1/web/search`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-notorganic-product": NOTORGANIC_PRODUCT,
+          "x-notorganic-feature": "research",
+          "idempotency-key": `twyne_research_${crypto.randomUUID()}`,
+          "x-notorganic-max-cost-microusd": String(notOrganicSearchCeiling()),
+        },
+        body: JSON.stringify({
+          query: query.slice(0, 4096),
+          max_results: limit,
+        }),
+        signal: AbortSignal.timeout(30_000),
+      },
+    );
+    if (!res.ok) {
+      // Never surface the body; it can echo the request.
+      await res.body?.cancel();
+      throw new Error("search failed");
+    }
+    const body: unknown = await res.json();
+    if (!Array.isArray((body as { results?: unknown } | null)?.results)) {
+      throw new Error("invalid search response");
+    }
+    return notOrganicSources(body, limit);
+  } catch {
+    // Upstream/token errors can contain the writer's query or credentials.
+    throw applicationError("provider_unavailable", {
+      message: "The search service could not answer. Try again shortly.",
+    });
+  }
+}
+
+/* ── Search, for a signed-in writer or a token owner ──────────── */
+
+const searchArgs = {
+  query: v.string(),
+  context: v.optional(v.string()),
+  maxResults: v.optional(v.number()),
+};
+
+export interface SearchResult {
+  results: Source[];
+  provider: string;
+}
+
+const searchReturns = v.object({
+  results: v.array(sourceValidator),
+  provider: v.string(),
+});
+
+/** Whether this deployment can search for real, before any request is made. */
+export function liveSearchConfigured(): boolean {
+  const id = providerId();
+  if (id === "notorganic") return notOrganicSearchSelected();
+  if (id === "custom") return !!process.env.RESEARCH_SEARCH_URL?.trim();
+  return !!researchApiKey();
+}
+
+/**
+ * The search itself. `caller` is null for a signed-out visitor, who gets the
+ * deterministic local stub so the Apparatus never breaks.
+ */
+export async function searchSourcesCore(
+  ctx: ActionCtx,
+  caller: HostedCaller | null,
+  args: { query: string; context?: string; maxResults?: number },
+): Promise<SearchResult> {
+  const limit = Math.max(1, Math.min(10, Math.floor(args.maxResults ?? 8)));
+  // Rate limit on the host-provider path. The local stub is free and
+  // unthrottled-by-design (it's what makes the Apparatus never break), but
+  // the bucket is consumed first so a noisy client can't bypass via a
+  // provider that happens to be configured.
+  if (caller) {
+    const isPro = await userIsPro(ctx, caller.subject);
+    await consumeRateLimit(ctx, {
+      action: "research:search",
+      identifier: caller.tokenIdentifier,
+      ...(isPro ? RATE_LIMITS.research : RATE_LIMITS.researchFree),
+    });
+  }
+
+  if (caller && liveSearchConfigured()) {
+    const id = providerId();
+    const results =
+      id === "notorganic"
+        ? await notOrganicSearch(ctx, caller, args.query, limit)
+        : await providerSearch(args.query, args.context ?? "", limit);
+    return { results, provider: id };
+  }
+  return {
+    results: localSearch(args.query, args.context ?? "").slice(0, limit),
+    provider: "local",
+  };
+}
+
 export const searchSources = action({
-  args: { query: v.string(), context: v.optional(v.string()) },
-  handler: async (
-    ctx,
-    args,
-  ): Promise<{ results: Source[]; provider: string }> => {
-    // Live research spends the TinyFish provider key, so it requires a
-    // signed-in user. Pro subscribers get a higher rate-limit tier; signed-out
-    // visitors (and local dev with no key) get the deterministic local stub
-    // so the Apparatus never breaks.
+  args: searchArgs,
+  returns: searchReturns,
+  handler: async (ctx, args): Promise<SearchResult> => {
+    // Live research spends a provider key or the writer's Not Organic wallet,
+    // so it requires a signed-in user. Pro subscribers get a higher
+    // rate-limit tier.
     const identity = await ctx.auth.getUserIdentity();
-
-    // Rate limit on the host-provider path. The local stub is free and
-    // unthrottled-by-design (it's what makes the Apparatus never break), but
-    // the bucket is consumed first so a noisy client can't bypass via a
-    // provider that happens to be configured.
-    const isPro = identity
-      ? await userIsPro(ctx, identity.subject || identity.tokenIdentifier)
-      : false;
-    if (identity) {
-      await consumeRateLimit(ctx, {
-        action: "research:search",
-        identifier: identity.tokenIdentifier,
-        ...(isPro ? RATE_LIMITS.research : RATE_LIMITS.researchFree),
-      });
-    }
-
-    if (identity && researchApiKey()) {
-      const r = await providerSearch(args.query, args.context ?? "");
-      if (r.length > 0) return { results: r, provider: "tinyfish" };
-    }
-    return {
-      results: localSearch(args.query, args.context ?? ""),
-      provider: "local",
-    };
+    return searchSourcesCore(
+      ctx,
+      identity ? callerFromIdentity(identity) : null,
+      args,
+    );
   },
+});
+
+/** The same search for an integration-token owner (`research.sources`). */
+export const searchSourcesAs = internalAction({
+  args: { ownerId: v.string(), ...searchArgs },
+  returns: searchReturns,
+  handler: async (ctx, { ownerId, ...args }): Promise<SearchResult> =>
+    searchSourcesCore(ctx, callerFromTokenIdentifier(ownerId), args),
 });
 
 export const fetchSource = action({
@@ -372,7 +577,7 @@ export const fetchSource = action({
     }
     if (identity && researchApiKey()) {
       const r = await providerFetch(args.url);
-      if (r) return { ...r, provider: "tinyfish" };
+      if (r) return { ...r, provider: providerId() };
     }
     return { ...localFetch(args.url), provider: "local" };
   },

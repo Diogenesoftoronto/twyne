@@ -1,0 +1,1191 @@
+{
+  "version": 1,
+  "source": "https://developers.cloudflare.com/workers-ai/models/clairic/",
+  "cases": [
+    {
+      "name": "unicode code point span",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "text",
+          "value": "Zoë",
+          "guess": "Zoë",
+          "p_null": 0.1,
+          "span": [10, 13]
+        }
+      },
+      "valid": true,
+      "expectedAnswers": {
+        "x": {
+          "type": "text",
+          "value": "Zoë",
+          "guess": "Zoë",
+          "p_null": 0.1,
+          "span": [11, 14]
+        }
+      }
+    },
+    {
+      "name": "unicode utf16 span",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "text",
+          "value": "Zoë",
+          "guess": "Zoë",
+          "p_null": 0.1,
+          "span": [11, 14]
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "span disagrees with value",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "text",
+          "value": "Zoë",
+          "guess": "Zoë",
+          "p_null": 0.1,
+          "span": [0, 3]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "text wrong value type",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "text",
+          "value": 42,
+          "guess": "Zoë",
+          "p_null": 0.1,
+          "span": [11, 14]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "text missing span",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "text",
+          "value": "Zoë"
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "absent text with guessed span",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "text",
+          "value": null,
+          "guess": "Zoë",
+          "p_null": 0.9,
+          "span": [11, 14]
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "absent text without guess",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "text",
+          "value": null,
+          "p_null": 1
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "absence threshold contradiction",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "text",
+          "value": "Zoë",
+          "guess": "Zoë",
+          "p_null": 0.9,
+          "span": [11, 14]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "bad guess type",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "text",
+          "value": null,
+          "guess": 3,
+          "p_null": 0.9,
+          "span": [11, 14]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "bad probability",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "text",
+          "value": "Zoë",
+          "guess": "Zoë",
+          "p_null": 0.1,
+          "span": [11, 14],
+          "confidence": 1.1
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "number scalar",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "number"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "number",
+          "value": 3
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "number wrong type",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "number"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "number",
+          "value": {}
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "duration scalar",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "duration"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "duration",
+          "value": 3
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "duration wrong type",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "duration"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "duration",
+          "value": {}
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "date scalar",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "date"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "date",
+          "value": "2024-02-29"
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "date wrong type",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "date"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "date",
+          "value": {}
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "time scalar",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "time"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "time",
+          "value": "09:42:30"
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "time wrong type",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "time"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "time",
+          "value": {}
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "datetime scalar",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "datetime"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "datetime",
+          "value": "2024-02-29T09:42:30Z"
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "datetime wrong type",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "datetime"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "datetime",
+          "value": {}
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "impossible calendar date",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "date"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "date",
+          "value": "2025-02-29"
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "invalid clock time",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "time"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "time",
+          "value": "29:01"
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "number list",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "list",
+            "items": "number"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "list",
+          "value": [1, 2]
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "number list item mismatch",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "list",
+            "items": "number"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "list",
+          "value": [true]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "number list absent empty",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "list",
+            "items": "number"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "list",
+          "value": []
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "number list cannot be null",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "list",
+            "items": "number"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "list",
+          "value": null
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "date list",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "list",
+            "items": "date"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "list",
+          "value": ["2026-10-21"]
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "date list item mismatch",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "list",
+            "items": "date"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "list",
+          "value": [true]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "date list absent empty",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "list",
+            "items": "date"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "list",
+          "value": []
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "date list cannot be null",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "list",
+            "items": "date"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "list",
+          "value": null
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "text list",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "list",
+            "items": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "list",
+          "value": ["Ada", "Zoë"],
+          "spans": [
+            [0, 3],
+            [11, 14]
+          ]
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "text list item mismatch",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "list",
+            "items": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "list",
+          "value": [true],
+          "spans": [
+            [0, 3],
+            [12, 15]
+          ]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "text list absent empty",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "list",
+            "items": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "list",
+          "value": []
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "text list cannot be null",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "list",
+            "items": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "list",
+          "value": null
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "bounded estimate",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "estimate",
+            "min": 0,
+            "max": 10
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "estimate",
+          "value": 5,
+          "median": 5,
+          "p10": 2,
+          "p90": 8
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "invalid estimate p106",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "estimate",
+            "min": 0,
+            "max": 10
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "estimate",
+          "value": 5,
+          "median": 5,
+          "p10": 6,
+          "p90": 8
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "invalid estimate p904",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "estimate",
+            "min": 0,
+            "max": 10
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "estimate",
+          "value": 5,
+          "median": 5,
+          "p10": 2,
+          "p90": 4
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "invalid estimate median11",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "estimate",
+            "min": 0,
+            "max": 10
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "estimate",
+          "value": 5,
+          "median": 11,
+          "p10": 2,
+          "p90": 8
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "invalid estimate mean11",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "estimate",
+            "min": 0,
+            "max": 10
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "estimate",
+          "value": 5,
+          "median": 5,
+          "p10": 2,
+          "p90": 8,
+          "mean": 11
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "invalid estimate value5",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "estimate",
+            "min": 0,
+            "max": 10
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "estimate",
+          "value": "5",
+          "median": 5,
+          "p10": 2,
+          "p90": 8
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "invalid estimate p10None",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "estimate",
+            "min": 0,
+            "max": 10
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "estimate",
+          "value": 5,
+          "median": 5,
+          "p10": null,
+          "p90": 8
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "date estimate",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "estimate",
+            "min": "2026-10-01",
+            "max": "2026-10-31"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "estimate",
+          "value": "2026-10-15",
+          "median": "2026-10-15",
+          "p10": "2026-10-04",
+          "p90": "2026-10-24"
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "forecast steps",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "forecast",
+            "min": 0,
+            "max": 10,
+            "horizon": 2,
+            "interval": "day"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "forecast",
+          "value": [5, 5],
+          "steps": [
+            {
+              "type": "estimate",
+              "value": 5,
+              "median": 5,
+              "p10": 2,
+              "p90": 8
+            },
+            {
+              "type": "estimate",
+              "value": 5,
+              "median": 5,
+              "p10": 2,
+              "p90": 8
+            }
+          ]
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "forecast parallel arrays",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "forecast",
+            "min": 0,
+            "max": 10,
+            "horizon": 2,
+            "interval": "day"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "forecast",
+          "value": [5, 6],
+          "median": [5, 6],
+          "p10": [2, 3],
+          "p90": [8, 9]
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "forecast short horizon",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "forecast",
+            "min": 0,
+            "max": 10,
+            "horizon": 2,
+            "interval": "day"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "forecast",
+          "value": [5, 5],
+          "steps": [
+            {
+              "type": "estimate",
+              "value": 5,
+              "median": 5,
+              "p10": 2,
+              "p90": 8
+            }
+          ]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "forecast malformed step",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "forecast",
+            "min": 0,
+            "max": 10,
+            "horizon": 2,
+            "interval": "day"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "forecast",
+          "value": [5, 5],
+          "steps": [
+            {
+              "type": "estimate",
+              "value": 5,
+              "median": 5,
+              "p10": 2,
+              "p90": 8
+            },
+            {
+              "type": "estimate",
+              "value": 5,
+              "median": 5,
+              "p10": 2,
+              "p90": 1
+            }
+          ]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "forecast false value array",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "forecast",
+            "min": 0,
+            "max": 10,
+            "horizon": 2,
+            "interval": "day"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "forecast",
+          "value": ["5", "5"],
+          "steps": [
+            {
+              "type": "estimate",
+              "value": 5,
+              "median": 5,
+              "p10": 2,
+              "p90": 8
+            },
+            {
+              "type": "estimate",
+              "value": 5,
+              "median": 5,
+              "p10": 2,
+              "p90": 8
+            }
+          ]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "forecast partial arrays",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "forecast",
+            "min": 0,
+            "max": 10,
+            "horizon": 2,
+            "interval": "day"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "forecast",
+          "value": [5, 6],
+          "median": [5, 6],
+          "p10": [2],
+          "p90": [8, 9]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "extra answer key",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "text",
+          "value": "Zoë",
+          "guess": "Zoë",
+          "p_null": 0.1,
+          "span": [11, 14]
+        },
+        "y": {
+          "type": "text",
+          "value": "Zoë",
+          "guess": "Zoë",
+          "p_null": 0.1,
+          "span": [11, 14]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "missing answer",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {},
+      "valid": false
+    },
+    {
+      "name": "forecast optional means",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "forecast",
+            "min": 0,
+            "max": 10,
+            "horizon": 2,
+            "interval": "day"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "forecast",
+          "value": [5, 6],
+          "median": [5, 6],
+          "p10": [2, 3],
+          "p90": [8, 9],
+          "mean": [5.1, 6.1]
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "forecast out of bounds means",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "forecast",
+            "min": 0,
+            "max": 10,
+            "horizon": 2,
+            "interval": "day"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "forecast",
+          "value": [5, 6],
+          "median": [5, 6],
+          "p10": [2, 3],
+          "p90": [8, 9],
+          "mean": [5, 11]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "forecast short means",
+      "request": {
+        "state": "Ada 🪶 met Zoë on 2026-10-21 and 3 birds.",
+        "fields": {
+          "x": {
+            "type": "forecast",
+            "min": 0,
+            "max": 10,
+            "horizon": 2,
+            "interval": "day"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "forecast",
+          "value": [5, 6],
+          "median": [5, 6],
+          "p10": [2, 3],
+          "p90": [8, 9],
+          "mean": [5]
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "ambiguous repeated unicode source",
+      "request": {
+        "state": "🪶🪶🪶AdaAda",
+        "fields": {
+          "x": {
+            "type": "text"
+          }
+        }
+      },
+      "answers": {
+        "x": {
+          "type": "text",
+          "value": "Ada",
+          "span": [6, 9]
+        }
+      },
+      "valid": false
+    }
+  ]
+}

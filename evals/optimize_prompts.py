@@ -3,14 +3,14 @@
 Optimize one of Twyne's markdown prompt files using Arize's
 `prompt-learning` SDK (vendored under tools/prompt-learning/, see
 TOOLS_PATCHES.md for the local patches that extend the model allowlist
-and route through our Portkey gateway).
+and route through Not Organic with DPoP and account metering).
 
 Usage
 -----
     python evals/optimize_prompts.py \\
         --prompt integrity-judge-system \\
         --csv   evals/datasets/integrity-judge.csv \\
-        --model gpt-5
+        --model reasoning --budget 2.00
 
 The `--prompt` arg is the basenames we use in `src/utils/prompts.ts`'s
 `promptNames` map (no ".md" needed). The CSV must have at minimum:
@@ -51,7 +51,8 @@ SDK_ROOT = REPO_ROOT / "tools" / "prompt-learning"
 sys.path.insert(0, str(SDK_ROOT))
 
 import pandas as pd  # noqa: E402
-from prompt_learning import PromptLearningOptimizer  # noqa: E402
+from optimizer_sdk.prompt_learning_optimizer import PromptLearningOptimizer  # noqa: E402
+from notorganic_optimizer import NotOrganicOptimizerProvider  # noqa: E402
 
 PROMPTS_DIR = REPO_ROOT / "prompts"
 
@@ -75,14 +76,15 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--model",
-        default="gpt-5",
-        help="Model name to use for the meta-prompt optimizer (default: gpt-5)",
+        default="reasoning",
+        choices=["fast", "balanced", "reasoning"],
+        help="Not Organic model alias (default: reasoning)",
     )
     p.add_argument(
         "--budget",
         type=float,
-        default=2.0,
-        help="USD spend limit for the optimization run (default: $2.00)",
+        default=None,
+        help="Explicit USD run ceiling; required for a live run. Each call reserves its full per-call ceiling.",
     )
     p.add_argument(
         "--output",
@@ -195,6 +197,11 @@ def main() -> int:
         )
         return 0
 
+    if args.budget is None:
+        raise ValueError("--budget is required for a live optimization run")
+    provider = NotOrganicOptimizerProvider(args.budget)
+    provider.check()
+
     print(
         f"calling PromptLearningOptimizer(model={args.model}, budget=${args.budget}) …",
         file=sys.stderr,
@@ -202,13 +209,20 @@ def main() -> int:
     optimizer = PromptLearningOptimizer(
         prompt=body,
         model_choice=args.model,
+        provider=provider,
+        budget_limit=args.budget,
     )
     optimized = optimizer.optimize(
         dataset=dataset,
         output_column="output",
         feedback_columns=["feedback"],
-        context_size_k=128,  # gpt-5 supports 128k and most modern models match
+        context_size_k=128_000,  # SDK currently interprets this argument as tokens
     )
+
+    # Upstream catches provider failures per batch. Never stage a candidate
+    # that silently skipped failed requests or exhausted the approved run cap.
+    if provider.failures or provider.calls == 0:
+        raise RuntimeError("Optimization did not complete successfully; no prompt was written")
 
     # The SDK returns either a string or a PromptVersion-shaped object;
     # normalise to a string so the .md has clean prose.
