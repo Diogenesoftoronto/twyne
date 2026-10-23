@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "e3863448b159",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 8,
+  "files_touched": [
+    "e2e/brief-signin.e2e.ts",
+    "src/components/brief/use-brief-strength.ts",
+    "src/components/editor/comment-mark.test.ts",
+    "src/components/editor/extensions/comment-mark.ts",
+    "src/components/editor/extensions/mark-anchor-widgets.ts",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/in-flow/flow-surface.tsx",
+    "src/components/onboarding/anti-tabula-rasa.tsx",
+    "src/components/onboarding/writing-format-input.tsx",
+    "src/global.css",
+    "src/routes/library/index.tsx",
+    "src/utils/convex-sync.test.ts",
+    "src/utils/convex-sync.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e3/863448b159/0/metadata.json",
+      "transcript": "/e3/863448b159/0/full.jsonl",
+      "compact_transcript": "/e3/863448b159/0/transcript.jsonl",
+      "content_hash": "/e3/863448b159/0/content_hash.txt",
+      "prompt": "/e3/863448b159/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 152,
+    "cache_creation_tokens": 1903651,
+    "cache_read_tokens": 18413811,
+    "output_tokens": 31298,
+    "api_call_count": 68
+  }
+}

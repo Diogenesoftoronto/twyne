@@ -1,0 +1,33 @@
+Delegated task node:delegated-task:command%3Amcp%3Aee64a9d5-5a67-4473-8567-a34fa67fc89b%3Adelegate-task%3Aclairic-lane4-persona-card-ui-r2 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3Aee64a9d5-5a67-4473-8567-a34fa67fc89b%3Adelegate-task%3Aclairic-lane4-persona-card-ui-r2 to read the result.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3Aee64a9d5-5a67-4473-8567-a34fa67fc89b%3Adelegate-task%3Aclairic-lane3-forecast-surfaces-r2 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3Aee64a9d5-5a67-4473-8567-a34fa67fc89b%3Adelegate-task%3Aclairic-lane3-forecast-surfaces-r2 to read the result.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3Aee64a9d5-5a67-4473-8567-a34fa67fc89b%3Adelegate-task%3Aclairic-lane4-persona-card-ui-r3 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3Aee64a9d5-5a67-4473-8567-a34fa67fc89b%3Adelegate-task%3Aclairic-lane4-persona-card-ui-r3 to read the result.
+
+---
+
+one of the other cool things that i was think of is maybe a quick element that allows you to quickly edit some important facts about your piece to keep in mind or change, like some year or other data. this in like some sort of table or graph relation that we can extract into some really useful prievew, i think we could even use this to gen graphs and stuff.
+
+---
+
+lets deploy what we have for now
+
+---
+
+we do have clairic working in notorganic right
+
+---
+
+cloudflare token is in skate
+
+---
+
+along with account id
+
+---
+
+commit those  and and  push all of that
