@@ -1,0 +1,59 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "a9bfd2a80c6e",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 6,
+  "files_touched": [
+    "convex/_generated/api.d.ts",
+    "convex/account.test.ts",
+    "convex/account.ts",
+    "convex/preferenceValidators.ts",
+    "convex/preferences.test.ts",
+    "convex/preferences.ts",
+    "convex/schema.ts",
+    "e2e/brief-signin.e2e.ts",
+    "src/components/brief/use-brief-strength.ts",
+    "src/components/editor/comment-mark.test.ts",
+    "src/components/editor/extensions/comment-mark.ts",
+    "src/components/editor/extensions/mark-anchor-widgets.ts",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/in-flow/flow-surface.tsx",
+    "src/components/onboarding/anti-tabula-rasa.tsx",
+    "src/components/onboarding/writing-format-input.tsx",
+    "src/components/personas/personas-panel.tsx",
+    "src/global.css",
+    "src/i18n/provider.tsx",
+    "src/routes/library/index.tsx",
+    "src/routes/personas/index.tsx",
+    "src/routes/privacy/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/utils/account-preferences-contract.ts",
+    "src/utils/account-preferences.ts",
+    "src/utils/auth-context.tsx",
+    "src/utils/convex-sync.test.ts",
+    "src/utils/convex-sync.ts",
+    "src/utils/idb.ts",
+    "src/utils/preference-outbox.ts",
+    "src/utils/preference-sync-engine.test.ts",
+    "src/utils/preference-sync-engine.ts",
+    "src/utils/theme.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a9/bfd2a80c6e/0/metadata.json",
+      "transcript": "/a9/bfd2a80c6e/0/full.jsonl",
+      "compact_transcript": "/a9/bfd2a80c6e/0/transcript.jsonl",
+      "content_hash": "/a9/bfd2a80c6e/0/content_hash.txt",
+      "prompt": "/a9/bfd2a80c6e/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 432887,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 28326144,
+    "output_tokens": 62227,
+    "api_call_count": 220,
+    "subagent_tokens_complete": true
+  }
+}

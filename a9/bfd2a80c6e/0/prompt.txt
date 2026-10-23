@@ -1,0 +1,52 @@
+hey i don't really see the cross device sync that i think should be happening in twyne can you check to see what  is up  with that in notorganic as w ell
+
+---
+
+On the devices where work is missing, does Twyne show you as signed in, and is it drafts/folios, settings, or both that aren’t syncing?
+both
+
+---
+
+fix this stuff
+
+---
+
+deploy
+
+---
+
+Note: the T3 server restarted, and this background work was cancelled before it finished. It will not report back:
+- shell: /bin/bash -lc 'rtk proxy bunx vite --mode ssr --host 127.0.0.1 --port 5193 --strictPort'
+
+User message:
+.
+
+---
+
+hey therre is a regression again
+
+---
+
+What regressed—missing drafts/folios, settings not syncing, sign-in, or something else? Please describe what you see and on which device.
+the brief still unmounts all the time
+
+---
+
+also check the other threads
+
+---
+
+We’ve narrowed it down: typing stays stable until the asynchronous brief-strength update arrives. That update replaces the input, drops focus, and resets the caret. The refresh/persistence test passes, but the focus regression still fails.
+The remaining blocker is write access to the actual checkout at /home/diogenes/Projects/apps/twyne. Can I make the narrowly scoped source changes there to finish the fix? Nothing has been deployed.
+
+---
+
+**Packaging update:** the latest deployed main was `1428e15`; it did not include the onboarding fix. The fix was already integrated and tested on top of that commit, preserving its changes.
+
+I prepared a 122 MiB source archive, then a 111 MiB filtered package using Railway’s documented `.railwayignore` mechanism. Both upload attempts failed at `SNAPSHOT_CODE` with: “Failed to create code snapshot. Please review your last commit, or try again.” The first CLI attempt also timed out; the second deployment record, `0c7fdb63-8086-4880-978e-ff1abe9f0572`, is confirmed failed. Railway has no pending deployment. Production remains online on `81f7f453-6a73-435b-acd4-aef0de2ebad1`; no fix deployment succeeded, so live browser verification was not possible.
+
+The existing local evidence for the candidate is 3/3 targeted Playwright regressions passing, 12/12 draft utility tests passing, both client and server builds passing, and `tsc --noEmit` passing. These do **not** establish production behavior.
+
+The candidate’s four scoped source/test files are `e2e/brief-signin.e2e.ts`, `src/components/brief/use-brief-strength.ts`, `src/components/onboarding/anti-tabula-rasa.tsx`, and `src/components/onboarding/writing-format-input.tsx`. The `.railwayignore` used for the retry exists only in the temporary deployment copy. No unrelated checkout changes were edited.
+
+**Remaining blocker:** Railway’s source snapshot service rejected both reduced packages before build logs were produced. Deployment and live verification need a working supported Railway snapshot/upload path. [Railway CLI upload documentation](https://docs.railway.com/cli/up) confirms `.railwayignore` support.

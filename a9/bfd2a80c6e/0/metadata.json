@@ -1,0 +1,157 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "a9bfd2a80c6e",
+  "session_id": "01a15bf7-60bf-7803-9434-c7e5ff79dc62",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-23T02:37:30.87672873Z",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 6,
+  "save_step_count": 6,
+  "files_touched": [
+    "convex/_generated/api.d.ts",
+    "convex/account.test.ts",
+    "convex/account.ts",
+    "convex/preferenceValidators.ts",
+    "convex/preferences.test.ts",
+    "convex/preferences.ts",
+    "convex/schema.ts",
+    "e2e/brief-signin.e2e.ts",
+    "src/components/brief/use-brief-strength.ts",
+    "src/components/editor/comment-mark.test.ts",
+    "src/components/editor/extensions/comment-mark.ts",
+    "src/components/editor/extensions/mark-anchor-widgets.ts",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/in-flow/flow-surface.tsx",
+    "src/components/onboarding/anti-tabula-rasa.tsx",
+    "src/components/onboarding/writing-format-input.tsx",
+    "src/components/personas/personas-panel.tsx",
+    "src/global.css",
+    "src/i18n/provider.tsx",
+    "src/routes/library/index.tsx",
+    "src/routes/personas/index.tsx",
+    "src/routes/privacy/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/utils/account-preferences-contract.ts",
+    "src/utils/account-preferences.ts",
+    "src/utils/auth-context.tsx",
+    "src/utils/convex-sync.test.ts",
+    "src/utils/convex-sync.ts",
+    "src/utils/idb.ts",
+    "src/utils/preference-outbox.ts",
+    "src/utils/preference-sync-engine.test.ts",
+    "src/utils/preference-sync-engine.ts",
+    "src/utils/theme.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6-astra",
+  "turn_id": "d88b506bc554",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 432887,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 28326144,
+    "output_tokens": 62227,
+    "api_call_count": 220,
+    "subagent_tokens_complete": true
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-23T02:37:30.768930555Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 657,
+    "human_removed": 2131,
+    "total_committed": 1910,
+    "total_lines_changed": 2788,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 462,
+      "user_lines_removed": 92,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "e2e/brief-signin.e2e.ts": 88,
+        "src/components/brief/use-brief-strength.ts": 30,
+        "src/components/editor/comment-mark.test.ts": 41,
+        "src/components/editor/extensions/comment-mark.ts": 42,
+        "src/components/editor/extensions/mark-anchor-widgets.ts": 1,
+        "src/components/editor/twyne-editor.tsx": 64,
+        "src/components/in-flow/flow-surface.tsx": 32,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 152,
+        "src/components/onboarding/writing-format-input.tsx": 5,
+        "src/global.css": 7
+      },
+      "user_removed_per_file": {
+        "e2e/brief-signin.e2e.ts": 10,
+        "src/components/brief/use-brief-strength.ts": 2,
+        "src/components/editor/comment-mark.test.ts": 1,
+        "src/components/editor/extensions/comment-mark.ts": 1,
+        "src/components/editor/twyne-editor.tsx": 20,
+        "src/components/in-flow/flow-surface.tsx": 9,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 45,
+        "src/components/onboarding/writing-format-input.tsx": 3,
+        "src/global.css": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 519,
+      "agent_lines_removed": 107
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 519,
+      "agent_lines_removed": 107
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 56,
+      "user_lines_removed": 52,
+      "agent_lines_added": 1575,
+      "agent_lines_removed": 217,
+      "user_added_per_file": {
+        "convex/preferences.test.ts": 56
+      },
+      "user_removed_per_file": {
+        "convex/preferences.test.ts": 52
+      }
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 56,
+      "user_lines_removed": 52,
+      "agent_lines_added": 1576,
+      "agent_lines_removed": 217,
+      "user_added_per_file": {
+        "convex/preferences.test.ts": 56
+      },
+      "user_removed_per_file": {
+        "convex/preferences.test.ts": 52
+      }
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 56,
+      "user_lines_removed": 52,
+      "agent_lines_added": 1576,
+      "agent_lines_removed": 217,
+      "user_added_per_file": {
+        "convex/preferences.test.ts": 56
+      },
+      "user_removed_per_file": {
+        "convex/preferences.test.ts": 52
+      }
+    }
+  ]
+}
