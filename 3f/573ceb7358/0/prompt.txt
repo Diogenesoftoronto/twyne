@@ -1,0 +1,25 @@
+Act as the design sub-agent for this task.
+
+Finish an interrupted lane in Twyne (Qwik + TipTap frontend, Convex backend). You are now the ONLY agent on this lane — two earlier runs were stopped; any edits in progress are yours to finish. Work ONLY in `/home/diogenes/.t3/worktrees/twyne/t3-6a98336b` (branch `feat/clairic-persona-cards`, base 27931ebc). `cd` there for every command. Do not touch /home/diogenes/Projects/apps/twyne or other worktrees. Do not push. This lane needs product, UI and UX judgement.
+
+## Uncommitted work already in the worktree (review with git status / git diff; keep what's good, finish the rest)
+modified: convex/schema.ts, convex/sync.ts, src/components/editor/editor-state.ts, src/components/editor/persona-note-panel.tsx, src/components/editor/twyne-editor.tsx, src/components/personas/personas-panel.tsx, src/types/index.ts, src/utils/convex-sync.ts, src/utils/quote-grounding-assist.test.ts, src/utils/quote-grounding.ts
+new: convex/lib/noteEvidence.ts, src/components/personas/note-evidence-list.tsx, src/utils/note-evidence.ts
+
+## Context
+Personas research the draft with tools: `quote_passage`, `find_passages` (Clairic verbatim passages from offsets), `extract` (typed Clairic fields; near misses = `value: null` + `guess`), `judge` (Jev). Tools: `convex/agentTools.ts` (`buildQuoteTools` → `getAnchors`, `getExtractions`); used by `convex/agents.ts` and `src/utils/ai-client.ts` `runClientAgent`. Responses carry `anchors: string[]` and extraction readings (`src/utils/persona-research.ts`). Grounding: `src/utils/quote-grounding.ts` + `src/utils/quote-grounding-assist.ts` (unmatched → Clairic → re-resolved or `{ status: "near", from, to, pNull }`; ambiguous → Jev choice); `src/components/personas/grounded-note.tsx`. When Clairic/Jev are unreachable, the deterministic result stands.
+
+## Goal
+Product owner: connecting passage A and B doesn't help unless the note says what to do with it; quotations should lead to their passages; near misses read as close-but-not-exact.
+1. Several passages per note persisted through to the panel (types, IDB, Convex schema/sync — minimal additive; run `npx convex codegen` after Convex edits). 2–4 linked passages per note, each jumps to and highlights its passage; primary anchor stays the card anchor. Calm, dense margin cards.
+2. Near-miss quotations: distinct subtle treatment and short label (e.g. "closest passage"), still clickable. Jev-resolved ambiguous quotes link normally.
+3. Extraction readings: only when they support the note, e.g. small disclosure with facts and source passages; no raw probabilities; no stock hedging copy.
+4. Autonomy by default, zen/quiet modes, surrounding i18n conventions (`bun run i18n:prepare` if needed), accessibility (real buttons, labels, keyboard).
+Boundaries: don't touch desk/pricing/usage UI, forecast modules, typst-workspace, flow-*, background-room, or tool logic in agentTools beyond carrying data.
+
+## Verification
+Unit tests for plumbing (anchors persisted/normalised, schema-compatible sync of old notes without anchors, near-miss rendering). Browser check with seeded notes (no live model calls): `TWYNE_DEV_PORT=5176 bun run dev.frontend`; headless Playwright scratch script importing `node_modules/playwright/index.mjs`, run as `env -u LD_LIBRARY_PATH node script.mjs`; seed IDB like `e2e/instruments.e2e.ts` `seed()` (route `/api/auth/` to null, blank routed page, `import("/src/utils/idb.ts")`, saveFoliosToIdb / saveFolioContentToIdb / saveActiveFolioIdToIdb, `signin-toast-dismissed` meta, `twyne:editor:view:v1` zenMode false). Qwik gotcha: closed `<details>` children never run `useVisibleTask$`. If gt-qwik dist is missing, build it / `bun install`; type errors only from that are environmental. Screenshots → /tmp/clairic-persona-shots/. Targeted tests once, ONE `bunx tsc --noEmit -p .` at the end; never full `bun run test`.
+
+Commit on `feat/clairic-persona-cards`, message ending `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+
+Final report: commit SHA; what cards show and why; data plumbing; screenshot paths; checks run; anything left out.
