@@ -13,12 +13,19 @@ owned by its provider's official CLI.
 
 ## Install and authenticate
 
-Requires Node.js 20 or newer.
+Requires Node.js 20 or newer. Build and install from this checkout; the package
+has not been published to npm.
 
 ```sh
-npm install --global @twyne/tools
+# From the repository root, with its dependencies installed:
+bun run tools:build
+npm install --global ./packages/twyne-tools
 twyne auth login --url https://YOUR-TWYNE-DEPLOYMENT
 ```
+
+You can also run `node packages/twyne-tools/dist/cli.js` directly, or configure
+an MCP host to launch `node packages/twyne-tools/dist/mcp.js`, using absolute
+paths when the host runs elsewhere.
 
 Paste the personal access token at the hidden prompt, pass it with `--token`, set `TWYNE_ACCESS_TOKEN`, or pipe it on stdin. Login validates the token before saving it. The saved config lives at `$XDG_CONFIG_HOME/twyne/config.json` (normally `~/.config/twyne/config.json`) and is created with mode `0600`; its directory is mode `0700`. `TWYNE_CONFIG_PATH` can select another config file.
 
@@ -37,7 +44,7 @@ The environment variables must be supplied together and take precedence over the
 Install the SDK you intend to use, then sign in through its official local CLI:
 
 ```sh
-npm install @twyne/tools @openai/codex-sdk @anthropic-ai/sdk
+npm install /path/to/twyne/packages/twyne-tools @openai/codex-sdk @anthropic-ai/sdk
 twyne provider login codex
 twyne provider login anthropic
 
