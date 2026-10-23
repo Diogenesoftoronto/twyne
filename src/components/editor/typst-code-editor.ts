@@ -28,12 +28,22 @@ import {
   syntaxHighlighting,
   HighlightStyle,
   bracketMatching,
-  foldService,
-  foldEffect,
   foldGutter,
   codeFolding,
 } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
+import {
+  autocompletion,
+  closeBrackets,
+  closeBracketsKeymap,
+  completionKeymap,
+  snippetCompletion,
+  startCompletion,
+  type Completion,
+  type CompletionContext,
+} from "@codemirror/autocomplete";
+import { lintGutter, setDiagnostics, type Diagnostic } from "@codemirror/lint";
+import type { TypstSourceError } from "../../utils/typst/client";
 import {
   search,
   searchKeymap,
@@ -54,6 +64,10 @@ export type TypstSnippet =
   | "heading"
   | "equation"
   | "link"
+  | "list"
+  | "footnote"
+  | "figure"
+  | "package"
   | "pageBreak";
 export interface TypstCodeState {
   line: number;
@@ -76,6 +90,20 @@ const snippets: Record<
     after: "]",
     placeholder: "link text",
   },
+  list: { before: "- ", after: "", placeholder: "List item", block: true },
+  footnote: { before: "#footnote[", after: "]", placeholder: "Note text" },
+  figure: {
+    before: '#figure(image("image.png"), caption: [',
+    after: "])",
+    placeholder: "Caption",
+    block: true,
+  },
+  package: {
+    before: '#import "@preview/',
+    after: '"',
+    placeholder: "",
+    block: true,
+  },
   pageBreak: {
     before: "#pagebreak()",
     after: "",
@@ -84,42 +112,248 @@ const snippets: Record<
   },
 };
 
-const typstLanguage = StreamLanguage.define<{ comment: boolean }>({
+interface TypstTokenState {
+  comment: number;
+  raw: string;
+  math: boolean;
+  strong: boolean;
+  emphasis: boolean;
+}
+
+/** Markup, code and math tokens, enough to read a manuscript at a glance. */
+const typstLanguage = StreamLanguage.define<TypstTokenState>({
   languageData: {
     commentTokens: { line: "//", block: { open: "/*", close: "*/" } },
+    closeBrackets: { brackets: ["(", "[", "{", '"', "$"] },
   },
-  startState: () => ({ comment: false }),
+  startState: () => ({
+    comment: 0,
+    raw: "",
+    math: false,
+    strong: false,
+    emphasis: false,
+  }),
+  copyState: (state) => ({ ...state }),
   token(stream, state) {
     if (state.comment) {
-      if (stream.skipTo("*/")) {
-        stream.match("*/");
-        state.comment = false;
-      } else stream.skipToEnd();
+      while (!stream.eol()) {
+        if (stream.match("/*")) state.comment++;
+        else if (stream.match("*/")) {
+          if (!--state.comment) break;
+        } else stream.next();
+      }
       return "comment";
+    }
+    if (state.raw) {
+      if (stream.skipTo(state.raw)) {
+        stream.match(state.raw);
+        state.raw = "";
+      } else stream.skipToEnd();
+      return "monospace";
+    }
+    if (state.math) {
+      if (stream.match(/^(?:\\.|[^$\\])+/)) return "variableName.special";
+      stream.next();
+      state.math = false;
+      return "variableName.special";
     }
     if (stream.match("//")) {
       stream.skipToEnd();
       return "comment";
     }
     if (stream.match("/*")) {
-      state.comment = true;
+      state.comment = 1;
       return "comment";
     }
-    if (stream.match(/"(?:[^"\\]|\\.)*"?/)) return "string";
-    if (stream.sol() && stream.match(/=+\s/)) {
+    if (stream.match(/^\\(?:u\{[\da-fA-F]+\}|.)?/)) return "escape";
+    const fence = stream.match(/^`+/) as RegExpMatchArray | null;
+    if (fence) {
+      state.raw = fence[0];
+      if (stream.skipTo(state.raw)) {
+        stream.match(state.raw);
+        state.raw = "";
+      } else stream.skipToEnd();
+      return "monospace";
+    }
+    if (stream.peek() === "$") {
+      stream.next();
+      state.math = true;
+      return "variableName.special";
+    }
+    if (stream.match(/^"(?:[^"\\]|\\.)*"?/)) return "string";
+    if (stream.sol() && stream.match(/^\s*=+\s/)) {
       stream.skipToEnd();
       return "heading";
     }
-    if (stream.match(/#[a-zA-Z_][\w-]*/)) return "keyword";
+    if (stream.sol() && stream.match(/^\s*(?:[-+]|\d+\.|\/)\s/)) return "list";
+    if (stream.match(/^<[\w:.-]+>/)) return "labelName";
+    if (stream.match(/^@[\w:.-]+/)) return "link";
     if (
-      stream.match(/\b(?:true|false|none|auto|let|set|show|import|include)\b/)
+      stream.match(
+        /^#(?:let|set|show|import|include|if|else|for|while|context|return)\b/,
+      )
     )
       return "keyword";
-    if (stream.match(/\b\d+(?:\.\d+)?(?:pt|em|cm|mm|in|%)?/)) return "number";
-    stream.next();
+    if (stream.match(/^#[a-zA-Z_][\w-]*(?:\.[a-zA-Z_][\w-]*)*/))
+      return "function";
+    if (stream.match(/^\b(?:true|false|none|auto)\b/)) return "atom";
+    if (stream.match(/^\b\d+(?:\.\d+)?(?:pt|em|cm|mm|in|%|fr|deg)?\b/))
+      return "number";
+    const ch = stream.next();
+    if (ch === "*") {
+      state.strong = !state.strong;
+      return "strong";
+    }
+    if (ch === "_" && !/\w/.test(stream.string[stream.pos - 2] ?? "")) {
+      state.emphasis = !state.emphasis;
+      return "emphasis";
+    }
+    if (state.strong && state.emphasis) return "strong emphasis";
+    if (state.strong) return "strong";
+    if (state.emphasis) return "emphasis";
     return null;
   },
+  blankLine(state) {
+    state.strong = false;
+    state.emphasis = false;
+  },
+  tokenTable: {
+    escape: tags.escape,
+    labelName: tags.labelName,
+    link: tags.link,
+    list: tags.list,
+    function: tags.function(tags.variableName),
+  },
 });
+
+/** Typst's most used functions, as fill-in-the-blanks snippets. */
+const FUNCTIONS: [string, string, string][] = [
+  ["heading", "heading(level: ${1})[${2:Title}]", "Section heading"],
+  ["emph", "emph[${1:text}]", "Italic text"],
+  ["strong", "strong[${1:text}]", "Bold text"],
+  ["underline", "underline[${1:text}]", "Underlined text"],
+  ["strike", "strike[${1:text}]", "Struck-through text"],
+  ["highlight", "highlight[${1:text}]", "Highlighted text"],
+  ["smallcaps", "smallcaps[${1:text}]", "Small capitals"],
+  ["super", "super[${1:text}]", "Superscript"],
+  ["sub", "sub[${1:text}]", "Subscript"],
+  ["link", 'link("${1:https://}")[${2:text}]', "Hyperlink"],
+  ["footnote", "footnote[${1:note}]", "Footnote"],
+  [
+    "quote",
+    "quote(block: true, attribution: [${1:Author}])[${2:quotation}]",
+    "Block quotation",
+  ],
+  ["image", 'image("${1:path.png}", width: ${2:100%})', "Image"],
+  [
+    "figure",
+    'figure(${1:image("path.png")}, caption: [${2:Caption}])',
+    "Figure with caption",
+  ],
+  ["table", "table(columns: ${1:2}, [${2:A}], [${3:B}])", "Table"],
+  [
+    "grid",
+    "grid(columns: ${1:2}, gutter: ${2:1em}, [${3}], [${4}])",
+    "Layout grid",
+  ],
+  ["align", "align(${1:center})[${2}]", "Align content"],
+  ["block", "block(inset: ${1:1em})[${2}]", "Block container"],
+  ["box", "box(${1})[${2}]", "Inline box"],
+  ["pad", "pad(${1:x: 1em})[${2}]", "Padding"],
+  ["columns", "columns(${1:2})[${2}]", "Multiple columns"],
+  ["colbreak", "colbreak()", "Column break"],
+  ["pagebreak", "pagebreak()", "Page break"],
+  ["linebreak", "linebreak()", "Line break"],
+  ["v", "v(${1:1em})", "Vertical space"],
+  ["h", "h(${1:1em})", "Horizontal space"],
+  ["line", "line(length: ${1:100%})", "Horizontal rule"],
+  ["rect", "rect(width: ${1:100%})[${2}]", "Rectangle"],
+  ["text", "text(${1:fill: red})[${2}]", "Styled text"],
+  ["par", "par(justify: ${1:true})[${2}]", "Paragraph settings"],
+  ["outline", "outline()", "Table of contents"],
+  ["bibliography", 'bibliography("${1:refs.bib}")', "Bibliography"],
+  ["cite", "cite(<${1:key}>)", "Citation"],
+  ["lorem", "lorem(${1:50})", "Placeholder text"],
+  ["datetime.today", "datetime.today().display()", "Today's date"],
+  ["context", "context ${1}", "Read layout state"],
+  ["let", "let ${1:name} = ${2:value}", "Define a variable or function"],
+  ["set", "set ${1:text}(${2:size: 12pt})", "Set rule: change defaults"],
+  [
+    "show",
+    "show ${1:heading}: ${2:set text(fill: red)}",
+    "Show rule: restyle an element",
+  ],
+  ["import", 'import "@preview/${1}"', "Import a Typst Universe package"],
+  ["include", 'include "${1:chapter.typ}"', "Include another file"],
+];
+const TWYNE_FUNCTIONS: [string, string, string][] = [
+  ["twyne-subtitle", "twyne-subtitle[${1}]", "Twyne subtitle"],
+  ["twyne-kicker", "twyne-kicker[${1}]", "Twyne kicker"],
+  ["twyne-standfirst", "twyne-standfirst[${1}]", "Twyne standfirst"],
+  ["twyne-abstract", "twyne-abstract[${1}]", "Twyne abstract"],
+  [
+    "twyne-epigraph",
+    "twyne-epigraph(attribution: [${1}])[${2}]",
+    "Twyne epigraph",
+  ],
+  [
+    "twyne-scene-break",
+    'twyne-scene-break(style: "${1:ornament}")',
+    "Twyne scene break",
+  ],
+  ["twyne-endnote", "twyne-endnote[${1}]", "Twyne endnote"],
+];
+const functionCompletions: Completion[] = [
+  ...FUNCTIONS.map(([label, template, detail]) =>
+    snippetCompletion(template, { label, detail, type: "function" }),
+  ),
+  ...TWYNE_FUNCTIONS.map(([label, template, detail]) =>
+    snippetCompletion(template, {
+      label,
+      detail,
+      type: "function",
+      boost: -1,
+    }),
+  ),
+];
+
+function functionSource(context: CompletionContext) {
+  const word = context.matchBefore(/#[\w.-]*/);
+  if (!word || (word.from === word.to && !context.explicit)) return null;
+  return {
+    from: word.from + 1,
+    options: functionCompletions,
+    validFor: /^[\w.-]*$/,
+  };
+}
+
+async function packageSource(context: CompletionContext) {
+  const word = context.matchBefore(/"@preview\/[\w-]*(?::[\d.]*)?/);
+  if (!word) return null;
+  const { loadTypstPackageIndex } = await import("../../utils/typst/packages");
+  const packages = await loadTypstPackageIndex().catch(() => []);
+  return {
+    from: word.from + '"@preview/'.length,
+    options: packages.map(
+      (pkg): Completion => ({
+        label: pkg.name,
+        detail: pkg.version,
+        info: pkg.description,
+        apply: (view, _completion, from, to) => {
+          const closed = view.state.sliceDoc(to, to + 1) === '"';
+          const insert = `${pkg.name}:${pkg.version}${closed ? "" : '"'}`;
+          view.dispatch({
+            changes: { from, to, insert },
+            selection: { anchor: from + insert.length + (closed ? 1 : 0) },
+            userEvent: "input.complete",
+          });
+        },
+        type: "namespace",
+      }),
+    ),
+    validFor: /^[\w-]*$/,
+  };
+}
 
 export function mountTypstCodeEditor(
   element: HTMLElement,
@@ -157,23 +391,33 @@ export function mountTypstCodeEditor(
         highlightActiveLineGutter(),
         bracketMatching(),
         foldGutter(),
-        codeFolding({ placeholderText: "Document helpers" }),
-        foldService.of((state, lineStart, lineEnd) => {
-          if (
-            lineStart !== 0 ||
-            state.doc.line(1).text !== "// twyne-document:1"
-          )
-            return null;
-          const end = state.doc.toString().indexOf("// twyne-document:body");
-          return end > lineEnd
-            ? { from: lineEnd, to: end + "// twyne-document:body".length }
-            : null;
+        codeFolding(),
+        closeBrackets(),
+        autocompletion({
+          override: [packageSource, functionSource],
+          icons: false,
         }),
+        lintGutter(),
         highlightSelectionMatches(),
         typstLanguage,
         syntaxHighlighting(
           HighlightStyle.define([
             { tag: tags.keyword, color: "var(--color-vermilion)" },
+            {
+              tag: tags.function(tags.variableName),
+              color: "var(--color-vermilion)",
+            },
+            { tag: tags.atom, color: "var(--color-writer-note)" },
+            { tag: tags.escape, color: "var(--color-ink-light)" },
+            { tag: tags.monospace, color: "var(--color-cobalt)" },
+            {
+              tag: tags.special(tags.variableName),
+              color: "var(--color-writer-note)",
+            },
+            { tag: [tags.labelName, tags.link], color: "var(--color-cobalt)" },
+            { tag: tags.list, color: "var(--color-vermilion)" },
+            { tag: tags.strong, fontWeight: "700" },
+            { tag: tags.emphasis, fontStyle: "italic" },
             { tag: tags.string, color: "var(--color-cobalt)" },
             { tag: tags.number, color: "var(--color-writer-note)" },
             { tag: tags.heading, color: "var(--color-ink)", fontWeight: "600" },
@@ -199,6 +443,8 @@ export function mountTypstCodeEditor(
               return true;
             },
           },
+          ...closeBracketsKeymap,
+          ...completionKeymap,
           ...defaultKeymap,
           ...historyKeymap,
           ...searchKeymap,
@@ -283,6 +529,32 @@ export function mountTypstCodeEditor(
             backgroundColor:
               "color-mix(in srgb, var(--color-mustard) 25%, transparent)",
           },
+          ".cm-tooltip": {
+            backgroundColor: "var(--color-paper)",
+            color: "var(--color-ink)",
+            border: "1px solid var(--color-paper-3)",
+            fontFamily: "var(--font-sans)",
+            fontSize: "12px",
+          },
+          ".cm-tooltip-autocomplete > ul > li[aria-selected]": {
+            backgroundColor:
+              "color-mix(in srgb, var(--color-vermilion) 16%, transparent)",
+            color: "var(--color-ink)",
+          },
+          ".cm-completionDetail": {
+            color: "var(--color-ink-light)",
+            fontStyle: "normal",
+            marginLeft: "0.75em",
+          },
+          ".cm-completionInfo": { maxWidth: "22rem", padding: "6px 9px" },
+          ".cm-diagnostic-error": {
+            borderLeftColor: "var(--color-vermilion)",
+          },
+          ".cm-lintRange-error": {
+            backgroundImage: "none",
+            textDecoration: "underline wavy var(--color-vermilion) 1px",
+            textUnderlineOffset: "3px",
+          },
           ".cm-searchMatch-selected": {
             outline: "1px solid var(--color-vermilion)",
           },
@@ -331,6 +603,30 @@ export function mountTypstCodeEditor(
         { scrollIntoView: true, userEvent: "input" },
       );
       view.focus();
+      if (kind === "package") startCompletion(view);
+    },
+    /** Mark compiler errors on the lines the author wrote. */
+    setErrors(errors: TypstSourceError[]) {
+      const doc = view.state.doc;
+      const position = (line: number, column: number) => {
+        if (line < 1 || line > doc.lines) return null;
+        const at = doc.line(line);
+        return Math.min(at.to, at.from + Math.max(0, column - 1));
+      };
+      const diagnostics: Diagnostic[] = errors.flatMap((error) => {
+        const from = position(error.line, error.column);
+        if (from === null) return [];
+        const to = position(error.endLine, error.endColumn) ?? from;
+        return [
+          {
+            from,
+            to: Math.max(from, to),
+            severity: "error",
+            message: error.message.replace(/, hints: /, "\nHint: "),
+          },
+        ];
+      });
+      view.dispatch(setDiagnostics(view.state, diagnostics));
     },
     setWrapping(value: boolean) {
       view.dispatch({
@@ -339,29 +635,12 @@ export function mountTypstCodeEditor(
     },
     setSource(next: string) {
       if (view.state.doc.toString() === next) return;
-      const initial = view.state.doc.length === 0;
       settingValue = true;
       try {
         view.dispatch({
           changes: { from: 0, to: view.state.doc.length, insert: next },
           annotations: Transaction.addToHistory.of(false),
         });
-        if (initial && next.startsWith("// twyne-document:1\n")) {
-          const end = next.indexOf("// twyne-document:body");
-          if (end > 0)
-            view.dispatch({
-              effects: foldEffect.of({
-                from: view.state.doc.line(1).to,
-                to: end + "// twyne-document:body".length,
-              }),
-              selection: {
-                anchor: Math.min(
-                  next.length,
-                  end + "// twyne-document:body".length + 1,
-                ),
-              },
-            });
-        }
       } finally {
         settingValue = false;
       }

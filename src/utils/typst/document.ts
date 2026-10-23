@@ -19,6 +19,11 @@ const allowedTags = new Set(
   ),
 );
 const voidTags = new Set(["img", "br", "hr"]);
+const blockTags = new Set(
+  "p h1 h2 h3 h4 h5 h6 pre blockquote ul ol li table thead tbody tfoot tr td th caption figure figcaption div hr".split(
+    " ",
+  ),
+);
 const escapeHtml = (s: string) =>
   s
     .replace(/&/g, "&amp;")
@@ -26,7 +31,10 @@ const escapeHtml = (s: string) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
-/** Included in every persisted source file; requires no external Typst package. */
+/**
+ * Older drafts persisted this whole helper library at the top of the author's
+ * file. It is kept byte-for-byte so those drafts can be recognised and migrated.
+ */
 export const TYPST_DOCUMENT_PREAMBLE = `${START}
 #let twyne-image(source, width: 100%, alt: "") = image(source, width: width, alt: alt)
 #let twyne-math(source, block: false) = raw(source, block: block)
@@ -143,6 +151,20 @@ export const TYPST_DOCUMENT_PREAMBLE = `${START}
 }
 ${END}\n`;
 
+/**
+ * Twyne's helper functions, injected by the typesetter ahead of the author's
+ * file. Source only names them where plain Typst markup cannot express an
+ * editor attribute (a coloured span, a table cell border, an image crop).
+ */
+export const TYPST_HELPERS = `${TYPST_DOCUMENT_PREAMBLE.slice(
+  START.length + 1,
+  -(END.length + 1),
+)}
+#let twyne-endnote(body) = {
+  twyne-endnotes.update(notes => notes + (body,))
+  context super(str(twyne-endnotes.get().len()))
+}`;
+
 function bounded(source: string) {
   if (source.length > MAX_SOURCE)
     throw new Error("Typst document exceeds the 5 MB editing limit.");
@@ -171,79 +193,425 @@ function element(
   return `<${tag}${attrsHtml(attrs)}>${voidTags.has(tag) ? "" : body + `</${tag}>`}`;
 }
 
-/** Each wrapper preserves only structure/attributes. All text lives in its editable body. */
+type InlineToken =
+  | { kind: "text"; text: string }
+  | { kind: "call"; source: string }
+  | { kind: "markup"; source: string }
+  | {
+      kind: "delimited";
+      marker: "*" | "_";
+      name: "strong" | "emph";
+      body: string;
+    };
+
+const markupEscapes = new Set([..."\\*_#$@<>[]`~\"'"]);
+const wordCharacter = /[\p{L}\p{N}]/u;
+const ROLE_FUNCTIONS: Record<string, string> = {
+  ...Object.fromEntries(
+    Object.entries(ROLE_BY_FUNCTION).map(([fn, role]) => [role, fn]),
+  ),
+  epigraph: EPIGRAPH_FUNCTION,
+  "scene-break": SCENE_BREAK_FUNCTION,
+};
+const inlineCalls: Record<string, string> = {
+  u: "underline",
+  s: "strike",
+  sup: "super",
+  sub: "sub",
+  mark: "highlight",
+};
+
+function attributesOf(el: Element): Record<string, string> {
+  return Object.fromEntries(
+    Array.from(el.attributes).map((a) => [a.name, a.value]),
+  );
+}
+/** True when every attribute is one the editor re-adds by itself. */
+function onlyAttributes(
+  el: Element,
+  allowed: Record<string, (value: string) => boolean>,
+): boolean {
+  return Array.from(el.attributes).every(
+    (a) => a.name in allowed && allowed[a.name](a.value),
+  );
+}
+const anything = () => true;
+
+/** Prose as Typst markup: only characters Typst would read as syntax are escaped. */
+function markupText(text: string, start: boolean, afterCall: boolean): string {
+  const numbered = start ? (/^\d+\./.exec(text)?.[0].length ?? 0) : 0;
+  let out = "";
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    const next = text[i + 1] ?? "";
+    const first = start && i === 0;
+    const escape =
+      markupEscapes.has(c) ||
+      // `#f[x](` continues the call and `#f[x].y` reads a field.
+      (afterCall &&
+        i === 0 &&
+        (c === "(" || (c === "." && /[\p{L}_]/u.test(next)))) ||
+      (c === "/" && (next === "/" || next === "*" || first)) ||
+      (c === "-" && (/[-?\d]/.test(next) || first)) ||
+      (c === "." && (text.startsWith("..", i + 1) || i === numbered - 1)) ||
+      (first && (c === "=" || c === "+"));
+    out += escape ? `\\${c}` : c;
+  }
+  return out;
+}
+
+/** `edges` marks a whole paragraph, heading or item, whose outer spaces Typst trims. */
+function joinInline(tokens: InlineToken[], edges = false): string {
+  let out = "";
+  let afterCall = false;
+  let afterIdentifier = false;
+  tokens.forEach((token, index) => {
+    let piece: string;
+    let call: boolean;
+    if (token.kind === "text") {
+      // Any content block may begin a heading or list, so starts are always escaped.
+      const start = out === "";
+      if (
+        // Control characters must use a Typst string rather than markup.
+        // eslint-disable-next-line no-control-regex
+        /[\u0000-\u001f\u007f]/.test(token.text) ||
+        (edges && start && /^\s/.test(token.text)) ||
+        (edges && index === tokens.length - 1 && /\s$/.test(token.text)) ||
+        (afterIdentifier && /^[\w.-]/.test(token.text))
+      ) {
+        piece = `#text(${typstString(token.text)})`;
+        call = true;
+      } else {
+        piece = markupText(token.text, start, afterCall);
+        call = false;
+      }
+    } else if (token.kind === "delimited") {
+      const next = tokens[index + 1];
+      const after = next?.kind === "text" ? next.text[0] : "";
+      // Typst ignores `*` and `_` inside a word, so those need the function form.
+      call =
+        !token.body ||
+        /^\s|\s$/.test(token.body) ||
+        wordCharacter.test(out.slice(-1)) ||
+        wordCharacter.test(after ?? "");
+      piece = call
+        ? `#${token.name}[${token.body}]`
+        : token.marker + token.body + token.marker;
+    } else {
+      piece = token.source;
+      call = token.kind === "call";
+    }
+    afterCall = call;
+    afterIdentifier = call && /[\w-]$/.test(piece);
+    out += piece;
+  });
+  return out;
+}
+
+function inlineTokens(el: Element, depth: number): InlineToken[] {
+  return Array.from(el.childNodes).flatMap((n) => inlineToken(n, depth + 1));
+}
+function inlineToken(node: Node, depth: number): InlineToken[] {
+  if (depth > MAX_DEPTH)
+    throw new Error("Typst document nesting exceeds the editing limit.");
+  if (node.nodeType === 3)
+    return node.textContent ? [{ kind: "text", text: node.textContent }] : [];
+  if (node.nodeType !== 1) return [];
+  const el = node as HTMLElement;
+  if (el.hasAttribute("data-typst-source"))
+    return [{ kind: "call", source: el.getAttribute("data-typst-source")! }];
+  const tag = el.tagName.toLowerCase();
+  const plain = el.attributes.length === 0;
+  const body = () => joinInline(inlineTokens(el, depth));
+  if (plain && (tag === "strong" || tag === "em"))
+    return [
+      {
+        kind: "delimited",
+        marker: tag === "strong" ? "*" : "_",
+        name: tag === "strong" ? "strong" : "emph",
+        body: body(),
+      },
+    ];
+  if (plain && tag in inlineCalls)
+    return [{ kind: "call", source: `#${inlineCalls[tag]}[${body()}]` }];
+  const href = el.getAttribute("href");
+  if (
+    tag === "a" &&
+    href &&
+    onlyAttributes(el, {
+      href: anything,
+      target: anything,
+      rel: anything,
+      class: anything,
+    })
+  )
+    return [{ kind: "call", source: `#link(${typstString(href)})[${body()}]` }];
+  const code = el.textContent ?? "";
+  if (
+    tag === "code" &&
+    plain &&
+    !el.children.length &&
+    /^[^`\n\r]+$/.test(code)
+  )
+    return [{ kind: "markup", source: `\`${code}\`` }];
+  if (tag === "br" && plain) return [{ kind: "markup", source: "\\ " }];
+  const kind = el.getAttribute("data-type");
+  const note = el.getAttribute("data-endnote-text") ?? "";
+  if (
+    tag === "sup" &&
+    (kind === "footnote" || kind === "endnote") &&
+    !el.childNodes.length &&
+    onlyAttributes(el, {
+      "data-type": anything,
+      "data-endnote-text": anything,
+      class: (v) => v === "twyne-endnote",
+      title: (v) => v === note,
+    })
+  ) {
+    const text = joinInline(note ? [{ kind: "text", text: note }] : []);
+    return [
+      {
+        kind: "call",
+        source: `#${kind === "footnote" ? "footnote" : "twyne-endnote"}[${text}]`,
+      },
+    ];
+  }
+  return [{ kind: "call", source: wrapper(el, depth) }];
+}
+
+/** `null` when the list carries anything plain `-`/`+` items cannot say. */
+function listSource(
+  list: HTMLElement,
+  indent: string,
+  depth: number,
+): string | null {
+  const ordered = list.tagName === "OL";
+  if (
+    list.attributes.length ||
+    !list.children.length ||
+    list.childNodes.length !== list.children.length
+  )
+    return null;
+  const lines: string[] = [];
+  for (const item of Array.from(list.children)) {
+    const [first, nested, ...rest] = Array.from(item.children);
+    if (
+      item.tagName !== "LI" ||
+      item.attributes.length ||
+      item.childNodes.length !== item.children.length ||
+      rest.length ||
+      first?.tagName !== "P" ||
+      first.attributes.length ||
+      !first.childNodes.length
+    )
+      return null;
+    lines.push(
+      `${indent}${ordered ? "+" : "-"} ${joinInline(inlineTokens(first, depth), true)}`,
+    );
+    if (nested) {
+      if (!/^(UL|OL)$/.test(nested.tagName)) return null;
+      const sub = listSource(nested as HTMLElement, `${indent}  `, depth + 1);
+      if (sub === null) return null;
+      lines.push(sub);
+    }
+  }
+  return lines.join("\n");
+}
+
+function codeFence(pre: HTMLElement): string | null {
+  const code = pre.firstElementChild;
+  if (
+    pre.attributes.length ||
+    pre.childNodes.length !== 1 ||
+    code?.tagName !== "CODE" ||
+    code.children.length
+  )
+    return null;
+  const lang =
+    code.attributes.length === 0
+      ? ""
+      : /^language-([\w+#.-]+)$/.exec(
+          onlyAttributes(code, { class: anything })
+            ? (code.getAttribute("class") ?? "")
+            : "",
+        )?.[1];
+  const text = code.textContent ?? "";
+  const lines = text.split("\n").filter((line) => line.trim());
+  // Typst trims a raw block's outer blank lines and shared indentation.
+  if (
+    lang === undefined ||
+    !lines.length ||
+    /^\s*\n|\n\s*$/.test(text) ||
+    lines.every((line) => /^\s/.test(line))
+  )
+    return null;
+  const longest = Math.max(
+    0,
+    ...(text.match(/`+/g) ?? []).map((m) => m.length),
+  );
+  const fence = "`".repeat(Math.max(3, longest + 1));
+  return `${fence}${lang}\n${text}\n${fence}`;
+}
+
+/** Native markup where it says everything; a `#twyne-node` wrapper otherwise. */
+function blockSource(node: Node, depth: number): string {
+  if (depth > MAX_DEPTH)
+    throw new Error("Typst document nesting exceeds the editing limit.");
+  if (node.nodeType !== 1) return wrapper(node, depth);
+  const el = node as HTMLElement;
+  if (el.hasAttribute("data-typst-source"))
+    return el.getAttribute("data-typst-source") ?? "";
+  const tag = el.tagName.toLowerCase();
+  const plain = el.attributes.length === 0;
+  const filled = el.childNodes.length > 0;
+  if (tag === "p" && plain && filled)
+    return joinInline(inlineTokens(el, depth), true);
+  if (/^h[1-6]$/.test(tag) && plain && filled)
+    return `${"=".repeat(Number(tag[1]))} ${joinInline(inlineTokens(el, depth), true)}`;
+  if (tag === "ul" || tag === "ol") {
+    const list = listSource(el, "", depth);
+    if (list !== null) return list;
+  }
+  if (
+    tag === "blockquote" &&
+    plain &&
+    el.children.length &&
+    el.childNodes.length === el.children.length
+  )
+    return `#quote(block: true)[\n${Array.from(el.children)
+      .map((child) => blockSource(child, depth + 1))
+      .join("\n\n")}\n]`;
+  if (tag === "pre") {
+    const fence = codeFence(el);
+    if (fence !== null) return fence;
+  }
+  if (tag === "hr" && plain) return "#line(length: 100%)";
+  if (
+    tag === "div" &&
+    el.getAttribute("data-type") === "page-break" &&
+    !filled &&
+    onlyAttributes(el, {
+      "data-type": anything,
+      class: (v) => v === "twyne-page-break",
+      "data-page-break": (v) => v === "true",
+    })
+  )
+    return "#pagebreak()";
+  const role = el.getAttribute("data-role") ?? "";
+  const fn = tag === "div" ? ROLE_FUNCTIONS[role] : undefined;
+  if (
+    fn &&
+    onlyAttributes(el, {
+      "data-role": anything,
+      class: (v) => v === `twyne-role-${role}`,
+      contenteditable: (v) => v === "false",
+      "data-style": () => role === "scene-break",
+      "data-attribution": () => role === "epigraph",
+    })
+  ) {
+    if (role === "scene-break") {
+      const style = el.getAttribute("data-style") ?? "ornament";
+      if ((SCENE_BREAK_STYLES as readonly string[]).includes(style) && !filled)
+        return style === "ornament"
+          ? `#${fn}()`
+          : `#${fn}(style: ${typstString(style)})`;
+    } else {
+      const attribution = el.getAttribute("data-attribution");
+      const args = attribution
+        ? `(attribution: [${joinInline([{ kind: "text", text: attribution }])}])`
+        : "";
+      return `#${fn}${args}[${joinInline(inlineTokens(el, depth))}]`;
+    }
+  }
+  return wrapper(el, depth);
+}
+
+/** The lossless form: structure and attributes in a helper, text as markup. */
+function wrapper(node: Node, depth = 0): string {
+  if (depth > MAX_DEPTH)
+    throw new Error("Typst document nesting exceeds the editing limit.");
+  if (node.nodeType === 3)
+    return node.textContent ? `#text(${typstString(node.textContent)})` : "";
+  if (node.nodeType !== 1) return "";
+  const el = node as HTMLElement;
+  if (el.hasAttribute("data-typst-source"))
+    return el.getAttribute("data-typst-source") ?? "";
+  const tag = el.tagName.toLowerCase();
+  if (!allowedTags.has(tag)) return "";
+  const attrs: Record<string, string> = attributesOf(el);
+  if (tag === "table") {
+    const firstRow = el.querySelector("tr");
+    const widths = firstRow
+      ? Array.from(firstRow.children).flatMap((cell) => {
+          const span = Math.max(1, Number(cell.getAttribute("colspan")) || 1);
+          const raw = (cell.getAttribute("colwidth") ?? "").split(",");
+          return Array.from({ length: span }, (_, i) =>
+            Math.max(0, Number(raw[i]) || 0),
+          );
+        })
+      : [];
+    if (widths.some(Boolean))
+      attrs["data-twyne-column-widths"] = widths.join(",");
+    const row = el.querySelector("tr");
+    if (el.querySelector("caption"))
+      attrs["data-twyne-caption"] =
+        el.querySelector("caption")?.textContent ?? "";
+    attrs["data-twyne-columns"] = String(
+      row
+        ? Array.from(row.children).reduce(
+            (n, cell) =>
+              n + Math.max(1, Number(cell.getAttribute("colspan")) || 1),
+            0,
+          )
+        : 1,
+    );
+  }
+  if (tag === "pre") {
+    // The native `pre` renderer re-typesets this plain text with its language
+    // and highlighted lines; the attributes never reach the HTML again.
+    attrs["data-twyne-code"] = el.textContent ?? "";
+    const lang = /(?:^|\s)language-([\w+#.-]+)/.exec(
+      el.querySelector("code")?.getAttribute("class") ?? "",
+    )?.[1];
+    if (lang) attrs["data-twyne-lang"] = lang;
+    const lines = parseLineRanges(el.getAttribute("data-highlight-lines"));
+    if (lines.length) attrs["data-twyne-highlight"] = lines.join(",");
+  }
+  // Inline content reads as markup; block containers keep one wrapper per child.
+  const inline = Array.from(el.children).every(
+    (child) => !blockTags.has(child.tagName.toLowerCase()),
+  );
+  let body = inline
+    ? joinInline(inlineTokens(el, depth))
+    : Array.from(el.childNodes)
+        .map((n) => wrapper(n, depth + 1))
+        .join("");
+  if (tag === "img")
+    body = `#twyne-image(${typstString(el.getAttribute("src") ?? "")}, width: 100%, alt: ${typstString(el.getAttribute("alt") ?? "")})`;
+  if (el.hasAttribute("data-latex"))
+    body = `#twyne-math(${typstString(el.getAttribute("data-latex") ?? "")}, block: ${el.getAttribute("data-type") === "block-math"})`;
+  if (el.getAttribute("data-type") === "mermaid-diagram")
+    body = `#twyne-mermaid(${typstString(el.getAttribute("data-mermaid-source") ?? "")})`;
+  return `#twyne-node(${typstString(tag)}, ${typstString(JSON.stringify(attrs))})[${body}]`;
+}
+
+/** Idiomatic Typst: native markup for prose, helpers only for what markup cannot hold. */
 export function htmlToTypst(html: string): string {
   bounded(html);
   const dom = new DOMParser().parseFromString(html, "text/html");
-  function visit(node: Node, depth = 0): string {
-    if (depth > MAX_DEPTH)
-      throw new Error("Typst document nesting exceeds the editing limit.");
-    if (node.nodeType === 3)
-      return node.textContent ? `#text(${typstString(node.textContent)})` : "";
-    if (node.nodeType !== 1) return "";
-    const el = node as HTMLElement;
-    if (el.hasAttribute("data-typst-source"))
-      return el.getAttribute("data-typst-source") ?? "";
-    const tag = el.tagName.toLowerCase();
-    if (!allowedTags.has(tag)) return "";
-    const attrs = Object.fromEntries(
-      Array.from(el.attributes).map((a) => [a.name, a.value]),
-    );
-    if (tag === "table") {
-      const firstRow = el.querySelector("tr");
-      const widths = firstRow
-        ? Array.from(firstRow.children).flatMap((cell) => {
-            const span = Math.max(1, Number(cell.getAttribute("colspan")) || 1);
-            const raw = (cell.getAttribute("colwidth") ?? "").split(",");
-            return Array.from({ length: span }, (_, i) =>
-              Math.max(0, Number(raw[i]) || 0),
-            );
-          })
-        : [];
-      if (widths.some(Boolean))
-        attrs["data-twyne-column-widths"] = widths.join(",");
-      const row = el.querySelector("tr");
-      if (el.querySelector("caption"))
-        attrs["data-twyne-caption"] =
-          el.querySelector("caption")?.textContent ?? "";
-      attrs["data-twyne-columns"] = String(
-        row
-          ? Array.from(row.children).reduce(
-              (n, cell) =>
-                n + Math.max(1, Number(cell.getAttribute("colspan")) || 1),
-              0,
-            )
-          : 1,
-      );
-    }
-    if (tag === "pre") {
-      // The native `pre` renderer re-typesets this plain text with its language
-      // and highlighted lines; the attributes never reach the HTML again.
-      attrs["data-twyne-code"] = el.textContent ?? "";
-      const lang = /(?:^|\s)language-([\w+#.-]+)/.exec(
-        el.querySelector("code")?.getAttribute("class") ?? "",
-      )?.[1];
-      if (lang) attrs["data-twyne-lang"] = lang;
-      const lines = parseLineRanges(el.getAttribute("data-highlight-lines"));
-      if (lines.length) attrs["data-twyne-highlight"] = lines.join(",");
-    }
-    let body = Array.from(el.childNodes)
-      .map((n) => visit(n, depth + 1))
-      .join("");
-    if (tag === "img")
-      body = `#twyne-image(${typstString(el.getAttribute("src") ?? "")}, width: 100%, alt: ${typstString(el.getAttribute("alt") ?? "")})`;
-    if (el.hasAttribute("data-latex"))
-      body = `#twyne-math(${typstString(el.getAttribute("data-latex") ?? "")}, block: ${el.getAttribute("data-type") === "block-math"})`;
-    if (el.getAttribute("data-type") === "mermaid-diagram")
-      body = `#twyne-mermaid(${typstString(el.getAttribute("data-mermaid-source") ?? "")})`;
-    return `#twyne-node(${typstString(tag)}, ${typstString(JSON.stringify(attrs))})[${body}]`;
-  }
-  return (
-    TYPST_DOCUMENT_PREAMBLE +
-    Array.from(dom.body.childNodes)
-      .map((n) => visit(n))
-      .join("\n\n")
-  );
+  let previous = "";
+  return Array.from(dom.body.childNodes)
+    .map((n) => {
+      let source = blockSource(n, 0);
+      // Typst joins list items across a blank line, so a second list
+      // directly after one of the same kind keeps its own wrapper.
+      if (/^[-+] /.test(source) && source[0] === previous[0])
+        source = wrapper(n);
+      previous = source;
+      return source;
+    })
+    .filter(Boolean)
+    .join("\n\n");
 }
 
 // String and bracket scanning deliberately does not execute code, import packages or fetch URLs.
@@ -511,6 +879,104 @@ function parseWrapper(
     end,
   };
 }
+const shorthands: [string, string][] = [
+  ["---", "—"],
+  ["--", "–"],
+  ["...", "…"],
+  ["-?", "­"],
+  ["~", " "],
+];
+const inlineTags: Record<string, string> = {
+  strong: "strong",
+  emph: "em",
+  underline: "u",
+  strike: "s",
+  super: "sup",
+  sub: "sub",
+  highlight: "mark",
+};
+/** An unescaped closing `*` or `_`, skipping nested content blocks. */
+function closingDelimiter(s: string, from: number, marker: string): number {
+  for (let i = from; i < s.length; i++) {
+    if (s[i] === "\\") i++;
+    else if (s[i] === marker) return i;
+    else if (s[i] === "\n" && s[i + 1] === "\n") return -1;
+    else if (s[i] === "[") {
+      try {
+        i = balanced(s, i) - 1;
+      } catch {
+        return -1;
+      }
+    }
+  }
+  return -1;
+}
+/** Plain text of a markup body, or null when it holds formatting. */
+function plainMarkup(source: string): string | null {
+  const html = parseInline(source, 1);
+  if (html.includes("<")) return null;
+  return html
+    .replace(/&quot;/g, '"')
+    .replace(/&gt;/g, ">")
+    .replace(/&lt;/g, "<")
+    .replace(/&amp;/g, "&");
+}
+/** Function calls the rich editor understands; anything else stays opaque source. */
+function inlineCall(
+  s: string,
+  i: number,
+  depth: number,
+): { html: string; end: number } | null {
+  const name = /^#([a-z][\w-]*)/.exec(s.slice(i, i + 40))?.[1];
+  if (!name) return null;
+  let at = i + 1 + name.length;
+  try {
+    if (name in inlineTags && s[at] === "[") {
+      const end = balanced(s, at);
+      return {
+        html: element(
+          inlineTags[name],
+          {},
+          parseInline(s.slice(at + 1, end - 1), depth + 1),
+        ),
+        end,
+      };
+    }
+    if (name === "link" && s[at] === "(") {
+      const href = quoted(s, space(s, at + 1));
+      at = space(s, href.end);
+      if (s[at] !== ")" || s[at + 1] !== "[") return null;
+      const end = balanced(s, at + 1);
+      return {
+        html: element(
+          "a",
+          { href: href.value },
+          parseInline(s.slice(at + 2, end - 1), depth + 1),
+        ),
+        end,
+      };
+    }
+    if ((name === "footnote" || name === "twyne-endnote") && s[at] === "[") {
+      const end = balanced(s, at);
+      const text = plainMarkup(s.slice(at + 1, end - 1));
+      if (text === null) return null;
+      return {
+        html: element(
+          "sup",
+          {
+            "data-type": name === "footnote" ? "footnote" : "endnote",
+            ...(text ? { "data-endnote-text": text } : {}),
+          },
+          "",
+        ),
+        end,
+      };
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
 function parseInline(s: string, depth = 0, blockChildren = false): string {
   if (depth > MAX_DEPTH) return raw(s, !blockChildren);
   let html = "";
@@ -533,30 +999,14 @@ function parseInline(s: string, depth = 0, blockChildren = false): string {
         /* preserve unsupported text calls as source */
       }
     }
-    const formatting =
-      /^#(strong|emph|underline|strike|super|sub|highlight)\[/.exec(s.slice(i));
-    if (formatting) {
-      const open = i + formatting[0].length - 1;
-      const end = balanced(s, open);
-      const tags: Record<string, string> = {
-        strong: "strong",
-        emph: "em",
-        underline: "u",
-        strike: "s",
-        super: "sup",
-        sub: "sub",
-        highlight: "mark",
-      };
-      html += element(
-        tags[formatting[1]],
-        {},
-        parseInline(s.slice(open + 1, end - 1), depth + 1),
-      );
-      i = end;
+    const call = inlineCall(s, i, depth);
+    if (call) {
+      html += call.html;
+      i = call.end;
       continue;
     }
-    if (s[i] === "*" || s[i] === "_") {
-      const end = s.indexOf(s[i], i + 1);
+    if ((s[i] === "*" || s[i] === "_") && !wordCharacter.test(s[i - 1] ?? "")) {
+      const end = closingDelimiter(s, i + 1, s[i]);
       if (end > i + 1) {
         html += element(
           s[i] === "*" ? "strong" : "em",
@@ -567,9 +1017,48 @@ function parseInline(s: string, depth = 0, blockChildren = false): string {
         continue;
       }
     }
-    if (s[i] === "\\" && i + 1 < s.length) {
-      html += escapeHtml(s[i + 1]);
+    if (s[i] === "\\") {
+      const next = s[i + 1];
+      if (next === undefined || next === " " || next === "\n") {
+        html += "<br>";
+        i += 2;
+        continue;
+      }
+      const unicode = /^\\u\{([\da-f]{1,6})\}/i.exec(s.slice(i, i + 10));
+      if (unicode && parseInt(unicode[1], 16) <= 0x10ffff) {
+        html += escapeHtml(String.fromCodePoint(parseInt(unicode[1], 16)));
+        i += unicode[0].length;
+        continue;
+      }
+      html += escapeHtml(next);
       i += 2;
+      continue;
+    }
+    if (s[i] === "`" && s[i + 1] !== "`") {
+      const close = s.indexOf("`", i + 1);
+      if (close > i + 1) {
+        html += element("code", {}, escapeHtml(s.slice(i + 1, close)));
+        i = close + 1;
+        continue;
+      }
+    }
+    const url = /^https?:\/\/[^\s<>[\]()"]+/.exec(s.slice(i, i + 2048));
+    if (url && !wordCharacter.test(s[i - 1] ?? "")) {
+      // Typst leaves sentence punctuation outside an automatic link.
+      const href = url[0].replace(/[.,;:!?'"]+$/, "");
+      html += element("a", { href }, escapeHtml(href));
+      i += href.length;
+      continue;
+    }
+    const shorthand = shorthands.find(([mark]) => s.startsWith(mark, i));
+    if (shorthand) {
+      html += shorthand[1];
+      i += shorthand[0].length;
+      continue;
+    }
+    if (s[i] === "-" && /\d/.test(s[i + 1] ?? "")) {
+      html += "−";
+      i++;
       continue;
     }
     if (
@@ -617,6 +1106,10 @@ function bodyOf(source: string): string {
 }
 function paragraphEnd(source: string, start: number): number {
   for (let i = start; i < source.length; i++) {
+    if (source[i] === "\\") {
+      i++;
+      continue;
+    }
     if (source.startsWith("\n\n", i)) return i;
     if (source.startsWith("/*", i)) {
       let nesting = 1;
@@ -638,23 +1131,71 @@ function paragraphEnd(source: string, start: number): number {
       i = end < 0 ? source.length : end - 1;
       continue;
     }
+    if (source[i] === "`") {
+      let run = i;
+      while (source[run] === "`") run++;
+      const close = source.indexOf(source.slice(i, run), run);
+      i = close < 0 ? run - 1 : close + run - i - 1;
+      continue;
+    }
     if (source[i] === "#") {
       let end = i + 1;
       while (end < source.length && /[\w.-]/.test(source[end])) end++;
-      // Declarations may have spaces before their blocks; retaining the whole
-      // balanced block keeps internal blank lines out of the rich editor.
-      for (; end < source.length && source[end] !== "\n"; end++) {
-        if (source[end] === '"') {
-          end = quoted(source, end).end - 1;
-          continue;
+      if (
+        /^#(let|set|show|import|include|for|if|while|context)\b/.test(
+          source.slice(i, end + 1),
+        )
+      ) {
+        // Statements may have spaces before their blocks; retaining the whole
+        // balanced block keeps internal blank lines out of the rich editor.
+        for (; end < source.length && source[end] !== "\n"; end++) {
+          if (source[end] === '"') {
+            end = quoted(source, end).end - 1;
+            continue;
+          }
+          if ("([{".includes(source[end])) end = balanced(source, end) - 1;
         }
-        if ("([{ ".includes(source[end]) && source[end] !== " ")
-          end = balanced(source, end) - 1;
+      } else {
+        // An embedded expression ends after its argument and content groups.
+        while ("([{".includes(source[end] ?? " ")) {
+          end = balanced(source, end);
+          while (end < source.length && /[\w-]/.test(source[end])) end++;
+        }
       }
       i = end - 1;
     }
   }
   return source.length;
+}
+/** Indented `-`/`+` items as nested lists; `null` when a line is not an item. */
+function nativeList(s: string): string | null {
+  const items = s.split("\n").map((line) => /^( *)([-+]) (.*)$/.exec(line));
+  if (items.some((m) => !m) || items[0]![1]) return null;
+  let index = 0;
+  const level = (indent: number): string => {
+    let html = "";
+    while (index < items.length && items[index]![1].length === indent) {
+      const marker = items[index]![2];
+      const tag = marker === "+" ? "ol" : "ul";
+      let list = "";
+      while (
+        index < items.length &&
+        items[index]![1].length === indent &&
+        items[index]![2] === marker
+      ) {
+        const text = items[index++]![3];
+        const nested =
+          index < items.length && items[index]![1].length > indent
+            ? level(items[index]![1].length)
+            : "";
+        list += `<li><p>${parseInline(text)}</p>${nested}</li>`;
+      }
+      html += `<${tag}>${list}</${tag}>`;
+    }
+    return html;
+  };
+  const html = level(0);
+  return index === items.length ? html : null;
 }
 function pieces(source: string): Piece[] {
   const body = bodyOf(source);
@@ -681,6 +1222,31 @@ function pieces(source: string): Piece[] {
         break;
       }
     }
+    const fence = /^(`{3,})([^\s`]*)\n/.exec(body.slice(i, i + 256));
+    if (fence) {
+      const close = body.indexOf(`\n${fence[1]}`, i + fence[0].length - 1);
+      if (close >= 0 && body[close + 1 + fence[1].length] !== "`") {
+        const end = close + 1 + fence[1].length;
+        const code = body.slice(
+          i + fence[0].length,
+          Math.max(i + fence[0].length, close),
+        );
+        result.push({
+          source: body.slice(begin, end),
+          html: element(
+            "pre",
+            {},
+            element(
+              "code",
+              fence[2] ? { class: `language-${fence[2]}` } : {},
+              escapeHtml(code),
+            ),
+          ),
+        });
+        i = end;
+        continue;
+      }
+    }
     // Native top-level paragraphs, headings and list items; code remains opaque.
     let end: number;
     try {
@@ -693,19 +1259,24 @@ function pieces(source: string): Piece[] {
     try {
       const heading = /^(={1,6})\s+([\s\S]*)$/.exec(s);
       const role = roleCall(s);
+      const quote = /^#quote\(\s*block:\s*true\s*\)\[/.exec(s);
       if (role) html = role;
       else if (heading)
         html = `<h${heading[1].length}>${parseInline(heading[2])}</h${heading[1].length}>`;
+      else if (/^[-+]\s/.test(s)) html = nativeList(s.trimEnd()) ?? raw(s);
+      else if (/^#pagebreak\(\s*\)\s*$/.test(s))
+        html = element("div", { "data-type": "page-break" }, "");
+      else if (/^#line\(\s*length:\s*100%\s*\)\s*$/.test(s))
+        html = element("hr", {}, "");
+      else if (quote && balanced(s, quote[0].length - 1) === s.trimEnd().length)
+        html = element(
+          "blockquote",
+          {},
+          pieces(s.slice(quote[0].length, s.trimEnd().length - 1).trim())
+            .map((p) => p.html)
+            .join("") || "<p></p>",
+        );
       else if (
-        /^[-+]\s/.test(s) &&
-        s.split("\n").every((line) => /^[-+]\s/.test(line))
-      ) {
-        const tag = s[0] === "+" ? "ol" : "ul";
-        html = `<${tag}>${s
-          .split("\n")
-          .map((line) => `<li><p>${parseInline(line.slice(2))}</p></li>`)
-          .join("")}</${tag}>`;
-      } else if (
         /^(#(?:let|set|show|import|include|for|if|while)\b|\/\/|\/\*)/.test(s)
       )
         html = raw(s);
@@ -718,6 +1289,27 @@ function pieces(source: string): Piece[] {
   }
   return result;
 }
+/** Compile native paragraphs through the early paragraph helper so Typst's
+ * tagged inline content is not split after its accessibility tags are realized.
+ * This is a typesetting projection only; saved source stays ordinary markup.
+ * Keep every newline so diagnostics can map back to the author's source.
+ */
+export const TYPST_PARAGRAPH_PREFIX = '#twyne-node("p", "{}")[ ';
+export function prepareNativeParagraphs(source: string): string {
+  return pieces(source)
+    .map((piece) => {
+      if (!piece.html.startsWith("<p>")) return piece.source;
+      const leading = /^\s*/.exec(piece.source)![0];
+      return (
+        leading +
+        TYPST_PARAGRAPH_PREFIX +
+        piece.source.slice(leading.length) +
+        "]"
+      );
+    })
+    .join("");
+}
+
 export function typstToHtml(source: string): string {
   bounded(source);
   return (
@@ -757,6 +1349,31 @@ function canonicalBlock(html: string): string {
   return normalized;
 }
 
+/** Pieces own their leading whitespace; others are separated by one blank line. */
+function joinPieces(sources: string[]): string {
+  return sources
+    .map((source, index) =>
+      index > 0 && !/^\s/.test(source) ? `\n\n${source}` : source,
+    )
+    .join("");
+}
+
+/**
+ * Rewrite a draft saved with the old inline helper preamble as idiomatic
+ * Typst. Blocks the author wrote by hand are kept exactly; only generated
+ * `#twyne-node` wrappers are re-expressed.
+ */
+export function migrateTypstSource(source: string): string {
+  if (!source.startsWith(TYPST_DOCUMENT_PREAMBLE)) return source;
+  return joinPieces(
+    pieces(source).map((p) =>
+      /^\s*#twyne-node\(/.test(p.source)
+        ? htmlToTypst(p.html)
+        : p.source.replace(/^\s+/, ""),
+    ),
+  );
+}
+
 /** Reuse exact authored blocks when unchanged, including their comments and whitespace. */
 export function reconcileTypstSource(
   previousSource: string,
@@ -764,6 +1381,7 @@ export function reconcileTypstSource(
 ): string {
   bounded(previousSource);
   bounded(newHtml);
+  previousSource = migrateTypstSource(previousSource);
   const canonical = (html: string) => {
     const dom = new DOMParser().parseFromString(html, "text/html");
     return dom.body.innerHTML;
@@ -778,17 +1396,11 @@ export function reconcileTypstSource(
     list.push(p.source);
     available.set(key, list);
   }
-  const generated = pieces(htmlToTypst(newHtml));
-  return (
-    TYPST_DOCUMENT_PREAMBLE +
-    generated
-      .map((p, index) => {
-        const source =
-          available.get(canonicalBlock(p.html))?.shift() ?? p.source;
-        // Pieces already own their leading whitespace. Adding another separator
-        // on every edit made untouched source blocks grow without bound.
-        return index > 0 && !/^\s/.test(source) ? `\n\n${source}` : source;
-      })
-      .join("")
+  // Pieces already own their leading whitespace. Adding another separator
+  // on every edit made untouched source blocks grow without bound.
+  return joinPieces(
+    pieces(htmlToTypst(newHtml)).map(
+      (p) => available.get(canonicalBlock(p.html))?.shift() ?? p.source,
+    ),
   );
 }

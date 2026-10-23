@@ -27,6 +27,17 @@ persistence implemented on 2026-09-28. See
 - Equations and Mermaid diagrams are rendered locally into SVG assets. Fonts
   used by the manuscript controls are bundled with their licenses. Image size
   limits and compiler diagnostics remain explicit.
+- Source is idiomatic Typst (2026-10-23). Prose, headings, lists, links,
+  footnotes, quotes, code fences and page breaks are native markup.
+  `#twyne-node` appears only for editor attributes markup cannot express, such
+  as a coloured span or a table cell border. The helper library is injected at
+  typeset time, no longer stored in the file. Drafts saved with the old inline
+  preamble are migrated when opened, and hand-written blocks are kept exactly.
+- `#import "@preview/name:version"` resolves Typst Universe packages, with
+  their dependencies prefetched and cached in Cache Storage. Source
+  autocompletes package names (filtered to ones the bundled Typst 0.14 can
+  compile) and Typst functions, and compiler errors are underlined in place.
+  The desktop GPUI compiler does not resolve packages yet.
 - `.typ` import retains exact source; native backups include canonical source;
   source export embeds fetched image bytes for a standalone file.
 
@@ -34,7 +45,7 @@ persistence implemented on 2026-09-28. See
 
 - The interactive writing column is not direct manipulation of the rendered
   Typst pages. Proof is the authoritative pagination view.
-- Custom packages and missing fonts/images can produce compilation diagnostics;
+- Packages needing a newer Typst, and missing fonts/images, produce compilation diagnostics;
   unknown syntax remains preserved even when it cannot compile locally.
 - Cloud schema/functions require normal deployment before a hosted environment
   can sync the new fields. This implementation does not deploy them.

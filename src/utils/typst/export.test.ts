@@ -4,7 +4,12 @@ import { JSDOM } from "jsdom";
 import { exportTypst } from "./export";
 import type { TypstCompileResponse } from "./protocol";
 import { DEFAULT_LAYOUT } from "../../types";
-import { htmlToTypst } from "./document";
+import {
+  htmlToTypst,
+  TYPST_PARAGRAPH_PREFIX,
+  prepareNativeParagraphs,
+} from "./document";
+import { sourceErrors, TYPST_SOURCE_MARKER } from "./client";
 
 const payload = {
   title: "Draft",
@@ -146,8 +151,8 @@ describe("Typst export lifecycle", () => {
     expect(source).not.toContain("data-suggestion-");
     expect(source).not.toContain("data-comment-");
     expect(source).toContain("data-indent");
-    expect(source).toContain('#text("public passage")');
-    expect(source).toContain('#text("original prose")');
+    expect(source).toContain("[public passage]");
+    expect(source).toContain("[original prose]");
     expect(source).toContain(
       "// Authored code stays in place\n#let my-heading = [A heading]\n#my-heading",
     );
@@ -272,4 +277,33 @@ describe("Typst export lifecycle", () => {
     ).rejects.toThrow("too much image data");
     expect(cancelled).toBe(true);
   });
+});
+
+test("typesetting preserves source lines and maps paragraph diagnostics to authored columns", () => {
+  const source =
+    '= Heading\n\nA *bold* sentence.\nSecond line.\n\n#import "@preview/cetz:0.5.2": canvas';
+  const prepared = prepareNativeParagraphs(source);
+  expect(prepared.split("\n").length).toBe(source.split("\n").length);
+  expect(prepared).toContain(TYPST_PARAGRAPH_PREFIX + "A *bold* sentence.");
+  expect(prepared).toContain('#import "@preview/cetz:0.5.2": canvas');
+  const compiled = "#let helper = 1\n" + TYPST_SOURCE_MARKER + "\n" + prepared;
+  const column = TYPST_PARAGRAPH_PREFIX.length + 2;
+  expect(
+    sourceErrors(compiled, [
+      {
+        package: "",
+        path: "/main.typ",
+        range: `4:${column}-4:${column + 4}`,
+        message: "Test diagnostic",
+      },
+    ]),
+  ).toEqual([
+    {
+      message: "Test diagnostic",
+      line: 3,
+      column: 3,
+      endLine: 3,
+      endColumn: 7,
+    },
+  ]);
 });

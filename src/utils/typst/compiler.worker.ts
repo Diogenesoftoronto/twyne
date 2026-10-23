@@ -17,7 +17,13 @@ import specialElite from "../../assets/typst/specialelite-SpecialElite-Regular.t
 import { createTypstRenderer } from "@myriaddreamin/typst.ts/renderer";
 import rendererWasmUrl from "@myriaddreamin/typst-ts-renderer/wasm?url";
 import { createTypstCompiler } from "@myriaddreamin/typst.ts/compiler";
-import { loadFonts } from "@myriaddreamin/typst.ts/options.init";
+import {
+  loadFonts,
+  withAccessModel,
+  withPackageRegistry,
+} from "@myriaddreamin/typst.ts/options.init";
+import { MemoryAccessModel } from "@myriaddreamin/typst.ts/fs/memory";
+import { TwynePackageRegistry } from "./packages";
 import wasmUrl from "@myriaddreamin/typst-ts-web-compiler/wasm?url";
 import regular from "../../assets/typst/LibertinusSerif-Regular.otf?url";
 import bold from "../../assets/typst/LibertinusSerif-Bold.otf?url";
@@ -34,9 +40,15 @@ scope.onmessage = async ({ data }: MessageEvent<TypstCompileRequest>) => {
   try {
     send({ type: "progress", message: "Loading the typesetter…" });
     const compiler = createTypstCompiler();
+    const files = new MemoryAccessModel();
+    const registry = new TwynePackageRegistry(files);
+    for (const [spec, bytes] of data.packages ?? [])
+      registry.archives.set(spec, bytes);
     await compiler.init({
       getModule: () => wasmUrl,
       beforeBuild: [
+        withAccessModel(files),
+        withPackageRegistry(registry),
         loadFonts(
           [
             regular,
@@ -78,11 +90,24 @@ scope.onmessage = async ({ data }: MessageEvent<TypstCompileRequest>) => {
     );
     const result = compiled.pdf;
     if (!result.result) {
-      const details = result.diagnostics
-        ?.map((d) => d.message)
-        .filter(Boolean)
-        .join("; ");
-      throw new Error(details || "The typesetter could not create a PDF.");
+      const diagnostics = (result.diagnostics ?? []).filter(
+        (d) => d.severity === "error",
+      );
+      send({
+        type: "error",
+        message:
+          diagnostics
+            .map((d) => d.message)
+            .filter(Boolean)
+            .join("; ") || "The typesetter could not create a PDF.",
+        diagnostics: diagnostics.map((d) => ({
+          package: d.package,
+          path: d.path,
+          range: d.range,
+          message: d.message,
+        })),
+      });
+      return;
     }
     // Missing glyph warnings matter: do not hand the writer a PDF with lost text.
     const missingGlyph = result.diagnostics?.find((d) =>

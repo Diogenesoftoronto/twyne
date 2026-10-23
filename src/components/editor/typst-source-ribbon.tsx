@@ -9,6 +9,10 @@ const inserts: { id: TypstSnippet; label: string; icon: TwyneIconName }[] = [
   { id: "heading", label: "Heading", icon: "heading" },
   { id: "equation", label: "Equation", icon: "math" },
   { id: "link", label: "Link", icon: "link" },
+  { id: "list", label: "List", icon: "unordered-list" },
+  { id: "footnote", label: "Footnote", icon: "comment-add" },
+  { id: "figure", label: "Figure", icon: "image" },
+  { id: "package", label: "Package", icon: "file-download" },
   { id: "pageBreak", label: "Page break", icon: "page" },
 ];
 

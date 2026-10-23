@@ -7,8 +7,18 @@ import {
   saveFolioTypstToIdb,
   type FolioContentSavedDetail,
 } from "../idb";
-import { htmlToTypst, typstToHtml, reconcileTypstSource } from "./document";
-import { compileTypstSource, type TypstCompilation } from "./client";
+import {
+  htmlToTypst,
+  typstToHtml,
+  reconcileTypstSource,
+  migrateTypstSource,
+} from "./document";
+import {
+  compileTypstSource,
+  TypstCompileError,
+  type TypstCompilation,
+  type TypstSourceError,
+} from "./client";
 import {
   loadTypstSourceDraft,
   saveTypstSourceDraft,
@@ -21,6 +31,8 @@ export interface TypstSessionState {
   conflict: boolean;
   status: string;
   error: string;
+  /** Compiler errors placed in the source, for the code editor to mark. */
+  diagnostics: TypstSourceError[];
   pages: string[];
   pdfUrl: string;
   proofStale: boolean;
@@ -95,7 +107,11 @@ export async function createTypstSession(
   const snapshot = await deps.loadSnapshot(folioId);
   let baseSource = snapshot?.typstSource;
   let committedHtml = snapshot?.html ?? baselineHtml;
-  const recovered = await deps.loadDraft(folioId);
+  const storedDraft = await deps.loadDraft(folioId);
+  const recovered = storedDraft && {
+    ...storedDraft,
+    source: migrateTypstSource(storedDraft.source),
+  };
   baselineHtml = editor.getHTML();
   visualHistory.add(baselineHtml);
   let cleanSource =
@@ -116,6 +132,7 @@ export async function createTypstSession(
         ? "Preparing proof…"
         : "Proof updates when opened",
     error: "",
+    diagnostics: [],
     pages: [],
     pdfUrl: "",
     proofStale: true,
@@ -127,7 +144,11 @@ export async function createTypstSession(
     state.applying = applying;
     const editable = !options.readOnly && !state.dirty && !applying;
     if (editor.isEditable !== editable) editor.setEditable(editable, false);
-    options.onState({ ...state, pages: [...state.pages] });
+    options.onState({
+      ...state,
+      pages: [...state.pages],
+      diagnostics: [...state.diagnostics],
+    });
   }
   function sourceEvent() {
     window.dispatchEvent(
@@ -183,6 +204,7 @@ export async function createTypstSession(
       !destroyed && currentRevision === revision && source === state.source;
     state.status = "Typesetting…";
     state.error = "";
+    state.diagnostics = [];
     state.proofStale = true;
     emit();
     const run = async (): Promise<boolean> => {
@@ -258,6 +280,8 @@ export async function createTypstSession(
           error instanceof Error
             ? error.message
             : "The source could not be typeset.";
+        state.diagnostics =
+          error instanceof TypstCompileError ? error.errors : [];
         emit();
         return false;
       } finally {
@@ -373,7 +397,7 @@ export async function createTypstSession(
     baselineHtml = editor.getHTML();
     cleanSource =
       rec.html === baselineHtml
-        ? rec.typstSource
+        ? migrateTypstSource(rec.typstSource)
         : reconcileTypstSource(rec.typstSource, baselineHtml);
     const changed = state.source !== cleanSource;
     state.proofStale ||= changed;
@@ -555,7 +579,10 @@ export async function createTypstSession(
         const latest = await deps.loadSnapshot(folioId);
         if (destroyed) return;
         baseSource = latest?.typstSource;
-        cleanSource = baseSource ?? htmlToTypst(editor.getHTML());
+        cleanSource =
+          baseSource !== undefined
+            ? migrateTypstSource(baseSource)
+            : htmlToTypst(editor.getHTML());
         state.proofStale ||= state.source !== cleanSource;
         state.source = cleanSource;
         state.dirty = false;

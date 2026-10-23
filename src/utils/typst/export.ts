@@ -4,6 +4,7 @@ import { compileRequest, loadAssets, applyTypstPageSetup } from "./client";
 import { prepareTypstAssets } from "./render-assets";
 import { typstDecorations } from "./decorative-assets";
 import { stripTypstAnnotationMetadata } from "./document";
+import { prefetchTypstPackages } from "./packages";
 
 export interface TypstExportOptions {
   signal?: AbortSignal;
@@ -63,9 +64,14 @@ export async function exportTypst(
         type: "text/plain;charset=utf-8",
       });
     }
+    const packages = await prefetchTypstPackages(
+      document.source,
+      options.onProgress,
+    );
+    controller.signal.throwIfAborted();
     return (
       await compileRequest(
-        { source: document.source, assets },
+        { source: document.source, assets, packages: [...packages] },
         { ...options, signal: controller.signal },
       )
     ).pdf;
