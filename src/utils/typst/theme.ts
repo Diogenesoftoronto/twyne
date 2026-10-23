@@ -241,6 +241,7 @@ export const TYPST_MANUSCRIPT_STYLES = `
     if not a.keys().contains("data-space-after") {
       a.insert("data-space-after", if twyne-opening-depth.get() == 0 { "16.2" } else { "6.075" })
     }
+    show par: it => it
     twyne-unstyled-node(tag, json.encode(a), twyne-opening(body))
   } } else if tag == "pre" {
     block(width: 100%, fill: rgb("#1f1b16"), inset: (x: 1.25em, y: 1em), radius: 2pt,

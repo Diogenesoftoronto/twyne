@@ -56,7 +56,7 @@ export const YOUR_WORK_GUIDES = {
       {
         title: "Edit the source, safely",
         instruction:
-          "Select Source to see the native Typst behind the manuscript. The ribbon offers formatting, comments, line wrapping, navigation and Save .typ. Everything you change here stays in a source draft on this device until you select Apply source. Discard throws the draft away and returns to the applied manuscript.",
+          "Select Source to see the native Typst behind the manuscript: = headings, *bold*, _italic_, - lists and #footnote[…], the way anyone who knows Typst would write it. The ribbon offers formatting, lists, footnotes, figures, packages, comments, line wrapping, navigation and Save .typ. Type # for a list of Typst functions. Everything you change here stays in a source draft on this device until you select Apply source. Discard throws the draft away and returns to the applied manuscript.",
         image: asset("source-draft"),
         alt: "Native Typst source, the source toolbar, the local source-draft notice, Discard, and Apply source.",
         width: 1098,
@@ -65,7 +65,7 @@ export const YOUR_WORK_GUIDES = {
       {
         title: "Pick up where you stopped",
         instruction:
-          "An unfinished source draft survives a reload on the same device. Find opens Find and Replace; Go to line jumps straight to a line number. If compilation reports an error, the draft stays editable until you fix it; nothing broken gets applied.",
+          "An unfinished source draft survives a reload on the same device. Find opens Find and Replace; Go to line jumps straight to a line number. If compilation reports an error, Source underlines the exact spot and marks its line; the draft stays editable until you fix it, and nothing broken gets applied. To use a Typst Universe package, select Package (or type #import @preview/) and pick one from the list. Twyne downloads it the first time and keeps it for offline use.",
         image: asset("source-find"),
         alt: "Recovered Typst source draft with Find and Replace fields open while Apply source remains available.",
         width: 1098,

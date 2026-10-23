@@ -6,6 +6,8 @@ import {
   typstToHtml,
   reconcileTypstSource,
   TYPST_DOCUMENT_PREAMBLE,
+  TYPST_HELPERS,
+  migrateTypstSource,
 } from "./document";
 
 const previousParser = Object.getOwnPropertyDescriptor(globalThis, "DOMParser");
@@ -33,9 +35,9 @@ describe("Typst document source", () => {
   });
   test("actual edited body is authoritative", () => {
     const source = htmlToTypst("<p>Hello <strong>world</strong></p>");
-    expect(
-      typstToHtml(source.replace('#text("world")', '#text("universe")')),
-    ).toBe("<p>Hello <strong>universe</strong></p>");
+    expect(typstToHtml(source.replace("*world*", "*universe*"))).toBe(
+      "<p>Hello <strong>universe</strong></p>",
+    );
   });
   test("source helper arguments update math and diagram attributes", () => {
     const source = htmlToTypst(
@@ -119,7 +121,38 @@ describe("Typst document source", () => {
     const html =
       '<p>"Back\\slash" [bracket] {brace} #hash 💚 &lt;angle&gt;</p>';
     expect(canonical(typstToHtml(htmlToTypst(html)))).toBe(canonical(html));
-    expect(htmlToTypst(html)).toStartWith(TYPST_DOCUMENT_PREAMBLE);
+    expect(htmlToTypst(html)).not.toContain("twyne-node");
+  });
+  test("writes prose as idiomatic Typst markup", () => {
+    const html =
+      '<h1>Chapter</h1><p>It was <strong>dark</strong>, <em>stormy</em> and <a href="https://x.org">linked</a>.</p><ul><li><p>One</p><ul><li><p>Nested</p></li></ul></li></ul><blockquote><p>Quoted</p></blockquote><pre><code class="language-js">let x = 1;</code></pre><div data-type="page-break"></div>';
+    const source = htmlToTypst(html);
+    expect(source).toBe(
+      '= Chapter\n\nIt was *dark*, _stormy_ and #link("https://x.org")[linked].\n\n- One\n  - Nested\n\n#quote(block: true)[\nQuoted\n]\n\n```js\nlet x = 1;\n```\n\n#pagebreak()',
+    );
+    expect(canonical(typstToHtml(source))).toBe(canonical(html));
+  });
+  test("escapes only what Typst would read as markup", () => {
+    const html =
+      "<p>1. not a list</p><p>- nor this</p><p>wo<strong>rd</strong>s with 5*3, a_b, https://x.org, // and #hash</p><p>Line<br>break, <code>code</code> -- and ...</p>";
+    const source = htmlToTypst(html);
+    expect(source).toContain("1\\. not a list");
+    expect(source).toContain("wo#strong[rd]s");
+    expect(canonical(typstToHtml(source))).toBe(canonical(html));
+  });
+  test("adjacent lists of one kind stay separate lists", () => {
+    const html =
+      "<ol><li><p>A</p></li></ol><ol><li><p>B</p></li></ol><ul><li><p>C</p></li></ul>";
+    expect(canonical(typstToHtml(htmlToTypst(html)))).toBe(canonical(html));
+  });
+  test("migrates drafts saved with the inline helper preamble", () => {
+    const legacy =
+      TYPST_DOCUMENT_PREAMBLE +
+      '#twyne-node("h1", "{}")[#text("Old")]\n\n// mine\n#set text(red)\n\n#twyne-node("p", "{}")[#text("Hello ")#twyne-node("strong", "{}")[#text("world")]]';
+    const migrated = migrateTypstSource(legacy);
+    expect(migrated).toBe("= Old\n\n// mine\n#set text(red)\n\nHello *world*");
+    expect(typstToHtml(migrated)).toBe(typstToHtml(legacy));
+    expect(reconcileTypstSource(legacy, typstToHtml(legacy))).toBe(migrated);
   });
   test("bounds input and depth", () => {
     expect(() => typstToHtml("x".repeat(5_000_001))).toThrow("5 MB");
@@ -156,9 +189,11 @@ test("canonical source compiles rich content with the real Typst compiler", asyn
   const compiler = await createDocumentCompiler();
   compiler.addSource(
     "/main.typ",
-    htmlToTypst(
-      '<h1>Title</h1><p>A <strong>bold</strong> thought with a <sup data-type="footnote" data-endnote-text="Citation"></sup>.</p><ul><li><p>One</p></li><li><p>Two</p></li></ul><ol><li><p>First</p></li><li><p>Second</p></li></ol><table><tbody><tr><th colspan="2"><p>Title</p></th></tr><tr><td><p>A</p></td><td><p>B</p></td></tr></tbody></table>',
-    ),
+    TYPST_HELPERS +
+      "\n" +
+      htmlToTypst(
+        '<h1>Title</h1><p>A <strong>bold</strong> thought with a <sup data-type="footnote" data-endnote-text="Citation"></sup>.</p><ul><li><p>One</p></li><li><p>Two</p></li></ul><ol><li><p>First</p></li><li><p>Second</p></li></ol><table><tbody><tr><th colspan="2"><p>Title</p></th></tr><tr><td><p>A</p></td><td><p>B</p></td></tr></tbody></table>',
+      ),
   );
   await compiler.runWithWorld(
     { mainFilePath: "/main.typ", inputs: {} },
@@ -200,11 +235,9 @@ test("ordered list starts produce real Typst numbering and preserve HTML attribu
   // Metadata comes from Typst's label callback, after layout has numbered each item.
   compiler.addSource(
     "/numbering.typ",
-    source.replace(
-      TYPST_DOCUMENT_PREAMBLE,
-      TYPST_DOCUMENT_PREAMBLE +
-        '\n#set enum(numbering: n => { metadata(n); numbering("1.", n) })\n',
-    ),
+    TYPST_HELPERS +
+      '\n#set enum(numbering: n => { metadata(n); numbering("1.", n) })\n' +
+      source,
   );
   await compiler.runWithWorld(
     { mainFilePath: "/numbering.typ", inputs: {} },
@@ -215,8 +248,12 @@ test("ordered list starts produce real Typst numbering and preserve HTML attribu
       ).toEqual([]);
       expect(result.result).toBeDefined();
       expect(
-        await world.query<number[]>({ selector: "enum", field: "start" }),
-      ).toEqual(cases.map(({ start }) => start));
+        await world.query<(number | "auto")[]>({
+          selector: "enum",
+          field: "start",
+        }),
+        // The plain list is native `+` markup, which numbers from its default.
+      ).toEqual(cases.map(({ start }, i) => (i === 0 ? "auto" : start)));
       expect(
         await world.query<number[]>({ selector: "metadata", field: "value" }),
       ).toEqual(cases.flatMap(({ start }) => [start, start + 1]));

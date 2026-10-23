@@ -462,6 +462,6 @@ test("saving a native source copy removes private feedback and preserves the ope
   const contents = await readFile((await download.path())!, "utf8");
   expect(contents).not.toContain("PRIVATE_FEEDBACK");
   expect(contents).not.toContain("data-persona-note-");
-  expect(contents).toContain('"manuscript"');
+  expect(contents).toContain("[manuscript]");
   expect(await source.innerText()).toBe(before);
 });

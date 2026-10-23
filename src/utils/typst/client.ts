@@ -1,11 +1,21 @@
 import { serializeTypst } from "./serialize";
 import { typstPageSetup, TYPST_MANUSCRIPT_STYLES } from "./theme";
-import { TYPST_DOCUMENT_PREAMBLE } from "./document";
+import {
+  TYPST_HELPERS,
+  migrateTypstSource,
+  prepareNativeParagraphs,
+  TYPST_PARAGRAPH_PREFIX,
+} from "./document";
 import type { ExportPayload } from "../exchange";
 import { loadAssets } from "./assets";
 export { loadAssets } from "./assets";
 import { prepareTypstAssets } from "./render-assets";
-import type { TypstCompileRequest, TypstCompileResponse } from "./protocol";
+import type {
+  TypstCompileRequest,
+  TypstCompileResponse,
+  TypstDiagnostic,
+} from "./protocol";
+import { prefetchTypstPackages } from "./packages";
 import { typstDecorations } from "./decorative-assets";
 export interface TypstCompileOptions {
   payload?: ExportPayload;
@@ -14,6 +24,63 @@ export interface TypstCompileOptions {
   assets?: { path: string; url: string }[];
 }
 type TypstExportOptions = TypstCompileOptions;
+
+/** A compiler error placed in the author's file: one-based lines and columns. */
+export interface TypstSourceError {
+  message: string;
+  line: number;
+  column: number;
+  endLine: number;
+  endColumn: number;
+}
+export class TypstCompileError extends Error {
+  constructor(
+    message: string,
+    readonly errors: TypstSourceError[],
+  ) {
+    super(message);
+  }
+}
+
+/**
+ * Translate compiler ranges into the author's file, which starts on the line
+ * after the marker. Errors inside packages or Twyne's helpers stay unplaced.
+ */
+export function sourceErrors(
+  compiled: string,
+  diagnostics: TypstDiagnostic[],
+): TypstSourceError[] {
+  const marker = compiled.indexOf(`\n${TYPST_SOURCE_MARKER}\n`);
+  const offset =
+    marker < 0 ? 0 : compiled.slice(0, marker).split("\n").length + 1;
+  const lines = compiled.split("\n");
+  const authorColumn = (line: number, column: number) => {
+    const text = lines[line] ?? "";
+    const prefix = text.indexOf(TYPST_PARAGRAPH_PREFIX);
+    return (
+      column +
+      1 -
+      (prefix >= 0 && column >= prefix + TYPST_PARAGRAPH_PREFIX.length
+        ? TYPST_PARAGRAPH_PREFIX.length
+        : 0)
+    );
+  };
+  return diagnostics.flatMap((d) => {
+    const range = /^(\d+):(\d+)-(\d+):(\d+)$/.exec(d.range);
+    if (d.package || d.path !== "/main.typ" || !range) return [];
+    const [line, column, endLine, endColumn] = range.slice(1).map(Number);
+    if (line < offset) return [];
+    return [
+      {
+        message: d.message,
+        line: line - offset + 1,
+        column: authorColumn(line, column),
+        endLine: endLine - offset + 1,
+        endColumn: authorColumn(endLine, endColumn),
+      },
+    ];
+  });
+}
 export interface TypstCompilation {
   pdf: Blob;
   pages: string[];
@@ -134,7 +201,13 @@ export function compileRequest(
         return;
       }
       cleanup();
-      if (data.type === "error") reject(new Error(data.message));
+      if (data.type === "error")
+        reject(
+          new TypstCompileError(
+            data.message,
+            sourceErrors(request.source, data.diagnostics ?? []),
+          ),
+        );
       else
         resolve({
           pdf: new Blob([data.bytes], { type: "application/pdf" }),
@@ -179,8 +252,10 @@ export async function compileTypstSource(
       { source, assets: [...(options.assets ?? []), ...decorations] },
       controller.signal,
     );
+    const packages = await prefetchTypstPackages(source, options.onProgress);
+    controller.signal.throwIfAborted();
     return await compileRequest(
-      { source, assets },
+      { source, assets, packages: [...packages] },
       { ...options, signal: controller.signal },
     );
   } finally {
@@ -189,41 +264,59 @@ export async function compileTypstSource(
   }
 }
 
-export function applyTypstPageSetup(
-  source: string,
-  payload?: ExportPayload,
-): string {
-  if (!payload) return source;
-  const originalSource = source;
-  if (source.startsWith(TYPST_DOCUMENT_PREAMBLE)) {
-    source =
-      TYPST_DOCUMENT_PREAMBLE +
-      "\n" +
-      TYPST_MANUSCRIPT_STYLES +
-      "\n" +
-      source.slice(TYPST_DOCUMENT_PREAMBLE.length);
-  } else {
-    source = `#show heading: it => { show par: it => it; it }
+/** The line just before the author's file in every typeset document. */
+export const TYPST_SOURCE_MARKER = "// twyne:source";
+
+/**
+ * Typesetting rules for the author's markup. Native paragraphs take the
+ * opening initial and manuscript spacing; helper-wrapped paragraphs already
+ * did, so they are never measured twice.
+ */
+const TYPST_NATIVE_STYLES = `#show heading: it => { show par: it => it; it }
 #show quote: it => { show par: it => it; it }
 #show list: it => { show par: it => it; it }
 #show enum: it => { show par: it => it; it }
 #show table: it => { show par: it => it; it }
+#show footnote.entry: it => { show par: it => it; it }
+${[
+  "subtitle",
+  "kicker",
+  "standfirst",
+  "abstract",
+  "epigraph",
+  "scene-break",
+  "cue",
+  "direction",
+]
+  .map(
+    (role) =>
+      `#let twyne-plain-${role} = twyne-${role}\n#let twyne-${role}(..args) = { show par: it => it; twyne-plain-${role}(..args) }`,
+  )
+  .join("\n")}
 #show par: it => {
   show par: it => it
   // Layout probes and the two parts of an already wrapped opening must not
   // re-enter the automatic paragraph rule during contextual measurement.
   if it.has("label") and it.label == <twyne-opening-line> { it }
-  else { block(twyne-opening(it.body)) }
-}
-${source}`;
-  }
-  const settings = typstPageSetup(payload, originalSource);
+  else { context block(above: 0pt, below: if twyne-opening-depth.get() == 0 { 16.2pt } else { 6.075pt }, twyne-opening(it.body)) }
+}`;
+
+export function applyTypstPageSetup(
+  source: string,
+  payload?: ExportPayload,
+): string {
+  if (!payload) return source;
+  source = migrateTypstSource(source);
+  const settings = typstPageSetup(payload, source);
   const appendices = serializeTypst({ ...payload, title: "", html: "" }).source;
   const notesAt = appendices.indexOf("#heading(level: 2)");
-  return (
-    settings +
-    "\n" +
-    source +
-    (notesAt >= 0 ? "\n" + appendices.slice(notesAt) : "")
-  );
+  return [
+    settings,
+    TYPST_HELPERS,
+    TYPST_MANUSCRIPT_STYLES,
+    TYPST_NATIVE_STYLES,
+    TYPST_SOURCE_MARKER,
+    prepareNativeParagraphs(source) +
+      (notesAt >= 0 ? "\n" + appendices.slice(notesAt) : ""),
+  ].join("\n");
 }

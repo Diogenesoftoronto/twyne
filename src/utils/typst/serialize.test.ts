@@ -14,7 +14,7 @@ import { exportTypst } from "./export";
 import { prepareTypstAssets } from "./render-assets";
 import { createTypstRenderer } from "@myriaddreamin/typst.ts/renderer";
 import { applyTypstPageSetup, splitProofPages } from "./client";
-import { htmlToTypst, typstToHtml } from "./document";
+import { htmlToTypst, typstToHtml, TYPST_HELPERS } from "./document";
 import { ILLUMINATED_INITIAL_ARTWORK } from "../illuminated-initials";
 import { typstDecorations } from "./decorative-assets";
 
@@ -101,6 +101,8 @@ async function compile(source: string, trailingMetadata = false) {
       ? "#show text: it => box({ it; metadata(it.text) })\n"
       : "#show text: it => { metadata(it.text); it }\n") +
       "#show image: it => { if it.alt != none { metadata(it.alt) }; it }\n" +
+      TYPST_HELPERS +
+      "\n" +
       source,
   );
   return compiler.runWithWorld(
@@ -317,8 +319,8 @@ describe("Typst serializer with the real bundled compiler", () => {
       expect(source).toContain("#set columns(gutter: 24pt)");
       expect(source).toContain("left: 60pt");
       expect(source).toContain("twyne-initial-size = 74.25pt");
-      expect((await compile(source)).join("")).toContain(
-        "“At last, the page came alive.",
+      expect((await compile(source)).join("").replace(/\s/g, "")).toContain(
+        "“Atlast,thepagecamealive.",
       );
     }
   });
@@ -474,7 +476,9 @@ describe("Typst serializer with the real bundled compiler", () => {
           source,
       )
     ).join("");
-    expect(rendered).toContain("A bold sentence.");
+    // Native emphasis splits text elements; show rules may observe them twice.
+    expect(rendered).toContain("bold");
+    expect(rendered).toContain("sentence.");
     expect(rendered).toContain("A running header");
     expect(rendered).toContain("A working proof");
     // Each cell must occupy the grid independently; nested row sequences

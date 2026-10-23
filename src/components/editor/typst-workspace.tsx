@@ -64,6 +64,7 @@ export const TypstWorkspace = component$<{
     conflict: false,
     status: "Preparing typesetter…",
     error: "",
+    diagnostics: [],
     pages: [],
     pdfUrl: "",
     proofStale: true,
@@ -185,6 +186,7 @@ export const TypstWorkspace = component$<{
           Object.assign(state, next);
           props.store.typstSourcePending = next.dirty || next.applying;
           codeEditor?.setSource(next.source);
+          codeEditor?.setErrors(next.diagnostics);
           codeEditor?.setReadOnly(!current || !!readOnly || next.applying);
         },
         getPayload: (source) =>
