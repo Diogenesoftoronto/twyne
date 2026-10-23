@@ -1,0 +1,49 @@
+hey what are the cards thata are used by the  perrsonas
+
+---
+
+there are like two types of feedback cards  that i see
+
+---
+
+Ah yes. use opus on medium to improve the design of both, major issue with the inpassing is thata it doesn't render markdown correctly. The other thing with theh requested feedback cards those are kinda bad because the top part of those cards has text that spills into the bottom section. I also think that there should be a live view for this stuff too.
+
+---
+
+An expanded view  for the comments that should open up.
+
+---
+
+oh another thing that I found for another opus agent at medium is further refine sentence bench man we need to work out how to make it actually useful I still can see myself using it at the moment, in fact make the frontier research this and come up with  something, astra at max, fable 5.1 and Opus at high all think together aboutu this one.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-research-opus-20261021-r1 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-research-opus-20261021-r1 to read the result.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-research-astra-20261021-r1 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-research-astra-20261021-r1 to read the result.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-research-fable-20261021-r1 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-research-fable-20261021-r1 to read the result.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-research-fable-20261021-r2 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-research-fable-20261021-r2 to read the result.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-research-opus-20261021-r2 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-research-opus-20261021-r2 to read the result.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-research-astra-20261021-r2 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-research-astra-20261021-r2 to read the result.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Atwyne-feedback-cards-opus-medium-20261021-r1 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Atwyne-feedback-cards-opus-medium-20261021-r1 to read the result.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-implementation-opus-medium-20261021-r1 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3A07ddda5f-1c8d-4721-bc98-c0d7771ccce5%3Adelegate-task%3Asentence-bench-implementation-opus-medium-20261021-r1 to read the result.
