@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { buildQuoteTools } from "../../convex/agentTools";
 import { hostedPersonaResearch } from "../../convex/lib/personaResearch";
 import type { ActionCtx } from "../../convex/_generated/server";
@@ -16,8 +16,14 @@ import {
   __resetSystemOneBudgetForTests,
   spendSystemOne,
 } from "./system-one-budget";
+import { __resetExtractionBudgetForTests } from "./extraction-budget";
 
 const draft = "Ada was twelve in June.\n\nAda turned thirteen in July.";
+const successfulExtraction = () => ({
+  ok: true,
+  truncated: false,
+  answers: { name: { type: "text", value: "Ada", span: [0, 3] } },
+});
 async function execute(
   set: ReturnType<typeof buildQuoteTools>,
   name: string,
@@ -228,25 +234,41 @@ describe("field and question validation", () => {
 });
 
 describe("research transports", () => {
+  beforeEach(() => {
+    __resetSystemOneBudgetForTests();
+    __resetExtractionBudgetForTests();
+  });
+  afterEach(() => {
+    __resetSystemOneBudgetForTests();
+    __resetExtractionBudgetForTests();
+  });
   test("server uses Convex actions and the same per-note cap", async () => {
+    // Availability is read from the environment; a linked Not Organic account
+    // unlocks both tools, as it does for the browser.
+    const enabledBefore = process.env.NOTORGANIC_ENABLED;
+    process.env.NOTORGANIC_ENABLED = "1";
     const names: string[] = [];
+    const owners: string[] = [];
     const ctx = {
-      auth: { getUserIdentity: async () => ({ subject: "writer" }) },
-      runQuery: async () => ({ did: "did:test" }),
+      runQuery: async () => ({ did: "did:test", sessionVersion: 1 }),
       runAction: async (ref: any, req: any) => {
         const name = getFunctionName(ref);
         names.push(name);
-        return name.endsWith("isAvailable")
-          ? { available: true }
-          : {
-              ok: true,
-              answers: req.fields
-                ? { age: { type: "number", value: 12 } }
-                : { same: { type: "noul", noul: 0.9 } },
-            };
+        owners.push(req.ownerId);
+        return {
+          ok: true,
+          answers: req.fields
+            ? { age: { type: "number", value: 12 } }
+            : { same: { type: "noul", noul: 0.9 } },
+        };
       },
     } as unknown as ActionCtx;
-    const research = await hostedPersonaResearch(ctx);
+    const research = await hostedPersonaResearch(ctx, {
+      tokenIdentifier: "test-issuer|writer",
+      subject: "writer",
+    });
+    if (enabledBefore === undefined) delete process.env.NOTORGANIC_ENABLED;
+    else process.env.NOTORGANIC_ENABLED = enabledBefore;
     const set = buildQuoteTools(draft, research);
     const result = await execute(set, "extract", {
       fields: { age: { type: "number", instructions: "Ada's age in June" } },
@@ -257,8 +279,9 @@ describe("research transports", () => {
       passages: set.getAnchors(),
       questions: { same: { type: "noul", instructions: "Is Ada mentioned?" } },
     });
-    expect(names).toContain("extraction:extract");
-    expect(names).toContain("systemOne:ask");
+    expect(names).toContain("extraction:extractAs");
+    expect(names).toContain("systemOne:askAs");
+    expect(new Set(owners)).toEqual(new Set(["test-issuer|writer"]));
     expect([
       research.reserve(),
       research.reserve(),
@@ -285,23 +308,80 @@ describe("research transports", () => {
         requests.push(name);
         return name.endsWith("isAvailable")
           ? { available: true }
-          : { ok: true, answers: {} };
+          : name === "extraction:extract"
+            ? successfulExtraction()
+            : { ok: true, answers: { q: { type: "noul", noul: 0.9 } } };
       },
     } as unknown as ConvexClient;
     const research = await clientPersonaResearch(client, null);
     expect(research.reserve()).toBe(true);
-    await research.extract!({
-      state: draft,
-      fields: { name: { type: "text" } },
-    });
-    await research.judge!({
-      state: { draft },
-      questions: { q: { type: "noul", instructions: "Ada?" } },
-    });
+    expect(
+      await research.extract!({
+        state: draft,
+        fields: { name: { type: "text" } },
+      }),
+    ).toMatchObject(successfulExtraction());
+    expect(
+      (
+        await research.judge!({
+          state: { draft },
+          questions: { q: { type: "noul", instructions: "Ada?" } },
+        })
+      ).ok,
+    ).toBe(true);
     expect(requests).toContain("extraction:extract");
     expect(requests).toContain("systemOne:ask");
     for (let i = 0; i < 12; i++) spendSystemOne();
-    expect(research.reserve()).toBe(false);
+    expect(research.reserve()).toBe(true);
+    const requestsBefore = requests.length;
+    expect(
+      (
+        await research.judge!({
+          state: { draft },
+          questions: { q: { type: "noul", instructions: "Ada?" } },
+        })
+      ).ok,
+    ).toBe(false);
+    expect(requests.length).toBe(requestsBefore);
     __resetSystemOneBudgetForTests();
   });
+  test.each(["extraction:extract", "systemOne:ask"])(
+    "%s failure only backs off its own research service",
+    async (failedService) => {
+      const requests: string[] = [];
+      const client = {
+        query: async () => ({ did: "did:test" }),
+        action: async (ref: any) => {
+          const name = getFunctionName(ref);
+          if (name.endsWith("isAvailable")) return { available: true };
+          requests.push(name);
+          if (name === failedService) return { ok: false, error: "provider" };
+          return name === "extraction:extract"
+            ? successfulExtraction()
+            : { ok: true, answers: { q: { type: "noul", noul: 0.9 } } };
+        },
+      } as unknown as ConvexClient;
+      const research = await clientPersonaResearch(client, null);
+      const extract = () =>
+        research.extract!({
+          state: draft,
+          fields: { name: { type: "text" } },
+        });
+      const judge = () =>
+        research.judge!({
+          state: { draft },
+          questions: { q: { type: "noul", instructions: "Ada?" } },
+        });
+      const fail = failedService === "extraction:extract" ? extract : judge;
+      const succeed = failedService === "extraction:extract" ? judge : extract;
+      expect(research.reserve()).toBe(true);
+      expect((await fail()).ok).toBe(false);
+      expect(research.reserve()).toBe(true);
+      expect((await succeed()).ok).toBe(true);
+      expect(research.reserve()).toBe(true);
+      expect((await fail()).ok).toBe(false);
+      expect(requests.filter((name) => name === failedService)).toHaveLength(1);
+      expect(requests).toHaveLength(2);
+    },
+  );
 });

@@ -5,7 +5,12 @@
  */
 import type { ConvexClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
-import type { ExtractionRequest, ExtractionResult } from "./extraction";
+import {
+  extractionError,
+  type ExtractionRequest,
+  type ExtractionResult,
+} from "./extraction";
+import { validateExtractionAnswers } from "./extraction-validation";
 
 export async function askExtraction(
   client: ConvexClient | null | undefined,
@@ -18,9 +23,18 @@ export async function askExtraction(
       api.extraction.extract,
       request,
     )) as ExtractionResult;
+    if (result?.ok) {
+      if (typeof result.truncated !== "boolean")
+        return { ok: false, error: "provider" };
+      result.answers = validateExtractionAnswers(
+        request,
+        result.answers,
+        undefined,
+        "utf16",
+      );
+    } else if (result?.ok !== false) return { ok: false, error: "provider" };
     return { ...result, latencyMs: Math.round(performance.now() - started) };
-  } catch {
-    // Rate limits throw from the action; every caller has a deterministic path.
-    return { ok: false, error: "rate limited" };
+  } catch (error) {
+    return { ok: false, error: extractionError(error) };
   }
 }

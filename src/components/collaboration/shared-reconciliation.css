@@ -1,0 +1,155 @@
+.shared-review-dialog {
+  margin: auto;
+  width: min(68rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  border: 1px solid var(--color-rule);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  overflow: auto;
+}
+.shared-review-dialog::backdrop {
+  background: rgb(20 16 10 / 58%);
+}
+.shared-review-body {
+  padding: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+.shared-review-body h2 {
+  font: 600 1.5rem/1.25 var(--font-display);
+  margin: 0 0 0.75rem;
+}
+.shared-review-body h3 {
+  font: 600 1.15rem/1.4 var(--font-display);
+  margin: 0 0 0.5rem;
+}
+.shared-review-intro {
+  max-width: 70ch;
+}
+.shared-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+.shared-review-actions button {
+  font-size: 0.75rem;
+  min-height: 2.5rem;
+}
+.shared-review-passage {
+  min-width: 0;
+  margin: 1.5rem 0 0;
+  padding: 1rem;
+  border: 1px solid var(--color-rule);
+}
+.shared-review-passage legend {
+  padding: 0 0.4rem;
+  font-weight: 600;
+}
+.shared-review-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.25rem;
+}
+.shared-review-passage label {
+  display: block;
+  min-width: 0;
+  cursor: pointer;
+}
+.shared-review-passage input {
+  margin-right: 0.5rem;
+  accent-color: var(--color-vermilion);
+}
+.shared-review-passage label > span {
+  font-weight: 600;
+}
+.shared-review-passage label:has(input:checked) > span {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.shared-review-manuscript {
+  font: 1rem/1.65 var(--font-serif);
+  overflow-wrap: anywhere;
+  max-width: 70ch;
+}
+.shared-review-manuscript p {
+  margin: 0.75rem 0;
+}
+.shared-review-manuscript table {
+  display: block;
+  overflow: auto;
+  max-width: 100%;
+}
+.shared-review-manuscript td,
+.shared-review-manuscript th {
+  padding: 0.25rem;
+  border: 1px solid var(--color-rule);
+}
+.shared-review-manuscript blockquote {
+  margin: 0.75rem 1rem;
+  font-style: italic;
+}
+.shared-review-empty {
+  font-style: italic;
+}
+.shared-review-preview {
+  border-top: 1px solid var(--color-rule);
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+}
+.shared-review-body pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 18rem;
+  overflow: auto;
+  font: 0.8rem/1.5 var(--font-typewriter);
+}
+.shared-review-body details {
+  margin-top: 0.75rem;
+}
+.shared-review-body summary {
+  cursor: pointer;
+}
+.shared-review-warning {
+  padding: 0.75rem;
+  border: 1px solid var(--color-vermilion);
+}
+.shared-review-banner {
+  position: fixed;
+  inset: auto 1rem 1rem;
+  z-index: var(--z-modal);
+  padding: 0.75rem 1rem;
+  background: var(--color-paper);
+  border: 1px solid var(--color-ink);
+  color: var(--color-ink);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.shared-review-banner[hidden] {
+  display: none;
+}
+.shared-review-banner .btn-paper {
+  font-size: 0.75rem;
+  min-height: 2.5rem;
+}
+@media (max-width: 600px) {
+  .shared-review-body {
+    padding: 1rem;
+  }
+  .shared-review-columns {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .shared-review-dialog {
+    width: calc(100vw - 1rem);
+    max-height: calc(100dvh - 1rem);
+  }
+  .shared-review-passage {
+    padding: 0.75rem;
+  }
+}

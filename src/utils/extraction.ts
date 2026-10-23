@@ -128,7 +128,13 @@ export const list = (
 
 export function estimate(
   instructions: string,
-  range: { min: number; max: number; unit?: string; step?: number; log?: boolean },
+  range: {
+    min: number;
+    max: number;
+    unit?: string;
+    step?: number;
+    log?: boolean;
+  },
 ): ExtractionField {
   return {
     type: "estimate",
@@ -200,29 +206,60 @@ export interface Interval {
 }
 
 /** The numeric 80% interval of an estimate, or null for date estimates and gaps. */
-export function interval(answer: ExtractionAnswer | undefined): Interval | null {
+export function interval(
+  answer: ExtractionAnswer | undefined,
+): Interval | null {
   const { median, p10, p90 } = answer ?? {};
   return typeof median === "number" &&
+    Number.isFinite(median) &&
     typeof p10 === "number" &&
-    typeof p90 === "number"
+    Number.isFinite(p10) &&
+    typeof p90 === "number" &&
+    Number.isFinite(p90) &&
+    p10 <= median &&
+    median <= p90
     ? { median, p10, p90 }
     : null;
 }
 
 /** One interval per forecast step. */
-export function forecastSteps(answer: ExtractionAnswer | undefined): Interval[] {
+export function forecastSteps(
+  answer: ExtractionAnswer | undefined,
+): Interval[] {
   if (!answer) return [];
-  if (Array.isArray(answer.steps))
-    return answer.steps
-      .map((s) => interval(s as ExtractionAnswer))
-      .filter((s): s is Interval => s !== null);
+  if (Array.isArray(answer.steps)) {
+    const steps = answer.steps.map((s) =>
+      s && typeof s === "object" ? interval(s as ExtractionAnswer) : null,
+    );
+    return steps.every((s): s is Interval => s !== null) ? steps : [];
+  }
   const { median, p10, p90 } = answer;
-  if (Array.isArray(median) && Array.isArray(p10) && Array.isArray(p90))
-    return median.map((m, i) => ({
-      median: m as number,
-      p10: p10[i] as number,
-      p90: p90[i] as number,
-    }));
+  if (Array.isArray(median) && Array.isArray(p10) && Array.isArray(p90)) {
+    if (median.length !== p10.length || median.length !== p90.length) return [];
+    const steps = median.map((m, i) =>
+      interval({ median: m, p10: p10[i], p90: p90[i] } as ExtractionAnswer),
+    );
+    return steps.every((s): s is Interval => s !== null) ? steps : [];
+  }
   const single = interval(answer);
   return single ? [single] : [];
+}
+
+/** Stable, non-sensitive failure categories. Never return arbitrary error text:
+ * upstream messages can contain the writer's draft.
+ */
+export function extractionError(error: unknown): string {
+  if (!error || typeof error !== "object") return "provider";
+  const { name, data } = error as { name?: unknown; data?: unknown };
+  if (name === "RateLimitError") return "rate limited";
+  if (name === "TimeoutError" || name === "AbortError") return "timeout";
+  if (name === "NetworkError") return "network";
+  const code =
+    data && typeof data === "object"
+      ? (data as { code?: unknown }).code
+      : undefined;
+  if (code === "UNAUTHENTICATED") return "signed out";
+  if (code === "FORBIDDEN") return "unauthorized";
+  if (code === "RATE_LIMITED") return "rate limited";
+  return "provider";
 }

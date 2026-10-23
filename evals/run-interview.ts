@@ -2,7 +2,7 @@
  * Offline eval harness for Twyne's AI conversational interview (dossier creation).
  *
  * Replays the REAL production interview system prompt (verbatim from
- * `convex/agents.ts:interviewSystemPrompt`) through the Bifrost gateway for
+ * `convex/agents.ts:interviewSystemPrompt`) through Not Organic for
  * each conversation in `evals/interview.jsonl`, then applies five LLM-as-judge
  * rubrics:
  *
@@ -13,7 +13,7 @@
  *   - dossier-grounding     : is the tagged DOSSIER JSON grounded in the actual conversation?
  *
  * Mirrors the conventions of `evals/run-experiment.ts` and `evals/judge.ts`
- * (Node/TS via `tsx`, `node:fs`/`node:path` imports, header-only Bifrost auth,
+ * (Node/TS via `tsx`, `node:fs`/`node:path` imports, the shared Not Organic DPoP client,
  * case_id keys, main().catch() tail).
  *
  * The interview has no tools — it uses tagged-text parsing (DOSSIER: and
@@ -21,25 +21,25 @@
  * must emit the correct tag at the correct time with valid JSON.
  *
  * Usage:
- *   BIFROST_BASE_URL=https://... BIFROST_API_KEY=sk_bf_xxx \
- *     BIFROST_DEFAULT_MODEL=neuralwatt/qwen3.5-397b-fast \
- *     JUDGE_MODEL=neuralwatt/kimi-k2.6 bun run eval:interview
+ *   bun run eval:interview
+ *   Configure the funding DID, signing settings and approved per-call ceiling
+ *   described in evals/README.notorganic.md.
  *
  * Writes evals/interview-scores.json. Read-only w.r.t. the repo otherwise.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  chatCompletion,
+  DEFAULT_MODEL,
+  JUDGE_MODEL,
+  evalConfiguration,
+} from "./llm-client";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DATASET_PATH = resolve(HERE, "interview.jsonl");
 const SCORES_PATH = resolve(HERE, "interview-scores.json");
-
-const BIFROST_BASE_URL = process.env.BIFROST_BASE_URL;
-const BIFROST_API_KEY = process.env.BIFROST_API_KEY;
-const BIFROST_DEFAULT_MODEL =
-  process.env.BIFROST_DEFAULT_MODEL ?? "neuralwatt/qwen3.5-397b-fast";
-const JUDGE_MODEL = process.env.JUDGE_MODEL ?? "neuralwatt/kimi-k2.6";
 
 // ---------------------------------------------------------------------------
 // Types — mirror the production InterviewMessage and ProjectInterviewAnswers.
@@ -276,10 +276,10 @@ function parseInterviewOutput(text: string): ParsedTurn {
 }
 
 // ---------------------------------------------------------------------------
-// Bifrost caller — header-only auth (NEVER bearer; Bifrost 401s on it).
+// Hosted caller — shared assertion, DPoP, metering and retry contracts.
 // ---------------------------------------------------------------------------
 
-async function callBifrost(
+async function callHosted(
   system: string,
   user: string,
   model: string,
@@ -287,41 +287,14 @@ async function callBifrost(
   maxTokens: number,
   signal: AbortSignal,
 ): Promise<string> {
-  if (!BIFROST_BASE_URL) {
-    throw new Error("BIFROST_BASE_URL is required");
-  }
-  const res = await fetch(
-    `${BIFROST_BASE_URL.replace(/\/$/, "")}/chat/completions`,
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-bifrost-api-key": BIFROST_API_KEY ?? "",
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-        temperature,
-        max_tokens: maxTokens,
-      }),
-      signal,
-    },
-  );
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Bifrost ${res.status}: ${body.slice(0, 400)}`);
-  }
-  const json = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const content = json.choices?.[0]?.message?.content;
-  if (typeof content !== "string") {
-    throw new Error("Bifrost response missing choices[0].message.content");
-  }
-  return content;
+  return chatCompletion({
+    system,
+    user,
+    model,
+    temperature,
+    maxTokens,
+    signal,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -339,39 +312,18 @@ async function judge(
   valid: Record<string, number>,
   signal: AbortSignal,
 ): Promise<Verdict> {
-  if (!BIFROST_BASE_URL) throw new Error("BIFROST_BASE_URL is required");
   const labels = Object.keys(valid);
   const system =
     `You are a strict evaluator. Read the rubric, then respond with a JSON object ` +
     `exactly: {"label": "<one of: ${labels.join(", ")}>", "explanation": "<one sentence>"}. ` +
     `No other text.`;
-  const res = await fetch(
-    `${BIFROST_BASE_URL.replace(/\/$/, "")}/chat/completions`,
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-bifrost-api-key": BIFROST_API_KEY ?? "",
-      },
-      body: JSON.stringify({
-        model: JUDGE_MODEL,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0,
-      }),
-      signal,
-    },
-  );
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Bifrost ${res.status}: ${body.slice(0, 300)}`);
-  }
-  const json = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const raw = json.choices?.[0]?.message?.content ?? "";
+  const raw = await chatCompletion({
+    system,
+    user: prompt,
+    model: JUDGE_MODEL,
+    temperature: 0,
+    signal,
+  });
   let label = "";
   let explanation = "";
   let txt = raw.trim();
@@ -542,9 +494,10 @@ function buildTranscript(messages: InterviewMessage[]): string {
 }
 
 async function main(): Promise<void> {
+  evalConfiguration();
   const dataset = readDataset();
   console.log(
-    `[twyne:interview] ${dataset.length} cases → model ${BIFROST_DEFAULT_MODEL}, judge ${JUDGE_MODEL}`,
+    `[twyne:interview] ${dataset.length} cases → model ${DEFAULT_MODEL}, judge ${JUDGE_MODEL}`,
   );
 
   const scores: CaseScore[] = [];
@@ -554,10 +507,10 @@ async function main(): Promise<void> {
     const system = interviewSystemPrompt(row.mode, row.currentBrief);
     const transcript = buildTranscript(row.messages);
     try {
-      const raw = await callBifrost(
+      const raw = await callHosted(
         system,
         transcript,
-        BIFROST_DEFAULT_MODEL,
+        DEFAULT_MODEL,
         0.6,
         420,
         AbortSignal.timeout(60_000),

@@ -68,11 +68,8 @@ export async function clientPersonaResearch(
     }
   };
   return {
-    reserve: () => {
-      if (systemOneWait() > 0 || !reserveNote()) return false;
-      spendSystemOne();
-      return true;
-    },
+    // Share the note cap without spending or checking another service's budget.
+    reserve: reserveNote,
     ...(extraction
       ? {
           extract: (request: Parameters<typeof askExtraction>[1]) =>
@@ -86,11 +83,15 @@ export async function clientPersonaResearch(
       : {}),
     ...(judge
       ? {
-          judge: (request: Parameters<typeof askJudgement>[1]) =>
-            quietOnFailure(
+          judge: (request: Parameters<typeof askJudgement>[1]) => {
+            if (systemOneWait() > 0)
+              return Promise.resolve({ ok: false, error: "backing off" });
+            spendSystemOne();
+            return quietOnFailure(
               () => askJudgement(client, request, settings),
               () => backOffSystemOne(),
-            ),
+            );
+          },
         }
       : {}),
   };

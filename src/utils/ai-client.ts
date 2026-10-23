@@ -1019,6 +1019,7 @@ async function generateTrackedText({
   onText,
   onTrace,
   reasoningLevel,
+  responseRetry,
 }: {
   feature: AiFeature;
   resolved: {
@@ -1041,6 +1042,8 @@ async function generateTrackedText({
   traceId?: string;
   /** Per-attempt override used by the adaptive editorial drafting loop. */
   reasoningLevel?: EditorialReasoningLevel;
+  /** Structured readers own validation and must never receive hidden reasoning. */
+  responseRetry?: { accepts: (text: string) => boolean; instruction: string };
 }): Promise<string> {
   system = withResponseLanguage(system, currentModelLocale());
   const start = performance.now();
@@ -1055,7 +1058,7 @@ async function generateTrackedText({
   // read the document it found), so give a larger budget when they are present.
   const toolCount = tools ? Object.keys(tools).length : 0;
   const stopWhen = tools ? stepCountIs(toolCount > 1 ? 6 : 3) : undefined;
-  const run = async (userPrompt: string) => {
+  const run = async (userPrompt: string, attemptReasoning = reasoningLevel) => {
     attempt += 1;
     try {
       const result = await runOnce({
@@ -1067,11 +1070,11 @@ async function generateTrackedText({
         // Keyed by the model actually being used, so a feature that overrides
         // the provider's default model does not inherit a dial set for a
         // different model — thinking is a per-model capability.
-        providerOptions: reasoningLevel
+        providerOptions: attemptReasoning
           ? reasoningProviderOptionsForLevel(
               resolved.provider,
               resolved.model,
-              reasoningLevel,
+              attemptReasoning,
             )
           : reasoningProviderOptions(resolved.provider, resolved.model),
         tools,
@@ -1116,20 +1119,28 @@ async function generateTrackedText({
     let cleaned = stripReasoningTags(text);
     // Reasoning is a mode, not a defect: a model that thinks before answering
     // has done nothing wrong, and the thinking is already stripped from what
-    // the reader sees. Only regenerate when nothing visible survived — an
-    // unclosed block, usually a generation truncated by the token budget —
-    // because that is the one case where there is no note to file.
-    if (!cleaned) {
-      const retryPrompt = `${prompt}\n\nClose your <think> block, then write the note.`;
+    // the reader sees. Notes retry only when nothing visible survived;
+    // structured readers also retry when the visible answer cannot be parsed.
+    if (responseRetry ? !responseRetry.accepts(cleaned) : !cleaned) {
+      const retryPrompt = `${prompt}\n\n${responseRetry?.instruction ?? "Close your <think> block, then write the note."}`;
       // The empty attempt may already have painted a thinking state. Reset it
       // so the reader sees a note begin rather than two answers spliced.
       onText?.(textSnapshot("", "running"));
-      const retry = await run(retryPrompt);
+      const retry = await run(
+        retryPrompt,
+        responseRetry
+          ? adaptiveReasoningCeiling(resolved.provider, resolved.model) ===
+            "off"
+            ? "off"
+            : "low"
+          : reasoningLevel,
+      );
       usage = retry.usage ?? usage;
-      // Still nothing visible after a second attempt: keep the model's words
-      // with the tag markers removed, so the card is never blank.
-      cleaned =
-        stripReasoningTags(retry.text) || removeReasoningTagMarkers(retry.text);
+      // Notes can salvage the model's words after two empty attempts.
+      // Judgements must never treat hidden reasoning as a visible answer.
+      cleaned = stripReasoningTags(retry.text);
+      if (!responseRetry && !cleaned)
+        cleaned = removeReasoningTagMarkers(retry.text);
     }
     // Streaming is best-effort progress, but the last callback is a contract:
     // it must exactly match the text the caller is about to file.
@@ -1167,6 +1178,19 @@ async function generateTrackedText({
     });
     throw err;
   }
+}
+
+/** One retry for an empty or invalid judgement, within the same usage trace. */
+async function generateTrackedJudgement<T>(
+  options: Parameters<typeof generateTrackedText>[0],
+  parse: (text: string) => T | null,
+  instruction = "Answer now with only the requested JSON object.",
+): Promise<T | null> {
+  const text = await generateTrackedText({
+    ...options,
+    responseRetry: { accepts: (text) => parse(text) !== null, instruction },
+  });
+  return parse(text);
 }
 
 /* ── Classification (mirrors convex/agents.ts) ──────────────────── */
@@ -1269,7 +1293,7 @@ export async function runClientRewrite(
   if (!model) return null;
 
   try {
-    const system = buildSystemPrompt(req.persona);
+    const system = buildSystemPrompt(req.persona, { tools: false });
     const sizeRule =
       req.level === "sentence"
         ? "Keep the replacement to a single sentence."
@@ -1282,11 +1306,7 @@ export async function runClientRewrite(
       instruction: "rewrite-suggestion",
     })}
 
-REWRITE TASK: Rewrite the PASSAGE below in your voice, preserving its meaning but doing the work better. ${sizeRule}
-Respond as JSON only, no prose: {"replacement": "<rewritten passage as plain text>", "rationale": "<one sentence, in your voice>"}
-
-PASSAGE:
-"${req.original}"`;
+${renderNamed("blocks/rewrite-task", { sizeRule, original: req.original })}`;
 
     const text = await generateTrackedText({
       feature: "persona-rewrite",
@@ -1362,7 +1382,7 @@ export async function runClientAgent(
 
     if (adaptive) {
       const result = await runAdaptiveEditorialDraft({
-        operation: req.instruction,
+        operation: req.instruction === "judge" ? "feedback" : req.instruction,
         maxReasoning:
           adaptive.maxReasoning ??
           adaptiveReasoningCeiling(resolved.provider, resolved.model),
@@ -1526,17 +1546,20 @@ export async function runClientRubricReview(
   const model = await createModel(resolved.provider, resolved.model);
   if (!model) return null;
   try {
-    const text = await generateTrackedText({
-      feature: "rubric-review",
-      resolved,
-      model,
-      system: buildRubricReviewSystemPrompt(),
-      prompt: buildRubricReviewPrompt(req),
-      spanName: "rubric_review",
-      onText,
-      evalSignals: { twyne_combined_score: req.combined },
-    });
-    const cleaned = text.trim();
+    const cleaned = await generateTrackedJudgement(
+      {
+        feature: "rubric-review",
+        resolved,
+        model,
+        system: buildRubricReviewSystemPrompt(),
+        prompt: buildRubricReviewPrompt(req),
+        spanName: "rubric_review",
+        onText,
+        evalSignals: { twyne_combined_score: req.combined },
+      },
+      (text) => text.trim() || null,
+      "Answer now with only the requested review.",
+    );
     return cleaned ? { text: cleaned, provider: resolved.provider.type } : null;
   } catch (err) {
     reportApplicationDiagnostic("twyne:ai-client:rubric-review", err);
@@ -1557,13 +1580,13 @@ export async function runClientJudge(
   if (!model) return null;
 
   try {
-    const system = buildSystemPrompt(req.persona);
+    const system = buildSystemPrompt(req.persona, { tools: false });
     const user =
       buildUserPrompt({
         persona: req.persona,
         brief: req.brief,
         draftText: req.draftText,
-        instruction: "feedback",
+        instruction: "judge",
       }) +
       `
 
@@ -1573,20 +1596,21 @@ Do not reward confident-sounding bullshit. Penalize generic filler, repeated par
 
 Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voice>"}`;
 
-    const text = await generateTrackedText({
-      feature: "rubric-judge",
-      resolved,
-      model,
-      system,
-      prompt: user,
-      spanName: "rubric_judge",
-      evalSignals: {
-        twyne_persona_id: req.persona.id,
-        twyne_expected_format: "json_score_rationale",
+    const parsed = await generateTrackedJudgement(
+      {
+        feature: "rubric-judge",
+        resolved,
+        model,
+        system,
+        prompt: user,
+        spanName: "rubric_judge",
+        evalSignals: {
+          twyne_persona_id: req.persona.id,
+          twyne_expected_format: "json_score_rationale",
+        },
       },
-    });
-
-    const parsed = parseJudgeOutput(text);
+      parseJudgeOutput,
+    );
     if (parsed) {
       return {
         ...parsed,
@@ -2361,21 +2385,23 @@ export async function runClientEvidenceJudge(
   try {
     const goal = req.brief?.answers.goal || "no goal stated in the brief";
     const audience = req.brief?.answers.audience || "a general reader";
-    const text = await generateTrackedText({
-      feature: "rubric-judge",
-      resolved,
-      model,
-      system: buildEvidenceJudgeSystemPrompt(),
-      prompt: buildEvidenceJudgePrompt({
-        goal,
-        audience,
-        draftText: req.draftText,
-        staticNote: evidenceStaticNote(req.draftText),
-      }),
-      spanName: "rubric_judge_evidence",
-      evalSignals: { twyne_expected_format: "json_score_rationale" },
-    });
-    const parsed = parseJudgeOutput(text);
+    const parsed = await generateTrackedJudgement(
+      {
+        feature: "rubric-judge",
+        resolved,
+        model,
+        system: buildEvidenceJudgeSystemPrompt(),
+        prompt: buildEvidenceJudgePrompt({
+          goal,
+          audience,
+          draftText: req.draftText,
+          staticNote: evidenceStaticNote(req.draftText),
+        }),
+        spanName: "rubric_judge_evidence",
+        evalSignals: { twyne_expected_format: "json_score_rationale" },
+      },
+      parseJudgeOutput,
+    );
     if (parsed) return { ...parsed, provider: resolved.provider.type };
     return null;
   } catch (err) {
@@ -2395,21 +2421,23 @@ export async function runClientIntegrityJudge(
   try {
     const goal = req.brief?.answers.goal || "no goal stated in the brief";
     const audience = req.brief?.answers.audience || "a general reader";
-    const text = await generateTrackedText({
-      feature: "rubric-judge",
-      resolved,
-      model,
-      system: buildIntegrityJudgeSystemPrompt(),
-      prompt: buildIntegrityJudgePrompt({
-        goal,
-        audience,
-        draftText: req.draftText,
-        staticNote: integrityStaticNote(req.draftText),
-      }),
-      spanName: "rubric_judge_integrity",
-      evalSignals: { twyne_expected_format: "json_score_rationale" },
-    });
-    const parsed = parseJudgeOutput(text);
+    const parsed = await generateTrackedJudgement(
+      {
+        feature: "rubric-judge",
+        resolved,
+        model,
+        system: buildIntegrityJudgeSystemPrompt(),
+        prompt: buildIntegrityJudgePrompt({
+          goal,
+          audience,
+          draftText: req.draftText,
+          staticNote: integrityStaticNote(req.draftText),
+        }),
+        spanName: "rubric_judge_integrity",
+        evalSignals: { twyne_expected_format: "json_score_rationale" },
+      },
+      parseJudgeOutput,
+    );
     if (parsed) return { ...parsed, provider: resolved.provider.type };
     return null;
   } catch (err) {
@@ -2432,20 +2460,22 @@ export async function runClientTargetFitJudge(
   const model = await createModel(resolved.provider, resolved.model);
   if (!model) return null;
   try {
-    const text = await generateTrackedText({
-      feature: "rubric-judge",
-      resolved,
-      model,
-      system: buildTargetFitJudgeSystemPrompt(),
-      prompt: buildTargetFitJudgePrompt({
-        ...targetFitCommission(req.brief),
-        draftText: req.draftText,
-        particulars: probeParticularsBlock(req.brief),
-      }),
-      spanName: "rubric_judge_target_fit",
-      evalSignals: { twyne_expected_format: "json_score_rationale" },
-    });
-    const parsed = parseJudgeOutput(text);
+    const parsed = await generateTrackedJudgement(
+      {
+        feature: "rubric-judge",
+        resolved,
+        model,
+        system: buildTargetFitJudgeSystemPrompt(),
+        prompt: buildTargetFitJudgePrompt({
+          ...targetFitCommission(req.brief),
+          draftText: req.draftText,
+          particulars: probeParticularsBlock(req.brief),
+        }),
+        spanName: "rubric_judge_target_fit",
+        evalSignals: { twyne_expected_format: "json_score_rationale" },
+      },
+      parseJudgeOutput,
+    );
     if (parsed) return { ...parsed, provider: resolved.provider.type };
     return null;
   } catch (err) {
@@ -2472,21 +2502,23 @@ export async function runClientCustomCriterionJudge(
   const model = await createModel(resolved.provider, resolved.model);
   if (!model) return null;
   try {
-    const text = await generateTrackedText({
-      feature: "rubric-judge",
-      resolved,
-      model,
-      system: buildCustomCriterionSystemPrompt(),
-      prompt: buildCustomCriterionPrompt({
-        ...targetFitCommission(req.brief),
-        label: req.label,
-        description: req.description,
-        draftText: req.draftText,
-      }),
-      spanName: "rubric_judge_custom",
-      evalSignals: { twyne_expected_format: "json_score_rationale" },
-    });
-    const parsed = parseJudgeOutput(text);
+    const parsed = await generateTrackedJudgement(
+      {
+        feature: "rubric-judge",
+        resolved,
+        model,
+        system: buildCustomCriterionSystemPrompt(),
+        prompt: buildCustomCriterionPrompt({
+          ...targetFitCommission(req.brief),
+          label: req.label,
+          description: req.description,
+          draftText: req.draftText,
+        }),
+        spanName: "rubric_judge_custom",
+        evalSignals: { twyne_expected_format: "json_score_rationale" },
+      },
+      parseJudgeOutput,
+    );
     if (parsed) return { ...parsed, provider: resolved.provider.type };
     return null;
   } catch (err) {

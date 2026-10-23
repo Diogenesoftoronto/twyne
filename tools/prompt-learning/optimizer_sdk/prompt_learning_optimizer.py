@@ -7,7 +7,6 @@ _TEMPLATE_RE = re.compile(r"\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
 
 import pandas as pd
 from phoenix.client.types import PromptVersion
-from phoenix.evals.models import OpenAIModel
 
 from .meta_prompt import MetaPrompt
 from core.dataset_splitter import DatasetSplitter
@@ -369,33 +368,9 @@ class PromptLearningOptimizer:
                 else:
                     # Fall back to OpenAI
                     try:
-                        # twyne extension: route through an OpenAI-compatible
-                        # gateway (Portkey, LiteLLM, etc.) when OPENAI_BASE_URL
-                        # is set. Lets a single client hit Claude, Gemini, or
-                        # any other provider behind the gateway.
-                        openai_kwargs = {
-                            "api_key": self.openai_api_key.get_secret_value()
-                        }
-                        openai_base_url = os.environ.get("OPENAI_BASE_URL")
-                        if openai_base_url:
-                            openai_kwargs["base_url"] = openai_base_url
-                            # Portkey honors two optional headers; we send them
-                            # through default_headers rather than leaking them
-                            # into default_query so the shape stays clean.
-                            portkey_provider = os.environ.get("PORTKEY_PROVIDER")
-                            portkey_virtual_key = os.environ.get(
-                                "PORTKEY_VIRTUAL_KEY"
-                            )
-                            extra_headers = {}
-                            if portkey_provider:
-                                extra_headers["x-portkey-provider"] = portkey_provider
-                            if portkey_virtual_key:
-                                extra_headers["x-portkey-api-key"] = (
-                                    portkey_virtual_key
-                                )
-                            if extra_headers:
-                                openai_kwargs["default_headers"] = extra_headers
-                        openai_client = OpenAI(**openai_kwargs)
+                        openai_client = OpenAI(
+                            api_key=self.openai_api_key.get_secret_value()
+                        )
                         output_response = openai_client.chat.completions.create(
                             model=self.model_choice,
                             messages=[{"role": "user", "content": meta_prompt_content}],

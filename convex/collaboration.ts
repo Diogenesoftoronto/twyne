@@ -29,6 +29,7 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { userIsPro } from "./lib/entitlement";
+import { tokenIdentifierFromIssuerAndSubject } from "./lib/authIdentity";
 import { Resend } from "resend";
 
 const PRESENCE_COLORS = [
@@ -109,7 +110,28 @@ export const createShareRecord = internalMutation({
     folioName: v.string(),
     storageId: v.id("_storage"),
   },
+  returns: v.union(
+    v.object({ created: v.literal(true) }),
+    v.object({ created: v.literal(false), lixId: v.string() }),
+  ),
   handler: async (ctx, args) => {
+    // One shared document per folio. Checked here, inside the transaction,
+    // so two concurrent shares cannot both create one.
+    const mine = await ctx.db
+      .query("sharedLixBlobs")
+      .withIndex("by_ownerId", (q) => q.eq("ownerId", args.ownerId))
+      .collect();
+    const sameFolio = mine.find((row) => row.folioId === args.folioId);
+    if (sameFolio) return { created: false as const, lixId: sameFolio.lixId };
+
+    // A lixId already in use belongs to someone else's document. Never
+    // attach a second owner to it.
+    const taken = await ctx.db
+      .query("sharedLixBlobs")
+      .withIndex("by_lixId", (q) => q.eq("lixId", args.lixId))
+      .first();
+    if (taken) throw new Error("This document id is already in use.");
+
     await ctx.runMutation(internal.sharedLix.set, args);
     const now = Date.now();
     await ctx.db.insert("collaborators", {
@@ -120,6 +142,7 @@ export const createShareRecord = internalMutation({
       invitedAt: now,
       acceptedAt: now,
     });
+    return { created: true as const };
   },
 });
 
@@ -147,24 +170,25 @@ export const shareFolio = action({
       throw new Error("Sharing documents is a Pro feature.");
     }
 
-    // Don't create a duplicate if this folio is already shared.
-    const existing = await ctx.runQuery(internal.sharedLix.get, {
-      lixId: args.lixId,
-    });
-    if (existing) {
-      return { lixId: existing.lixId, alreadyShared: true };
-    }
-
     // Store the blob in Convex file storage (action-only API), then create
     // the metadata + owner collaborator row via an internal mutation.
     const storageId = await ctx.storage.store(new Blob([args.blob]));
-    await ctx.runMutation(internal.collaboration.createShareRecord, {
-      lixId: args.lixId,
-      ownerId: userId,
-      folioId: args.folioId,
-      folioName: args.folioName,
-      storageId,
-    });
+    const result = await ctx
+      .runMutation(internal.collaboration.createShareRecord, {
+        lixId: args.lixId,
+        ownerId: userId,
+        folioId: args.folioId,
+        folioName: args.folioName,
+        storageId,
+      })
+      .catch(async (error: unknown) => {
+        await ctx.storage.delete(storageId);
+        throw error;
+      });
+    if (!result.created) {
+      await ctx.storage.delete(storageId);
+      return { lixId: result.lixId, alreadyShared: true };
+    }
 
     return { lixId: args.lixId, alreadyShared: false };
   },
@@ -201,23 +225,46 @@ export const createInvitation = internalMutation({
       model: "user",
       where: [{ field: "email", operator: "eq", value: email }],
     });
-    const inviteeUserId: string | null = invitee?._id ?? null;
+    // Collaborator rows are keyed by the Convex tokenIdentifier, which is
+    // `<issuer>|<better-auth user id>`. A bare user id would never match the
+    // invitee's own identity, so the invite could not be accepted.
+    const inviteeUserId = tokenIdentifierFromIssuerAndSubject(
+      process.env.CONVEX_SITE_URL,
+      invitee?._id,
+    );
 
-    // If we found them, check for an existing collaborator row.
-    if (inviteeUserId) {
+    // An invite may already exist under the account or, from before they
+    // signed up, under their email. A declined one is reopened, not duplicated.
+    for (const key of [inviteeUserId, email]) {
+      if (!key) continue;
       const existing = await ctx.db
         .query("collaborators")
         .withIndex("by_lixId_userId", (q) =>
-          q.eq("lixId", args.lixId).eq("userId", inviteeUserId),
+          q.eq("lixId", args.lixId).eq("userId", key),
         )
         .first();
-      if (existing) {
+      if (!existing) continue;
+      if (existing.role === "owner") {
+        throw new Error("You already own this document.");
+      }
+      if (existing.status === "rejected") {
+        await ctx.db.patch(existing._id, {
+          role: args.role,
+          status: "pending",
+          invitedBy: args.invitedBy,
+          invitedAt: Date.now(),
+        });
         return {
-          alreadyInvited: true,
-          role: existing.role as "editor" | "commenter",
-          invitationId: null,
+          alreadyInvited: false,
+          role: args.role,
+          invitationId: existing._id,
         };
       }
+      return {
+        alreadyInvited: true,
+        role: existing.role as "editor" | "commenter",
+        invitationId: null,
+      };
     }
 
     const invitationId = await ctx.db.insert("collaborators", {

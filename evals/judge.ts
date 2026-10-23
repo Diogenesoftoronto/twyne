@@ -17,15 +17,15 @@
  * in CI without that integration. Writes `evals/scores.json`.
  *
  * Usage:
- *   PORTKEY_API_KEY=pk-xxx bun run eval:judge
+ *   bun run eval:judge
  *
- * Calls the hosted Portkey gateway; see evals/llm-client.ts.
+ * Calls the Not Organic gateway; see evals/llm-client.ts.
  *
  * Read-only w.r.t. the repo otherwise: only writes `evals/scores.json`.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { chatCompletion, JUDGE_MODEL } from "./llm-client";
 
@@ -46,7 +46,7 @@ interface RunOutput {
   /** Optional production `$ai_trace_id` when a sample was exported from PostHog. */
   trace_id?: string;
 }
-interface Verdict {
+export interface Verdict {
   label: string;
   score: number | null;
   explanation: string;
@@ -59,14 +59,14 @@ interface CaseScore {
   helpfulness: Verdict;
 }
 
-const FAITHFULNESS_TEMPLATE = (draft: string, output: string): string =>
+export const FAITHFULNESS_TEMPLATE = (draft: string, output: string): string =>
   `You judge whether an AI editor's feedback genuinely engages with the SPECIFIC ` +
   `draft it was given, versus generic writing advice that could apply to any text.\n\n` +
   `Draft:\n${draft}\n\nEditor feedback:\n${output}\n\n` +
   `Answer "grounded" if the feedback references specific content, claims, or wording ` +
   `from THIS draft. Answer "generic" if it is boilerplate advice that could apply to any text.`;
 
-const HELPFULNESS_TEMPLATE = (
+export const HELPFULNESS_TEMPLATE = (
   persona: string,
   draft: string,
   output: string,
@@ -76,28 +76,41 @@ const HELPFULNESS_TEMPLATE = (
   `Is the feedback helpful, specific, and consistent with the persona's role and the draft? ` +
   `Answer "good" if it is useful and on-task, "poor" if it is vague, off-topic, or unhelpful.`;
 
-const CHOICES: Record<string, Record<string, number>> = {
+export const CHOICES: Record<string, Record<string, number>> = {
   faithfulness: { grounded: 1, generic: 0 },
   helpfulness: { good: 1, poor: 0 },
 };
+
+/** The judge's instructions for a closed label set. */
+export function judgeSystemPrompt(labels: readonly string[]): string {
+  return (
+    `You are a strict evaluator. Read the rubric, then respond with a JSON object ` +
+    `exactly: {"label": "<one of: ${labels.join(", ")}>", "explanation": "<one sentence>"}. ` +
+    `No other text.`
+  );
+}
 
 async function judge(
   prompt: string,
   valid: Record<string, number>,
   signal: AbortSignal,
 ): Promise<Verdict> {
-  const labels = Object.keys(valid);
-  const system =
-    `You are a strict evaluator. Read the rubric, then respond with a JSON object ` +
-    `exactly: {"label": "<one of: ${labels.join(", ")}>", "explanation": "<one sentence>"}. ` +
-    `No other text.`;
   const raw = await chatCompletion({
-    system,
+    system: judgeSystemPrompt(Object.keys(valid)),
     user: prompt,
     model: JUDGE_MODEL,
     temperature: 0,
     signal,
   });
+  return parseVerdict(raw, valid);
+}
+
+/** Read a label verdict, tolerating fences and prose around the JSON. */
+export function parseVerdict(
+  raw: string,
+  valid: Record<string, number>,
+): Verdict {
+  const labels = Object.keys(valid);
   let label = "";
   let explanation = "";
   let txt = raw.trim();
@@ -190,7 +203,13 @@ async function main(): Promise<void> {
   if (failures > 0) process.exitCode = 1;
 }
 
-main().catch((err) => {
-  console.error("[twyne:judge] fatal:", err);
-  process.exit(1);
-});
+// Imported by evals/app for the shared rubric wording; only run as a script.
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  main().catch((err) => {
+    console.error("[twyne:judge] fatal:", err);
+    process.exit(1);
+  });
+}

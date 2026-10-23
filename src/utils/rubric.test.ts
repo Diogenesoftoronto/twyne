@@ -89,6 +89,32 @@ describe("capShapeScore", () => {
 describe("combineJudgesAndStatic — the relevance gate", () => {
   const staticScore = scoreStaticFeatures(WELL_SHAPED);
 
+  test("missing personas do not contribute placeholder scores to a partial room", () => {
+    // Only two of the five personas returned a reading. This also represents
+    // a cached partial result: missing personas have no JudgeResult entry.
+    const partial = judges([8, 10]);
+    const result = combineJudgesAndStatic(partial, staticScore, brief);
+    expect(result.judgeMean).toBe(9);
+    expect(result.minJudge).toBe(8);
+    expect(result.combined).toBeGreaterThan(
+      combineJudgesAndStatic(judges([8, 10, 5, 5, 5]), staticScore, brief)
+        .combined,
+    );
+    expect(
+      combineJudgesAndStatic(
+        JSON.parse(JSON.stringify(partial)),
+        staticScore,
+        brief,
+      ),
+    ).toEqual(result);
+  });
+
+  test("a lone real reading is not divided by five", () => {
+    const result = combineJudgesAndStatic(judges([8]), staticScore, brief);
+    expect(result.judgeMean).toBe(8);
+    expect(result.minJudge).toBe(8);
+  });
+
   test("the fixture really does score well on shape — the premise of the gate", () => {
     // If this stops holding, every test below would pass for the wrong
     // reason: there would be no high shape score left to cap.

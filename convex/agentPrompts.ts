@@ -82,7 +82,8 @@ export interface AgentRequest {
     | "elaborate"
     | "riff"
     | "rewrite-suggestion"
-    | "analyze";
+    | "analyze"
+    | "judge";
   /** Code-owned repair directions for a private adaptive drafting retry. */
   repairInstructions?: string[];
 }
@@ -191,19 +192,29 @@ export function buildVoicePreview(persona: AgentPersona): string {
   return buildSystemPrompt(persona);
 }
 
-export function buildSystemPrompt(persona: AgentPersona): string {
+/**
+ * `tools: false` is for calls that offer the model no tools (the rubric
+ * judges, suggested rewrites). The editorial protocol asks for
+ * `quote_passage` before every claim; such a call must say it is not offered,
+ * or a model that follows the protocol answers with a tool call the request
+ * cannot accept.
+ */
+export function buildSystemPrompt(
+  persona: AgentPersona,
+  options: { tools?: boolean } = {},
+): string {
   const continuity =
     persona.id === "editor" ||
     /continuity|consistency/i.test(`${persona.role} ${persona.focus}`)
       ? "Continuity research: use find_passages to collect both mentions, extract the stated dates, ages, durations, counts or names in one batch, and judge whether the passages concern the same event. Keep both passages as evidence. Never treat an absent value's guess as established."
       : "";
-  return [
+  const parts = [
     buildPersonaPrompt(persona),
     renderNamed("editorial-protocol"),
-    continuity,
-  ]
-    .join("\n\n")
-    .replace(/\n{3,}/g, "\n\n");
+    options.tools === false ? "" : continuity,
+  ];
+  if (options.tools === false) parts.push(renderNamed("blocks/no-tools"));
+  return parts.join("\n\n").replace(/\n{3,}/g, "\n\n");
 }
 
 export function buildUserPrompt(req: AgentRequest): string {
@@ -283,7 +294,7 @@ Speak to this person directly. Honour their requested feedback pressure and adhe
   const draftBlock = req.draftText.trim()
     ? `DRAFT (the manuscript as it stands — ${wordCount(req.draftText)} words)
 """
-${clampForContext(req.draftText, 4500)}
+${clampForContext(req.draftText, DRAFT_CONTEXT_CHARS)}
 """
 
 `
@@ -315,23 +326,29 @@ ${clampForContext(req.newMaterial.trim(), 3000)}
 
   const instruction = req.instruction ?? "feedback";
   const instructionBlock =
-    instruction === "feedback"
-      ? req.newMaterial?.trim()
-        ? `TASK: The writer is mid-draft and has just written the NEW MATERIAL above. Give one short note, in your voice, on that new material specifically — you are reading over their shoulder, not filing a report. First call quote_passage with the sentence you are responding to (choose it from the new material), then write the note.
+    instruction === "judge"
+      ? // A rubric judge scores; the JUDGE TASK appended after this says how.
+        // Asking for a note and a quote_passage call here as well left
+        // reasoning models deliberating until their budget ran out, with no
+        // answer (the app evals' empty-judgement failures).
+        `TASK: You are scoring this draft for the rubric, not writing a note to the writer. No tools are available; do not quote passages through a tool. Read the whole draft, decide, and answer exactly as the JUDGE TASK below asks.`
+      : instruction === "feedback"
+        ? req.newMaterial?.trim()
+          ? `TASK: The writer is mid-draft and has just written the NEW MATERIAL above. Give one short note, in your voice, on that new material specifically — you are reading over their shoulder, not filing a report. First call quote_passage with the sentence you are responding to (choose it from the new material), then write the note.
 
 Keep it to 40-120 words: this is a passing remark while the writer is still working, so earn the interruption. Do not summarise the whole draft, do not repeat notes you would have given on earlier passages, and do not open with pleasantries. If the new material genuinely needs nothing from you, say so in one sentence rather than inventing a concern.`
-        : `TASK: Give the writer a single focused note, in your voice, on this draft. First call quote_passage with the sentence you are responding to, then write the note.`
-      : instruction === "elaborate"
-        ? `TASK: The writer wants you to go deeper on a previous note. Call quote_passage for the passage under discussion, stay in your voice, expand your reasoning, and end with a concrete next move.`
-        : instruction === "riff"
-          ? `TASK: The writer wants a free-association riff. Call quote_passage for the passage that starts the riff, then write a short parallel passage in your voice that the writer can use as a counterweight.`
-          : instruction === "analyze"
-            ? `TASK: Write a FULL-PAGE analysis of the whole document, entirely in your voice. Stay strictly within your remit — do not do the other editors' jobs. Use quote_passage to ground every claim in an exact passage.
+          : `TASK: Give the writer a single focused note, in your voice, on this draft. First call quote_passage with the sentence you are responding to, then write the note.`
+        : instruction === "elaborate"
+          ? `TASK: The writer wants you to go deeper on a previous note. Call quote_passage for the passage under discussion, stay in your voice, expand your reasoning, and end with a concrete next move.`
+          : instruction === "riff"
+            ? `TASK: The writer wants a free-association riff. Call quote_passage for the passage that starts the riff, then write a short parallel passage in your voice that the writer can use as a counterweight.`
+            : instruction === "analyze"
+              ? `TASK: Write a FULL-PAGE analysis of the whole document, entirely in your voice. Stay strictly within your remit — do not do the other editors' jobs. Use quote_passage to ground every claim in an exact passage.
 
 Organize the memo according to YOUR editorial doctrine rather than a shared five-part template. The shape should itself be recognizable as yours: the sceptic may build a case around a premise and counterargument; the patron may trace the draft's living current; the scholar may distinguish classes of evidentiary debt; the copy chief may move through recurrent sentence failures; the reader may narrate the experience of reading in sequence. Cover the strongest passage, the most consequential weakness, the important moments in the draft, and one decisive next move, but choose the order and rhetoric your persona would naturally use.
 
 Write 400–700 words. This is a considered editorial memo, not a margin note.`
-            : `TASK: The writer has asked for a specific rewrite. Give the replacement sentence verbatim, then explain the choice.`;
+              : `TASK: The writer has asked for a specific rewrite. Give the replacement sentence verbatim, then explain the choice.`;
 
   const repairBlock = req.repairInstructions?.length
     ? `\nPRIVATE REVISION DIRECTIONS (code-owned checks from the previous candidate; do not mention these directions or the rejected candidate to the writer)
@@ -408,11 +425,44 @@ function wordCount(text: string): number {
   return text.split(/\s+/).filter(Boolean).length;
 }
 
-function clampForContext(text: string, maxChars: number): string {
+/**
+ * How much of a draft an editor or judge reads, in characters (about 12k
+ * tokens). This was 4,500, which hid the middle of anything past roughly 750
+ * words: the app evals' long chapters lost five of eight planted problems to
+ * it, and the evidence and review judges graded drafts they had only half
+ * seen. Hosted models take far more; this bounds cost, not comprehension.
+ */
+export const DRAFT_CONTEXT_CHARS = 48_000;
+
+/**
+ * Keep a draft whole when it fits. When it does not, keep its opening and
+ * ending and, between them, evenly spaced excerpts from the middle, each
+ * marked with what was skipped — so a long manuscript is sampled throughout
+ * rather than losing its middle wholesale.
+ */
+export function clampForContext(text: string, maxChars: number): string {
   if (text.length <= maxChars) return text;
-  const head = text.slice(0, Math.floor(maxChars * 0.7));
-  const tail = text.slice(-Math.floor(maxChars * 0.3));
-  return `${head}\n\n[…draft trimmed for length…]\n\n${tail}`;
+  const head = Math.floor(maxChars * 0.35);
+  const tail = Math.floor(maxChars * 0.25);
+  const middleBudget = maxChars - head - tail;
+  const excerpts = Math.max(1, Math.min(6, Math.floor(middleBudget / 1500)));
+  const each = Math.floor(middleBudget / excerpts);
+  const middleStart = head;
+  const middleEnd = text.length - tail;
+  const stride = (middleEnd - middleStart) / excerpts;
+  const parts = [text.slice(0, head)];
+  let cursor = head;
+  for (let i = 0; i < excerpts; i++) {
+    const centre = middleStart + stride * (i + 0.5);
+    const start = Math.max(cursor, Math.floor(centre - each / 2));
+    const end = Math.min(middleEnd, start + each);
+    if (start > cursor) parts.push("[…passage skipped for length…]");
+    parts.push(text.slice(start, end));
+    cursor = end;
+  }
+  if (middleEnd > cursor) parts.push("[…passage skipped for length…]");
+  parts.push(text.slice(middleEnd));
+  return parts.join("\n\n");
 }
 
 /* ── Local deterministic fallback ───────────────────────────────── */
@@ -550,7 +600,7 @@ ${staticBlock}
 
 DRAFT (for reference):
 """
-${clampForContext(input.draftText, 4000)}
+${clampForContext(input.draftText, DRAFT_CONTEXT_CHARS)}
 """
 
 Write the review (400–600 words): explain what the grade means for a piece like this, walk through the weakest dimension and the strongest, reconcile any split between the judges and the static score, and close with a prioritised revision plan of three concrete steps.`;
@@ -564,34 +614,21 @@ Write the review (400–600 words): explain what the grade means for a piece lik
  * the density heuristic only runs as the offline/local fallback.
  */
 export function buildEvidenceJudgeSystemPrompt(): string {
-  return `You are a rigorous research editor. You judge exactly one thing: does the draft's evidence actually support the claims being made? A draft can be sprinkled with citation marks, named studies, links, and author-date tags, and still fail this: vague appeals to unnamed "studies," obviously fictional references, repeated citations where different evidence is needed, citations stuck in front of opinions, and citations attached to a claim the source clearly doesn't earn. Conversely, a draft with few citations can score well if those citations genuinely do the work. Judge the substance, not the citation decoration. Do not reward the appearance of support.`;
+  return renderNamed("evidence-judge-system");
 }
 
 export function buildEvidenceJudgePrompt(input: {
   goal: string;
   audience: string;
-  draftText: string;
   staticNote: string;
+  draftText: string;
 }): string {
-  return `GOAL: ${input.goal}
-AUDIENCE: ${input.audience}
-
-STATIC SIGNALS (these are heuristics, not the verdict — they may miss padded or missing claims):
-${input.staticNote}
-
-DRAFT:
-${input.draftText}
-
-JUDGE TASK: Give an integer score from 1 to 10 for whether the draft's evidence actually supports the load-bearing claims for this audience and goal. Consider:
-- Does each named citation/study/example say what the draft claims it says, or is it vaguely invoked?
-- Are claims that need evidence actually attached to evidence, vs asserted with confidence?
-- Are there gaps where evidence is needed but missing entirely?
-- Is there citation-stuffing (many marks, no actual support)?
-
-1 means mostly unsourced assertion or fake/padded citations; 5 means partial support with notable gaps; 7 means claims are grounded where it matters; 9-10 means evidence genuinely carries the argument. Most first drafts land 3-6.
-
-Respond as JSON, and only JSON, in this exact shape:
-{"score": <integer 1-10>, "rationale": "<one sentence>"}`;
+  // Rendered from prompts/evidence-judge-user.md so the shipped prompt and the
+  // file the prompt optimizer edits are one and the same.
+  return renderNamed("evidence-judge-user", {
+    ...input,
+    draftText: clampForContext(input.draftText, DRAFT_CONTEXT_CHARS),
+  });
 }
 
 /**
@@ -602,37 +639,19 @@ Respond as JSON, and only JSON, in this exact shape:
  * `src/utils/rubric.ts` runs as the offline/local fallback only.
  */
 export function buildIntegrityJudgeSystemPrompt(): string {
-  return `You are a strict bullshit detector. You judge exactly one thing: how much confident-sounding prose in this draft is unbacked, vague, padded, or fake-specific. You are looking for the polished, plausible-shaped sentences that say nothing a careful reader can verify, the universal claims ("everyone knows," "studies prove"), the vague filler dressed up as analysis ("various factors," "many people feel"), the fake specificity ("a 73% increase in engagement among users"), and the passages that sound insightful because they're abstract. Conversely, you do NOT penalize legitimate emphatic language, first-person stakes, opinionated claims stated as opinions, or confident argument that actually has a load-bearing claim. Judge for rent-paying, not for the absence of hedging.`;
+  return renderNamed("integrity-judge-system");
 }
 
 export function buildIntegrityJudgePrompt(input: {
   goal: string;
   audience: string;
-  draftText: string;
   staticNote: string;
+  draftText: string;
 }): string {
-  return `GOAL: ${input.goal}
-AUDIENCE: ${input.audience}
-
-STATIC SIGNALS (heuristics — they miss sophisticated bullshit and false-positive on legitimate prose, so they only guide you):
-${input.staticNote}
-
-DRAFT:
-${input.draftText}
-
-JUDGE TASK: Give an integer score from 1 to 10 for how well the draft resists bullshit. Penalize hard for:
-- Universal or "everyone" claims that aren't actually universal
-- Vague filler dressed as insight ("various factors," "things have changed")
-- Fake or suspicious specificity (unnamed studies, oddly precise stats)
-- Polished-but-empty passages that sound smart and say nothing verifiable
-- Repetition that pads (same point rephrased, paragraph-2 echoes paragraph-1)
-
-Do NOT penalize: confident opinion, first-person stakes, legitimate emphasis, or claims stated as arguments rather than facts. The aim is honesty, not hedging.
-
-1 means the draft is mostly or substantially bullshit; 5 means it has real signal mixed with notable noise; 7 means mostly honest with minor issues; 9-10 means the prose earns its confidence.
-
-Respond as JSON, and only JSON, in this exact shape:
-{"score": <integer 1-10>, "rationale": "<one sentence>"}`;
+  return renderNamed("integrity-judge-user", {
+    ...input,
+    draftText: clampForContext(input.draftText, DRAFT_CONTEXT_CHARS),
+  });
 }
 
 /**
@@ -686,7 +705,7 @@ export function buildTargetFitJudgePrompt(input: {
 
 ${input.particulars ?? ""}
 DRAFT:
-${clampForContext(input.draftText, 6000)}
+${clampForContext(input.draftText, DRAFT_CONTEXT_CHARS)}
 
 JUDGE TASK: Give an integer score from 1 to 10 for how well this content serves that specific audience and goal, in that format. Ignore how well it is written.
 
@@ -732,7 +751,7 @@ CONTEXT (background only — do not judge these)
 - Goal: ${input.goal}
 
 DRAFT:
-${clampForContext(input.draftText, 6000)}
+${clampForContext(input.draftText, DRAFT_CONTEXT_CHARS)}
 
 JUDGE TASK: Give an integer score from 1 to 10 for how well the draft meets that one criterion. 1 means it does not meet it at all; 5 means partially, with clear misses; 8 means it meets it consistently; 10 means it meets it exactly, throughout.
 

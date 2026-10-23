@@ -13,6 +13,7 @@ import {
 import { TwyneClient } from "./client.js";
 import {
   FOLIO_INCLUDES,
+  PERSONA_IDS,
   type CitationEntry,
   type FolioInclude,
 } from "./types.js";
@@ -28,6 +29,11 @@ export const TWYNE_MCP_TOOL_NAMES = [
   "twyne_get_feedback",
   "twyne_list_citations",
   "twyne_upsert_citations",
+  "twyne_convene_room",
+  "twyne_ask_editor",
+  "twyne_suggest_rewrite",
+  "twyne_grade_draft",
+  "twyne_interview_turn",
 ] as const;
 
 function textResult(value: unknown) {
@@ -69,6 +75,41 @@ async function resultOf(task: () => Promise<unknown>) {
 const folioType = z.enum(["draft", "notes", "outline"]);
 const includeValue = z.enum(FOLIO_INCLUDES);
 const folioId = z.string().trim().min(1).describe("Twyne folio ID");
+const personaId = z.enum(PERSONA_IDS);
+const responseLocale = z.enum(["en", "fr", "es", "zh", "hi", "ja"]).optional();
+const brief = z.record(z.string(), z.unknown()).nullable().optional();
+const writerProfile = z.record(z.string(), z.unknown()).optional();
+const draftSchema = {
+  folioId: folioId.optional(),
+  draftText: z
+    .string()
+    .optional()
+    .describe("Plain-text draft; supply exactly one of draftText or folioId"),
+  brief,
+  responseLocale,
+};
+const modelAnnotations = {
+  readOnlyHint: true,
+  idempotentHint: false,
+  openWorldHint: true,
+};
+const editorDescriptions =
+  "Editors: devil = Mlle. Sceptique (The Devil's Advocate), sceptic who attacks the argument; " +
+  "angel = Sœur Encourageante (The Patron of Strengths), patron who protects what works; " +
+  "scholar = Professeur Athenæum (The Scholar), evidence and sources; " +
+  "editor = M. Le Stylo (The Copy Chief), line and structure; " +
+  "reader = Le Lecteur (The Target Reader), comprehension and audience fit.";
+const modelDescription =
+  " Spends model credits; returns results without changing stored data.";
+
+function requireDraftSource(input: {
+  folioId?: string;
+  draftText?: string;
+}): void {
+  if ((input.folioId !== undefined) === (input.draftText !== undefined)) {
+    throw new Error("Supply exactly one of folioId or draftText");
+  }
+}
 const citationEntry = z.looseObject({
   id: z.string().optional(),
   title: z.string().trim().min(1),
@@ -300,6 +341,131 @@ export function registerTwyneTools(
     },
     async ({ folioId, entries }) =>
       resultOf(() => client.putCitations(folioId, entries as CitationEntry[])),
+  );
+
+  server.registerTool(
+    "twyne_convene_room",
+    {
+      title: "Convene the Twyne editorial room",
+      description:
+        "Request a full read of a draft from all five editors, or select personaIds. " +
+        editorDescriptions +
+        modelDescription,
+      inputSchema: {
+        ...draftSchema,
+        personaIds: z.array(personaId).optional(),
+        writerProfile,
+        newMaterial: z.unknown().optional(),
+        trajectory: z.unknown().optional(),
+      },
+      annotations: modelAnnotations,
+    },
+    async (input, extra) =>
+      resultOf(async () => {
+        requireDraftSource(input);
+        const { notes } = await client.conveneRoom(input, extra.signal);
+        return { notes };
+      }),
+  );
+
+  server.registerTool(
+    "twyne_ask_editor",
+    {
+      title: "Ask a Twyne editor",
+      description:
+        "Ask one editor for feedback, a follow-up, or a reply. Supply userMessage and priorMessages for a conversation, and anchor for a specific passage. " +
+        editorDescriptions +
+        modelDescription,
+      inputSchema: {
+        ...draftSchema,
+        personaId,
+        instruction: z
+          .enum(["feedback", "elaborate", "riff", "rewrite-suggestion"])
+          .optional(),
+        userMessage: z.string().optional(),
+        priorMessages: z.array(z.record(z.string(), z.unknown())).optional(),
+        anchor: z.string().optional(),
+        writerProfile,
+      },
+      annotations: modelAnnotations,
+    },
+    async (input, extra) =>
+      resultOf(async () => {
+        requireDraftSource(input);
+        return client.askEditor(input, extra.signal);
+      }),
+  );
+
+  server.registerTool(
+    "twyne_suggest_rewrite",
+    {
+      title: "Suggest a Twyne rewrite",
+      description:
+        "Get a concrete replacement and rationale for an original passage that appears verbatim in the draft. Choose sentence or paragraph level. " +
+        editorDescriptions +
+        modelDescription,
+      inputSchema: {
+        ...draftSchema,
+        personaId,
+        original: z.string().min(1),
+        level: z.enum(["sentence", "paragraph"]),
+        writerProfile,
+      },
+      annotations: modelAnnotations,
+    },
+    async (input, extra) =>
+      resultOf(async () => {
+        requireDraftSource(input);
+        return client.suggestRewrite(input, extra.signal);
+      }),
+  );
+
+  server.registerTool(
+    "twyne_grade_draft",
+    {
+      title: "Grade a Twyne draft",
+      description:
+        "Evaluate a draft with the rubric: letter grade, per-judge scores and rationales, evidence, integrity, target fit, and optional custom criteria. " +
+        editorDescriptions +
+        modelDescription,
+      inputSchema: {
+        ...draftSchema,
+        criteria: z
+          .array(z.object({ label: z.string(), description: z.string() }))
+          .optional(),
+      },
+      annotations: modelAnnotations,
+    },
+    async (input, extra) =>
+      resultOf(async () => {
+        requireDraftSource(input);
+        return client.gradeDraft(input, extra.signal);
+      }),
+  );
+
+  server.registerTool(
+    "twyne_interview_turn",
+    {
+      title: "Take a Twyne dossier interview turn",
+      description:
+        "Build a dossier through a conversation: send writer/interviewer messages to receive the next question or a synthesized brief. Use first-run for a new project or refine with currentBrief for an existing dossier." +
+        modelDescription,
+      inputSchema: {
+        messages: z.array(
+          z.object({
+            author: z.enum(["writer", "interviewer"]),
+            text: z.string(),
+          }),
+        ),
+        mode: z.enum(["first-run", "refine"]),
+        currentBrief: brief,
+        startingMaterial: z.string().nullable().optional(),
+        responseLocale,
+      },
+      annotations: modelAnnotations,
+    },
+    async (input, extra) =>
+      resultOf(() => client.interviewTurn(input, extra.signal)),
   );
 }
 

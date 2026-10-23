@@ -8,24 +8,40 @@
  *
  * `CLOUDFLARE_AI_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` survive as a
  * local-development fallback only, for working on an extraction surface
- * without the gateway running. Not Organic wins whenever it is enabled.
+ * without the gateway running. Requires TWYNE_ALLOW_DIRECT_EXTRACTION=1,
+ * NODE_ENV=development, and a loopback CONVEX_CLOUD_URL. Hosted deployments
+ * always use Not Organic, which wins whenever it is enabled.
  *
  * Failures are returned, not thrown: every caller has a deterministic answer
  * underneath (literal quote matching, the fixed flow thresholds), so a cold
  * gateway degrades the feature rather than breaking it.
  */
 
-import { action, type ActionCtx } from "./_generated/server";
+import { action, internalAction, type ActionCtx } from "./_generated/server";
 import { makeFunctionReference } from "convex/server";
-import { v } from "convex/values";
+import { v, type ObjectType } from "convex/values";
+import { validateExtractionAnswers } from "../src/utils/extraction-validation";
+import {
+  extractionError,
+  type ExtractionRequest,
+} from "../src/utils/extraction";
 import { userIsPro } from "./lib/entitlement";
 import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
 import {
   issueNotOrganicAccessToken,
-  notOrganicEnabled,
   notOrganicIssuer,
   providerJsonRequest,
 } from "./lib/notorganic";
+import {
+  callerFromIdentity,
+  callerFromTokenIdentifier,
+  type HostedCaller,
+} from "./lib/authIdentity";
+import {
+  directExtractionCredentials,
+  extractionTransport,
+  type ExtractionTransport,
+} from "./lib/hostedTransports";
 
 const EXTRACTION_PATH = "/v1/extraction";
 const EXTRACTION_FEATURE = "extraction";
@@ -81,18 +97,15 @@ const fieldValidator = v.object({
   ),
 });
 
-export type ExtractionTransport = "notorganic" | "direct" | "none";
+export type { ExtractionTransport };
 
+/** The precedence rule lives in `lib/hostedTransports`, shared with research. */
 function directCredentials(): { token: string; account: string } | null {
-  const token = process.env.CLOUDFLARE_AI_API_TOKEN?.trim();
-  const account = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
-  return token && account ? { token, account } : null;
+  return directExtractionCredentials();
 }
 
 function transport(): ExtractionTransport {
-  if (notOrganicEnabled()) return "notorganic";
-  if (directCredentials()) return "direct";
-  return "none";
+  return extractionTransport();
 }
 
 export const isAvailable = action({
@@ -121,7 +134,7 @@ interface ExtractionBody {
   usage?: { input_tokens: number; output_tokens: number; passes?: number };
 }
 
-type Outcome = { ok: true; body: ExtractionBody } | { ok: false; error: string };
+type Outcome = { ok: true; body: unknown } | { ok: false; error: string };
 
 /** Never surface upstream bodies: they can echo the request, i.e. the draft. */
 function statusError(status: number): string {
@@ -136,12 +149,11 @@ function statusError(status: number): string {
 
 async function extractNotOrganic(
   ctx: ActionCtx,
+  caller: HostedCaller,
   body: Record<string, unknown>,
 ): Promise<Outcome> {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) return { ok: false, error: "signed out" };
   const link = await ctx.runQuery(linkedDidReference, {
-    productSubject: identity.subject || identity.tokenIdentifier,
+    productSubject: caller.subject,
   });
   if (!link) return { ok: false, error: "account not linked" };
   try {
@@ -166,8 +178,14 @@ async function extractNotOrganic(
     return { ok: true, body: result };
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
-    const status = /\((\d{3})\)/.exec(message)?.[1];
-    return { ok: false, error: status ? statusError(Number(status)) : "provider" };
+    const status =
+      /^Not Organic (?:API|token exchange) failed \((\d{3})\)/.exec(
+        message,
+      )?.[1];
+    return {
+      ok: false,
+      error: status ? statusError(Number(status)) : extractionError(error),
+    };
   }
 }
 
@@ -195,69 +213,161 @@ async function extractDirect(
   }
   if (!res.ok) return { ok: false, error: statusError(res.status) };
   try {
-    const json = (await res.json()) as Record<string, unknown>;
-    const payload = (
-      json.result && typeof json.result === "object" ? json.result : json
-    ) as ExtractionBody;
-    return { ok: true, body: { ...payload, model: `extraction-clairic/${payload.model}` } };
+    const json: unknown = await res.json();
+    if (!json || typeof json !== "object" || Array.isArray(json))
+      return { ok: false, error: "provider" };
+    const envelope = json as Record<string, unknown>;
+    const payload = envelope.result ?? envelope;
+    if (!payload || typeof payload !== "object" || Array.isArray(payload))
+      return { ok: false, error: "provider" };
+    const result = payload as Record<string, unknown>;
+    if (
+      typeof result.model !== "string" ||
+      !/^(?:clairic|@cf\/cloudflare\/clairic)(?:[-@:.][\w.-]+)?$/.test(
+        result.model,
+      )
+    )
+      return { ok: false, error: "provider" };
+    return {
+      ok: true,
+      body: {
+        ...result,
+        model: `extraction-clairic/${result.model.replace(/^@cf\/cloudflare\//, "")}`,
+      },
+    };
   } catch {
     return { ok: false, error: "provider" };
   }
 }
 
-function validBody(
-  body: ExtractionBody,
-  fields: Record<string, { type: string }>,
-): boolean {
-  if (!body || typeof body.model !== "string" || typeof body.answers !== "object" || !body.answers)
-    return false;
-  return Object.entries(fields).every(([name, field]) => {
-    const answer = body.answers[name] as { type?: string } | undefined;
-    return !!answer && answer.type === field.type && "value" in answer;
-  });
+function validatedBody(
+  raw: unknown,
+  request: ExtractionRequest,
+  via: ExtractionTransport,
+): ExtractionBody | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const body = raw as Record<string, unknown>;
+  if (
+    typeof body.model !== "string" ||
+    !/^extraction-clairic\/clairic(?:[-@:.][\w.-]+)?$/.test(body.model) ||
+    typeof body.truncated !== "boolean"
+  )
+    return null;
+  try {
+    const answers = validateExtractionAnswers(
+      request,
+      body.answers,
+      undefined,
+      via === "notorganic" ? "utf16" : "detect",
+    );
+    const usage = body.usage as Record<string, unknown> | undefined;
+    const count = (n: unknown): n is number =>
+      typeof n === "number" && Number.isSafeInteger(n) && n >= 0;
+    if (
+      usage != null &&
+      (typeof usage !== "object" ||
+        Array.isArray(usage) ||
+        !count(usage.input_tokens) ||
+        !count(usage.output_tokens) ||
+        (usage.passes !== undefined && !count(usage.passes)))
+    )
+      return null;
+    return {
+      model: body.model,
+      answers,
+      truncated: body.truncated,
+      ...(usage
+        ? {
+            usage: {
+              input_tokens: usage.input_tokens as number,
+              output_tokens: usage.output_tokens as number,
+              ...(usage.passes !== undefined
+                ? { passes: usage.passes as number }
+                : {}),
+            },
+          }
+        : {}),
+    };
+  } catch {
+    return null;
+  }
+}
+
+const extractArgs = {
+  state: v.optional(v.string()),
+  fields: v.record(v.string(), fieldValidator),
+  reference_date: v.optional(v.string()),
+  options: v.optional(
+    v.object({
+      include_quantiles: v.optional(v.boolean()),
+      return_state_text: v.optional(v.boolean()),
+    }),
+  ),
+};
+
+const extractReturns = v.object({
+  ok: v.boolean(),
+  model: v.optional(v.string()),
+  answers: v.optional(v.record(v.string(), v.any())),
+  truncated: v.optional(v.boolean()),
+  usage: v.optional(
+    v.object({
+      input_tokens: v.number(),
+      output_tokens: v.number(),
+      passes: v.optional(v.number()),
+    }),
+  ),
+  transport: v.optional(
+    v.union(v.literal("notorganic"), v.literal("direct"), v.literal("none")),
+  ),
+  error: v.optional(v.string()),
+});
+
+interface ExtractResult {
+  ok: boolean;
+  model?: string;
+  answers?: Record<string, unknown>;
+  truncated?: boolean;
+  usage?: { input_tokens: number; output_tokens: number; passes?: number };
+  transport?: ExtractionTransport;
+  error?: string;
 }
 
 export const extract = action({
-  args: {
-    state: v.optional(v.string()),
-    fields: v.record(v.string(), fieldValidator),
-    reference_date: v.optional(v.string()),
-    options: v.optional(
-      v.object({
-        include_quantiles: v.optional(v.boolean()),
-        return_state_text: v.optional(v.boolean()),
-      }),
-    ),
+  args: extractArgs,
+  returns: extractReturns,
+  handler: async (ctx, args): Promise<ExtractResult> => {
+    const identity = await ctx.auth.getUserIdentity();
+    return extractCore(
+      ctx,
+      identity ? callerFromIdentity(identity) : null,
+      args,
+    );
   },
-  returns: v.object({
-    ok: v.boolean(),
-    model: v.optional(v.string()),
-    answers: v.optional(v.record(v.string(), v.any())),
-    truncated: v.optional(v.boolean()),
-    usage: v.optional(
-      v.object({
-        input_tokens: v.number(),
-        output_tokens: v.number(),
-        passes: v.optional(v.number()),
-      }),
-    ),
-    transport: v.optional(
-      v.union(v.literal("notorganic"), v.literal("direct"), v.literal("none")),
-    ),
-    error: v.optional(v.string()),
-  }),
-  handler: async (
-    ctx,
-    args,
-  ): Promise<{
-    ok: boolean;
-    model?: string;
-    answers?: Record<string, unknown>;
-    truncated?: boolean;
-    usage?: { input_tokens: number; output_tokens: number; passes?: number };
-    transport?: ExtractionTransport;
-    error?: string;
-  }> => {
+});
+
+/**
+ * The same extraction for a caller the server already trusts — the owner of a
+ * personal access token, or an editor's research during a note. Spends the
+ * owner's quota and rate limit exactly as {@link extract} would.
+ */
+export const extractAs = internalAction({
+  args: { ownerId: v.string(), ...extractArgs },
+  returns: extractReturns,
+  handler: async (ctx, { ownerId, ...args }): Promise<ExtractResult> =>
+    extractCore(ctx, callerFromTokenIdentifier(ownerId), args),
+});
+
+/**
+ * The extraction itself. `caller` is null only on the public path when nobody
+ * is signed in; the size checks ahead of the sign-in gate keep their order.
+ */
+async function extractCore(
+  ctx: ActionCtx,
+  caller: HostedCaller | null,
+  args: ObjectType<typeof extractArgs>,
+): Promise<ExtractResult> {
+  {
     const via = transport();
     if (via === "none") return { ok: false, error: "unconfigured" };
     const names = Object.keys(args.fields);
@@ -268,46 +378,51 @@ export const extract = action({
     if (args.state.length > MAX_STATE_CHARS)
       return { ok: false, error: "state too large" };
 
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return { ok: false, error: "signed out" };
-    const isPro = await userIsPro(ctx, identity.subject || identity.tokenIdentifier);
-    await consumeRateLimit(ctx, {
-      action: "extraction:extract",
-      identifier: identity.tokenIdentifier,
-      ...(isPro ? RATE_LIMITS.extraction : RATE_LIMITS.extractionFree),
-    });
+    try {
+      if (!caller) return { ok: false, error: "signed out" };
+      const isPro = await userIsPro(ctx, caller.subject);
+      await consumeRateLimit(ctx, {
+        action: "extraction:extract",
+        identifier: caller.tokenIdentifier,
+        ...(isPro ? RATE_LIMITS.extraction : RATE_LIMITS.extractionFree),
+      });
 
-    const body = {
-      state: args.state,
-      fields: args.fields,
-      ...(args.reference_date ? { reference_date: args.reference_date } : {}),
-      ...(args.options ? { options: args.options } : {}),
-    };
-    const result =
-      via === "notorganic"
-        ? await extractNotOrganic(ctx, body)
-        : await extractDirect(directCredentials()!, body);
-    if (!result.ok) return { ok: false, transport: via, error: result.error };
-    if (!validBody(result.body, args.fields))
-      return { ok: false, transport: via, error: "provider" };
-    const usage = result.body.usage;
-    return {
-      ok: true,
-      transport: via,
-      model: result.body.model,
-      answers: result.body.answers,
-      truncated: result.body.truncated === true,
-      ...(usage &&
-      typeof usage.input_tokens === "number" &&
-      typeof usage.output_tokens === "number"
-        ? {
-            usage: {
-              input_tokens: usage.input_tokens,
-              output_tokens: usage.output_tokens,
-              ...(typeof usage.passes === "number" ? { passes: usage.passes } : {}),
-            },
-          }
-        : {}),
-    };
-  },
-});
+      const body = {
+        state: args.state,
+        fields: args.fields,
+        ...(args.reference_date ? { reference_date: args.reference_date } : {}),
+        ...(args.options ? { options: args.options } : {}),
+      };
+      const result =
+        via === "notorganic"
+          ? await extractNotOrganic(ctx, caller, body)
+          : await extractDirect(directCredentials()!, body);
+      if (!result.ok) return { ok: false, transport: via, error: result.error };
+      const response = validatedBody(result.body, args, via);
+      if (!response) return { ok: false, transport: via, error: "provider" };
+      const usage = response.usage;
+      return {
+        ok: true,
+        transport: via,
+        model: response.model,
+        answers: response.answers,
+        truncated: response.truncated,
+        ...(usage &&
+        typeof usage.input_tokens === "number" &&
+        typeof usage.output_tokens === "number"
+          ? {
+              usage: {
+                input_tokens: usage.input_tokens,
+                output_tokens: usage.output_tokens,
+                ...(typeof usage.passes === "number"
+                  ? { passes: usage.passes }
+                  : {}),
+              },
+            }
+          : {}),
+      };
+    } catch (error) {
+      return { ok: false, transport: via, error: extractionError(error) };
+    }
+  }
+}

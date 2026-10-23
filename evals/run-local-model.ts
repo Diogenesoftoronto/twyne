@@ -2,7 +2,7 @@
  * Tool-calling + analysis eval for a small local model (e.g. LFM2.5-2.6B),
  * the candidate engine for signed-out / free mode.
  *
- * Every other script in `evals/` talks to the hosted Portkey gateway with a
+ * Every other script in `evals/` talks to the Not Organic gateway with a
  * bare system+user body and never passes `tools`. None of them can answer the
  * only question that matters for a 2.6B on-device model: *can it drive the
  * `quote_passage` tool?* That tool is what pins an editor's note to a real

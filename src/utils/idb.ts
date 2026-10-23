@@ -11,7 +11,7 @@ import { recordPreferenceChange } from "./preference-outbox";
  *   - `personas`          : keyPath "id"       (writer's saved persona set)
  *   - `meta`              : keyPath "key"      (active folio id, etc.)
  *   - `ai-settings`       : keyPath "key"      (single "current" key)
- *   - `lix-blob`          : keyPath "key"      (single "current" key)
+ *   - `lix-blob`          : keyPath "key"      ("current" + isolated shares)
  *   - `ai-usage-events`   : keyPath "eventKey" (content-free local ledger)
  *   - `writing-activity-detail`: keyPath "activityKey" (UTC day/folio counts)
  *
@@ -1641,6 +1641,70 @@ export async function saveLixBlobToIdb(blob: Blob): Promise<void> {
   } catch {
     /* ignore */
   }
+}
+
+/** Kept separate from "current", which is the writer's private Lix store. */
+export interface SharedLixSnapshot {
+  folioId: string;
+  blob: Blob;
+  /** The local manuscript observed at the checkpoint, for recovering later edits. */
+  draft: Pick<FolioContentSnapshot, "html" | "typstSource"> | null;
+}
+
+export async function loadSharedLixSnapshotFromIdb(
+  lixId: string,
+): Promise<SharedLixSnapshot | null> {
+  if (!isBrowser()) return null;
+  const db = await openDb();
+  const rec = await reqAsPromise<MetaRecord | undefined>(
+    db.transaction("lix-blob").objectStore("lix-blob").get(`shared:${lixId}`),
+  );
+  return (rec?.value as SharedLixSnapshot | undefined) ?? null;
+}
+
+export async function saveSharedLixSnapshotToIdb(
+  lixId: string,
+  snapshot: SharedLixSnapshot,
+): Promise<void> {
+  if (!isBrowser()) return;
+  // Unlike the optional private-store cache, unsent shared edits must report
+  // persistence failures. Resolve only once the transaction commits.
+  await tx("lix-blob", "readwrite", (t) => {
+    t.objectStore("lix-blob").put({
+      key: `shared:${lixId}`,
+      value: snapshot,
+      updatedAt: Date.now(),
+    } satisfies MetaRecord);
+  });
+}
+
+/** Recovery copies are device-local and never part of account content sync. */
+export async function saveSharedRecoveryToIdb(
+  recovery: import("./shared-reconciliation").SharedRecovery,
+): Promise<void> {
+  if (!isBrowser()) throw new Error("Local recovery storage is unavailable.");
+  await tx("lix-blob", "readwrite", (t) => {
+    t.objectStore("lix-blob").put({
+      key: `recovery:${recovery.lixId}`,
+      value: recovery,
+      updatedAt: Date.now(),
+    } satisfies MetaRecord);
+  });
+}
+
+export async function loadSharedRecoveryFromIdb(
+  lixId: string,
+): Promise<import("./shared-reconciliation").SharedRecovery | null> {
+  if (!isBrowser()) return null;
+  const db = await openDb();
+  const rec = await reqAsPromise<MetaRecord | undefined>(
+    db.transaction("lix-blob").objectStore("lix-blob").get(`recovery:${lixId}`),
+  );
+  return (
+    (rec?.value as
+      | import("./shared-reconciliation").SharedRecovery
+      | undefined) ?? null
+  );
 }
 
 /* ── Comments (inline user comments) ─────────────────────────────── */

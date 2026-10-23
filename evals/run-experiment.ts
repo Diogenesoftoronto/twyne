@@ -3,14 +3,14 @@
  *
  * Reads each line in `evals/dataset.jsonl`, builds the same system + user
  * prompts the production actions build via `convex/agentPrompts`, then
- * calls the hosted Portkey gateway that `convex/agents.ts` already routes
+ * calls the Not Organic gateway that `convex/agents.ts` already routes
  * through. Writes the model outputs to `evals/runs.json` in the shape
  * `ax experiments create --file` accepts.
  *
  * Usage:
- *   PORTKEY_API_KEY=pk-xxx bun run eval
+ *   bun run eval
  *
- * Calls the hosted Portkey gateway; see evals/llm-client.ts.
+ * Calls the Not Organic gateway; see evals/llm-client.ts.
  *
  * Read-only w.r.t. the repo otherwise: only writes `evals/runs.json`.
  */

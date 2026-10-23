@@ -104,7 +104,6 @@ import {
   migrateLegacyEditorialArtifacts,
 } from "../../utils/folio-workspace";
 import { createRevisionSnapshot } from "../../utils/revision-history";
-import { getDraftBlocks } from "../../utils/lix";
 import {
   captureProductEvent,
   countDraftWords,
@@ -222,6 +221,7 @@ export default component$(() => {
   // as the ?auth=1 deep link and the local-only nudge flip this open.
   const accountOpen = useSignal(false);
   const manuscriptEditor = useSignal<NoSerialize<Editor>>();
+  const sharedOpenGeneration = useSignal(0);
   const opensVersionHistory =
     location.url.searchParams.get("panel") === "history";
   const store = useStore<LayoutStore>({
@@ -781,13 +781,19 @@ export default component$(() => {
   // auth bootstrap. Tracking the signed-in user resumes the join as soon as
   // authentication completes instead of requiring a reload.
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(async ({ track }) => {
+  useVisibleTask$(async ({ track, cleanup }) => {
+    const hydrated = track(() => store.hydrated);
     const authenticated = track(() =>
       hasAuthenticatedConvexIdentity(auth.value),
     );
     const client = track(() => clientSig.value);
     const sharedId = new URLSearchParams(window.location.search).get("shared");
-    if (!sharedId || store.sharedLixId === sharedId || store.joiningShared) {
+    if (
+      !hydrated ||
+      !sharedId ||
+      store.sharedLixId === sharedId ||
+      store.joiningShared
+    ) {
       return;
     }
     if (!authenticated || !client) {
@@ -797,6 +803,18 @@ export default component$(() => {
 
     store.joiningShared = true;
     store.joinError = null;
+    const folioKey = store.folioKey;
+    const initialFolioId = store.activeFolioId;
+    let cancelled = false;
+    cleanup(() => {
+      cancelled = true;
+    });
+    const isCurrent = () =>
+      !cancelled &&
+      store.folioKey === folioKey &&
+      store.activeFolioId === initialFolioId &&
+      clientSig.value === client &&
+      hasAuthenticatedConvexIdentity(auth.value);
     try {
       try {
         await client.mutation(api.collaboration.acceptInvitation, {
@@ -809,6 +827,7 @@ export default component$(() => {
       const meta = await client.query(api.collaboration.getSharedLixMeta, {
         lixId: sharedId,
       });
+      if (!isCurrent()) return;
       if (!meta) {
         store.joinError = createAppError("PERMISSION_DENIED", {
           source: "convex",
@@ -817,12 +836,12 @@ export default component$(() => {
         return;
       }
       const { joinSharedLix } = await import("../../utils/collaboration");
-      await joinSharedLix(client, sharedId);
-      const sharedBlocks = await getDraftBlocks(meta.folioId);
+      const joined = await joinSharedLix(client, sharedId, { isCurrent });
+      if (!joined || !isCurrent()) return;
       store.sharedLixId = sharedId;
       store.sharedRole = meta.role;
       store.activeFolioId = meta.folioId;
-      store.editorSeed = sharedBlocks.map((block) => block.html).join("");
+      store.editorSeed = joined.html;
     } catch (err) {
       reportApplicationDiagnostic("twyne:editor:join-shared-document", err, {
         operation: "join-shared-document",
@@ -947,6 +966,24 @@ export default component$(() => {
    * tracked background services can never observe "new folio + old dossier."
    * The keyed right-rail panels remount when the id changes.
    */
+  // Leaving shared mode by any route (switching, creating or importing a
+  // folio, or unsharing) closes the synced copy so its folio reads from the
+  // local store again and the relay stops polling.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track, cleanup }) => {
+    const lixId = track(() => store.sharedLixId);
+    if (!lixId) return;
+    cleanup(() => {
+      void import("../../utils/collaboration")
+        .then(({ leaveSharedLix }) => leaveSharedLix(lixId))
+        .catch((error) =>
+          reportApplicationDiagnostic("twyne:editor:leave-share", error, {
+            operation: "leave-shared-document",
+          }),
+        );
+    });
+  });
+
   const activateFolio = $(async (folio: Folio) => {
     if (store.activeFolioId === folio.id) return;
     stopBackgroundResearch();
@@ -1577,6 +1614,7 @@ export default component$(() => {
                   })}
                 />
                 {store.activeFolioId &&
+                  !store.joiningShared &&
                   hasAuthenticatedConvexIdentity(auth.value) && (
                     <ShareDialog
                       folioId={store.activeFolioId}
@@ -1584,12 +1622,62 @@ export default component$(() => {
                         store.folios.find((f) => f.id === store.activeFolioId)
                           ?.name ?? "Untitled"
                       }
-                      onShared$={$((lixId: string, draftHtml?: string) => {
-                        if (draftHtml !== undefined) {
-                          store.editorSeed = draftHtml;
-                        }
-                        store.sharedLixId = lixId;
-                        store.sharedRole = "owner";
+                      onShared$={$(
+                        async (
+                          lixId: string,
+                          folioId: string,
+                          draftHtml?: string,
+                        ) => {
+                          const client = clientSig.value;
+                          if (!client || store.activeFolioId !== folioId)
+                            return false;
+                          const generation = ++sharedOpenGeneration.value;
+                          const folioKey = store.folioKey;
+                          const accountId = auth.value.user?.id;
+                          const { openOwnedSharedWorkspace } = await import(
+                            "../../utils/shared-workspace"
+                          );
+                          try {
+                            return await openOwnedSharedWorkspace({
+                              client,
+                              workspace: store,
+                              lixId,
+                              folioId,
+                              useLiveDraft: draftHtml !== undefined,
+                              getLiveDraft: () =>
+                                manuscriptEditor.value?.getHTML() ??
+                                store.editorSeed,
+                              isCurrent: () =>
+                                generation === sharedOpenGeneration.value &&
+                                !store.joiningShared &&
+                                store.folioKey === folioKey &&
+                                auth.value.user?.id === accountId &&
+                                clientSig.value === client &&
+                                hasAuthenticatedConvexIdentity(auth.value),
+                            });
+                          } catch (err) {
+                            reportApplicationDiagnostic(
+                              "twyne:editor:open-own-share",
+                              err,
+                              { operation: "open-own-share" },
+                            );
+                            throw err;
+                          }
+                        },
+                      )}
+                      onUnshared$={$(async (folioId: string) => {
+                        if (store.activeFolioId !== folioId) return;
+                        sharedOpenGeneration.value += 1;
+                        const { stopOwnedSharedWorkspace } = await import(
+                          "../../utils/shared-workspace"
+                        );
+                        await stopOwnedSharedWorkspace(
+                          store,
+                          folioId,
+                          () =>
+                            manuscriptEditor.value?.getHTML() ??
+                            store.editorSeed,
+                        );
                       })}
                     />
                   )}

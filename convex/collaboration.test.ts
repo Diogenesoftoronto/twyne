@@ -2,7 +2,7 @@
 
 import { convexTest } from "convex-test";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import schema from "./schema";
 
 const supportsViteModules = typeof import.meta.glob === "function";
@@ -156,5 +156,130 @@ describeConvex("collaboration invitation delivery", () => {
     );
     expect(rows).toHaveLength(1);
     expect(rows[0].role).toBe("owner");
+  });
+});
+
+describeConvex("collaboration sharing and permissions", () => {
+  async function seedShare(
+    t: ReturnType<typeof convexTest>,
+    lixId: string,
+    folioId: string,
+  ) {
+    await t.run(async (ctx) => {
+      const storageId = await ctx.storage.store(new Blob(["blob"]));
+      await ctx.db.insert("sharedLixBlobs", {
+        lixId,
+        ownerId,
+        folioId,
+        folioName: "Draft",
+        storageId,
+        createdAt: 1,
+        updatedAt: 1,
+      });
+    });
+    await seedOwner(t, lixId);
+  }
+
+  test("a folio maps to one share and a used lixId cannot gain an owner", async () => {
+    const { t } = setup();
+    await seedShare(t, "lix-a", "folio-a");
+    const storageId = await t.run((ctx) =>
+      ctx.storage.store(new Blob(["second"])),
+    );
+
+    expect(
+      await t.mutation(internal.collaboration.createShareRecord, {
+        lixId: "lix-b",
+        ownerId,
+        folioId: "folio-a",
+        folioName: "Draft",
+        storageId,
+      }),
+    ).toEqual({ created: false, lixId: "lix-a" });
+
+    await expect(
+      t.mutation(internal.collaboration.createShareRecord, {
+        lixId: "lix-a",
+        ownerId: "test-issuer|intruder",
+        folioId: "folio-x",
+        folioName: "Mine now",
+        storageId,
+      }),
+    ).rejects.toThrow("already in use");
+
+    const owners = await t.run((ctx) =>
+      ctx.db
+        .query("collaborators")
+        .withIndex("by_lixId", (q) => q.eq("lixId", "lix-a"))
+        .collect(),
+    );
+    expect(owners.map((row) => row.userId)).toEqual([ownerId]);
+  });
+
+  test("only the owner can invite, and a declined invite is reopened", async () => {
+    const { t, owner } = setup();
+    await seedShare(t, "lix-c", "folio-c");
+    const stranger = t.withIdentity({
+      tokenIdentifier: "test-issuer|stranger",
+      email: "stranger@example.com",
+    });
+
+    await expect(
+      t.mutation(internal.collaboration.createInvitation, {
+        lixId: "lix-c",
+        email: "x@example.com",
+        role: "editor",
+        invitedBy: "test-issuer|stranger",
+      }),
+    ).rejects.toThrow("Not a collaborator");
+
+    const first = await t.mutation(internal.collaboration.createInvitation, {
+      lixId: "lix-c",
+      email: "Editor@Example.com",
+      role: "editor",
+      invitedBy: ownerId,
+    });
+    expect(first.alreadyInvited).toBe(false);
+
+    const invitee = t.withIdentity({
+      tokenIdentifier: "test-issuer|editor",
+      email: "editor@example.com",
+    });
+    await invitee.mutation(api.collaboration.rejectInvitation, {
+      lixId: "lix-c",
+    });
+
+    const again = await t.mutation(internal.collaboration.createInvitation, {
+      lixId: "lix-c",
+      email: "editor@example.com",
+      role: "commenter",
+      invitedBy: ownerId,
+    });
+    expect(again).toEqual({
+      alreadyInvited: false,
+      role: "commenter",
+      invitationId: first.invitationId,
+    });
+    expect(
+      await invitee.mutation(api.collaboration.acceptInvitation, {
+        lixId: "lix-c",
+      }),
+    ).toEqual({ role: "commenter" });
+
+    expect(
+      await stranger.query(api.collaboration.getSharedLixMeta, {
+        lixId: "lix-c",
+      }),
+    ).toBeNull();
+    await expect(
+      invitee.mutation(api.collaboration.updateRole, {
+        lixId: "lix-c",
+        userId: "test-issuer|editor",
+        role: "editor",
+      }),
+    ).rejects.toThrow("Requires owner");
+    expect(
+      await owner.query(api.collaboration.getMyRole, { lixId: "lix-c" }),
+    ).toEqual({ role: "owner" });
   });
 });

@@ -7,6 +7,7 @@
  */
 import { makeFunctionReference } from "convex/server";
 import { hasCurrentTwynePlan } from "../../src/utils/subscription-plan";
+import { reportError } from "./errors";
 import {
   issueNotOrganicAccessToken,
   notOrganicIssuer,
@@ -44,7 +45,10 @@ export async function userIsPro(
       { issuer: notOrganicIssuer(), feature: "wallet" },
     );
     return hasCurrentTwynePlan(wallet);
-  } catch {
+  } catch (error) {
+    // Fail closed, but say why: otherwise a paying writer who hits a wallet
+    // outage is told they are not Pro and the cause is invisible.
+    reportError({ feature: "entitlement.userIsPro", error });
     return false;
   }
 }

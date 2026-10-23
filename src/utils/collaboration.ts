@@ -3,23 +3,50 @@
  *
  * Three flows:
  *
- *   1. Share (owner): serialize the local Lix → call `shareFolio` mutation →
- *      open the returned Lix with sync enabled → poll presence.
+ *   1. Share (owner): open a fresh Lix holding only the active folio's
+ *      manuscript → upload it through `shareFolio` → enable sync on it.
  *   2. Join (collaborator): accept any pending invitation → GET the blob via
- *      the LSP `get-v1` endpoint → openLixInMemory with sync enabled →
- *      initSyncProcess keeps the local copy in sync.
+ *      the LSP `get-v1` endpoint → open it as the shared session.
  *   3. Presence: heartbeat every 3s with cursor + selection; subscribe to
  *      `getPresence` for the live roster.
  *
- * The Lix SDK's `initSyncProcess` polls the /lsp/push-v1 and /lsp/pull-v1
- * endpoints automatically — we just need to set `lix_server_url` and enable
- * sync. The merge engine (vector clocks + mergeTheirState) handles conflicts
- * without our intervention.
+ * The shared Lix is separate from the writer's local store (see the shared
+ * session in lix.ts), so other folios, the bibliography and pending
+ * suggestions never leave the device. The SDK's sync loop starts with every
+ * open Lix and pushes/pulls through /lsp/* once `lix_sync` is "true" and
+ * `lix_server_url` is set.
  */
 import type { ConvexClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
-import { getLix, persistToIdb, replaceLix, syncDraftToLix } from "./lix";
-import { closeLix, openLixInMemory, toBlob } from "@lix-js/sdk";
+import {
+  closeSharedLix,
+  enableSharedSync,
+  installSharedLix,
+  openCachedSharedLix,
+  openShareableLix,
+  persistSharedLix,
+  sharedLixBlob,
+  sharedSessionLixId,
+  syncDraftToLix,
+  readSharedDraft,
+  writeSharedDraft,
+} from "./lix";
+import { closeLix, openLixInMemory } from "@lix-js/sdk";
+import {
+  loadFolioContentSnapshotFromIdb,
+  saveSharedRecoveryToIdb,
+} from "./idb";
+import { sameSharedDraft, type SharedDraftCopy } from "./shared-reconciliation";
+import type { SharedReviewRequest } from "../components/collaboration/shared-reconciliation-dialog";
+
+/** The SDK appends `/lsp/<route>` itself, so this is the bare site origin. */
+function lixServerUrl(): string {
+  const baseUrl = (
+    (import.meta.env.VITE_CONVEX_SITE_URL as string | undefined) ?? ""
+  ).replace(/\/$/, "");
+  if (!baseUrl) throw new Error("CONVEX_SITE_URL not configured");
+  return baseUrl;
+}
 
 const PRESENCE_INTERVAL_MS = 3000;
 const PRESENCE_STALE_MS = 30_000;
@@ -51,120 +78,289 @@ export function requestActiveDraftSnapshot(folioId: string): string {
 }
 
 /**
- * Promote a local folio to a shared, server-hosted Lix instance.
- * Returns the lixId and the server URL clients use for sync.
+ * Promote a local folio to a shared, server-hosted Lix instance containing
+ * only that folio's manuscript. Returns the new document's lixId.
  */
 export async function promoteToShared(
   client: ConvexClient,
   folioId: string,
   folioName: string,
   draftHtml: string,
-): Promise<{ lixId: string; serverUrl: string }> {
-  // A solo editor does not continuously mirror into Lix. Seed its exact,
-  // current Tiptap document before serializing so the first shared blob can
-  // never lag behind IndexedDB or an editor debounce.
-  await syncDraftToLix(folioId, draftHtml);
-  const lix = await getLix();
-  await persistToIdb();
-  const blob = await toBlob({ lix });
-
-  // Read the lix_id from the local Lix's key_value.
-  const lixIdRow = await lix.db
-    .selectFrom("key_value")
-    .where("key", "=", "lix_id")
-    .select("value")
-    .executeTakeFirstOrThrow();
-  const lixId = lixIdRow.value;
-
-  await client.action(api.collaboration.shareFolio, {
-    folioId,
-    folioName,
-    lixId,
-    blob: await blob.arrayBuffer(),
-  });
-
-  // Enable sync on the local instance so the owner's edits flow to the server.
-  const baseUrl =
-    (import.meta.env.VITE_CONVEX_SITE_URL as string | undefined) ?? "";
-  const serverUrl = `${baseUrl}/lsp`;
-
-  await lix.db
-    .updateTable("key_value")
-    .set({ value: "true" })
-    .where("key", "=", "lix_sync")
-    .execute();
-
-  // The Lix sync process also needs the server URL. Use upsert in case the
-  // local blob already has a stale/no value for this key.
-  await lix.db
-    .insertInto("key_value")
-    .values({ key: "lix_server_url", value: serverUrl })
-    .onConflict((oc: any) => oc.doUpdateSet({ value: serverUrl }))
-    .execute();
-
-  _currentLixId = lixId;
-  return { lixId, serverUrl };
+  options: { isCurrent?: () => boolean } = {},
+): Promise<{ lixId: string; alreadyShared: boolean } | null> {
+  const isCurrent = options.isCurrent ?? (() => true);
+  const serverUrl = lixServerUrl();
+  const draftLixId = await openShareableLix(folioId, isCurrent);
+  if (!draftLixId) return null;
+  let result: { lixId: string; alreadyShared: boolean };
+  try {
+    await syncDraftToLix(folioId, draftHtml);
+    const blob = await sharedLixBlob();
+    if (!isCurrent()) {
+      await closeSharedLix(draftLixId);
+      return null;
+    }
+    result = await client.action(api.collaboration.shareFolio, {
+      folioId,
+      folioName,
+      lixId: draftLixId,
+      blob: await blob.arrayBuffer(),
+    });
+    if (!isCurrent()) {
+      await closeSharedLix(draftLixId);
+      return null;
+    }
+    if (!result.alreadyShared) await enableSharedSync(serverUrl);
+  } catch (error) {
+    await closeSharedLix(draftLixId);
+    throw error;
+  }
+  if (result.alreadyShared) {
+    // Another tab shared this folio first. Open that document instead of
+    // the copy just built, which the server discarded.
+    await closeSharedLix(draftLixId);
+    if (!(await joinSharedLix(client, result.lixId, { isCurrent })))
+      return null;
+    return { lixId: result.lixId, alreadyShared: true };
+  }
+  _currentLixId = draftLixId;
+  return { lixId: draftLixId, alreadyShared: false };
 }
 
 /**
- * Join a shared Lix document. Fetches the blob, opens it with sync enabled,
- * and installs it as the app-wide singleton. Returns the sync server URL.
+ * Open a shared document: fetch its blob from the relay, open it as the
+ * shared session for its folio, and start syncing. Owners reopening their
+ * own share use this too, so their edits keep flowing after a reload.
  */
 export async function joinSharedLix(
   client: ConvexClient,
   lixId: string,
-): Promise<{ serverUrl: string }> {
+  options: {
+    isCurrent?: () => boolean;
+    getLocalDraft?: () => Promise<SharedDraftCopy | null>;
+    review?: (
+      request: SharedReviewRequest,
+    ) => Promise<SharedDraftCopy | "retry" | null>;
+  } = {},
+): Promise<{
+  folioId: string;
+  role: "owner" | "editor" | "commenter";
+  html: string;
+  reviewedLocal?: SharedDraftCopy;
+} | null> {
+  const generation = ++_joinGeneration;
+  const initialPath =
+    typeof window === "undefined" ? null : window.location.pathname;
+  const isCurrent = () =>
+    generation === _joinGeneration &&
+    options.isCurrent?.() !== false &&
+    (initialPath === null || window.location.pathname === initialPath);
   const meta = await client.query(api.collaboration.getSharedLixMeta, {
     lixId,
   });
+  if (!isCurrent()) return null;
   if (!meta) throw new Error("Not a collaborator on this document.");
-
-  const baseUrl =
-    (import.meta.env.VITE_CONVEX_SITE_URL as string | undefined) ?? "";
-  if (!baseUrl) throw new Error("CONVEX_SITE_URL not configured");
-
-  // Fetch the blob from the LSP get-v1 endpoint.
-  const resp = await fetch(`${baseUrl}/lsp/get-v1`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ lix_id: lixId }),
-  });
-  if (!resp.ok) {
-    throw new Error(`Failed to fetch shared Lix (${resp.status})`);
+  if (sharedSessionLixId() === lixId) {
+    const blocks = await getDraftBlocks(meta.folioId);
+    return isCurrent()
+      ? {
+          folioId: meta.folioId,
+          role: meta.role,
+          html: blocks.map((b) => b.html).join(""),
+        }
+      : null;
   }
-  const blob = await resp.blob();
 
-  // Open the blob locally. The get-v1 route sets lix_sync to "true" so the
-  // sync process will start automatically.
-  const lix = await openLixInMemory({
-    blob,
-    providePlugins: [
-      (await import("@lix-js/plugin-json")).plugin as unknown as any,
-    ],
-  });
-  let installed = false;
-  try {
-    // Set the server URL so Lix knows where to sync.
-    const serverUrl = `${baseUrl}/lsp`;
-    await lix.db
-      .insertInto("key_value")
-      .values({ key: "lix_server_url", value: serverUrl })
-      .onConflict((oc: any) => oc.doUpdateSet({ value: serverUrl }))
-      .execute();
-
-    // All Lix-backed readers and writers resolve through the singleton in
-    // lix.ts. Installing the joined instance is what actually moves the
-    // editor onto the shared document.
-    await replaceLix(lix);
-    installed = true;
-    await persistToIdb();
-
-    _currentLixId = lixId;
-    return { serverUrl };
-  } catch (error) {
-    if (!installed) await closeLix({ lix });
-    throw error;
+  const serverUrl = lixServerUrl();
+  // Both candidates stay unsynced until the writer has reviewed differences.
+  // The cached copy (including an unmirrored IndexedDB tail) remains intact.
+  const cached = await openCachedSharedLix(lixId, meta.folioId);
+  const cachedDraft = cached
+    ? await readSharedDraft(cached, meta.folioId)
+    : null;
+  if (cached) await closeLix({ lix: cached });
+  const getLocal =
+    options.getLocalDraft ??
+    (async () => {
+      let draft =
+        cachedDraft ?? (await loadFolioContentSnapshotFromIdb(meta.folioId));
+      // Read the live editor too: its debounce may not have reached IndexedDB.
+      try {
+        const html = requestActiveDraftSnapshot(meta.folioId);
+        const source: { folioId: string; source?: string } = {
+          folioId: meta.folioId,
+        };
+        window.dispatchEvent(
+          new CustomEvent("twyne:request-typst-source", { detail: source }),
+        );
+        draft = {
+          html,
+          ...(source.source !== undefined
+            ? { typstSource: source.source }
+            : {}),
+        };
+      } catch {
+        /* This shared folio is not mounted. Use its durable copy. */
+      }
+      return draft;
+    });
+  const review =
+    options.review ??
+    (async (request: SharedReviewRequest) =>
+      (
+        await import("../components/collaboration/shared-reconciliation-dialog")
+      ).requestSharedReview(request));
+  const fetchCopy = async () => {
+    const resp = await fetch(`${serverUrl}/lsp/get-v1`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ lix_id: lixId }),
+    });
+    if (!isCurrent()) return null;
+    if (!resp.ok)
+      throw new Error(`Failed to fetch shared Lix (${resp.status})`);
+    return openLixInMemory({
+      blob: await resp.blob(),
+      keyValues: [{ key: "lix_sync", value: "false" }],
+      providePlugins: [
+        (await import("@lix-js/plugin-json")).plugin as unknown as any,
+      ],
+    });
+  };
+  let changedSinceReview = false;
+  while (isCurrent()) {
+    const local = await getLocal();
+    if (!isCurrent()) return null;
+    let lix: Awaited<ReturnType<typeof openLixInMemory>> | null = null;
+    let installed = false;
+    let releaseReview: (() => void) | undefined;
+    try {
+      try {
+        lix = await fetchCopy();
+      } catch (error) {
+        if (!isCurrent()) return null;
+        // Authentication/transport failures cannot silently replace local work
+        // or enable a background push. Retry is explicit (or on reconnect).
+        if (!local) throw error;
+        const retry = await review({
+          local,
+          shared: null,
+          role: meta.role,
+          isCurrent,
+        });
+        if (retry === "retry") continue;
+        return null;
+      }
+      if (!lix || !isCurrent()) return null;
+      const shared = await readSharedDraft(lix, meta.folioId);
+      let chosen = shared;
+      if (local && !sameSharedDraft(local, shared)) {
+        const recovery = {
+          lixId,
+          folioId: meta.folioId,
+          createdAt: Date.now(),
+          local,
+          shared,
+        };
+        // Resolve only after a committed transaction. A full disk must block
+        // replacement, not leave the promise of a recovery copy unfulfilled.
+        await saveSharedRecoveryToIdb(recovery);
+        if (!isCurrent()) return null;
+        const settled = new Promise<void>((resolve) => {
+          releaseReview = resolve;
+        });
+        const decision = await review({
+          local,
+          shared,
+          role: meta.role,
+          isCurrent,
+          changedSinceReview,
+          settled,
+        });
+        if (!decision || decision === "retry" || !isCurrent()) return null;
+        chosen = meta.role === "commenter" ? shared : decision;
+        const latestLocal = await getLocal();
+        let latest: Awaited<ReturnType<typeof fetchCopy>>;
+        try {
+          latest = await fetchCopy();
+        } catch {
+          changedSinceReview = true;
+          continue;
+        }
+        if (!latest) return null;
+        let latestShared: SharedDraftCopy;
+        try {
+          latestShared = await readSharedDraft(latest, meta.folioId);
+        } finally {
+          await closeLix({ lix: latest });
+        }
+        if (
+          !latestLocal ||
+          !sameSharedDraft(local, latestLocal) ||
+          !sameSharedDraft(shared, latestShared)
+        ) {
+          changedSinceReview = true;
+          continue;
+        }
+        await saveSharedRecoveryToIdb({ ...recovery, result: chosen });
+        if (!sameSharedDraft(chosen, shared))
+          await writeSharedDraft(lix, meta.folioId, chosen);
+      }
+      if (!isCurrent()) return null;
+      // Typing can continue while the network or durable writes are pending.
+      const latestLocal = await getLocal();
+      if (local && latestLocal && !sameSharedDraft(local, latestLocal)) {
+        changedSinceReview = true;
+        continue;
+      }
+      if (!(await installSharedLix(lixId, meta.folioId, lix, { isCurrent })))
+        return null;
+      installed = true;
+      if (!isCurrent()) {
+        await closeSharedLix(lixId);
+        return null;
+      }
+      window.dispatchEvent(
+        new CustomEvent("twyne:typst-applying", {
+          detail: { folioId: meta.folioId },
+        }),
+      );
+      await saveFolioTypstToIdb(
+        meta.folioId,
+        chosen.typstSource ?? htmlToTypst(chosen.html),
+        chosen.html,
+        undefined,
+        "remote",
+      );
+      if (!isCurrent()) {
+        await closeSharedLix(lixId);
+        return null;
+      }
+      await enableSharedSync(serverUrl, lix);
+      _currentLixId = lixId;
+      return {
+        folioId: meta.folioId,
+        role: meta.role,
+        html: chosen.html,
+        ...(local ? { reviewedLocal: local } : {}),
+      };
+    } catch (error) {
+      if (installed) await closeSharedLix(lixId);
+      throw error;
+    } finally {
+      releaseReview?.();
+      if (lix && !installed) await closeLix({ lix });
+    }
   }
+  return null;
+}
+
+let _joinGeneration = 0;
+
+/** Leave a shared document; its folio falls back to the local store. */
+export async function leaveSharedLix(lixId: string): Promise<void> {
+  if (sharedSessionLixId() !== lixId) return;
+  await closeSharedLix(lixId);
 }
 
 /* ── Remote → local sync ────────────────────────────────────────── */
@@ -172,11 +368,12 @@ export async function joinSharedLix(
 import type { Editor } from "@tiptap/core";
 import { getDraftBlocks, getDraftTypstSource } from "./lix";
 import { saveFolioTypstToIdb } from "./idb";
-import { reconcileTypstSource } from "./typst/document";
+import { htmlToTypst, reconcileTypstSource } from "./typst/document";
 
 let _remoteSyncTimer: ReturnType<typeof setInterval> | null = null;
 let _lastPolledHtml: string | null = null;
 let _lastPolledSource: string | null = null;
+let _remoteSyncGeneration = 0;
 
 /**
  * Poll the local Lix instance for remote changes and reflect them into the
@@ -195,11 +392,15 @@ let _lastPolledSource: string | null = null;
  */
 export function watchRemoteChanges(editor: Editor, folioId: string): void {
   stopWatchingRemote();
+  const generation = _remoteSyncGeneration;
+  const isCurrent = () =>
+    generation === _remoteSyncGeneration && !editor.isDestroyed;
 
   const poll = async () => {
     try {
       const blocks = await getDraftBlocks(folioId);
       const rawSource = await getDraftTypstSource(folioId);
+      if (!isCurrent()) return;
       if (blocks.length === 0 && rawSource === null) return;
       const html = blocks.map((b) => b.html).join("");
       const source =
@@ -211,6 +412,8 @@ export function watchRemoteChanges(editor: Editor, folioId: string): void {
         // This is a collaborator's snapshot, never an acknowledgement of
         // the writer's pending visual save or source draft.
         await saveFolioTypstToIdb(folioId, source, html, undefined, "remote");
+        await persistSharedLix();
+        if (!isCurrent()) return;
         window.dispatchEvent(
           new CustomEvent("twyne:typst-remote-change", {
             detail: { folioId, source, html },
@@ -239,6 +442,7 @@ export function watchRemoteChanges(editor: Editor, folioId: string): void {
 }
 
 export function stopWatchingRemote(): void {
+  _remoteSyncGeneration += 1;
   if (_remoteSyncTimer) {
     clearInterval(_remoteSyncTimer);
     _remoteSyncTimer = null;

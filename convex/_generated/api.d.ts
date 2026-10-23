@@ -26,6 +26,7 @@ import type * as images from "../images.js";
 import type * as instrumentTaskValidators from "../instrumentTaskValidators.js";
 import type * as instrumentTasks from "../instrumentTasks.js";
 import type * as instrumentTasksRunner from "../instrumentTasksRunner.js";
+import type * as integrationAi from "../integrationAi.js";
 import type * as integrations from "../integrations.js";
 import type * as interviewStreams from "../interviewStreams.js";
 import type * as knowledge from "../knowledge.js";
@@ -36,6 +37,8 @@ import type * as lib_charterExceptionValidator from "../lib/charterExceptionVali
 import type * as lib_collections from "../lib/collections.js";
 import type * as lib_entitlement from "../lib/entitlement.js";
 import type * as lib_errors from "../lib/errors.js";
+import type * as lib_hostedTransports from "../lib/hostedTransports.js";
+import type * as lib_integrationAiRequests from "../lib/integrationAiRequests.js";
 import type * as lib_judgementContract from "../lib/judgementContract.js";
 import type * as lib_noteEvidence from "../lib/noteEvidence.js";
 import type * as lib_notorganic from "../lib/notorganic.js";
@@ -96,6 +99,7 @@ declare const fullApi: ApiFromModules<{
   instrumentTaskValidators: typeof instrumentTaskValidators;
   instrumentTasks: typeof instrumentTasks;
   instrumentTasksRunner: typeof instrumentTasksRunner;
+  integrationAi: typeof integrationAi;
   integrations: typeof integrations;
   interviewStreams: typeof interviewStreams;
   knowledge: typeof knowledge;
@@ -106,6 +110,8 @@ declare const fullApi: ApiFromModules<{
   "lib/collections": typeof lib_collections;
   "lib/entitlement": typeof lib_entitlement;
   "lib/errors": typeof lib_errors;
+  "lib/hostedTransports": typeof lib_hostedTransports;
+  "lib/integrationAiRequests": typeof lib_integrationAiRequests;
   "lib/judgementContract": typeof lib_judgementContract;
   "lib/noteEvidence": typeof lib_noteEvidence;
   "lib/notorganic": typeof lib_notorganic;

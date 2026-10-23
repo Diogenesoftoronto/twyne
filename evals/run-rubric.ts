@@ -2,7 +2,7 @@
  * Offline rubric eval for Twyne.
  *
  * Replays the REAL production prompts from `convex/agentPrompts.ts` through
- * the hosted Portkey gateway for four task types, then scores the outputs
+ * the Not Organic gateway for four task types, then scores the outputs
  * with LLM-as-judge rubrics. Mirrors the conventions of
  * `evals/run-experiment.ts` and `evals/judge.ts` (Node/TS via `tsx`,
  * `node:fs`/`node:path` imports, case_id keys, main().catch() tail).
@@ -30,9 +30,9 @@
  *                       polished-but-empty pairs.
  *
  * Usage:
- *   PORTKEY_API_KEY=pk-xxx bun run eval:rubric
+ *   bun run eval:rubric
  *
- * Calls the hosted Portkey gateway; see evals/llm-client.ts.
+ * Calls the Not Organic gateway; see evals/llm-client.ts.
  *
  * Writes evals/rubric-scores.json.
  */

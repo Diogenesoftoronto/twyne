@@ -363,7 +363,7 @@ export const RubricPanel = component$(
         }
 
         // 2. Run the five personas as judges. Try client AI first (BYOK),
-        //    then Convex server action, then local heuristic.
+        //    then Convex server action. Only real readings count.
         let judges: JudgeResult[] = [];
 
         const settings = normalizeAiSettings(await loadAiSettingsFromIdb());
@@ -372,24 +372,29 @@ export const RubricPanel = component$(
         if (hasConfiguredAiProvider(settings) && settings) {
           try {
             const personas = defaultPersonas();
-            const tasks = personas.map(async (p) => {
-              const res = await runClientJudge(
-                {
-                  persona: toAgentPersona(p),
-                  brief: brief ?? null,
-                  draftText,
-                  instruction: "feedback",
-                },
-                settings,
-              );
-              return {
-                personaId: p.id,
-                score: res?.score ?? 5,
-                rationale: res?.rationale ?? shapeFeedback.unreachableEditor,
-                provider: res ? `client-${res.provider}` : "local",
-              } as JudgeResult;
-            });
-            judges = await Promise.all(tasks);
+            const tasks = personas.map(
+              async (p): Promise<JudgeResult | null> => {
+                const res = await runClientJudge(
+                  {
+                    persona: toAgentPersona(p),
+                    brief: brief ?? null,
+                    draftText,
+                    instruction: "feedback",
+                  },
+                  settings,
+                );
+                if (!res) return null;
+                return {
+                  personaId: p.id,
+                  score: res.score,
+                  rationale: res.rationale,
+                  provider: `client-${res.provider}`,
+                };
+              },
+            );
+            judges = (await Promise.all(tasks)).filter(
+              (judge): judge is JudgeResult => judge !== null,
+            );
           } catch (error) {
             store.error = normalizeApplicationError(error, {
               source: "provider",
@@ -418,29 +423,23 @@ export const RubricPanel = component$(
         }
 
         if (!current()) return;
-        if (judges.length === 0) {
-          store.error = createAppError(
-            hasConfiguredAiProvider(settings)
-              ? "PROVIDER_ERROR"
-              : "CONFIGURATION_ERROR",
-            {
-              source: hasConfiguredAiProvider(settings)
-                ? "provider"
-                : "application",
-              recovery: {
-                action: hasConfiguredAiProvider(settings)
-                  ? "retry"
-                  : "choose-provider",
-                canRetry: hasConfiguredAiProvider(settings),
-              },
-              metadata: { feature: "rubric", operation: "judge-room" },
-            },
-          );
+        if (
+          judges.length === 0 &&
+          !hasConfiguredAiProvider(settings) &&
+          !client
+        ) {
+          store.error = createAppError("CONFIGURATION_ERROR", {
+            source: "application",
+            recovery: { action: "choose-provider", canRetry: false },
+            metadata: { feature: "rubric", operation: "judge-room" },
+          });
           return;
         }
+        // `every` also covers an empty room: no reading means no grade.
         if (judges.every((j) => j.provider === "local")) {
           store.error = createAppError("PROVIDER_ERROR", {
             source: "provider",
+            recovery: { action: "retry", canRetry: true },
             metadata: { feature: "rubric", operation: "judge-room" },
           });
           return;
@@ -1250,6 +1249,22 @@ export const RubricPanel = component$(
                   {store.result.judges.map((judge) => (
                     <JudgeCard key={judge.personaId} judge={judge} />
                   ))}
+                  {store.result.judges.length > 0 &&
+                    defaultPersonas()
+                      .filter(
+                        (persona) =>
+                          !store.result!.judges.some(
+                            (judge) => judge.personaId === persona.id,
+                          ),
+                      )
+                      .map((persona) => (
+                        <div key={persona.id} class="px-3 py-2">
+                          <p class="text-sm">{persona.name}</p>
+                          <p class="text-xs text-[var(--color-ink-muted)]">
+                            {shapeFeedback.unjudgedEditor}
+                          </p>
+                        </div>
+                      ))}
                 </div>
               )}
             </div>
