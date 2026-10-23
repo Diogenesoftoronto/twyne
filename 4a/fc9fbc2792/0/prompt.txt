@@ -1,0 +1,25 @@
+what is  the point of the further on as you read flow card component?
+
+---
+
+i think that should be indicated what the reason for this card appearing is,, for whatever cause it to appear helps ground that, and help the author take action
+
+---
+
+just state the reason don't have the question there, state Repitition for example the why this appeared is redundant i think and is unnecard text.
+
+---
+
+Hey I noticed that striking a margin doesn't make the highlighted text stop being highlighted like i want it too. I also think that  zen mode should not have the on hover effects appear either.
+
+---
+
+deploy
+
+---
+
+Note: the T3 server restarted, and this background work was cancelled before it finished. It will not report back:
+- shell: /bin/bash -lc 'rtk proxy bun run dev.frontend'
+
+User message:
+.

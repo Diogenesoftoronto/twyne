@@ -1,0 +1,120 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "4afc9fbc2792",
+  "session_id": "01a15ba7-b4c8-7441-ba08-dda443779a57",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-23T02:37:17.93118145Z",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 4,
+  "save_step_count": 3,
+  "files_touched": [
+    "convex/_generated/api.d.ts",
+    "convex/account.test.ts",
+    "convex/account.ts",
+    "convex/schema.ts",
+    "e2e/brief-signin.e2e.ts",
+    "src/components/brief/use-brief-strength.ts",
+    "src/components/editor/comment-mark.test.ts",
+    "src/components/editor/extensions/comment-mark.ts",
+    "src/components/editor/extensions/mark-anchor-widgets.ts",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/in-flow/flow-surface.tsx",
+    "src/components/onboarding/anti-tabula-rasa.tsx",
+    "src/components/onboarding/writing-format-input.tsx",
+    "src/components/personas/personas-panel.tsx",
+    "src/global.css",
+    "src/i18n/provider.tsx",
+    "src/routes/library/index.tsx",
+    "src/routes/personas/index.tsx",
+    "src/routes/privacy/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/utils/auth-context.tsx",
+    "src/utils/convex-sync.test.ts",
+    "src/utils/convex-sync.ts",
+    "src/utils/idb.ts",
+    "src/utils/theme.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6.1-sol",
+  "turn_id": "64f788157ff1",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 279246,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 22854912,
+    "output_tokens": 40899,
+    "api_call_count": 139,
+    "subagent_tokens_complete": true
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-23T02:37:17.864980265Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 710,
+    "human_modified": 1723,
+    "human_removed": 0,
+    "total_committed": 2055,
+    "total_lines_changed": 2433,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 163,
+      "user_lines_removed": 42,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "e2e/brief-signin.e2e.ts": 10,
+        "src/components/in-flow/flow-surface.tsx": 44,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 78,
+        "src/components/onboarding/writing-format-input.tsx": 24,
+        "src/global.css": 7
+      },
+      "user_removed_per_file": {
+        "src/components/in-flow/flow-surface.tsx": 4,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 30,
+        "src/components/onboarding/writing-format-input.tsx": 7,
+        "src/global.css": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 146,
+      "user_lines_removed": 33,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "e2e/brief-signin.e2e.ts": 67,
+        "src/components/in-flow/flow-surface.tsx": 25,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 44,
+        "src/components/onboarding/dossier-folio.tsx": 3,
+        "src/global.css": 7
+      },
+      "user_removed_per_file": {
+        "e2e/brief-signin.e2e.ts": 5,
+        "src/components/in-flow/flow-surface.tsx": 6,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 18,
+        "src/components/onboarding/dossier-folio.tsx": 3,
+        "src/global.css": 1
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 56,
+      "user_lines_removed": 52,
+      "agent_lines_added": 1575,
+      "agent_lines_removed": 217,
+      "user_added_per_file": {
+        "convex/preferences.test.ts": 56
+      },
+      "user_removed_per_file": {
+        "convex/preferences.test.ts": 52
+      }
+    }
+  ]
+}
