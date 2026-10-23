@@ -1,0 +1,5 @@
+Thoughts on the clairic integration that has been done so far? Could we go further with this and how? Let's review.
+
+---
+
+[Assistant quote](t3-citation://v1/e7d9c78b-b5f5-45d5-bf9b-919dcf31ffa1/47d8ca3a-1d41-4550-a9ad-996b9ecf0c86/message%3Aprovider%3Acodex%3Anative-item%3Amsg_05b3428e8edad37a016ad844fc025c81a28973532d4cb41ccc?text=he+writer+cannot+inspect+the+extracted+values%2C+uncertainty%2C+or+coverage+that+informed+the+advice.+Response+handling&start=973&end=1088&prefix=y+retain+prose+and+one+anchor.+T&suffix=+personas-panel.tsx+%C2%B7+L773+There&comment=I+think+some+of+this+would+be++a+bit+overwhelming+for+the+writer%2C+just+having+more+information+isn%27t+always+better+you+know%3F) Let's fix the rest of the  concrete issues
