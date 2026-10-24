@@ -1,0 +1,29 @@
+Act as the design sub-agent for this task.
+
+Write an evaluation corpus for Twyne, a writing app where a "room" of five AI editors reads a writer's draft and leaves notes, grades it with a rubric, and suggests rewrites. The corpus will be run through the real app, which refuses to give editor notes or rubric judgments on drafts under 500 words. Every draft must therefore be 550 to 900 words (count them; the harness verifies with `text.trim().split(/\s+/).length`).
+
+The five editors (ids are what matter): `devil` (the sceptic who attacks the argument's load-bearing claims and unstated counterarguments), `angel` (the patron who names and protects what genuinely works), `scholar` (evidence, sources, citations, factual grounding), `editor` (line editing: concision, rhythm, structure, repetition), `reader` (the named target reader: confusion, jargon, whether they would keep reading). For voice and background, read `/home/diogenes/Projects/apps/twyne/src/utils/personas.ts`.
+
+Write the files under `/home/diogenes/Projects/apps/twyne/evals/app/cases/` (create the directory). Create only these files and touch nothing else in the repo. Other agents are working in the same checkout. Do not run git commands that change state.
+
+A brief (the writer's dossier) has this exact JSON shape (all strings required):
+`{"answers":{"workingTitle":"","format":"","audience":"","goal":"","tone":"","constraints":"","successSignal":""},"attachments":[],"completedAt":1790000000000,"updatedAt":1790000000000}`
+
+FILES (JSON Lines, one object per line, UTF-8, no trailing commas):
+
+1. `room.jsonl`: 8 cases across varied genres: an op-ed, a personal essay, a travel essay about walking an old salt road (the app's manual follows a writer named Morgan Vale revising a travel essay called "Salt Roads", so make one case that piece), a science explainer, a policy memo, a book review, a startup or industry essay, and a short-story excerpt. Each line:
+   `{"case_id":"room-<slug>","genre":"...","brief":{...},"draftText":"...","plants":[{"id":"p1","kind":"unsupported-claim|weak-argument|strong-passage|bloat|audience-gap|factual-error|repetition|buried-lede","passage":"<exact verbatim substring of draftText, 8 to 40 words>","expectedEditors":["scholar"],"note":"one sentence: what a good editor would say about it"}]}`
+   Plant 4 to 6 deliberate, checkable features per draft, and make each draft read like real, competent-but-imperfect writing, not a parody. Each `passage` must appear EXACTLY once, character for character, in `draftText`. Use straight quotes and plain ASCII punctuation in passages so matching is unambiguous. Include at least one `strong-passage` per draft (for the angel) and at least one plant aimed at each of scholar, devil and editor. Use real-sounding but clearly invented specifics where a claim needs a number, so the scholar has something to question. Do not use real living people in defamatory ways.
+
+2. `rubric.jsonl`: 4 topics × 2 qualities = 8 lines. For each topic write a strong draft (specific, well-argued, grounded, tight) and a weak draft. The weak draft must still be 550+ words of fluent, plausible prose: generic claims, padding, hedging, vague "studies show" appeals, repetition, and a goal it does not meet. It must not be gibberish. Both drafts share the same brief. Each line:
+   `{"case_id":"rubric-<topic>-strong|weak","pair_id":"<topic>","quality":"strong|weak","brief":{...},"draftText":"...","weaknesses":["for weak drafts: 3-5 short phrases naming the planted weaknesses"]}`
+
+3. `rewrite.jsonl`: 8 cases. Each case needs a self-contained draft (550+ words; you may reuse a room draft verbatim), a target passage to rewrite, and the persona asked to rewrite it. Spread personas across all five, and use both levels. Each line:
+   `{"case_id":"rewrite-<slug>","personaId":"editor","level":"sentence|paragraph","brief":{...},"draftText":"...","original":"<exact verbatim substring of draftText; one sentence for level=sentence, one full paragraph for level=paragraph>","problem":"what is wrong with the original","mustPreserve":["names, numbers or facts that any faithful rewrite must keep, each a verbatim substring of original"]}`
+
+4. `dossier.jsonl`: 4 cases where the draft drifts from its brief in planted ways (wrong audience register, goal not addressed, constraint violated such as a word limit or banned topic, tone mismatch). Each line:
+   `{"case_id":"dossier-<slug>","brief":{...},"draftText":"...","drifts":[{"passage":"<verbatim substring>","issue":"one sentence naming which brief field it violates and how"}]}`
+
+5. `README.md` (short): what each file tests, the plant kinds, and the rule that passages are verbatim substrings.
+
+When done, VALIDATE with a script you write in /tmp (not in the repo), run with bun or python. Check that every line parses, that every draftText word count is 550 to 900, that every passage/original/mustPreserve/drift passage appears exactly once in its draftText (or in original, for mustPreserve), and that case_ids are unique. Fix anything that fails and re-run until clean. Report the validation output and a table of case_id, genre or topic, and word count.
