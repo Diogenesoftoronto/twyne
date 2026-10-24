@@ -1,0 +1,9 @@
+Hey I noticed this but the twyne typst code isn't idiomatic typst. I would like to make it easy for people to go in and edit the typst document. That also means improving the editor for that functionality as well. I would really genuinely love it if you could download typst packages as  well so that people could use those.
+
+---
+
+Continue where you left off.
+
+---
+
+cont
