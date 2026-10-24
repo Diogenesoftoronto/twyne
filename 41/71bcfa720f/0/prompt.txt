@@ -1,0 +1,13 @@
+The share button doesn't work in prod even when i am signed in
+
+---
+
+does sharing also work
+
+---
+
+[Assistant quote](t3-citation://v1/e7d9c78b-b5f5-45d5-bf9b-919dcf31ffa1/6e74379c-0a00-4c7c-87cd-d9f751c24ed4/message%3Aprovider%3AclaudeAgent%3Anative-item%3Af3f1ef01-ba95-46cb-bc47-d99c3827c5e5?text=A+real+problem+behind+it%3A%0A%0A%0A%0A%0ASharing+one+folio+sends+everything.+The+local+version+store+is+one+database+per+browser%2C+not+per+folio+%28lix-blob%2C+single+%22current%22+key%29.+Sharing+serializes+that+whole+database+and+uploads+it%2C+so+collaborators+get+every+folio%27s+brief+and+draft+content+plus+your+bibliography%2C+not+just+the+folio+you+shared.%0A%0A%0AA+second+share+doesn%27t+create+a+new+one.+The+lixId+is+the+same+for+every+folio.+The+server+sees+a+share+it+already+has+and+returns+the+first+one%2C+so+the+share+record+still+points+at+the+first+folio.&start=846&end=1376&prefix=the+real+error+is+never+logged.+&suffix=+I%27d+rather+not+ship+the+click+f&comment=Okay+these+are+serious+issues+to+fix.+We+definitely+only+should+be+sharing+thhe++one+folio+and+not+everything+and+we+should+also+make+sure+that+we+need+to+make+sure+what+permissions+that+people+have.)
+
+---
+
+Continue where you left off.
