@@ -1,0 +1,12 @@
+Act as the design sub-agent for this task.
+
+Scale up two eval corpora for Twyne, a writing app at /home/diogenes/Projects/apps/twyne. At 8–10 cases each, our metrics have ±0.12 noise; we need roughly 40 room drafts and 16 rubric pairs to get to about ±0.05.
+
+APPEND to (never rewrite or reorder existing lines):
+- `evals/app/cases/room.jsonl`: add 30 drafts. Same schema and rules as the existing 10 (read the file and `evals/app/cases/README.md`): 550–900 words, 4–6 plants each with verbatim-once passages, every editor's remit covered across the plants.
+  - Broaden the genres beyond what's there: grant proposal, obituary, product announcement, lab report discussion, sermon, legal explainer, sports column, food criticism, children's nonfiction, comedic essay, and so on.
+  - Add 5 more long drafts (2,200–3,000 words) with plants spread across the head, middle and tail, like `room-long-*`.
+  - Weight the plants toward the kinds the room misses most: buried-lede, audience-gap, factual-error, weak-argument.
+- `evals/app/cases/rubric.jsonl`: add 12 strong/weak pairs (24 lines), same schema as the existing 8. Vary the genres. Make some weak drafts subtle: fluent, specific-sounding, but failing the brief's goal or audience. Easy weak drafts don't test the grader.
+
+Validate everything (all old and new lines) with a script you keep in /tmp: parse, word counts, verbatim-once passages, unique case_ids, and a check that the original lines are byte-identical. Touch only those two files plus a line or two in the cases README. Other agents work in this checkout, so run no state-changing git. Report the validation output and counts per genre and plant kind.
