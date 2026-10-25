@@ -1,0 +1,22 @@
+Act as the implementation sub-agent for this task.
+
+Extend `@twyne/tools` at /home/diogenes/Projects/apps/twyne/packages/twyne-tools. You built its AI commands earlier today (room, editor, rewrite, grade, dossier check, interview turn), so follow the same patterns.
+
+READ FIRST: the new "Auto-research" section of /home/diogenes/Projects/apps/twyne/docs/app-harness.md. It defines two new integration operations, `research.targets` and `research.sources`, being implemented on the server right now. Also read `ResearchTarget` and `Source` in /home/diogenes/Projects/apps/twyne/src/types/index.ts (only copy the shapes, don't import from the app).
+
+BUILD:
+1. src/types.ts: `ResearchTargetKind`, `ResearchTarget`, `ResearchSource`, `ResearchTargetsResult` (`{ strategy, provider, mode, targets, candidates? }`) and `ResearchSourcesResult` (`{ provider, results, ranked }`), plus the input shapes. Keep them loose with `[key: string]: unknown`, as you did before.
+2. src/client.ts: `findResearchTargets(input, signal?)` sends `research.targets`, and `searchResearchSources(input, signal?)` sends `research.sources`. Pass only defined fields.
+3. src/cli.ts:
+   - `twyne research targets (--folio ID | --file FILE | --stdin) [--strategy hosted|model] [--max N] [--brief FILE] [--existing "Title A" --existing "Title B"] [--json]`. Human output: one line per target, `[kind] importance → query`, then `> anchor`.
+   - `twyne research sources --kind KIND --anchor TEXT --query TEXT [--reason TEXT] [--max N] [--json]`, OR `--target FILE` (a JSON ResearchTarget) instead of the flags. Human output: ranked results as `title — url`, with publisher/date when present.
+   - Draft input uses your existing helpers (.html to text, --stdin). With `--json`, print exactly the operation's `data`. Update HELP.
+4. MCP: do NOT add MCP tools. The surface stays at exactly 15, its hard cap. Leave src/mcp.ts and its tests untouched.
+5. Tests (bun test, fake fetch, like your existing ones):
+   - both client methods send the right operation and body;
+   - `research targets --file ... --strategy model --json` round-trips;
+   - `research sources` from flags and from `--target FILE`;
+   - a missing --query/--anchor is an error with exit 1.
+6. README: a short "Auto-research" subsection under the CLI commands.
+
+Verify: `bun test` and `bun run check` in the package, then `bun run build` once. RULES: only edit files under packages/twyne-tools/. Other work is happening elsewhere in this checkout, so do not touch other paths. No state-changing git commands. Report: files changed, the commands, and test, check and build summary lines.
