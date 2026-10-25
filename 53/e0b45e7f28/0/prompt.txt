@@ -1,0 +1,22 @@
+Act as the design sub-agent for this task.
+
+Write an evaluation corpus for Twyne's auto-research. Twyne is a writing app (repo: /home/diogenes/Projects/apps/twyne). As the writer drafts, a background agent decides which passages need a source and searches for one. Read `prompts/research-extract-system.md` (the model strategy's instructions) and `src/utils/research-candidates.ts` (the rule-based strategy hosted writers get). The corpus has to measure both: what gets flagged, what gets wrongly flagged, and whether search finds a source that settles each claim.
+
+Write `evals/app/cases/research.jsonl`: 8 drafts of about 1,000 words each (900 to 1,100), as real, competent prose in varied genres:
+- nonfiction (a health or science explainer, a history essay, a policy memo, a book review that quotes its subject, a tech or business feature);
+- at least one fiction piece built on real history, where the real scaffolding needs checking and the invented story doesn't;
+- one personal essay with almost nothing checkable, to test restraint.
+
+Every flagged claim must be REAL and well documented, so a search engine can find a source that settles it. Use stable, encyclopedic facts, and exact wording for any quotation. One or two drafts may carry a single planted error (a wrong date or figure); record the correct fact and mark it.
+
+Each line:
+`{"case_id","genre","mode":"fiction|nonfiction|general","brief":{"answers":{"workingTitle","format","audience","goal","tone","constraints","successSignal"},"attachments":[],"completedAt":1790000000000,"updatedAt":1790000000000},"draftText","mustFlag":[{"id","kind":"quote|work|person|statistic|claim|event","passage","needles":[…],"fact","query","sources":[…],"plantedError"?:true}],"mustNotFlag":[{"id","why":"opinion|experience|invented|common-knowledge|metaphor","passage","needles":[…]}]}`
+
+- `passage`: a verbatim substring of draftText, appearing exactly once.
+- `needles`: 1-3 lowercase words or short phrases. A target whose anchor or query contains all of them is that claim; every needle must also appear in the passage.
+- `fact`: the true statement, in one sentence.
+- `query`: the search query a good research librarian would write for this claim.
+- `sources`: domains or title fragments of sources that establish the fact (e.g. "britannica.com", "who.int", "nobelprize.org").
+- Aim for about 5-7 mustFlag and 3-4 mustNotFlag per draft, and spread the kinds. Include cases the regex rules in research-candidates.ts will miss (named works, people in context, unattributed claims) and cases they will catch (percentages, "studies show", dated events, attributed quotes).
+
+Also add a short `evals/app/cases/README.md` section describing the file. Validate with a script you keep in /tmp (word counts, verbatim-once passages, needles inside passages, unique ids). Only create these two files: other agents are working in this checkout, so touch nothing else and run no state-changing git. Report the validation output and a table of case, genre, word count, and flag counts.
