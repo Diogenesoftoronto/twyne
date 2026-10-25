@@ -1,0 +1,13 @@
+Act as the design sub-agent for this task.
+
+Scale up three eval corpora for Twyne, a writing app at /home/diogenes/Projects/apps/twyne. You wrote `evals/app/cases/research.jsonl` earlier today; this extends that work. At 8 cases per suite our metrics are too noisy to compare runs.
+
+APPEND only (never rewrite or reorder existing lines):
+- `research.jsonl`: add 16 drafts of about 1,000 words each, same schema and rules as yours.
+  - Every flagged claim is real, well documented and searchable, with exact wording for quotes.
+  - Include 2 more fiction-on-real-history pieces, 2 more near-empty personal essays (restraint), and 3 drafts with one planted error each.
+  - Cover kinds the hosted rule-based strategy misses (works, people in context, unattributed claims) as well as the ones it catches.
+- `rewrite.jsonl`: add 16 cases, same schema as the existing 8. Spread them across all five editors and both levels. Include at least 6 passages whose problem tempts a rewriter to drop a fact: a term of art, a number, a place, a proper name. `mustPreserve` lists those exact facts.
+- `dossier.jsonl`: add 8 cases, same schema. Mix the drift types and include 2 drafts that drift on nothing, with an empty `drifts` list, to test false alarms.
+
+Validate all old and new lines with your /tmp script, extended to the other two files (word counts, verbatim-once passages, needles inside passages, `mustPreserve` inside `original`, unique ids, original lines byte-identical). Touch only those three files plus a line or two in `evals/app/cases/README.md`. Other agents work in this checkout, so run no state-changing git. Report the validation output and counts.
