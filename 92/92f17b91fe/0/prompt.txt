@@ -1,0 +1,27 @@
+Act as the implementation sub-agent for this task.
+
+Twyne (writing app, Convex backend) at /home/diogenes/Projects/apps/twyne, branch feat/clairic-extraction. Read `convex/_generated/ai/guidelines.md` first.
+
+GOAL: make auto-research drivable through the personal-access-token integration API (`POST /api/integrations/v1`), so the eval harness in `evals/app/` can measure it the way it already measures the room, rubric, rewrites and interview. Implement the two operations in the "Auto-research" section of `docs/app-harness.md`: `research.targets` and `research.sources`. That section is the contract; another agent (Astra) is building the CLI against it right now, so keep the names and shapes, or tell me precisely what you changed and why.
+
+They must run the same logic the product runs, not a reimplementation. The browser's background pass is `src/utils/background-research.ts`:
+- hosted writers get `extractOnService`: `claimCandidates`, then a System One confirmation (`candidateRequest` / `confirmedTargets` in `src/utils/research-candidates.ts`);
+- writers with their own model get `runClientResearchExtract` (`src/utils/ai-client.ts`), the research-extract prompts parsed by `parseResearchTargets`;
+- search goes through `convex/research.ts` `searchSources`, with `buildResearchSearchContext` and `rankSourcesForTarget` from `src/utils/research-targets.ts`.
+
+The model strategy runs those prompts on the hosted model (Not Organic or the legacy route via `pickProvider`). Hosted writers don't have this path today; the eval exists partly to compare the two strategies.
+
+Existing patterns to follow (all from today):
+- `HostedCaller` and `callerFromIdentity` / `callerFromTokenIdentifier` in `convex/lib/authIdentity.ts`.
+- Public actions are split into a wrapper plus a `*Core(ctx, caller, args)`, with internal `*As` actions taking `ownerId` (see `convex/systemOne.ts` `askAs`, and the cores in `convex/agents.ts`).
+- The token path dispatches through `convex/lib/integrationAiRequests.ts` to internal actions in `convex/integrationAi.ts`.
+- Field errors use "is required" / "must be" messages; app errors use codes (e.g. 503 `configuration_required` when there is no live search provider, rather than placeholder results).
+- `generateWithSecondChance` in agents.ts retries empty model output.
+
+STATE YOU INHERIT: I had started `convex/research.ts`. It now has `searchSourcesCore` / `searchSourcesAs` (caller-based, same rate limits), plus a `RESEARCH_PROVIDER=notorganic` provider that searches Not Organic's metered `/v1/web/search` as the caller's linked DID, so hosted research needs no separate key. It is unfinished: `providerSearch` still has its old 2-argument signature, and the provider id plumbing doesn't know about "notorganic". Finish it or rework it as you see fit. Don't try to fix Not Organic itself: its prod gateway currently answers web search with 502, because of a stale upstream key on their side. Your code just has to handle failure gracefully.
+
+TESTS: extend `convex/integrationAi.test.ts`. Its local stub server already answers `/v1/chat/completions` and `/v1/systemone`; a custom search provider (`RESEARCH_PROVIDER=custom` + `RESEARCH_SEARCH_URL`) can point at it too. Cover both strategies, sources, and the no-provider 503. Run only that file plus `convex/integrations.test.ts` (`npx vitest run …`), and tsc at most once. The full suite takes over 10 minutes, so don't run it.
+
+CONSTRAINTS: shared checkout with other agents. Don't touch `evals/app/`, `packages/twyne-tools/`, or `prompts/`. No state-changing git, no deploy, no `convex dev`; codegen only if you add a module. Re-read files right before editing them.
+
+Report: files changed, any contract deviations, how the notorganic provider behaves, test summary lines.
