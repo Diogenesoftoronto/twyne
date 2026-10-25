@@ -1,0 +1,62 @@
+Act as the implementation sub-agent for this task.
+
+Finish only the missing Clairic evaluation readings for Twyne's already completed 297-slot run. This continues the user's original request to use Astra/Fable on application-harness evals. They repeatedly authorized live retries, supplied new Skate Workers AI credentials, upgraded Cloudflare, and the latest real saved case has now PASSED. You are not alone in the codebase; preserve all others' changes. NO source edits/commits/deploys/credential-store/fund changes, NO actor regeneration, NO Arize writes, NO other agents. All shell commands must be prefixed rtk, including subprocess shell commands.
+
+Ownership: exclusively /home/diogenes/.cache/twyne-clairic-replay-20261024T063528Z/scoring/ and your one-off script/process. Coordinator owns sibling coordinator/ and all Arize writes. Read execution-plan.md in coordinator/. You may read existing repositories and reports. Shared source /home/diogenes/Projects/twyne resolves apps/twyne, dirty194 entries, head4359cea99b85c9b5975bd8f38711c6915f131561; DO NOT alter it. Import exact released harness helpers from /home/diogenes/Projects/worktrees/twyne-harness-sharing-release-20261023 (head2462fa25ecc562d8ca285c457d9406f44817f8ae). This release checkout must also stay untouched.
+
+Inputs: /home/diogenes/Projects/twyne/reports/app-evals/scaled-verified-20261023-{research-sources,interview,dossier}.json contain126/10/12 saved actors and all original scores/raw/output/latency. Copy to your directory, hash/preserve originals.
+Metrics to repair ONLY:
+research-sources clairic_fact:122 deferred+1 error+3n/a. interview clairic_field_recall and clairic_field_support:10 each deferred. dossier length_claims:12 deferred. All successful LLM/Jev/deterministic fields must remain EXACTLY unchanged, as must raw/output/latency and original timestamps. Legitimate uncertainty/abstention is not failure or zero. Preserve original failures/provenance separately. Do not silently fill unavailable/missing/uncertain readings with0.
+
+Successful real gate already finished at /home/diogenes/.cache/twyne-clairic-after-upgrade-20261024T063348Z:
+trial.ts (also /tmp/twyne-workers-credential-trial.ts), result.json, extraction-attempts.jsonl, network-evidence.json.
+Case research-eclipse:eclipse-ratio now has score1,label agrees, fact400 confidence.95 and sources400 confidence.76, two HTTP200 calls (06:33:48 and06:33:58Z).
+REUSE these two saved successful extraction answers and score; do not charge them again. Match cached request bodies exactly. Baseline reports still unchanged. New credentials are Skate default db keys workers_ai_api_token and workers_account_id (underscore actual names). Retrieve with captured subprocess ['rtk','proxy','skate','get',key], never print values or put them in shell args/files. Original gateway remained on old config; this replay is DIRECT Workers AI through the app's LOCAL guarded extraction adapter. Record this transport provenance prominently; do not call it production hosted gateway proof.
+
+The existing trial script shows reliable setup:
+startLocalApp({model:'openai-compatible',systemOne:'off',research:'off',env:{TWYNE_APP_MODEL_BASE_URL:'http://127.0.0.1:9',TWYNE_APP_MODEL:'unused'}}), then NODE_ENV=development,TWYNE_ALLOW_DIRECT_EXTRACTION=1,NOTORGANIC_ENABLED=false,CLOUDFLARE_AI_API_TOKEN/token and CLOUDFLARE_ACCOUNT_ID/account only in process memory; CONVEX_CLOUD_URL is loopback from app. Call app.extract directly, NOT run.ts patiently; no hidden retries. The trial capture has strict fetch guard to exact Cloudflare Clairic endpoint, serial extract queue, >=10s start spacing, stop before any queued dispatch after first non2xx or app validation failure. Preserve provider safe error codes/messages,Retry-After,cf-ray,status,usage,hashes; redact token/account; never log Authorization/raw secret data. Response answers and synthetic corpus state may be journaled locally. Enforce max268 total extraction POSTs INCLUDING2 already successful gate calls, meaning <=266 NEW posts. One global in flight across this whole replay, >=10s spacing; no transport/score retries. Stop/defer immediately on first failure, save partial successes. No gateway/config/plan mutations. Source-sources score uses Promise.all of truth+sources, so serialized queue MUST recheck stop before dispatch, including after wait. A typed200 rejected by app validation must latch too. This worked in trial.
+
+Use existing suite.score for research and interview with judge:null,jev:null,extract:guarded wrapper. Merge ONLY named missing metric fields into copied reports. Never call suite.run. Dossier nuance: length_claims combines real Clairic limits+word count+Jev claims_overrun. Original suite discarded its intermediate claims_overrun when extraction was null; cannot reconstruct from saved Jev aggregate. You may make at most12 new targeted Jev readings (claims_overrun ONLY) through legitimate hosted Not Organic app.judge after successful bounded Clairic phase. This extra evaluator inference must be disclosed, and other Jev scores MUST NOT be resampled. You can obtain actual Clairic limit extractions first with exact CLAIRIC_LENGTH_FIELDS/brief state as lengthClaims builds, cache them, then use dossierSuite.score with cached extract and a Jev callback that asks ONLY the claims_overrun question when requested. For blind/non-target questions return unavailable (not fabricated), ignore all other newly computed score fields, merge ONLY length_claims. Or implement a clearly equivalent targeted helper using original scoring formula with real calls, checked offline. No synthetic answers for actual scored questions.
+
+Hosted targeted Jev phase auth: dedicated eval DID did:plc:h7t2qykaxwf6s7iez6pmhs45, sessionVersion0, existing product signing settings captured from 'rtk proxy bunx convex env get KEY --deployment hushed-aardvark-411' in release checkout, private key/keyID never printed. Start separate LocalApp model:notorganic,research:off,systemOne:off with explicit env, after closing direct app to avoid globals mixing. Enforce per-Jev max-cost header200000microusd ($.20), max12 POSTs, total ceilings$2.40. Allow only legitimate auth/token,GETwallet,judgement paths, forbid text/search/extraction in that hosted phase, preserve idempotency/request IDs; stop on failure, no retry. Original account had18,402,397microusd available,zero holds, user total budget$50. Direct Clairic published price$.10/M input tokens; max268*65536 context tokens< $1.76 at that price; cap estimated direct token cost at$2 and max268 POSTs. Never treat grant availability delta as spend or direct Cloudflare charges as Not Organic ledger charges. If needed readonly ledger helper /home/diogenes/.cache/notorganic-runtime-release-20261023/readonly-ledger-audit.py supports holds and usage --since/--through, fullDID pagination. Only these12 Jev requests would hit that ledger.
+
+Output checkpoints after EACH extraction/case. Provide progress messages with completed case counts and current artifact/process location to parent, no duplicate jobs. No overlapping paid calls from coordinator. The >=10s pacing makes this ~45min; start promptly after validating guard offline, keep user informed via parent.
+Final artifacts: updated COPY reports3, append-only request/answer journals, original-preservation hashes and exact equality assertions for all non-repaired fields/actors/latencies, final coverage-by-label (scored,error,deferred,legitimate uncertain,n/a separately), metrics+95%intervals using existing stats helpers, direct input-token totals/estimated nominal cost clearly not invoice, extra12Jev request IDs/accounting, end timestamps and a concise handoff. Do not modify original ignored reports yet, and NO Arize uploads. Coordinator will integrate/readback. If blocked stop with partial artifacts rather than retrying or fabricating coverage.
+
+---
+
+<task-notification>
+<task-id>b2hdjz36i</task-id>
+<summary>Monitor event: "phase 1 Clairic replay stops/failures/finish"</summary>
+<event>2026-10-24T07:06:55.708Z interview: 10 of 10 cases need clairic_field_recall+clairic_field_support</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b2hdjz36i</task-id>
+<summary>Monitor event: "phase 1 Clairic replay stops/failures/finish"</summary>
+<event>2026-10-24T07:08:35.781Z dossier: 12 of 12 cases need length_claims</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b2hdjz36i</task-id>
+<summary>Monitor event: "phase 1 Clairic replay stops/failures/finish"</summary>
+<event>2026-10-24T07:10:35.725Z phase1 finished: newPosts=134 totalIncludingGate=136 stopped=null inputTokens=161311 completed={"research-sources":123,"interview":10,"dossier":12}</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bnbww2g79</task-id>
+<tool-use-id>toolu_0127ouo4NHMFX7fgFZQRn8gW</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/7722cfd5-c5b8-4b0a-b07a-7b839b1219fb/tasks/bnbww2g79.output</output-file>
+<status>completed</status>
+<summary>Background command "Wait for phase 1 to complete or exit, then show its tail" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+.
