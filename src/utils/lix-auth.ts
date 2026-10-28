@@ -50,7 +50,11 @@ export function installLixAuthInterceptor(): void {
     if (isLspRequest(input)) {
       const cookie = getStoredAuthCookie();
       if (cookie) {
-        const headers = new Headers(init?.headers);
+        // The Lix SDK passes a whole Request; headers in `init` replace its
+        // own, so start from them or its Content-Type is lost.
+        const headers = new Headers(
+          init?.headers ?? (input instanceof Request ? input.headers : {}),
+        );
         headers.set("Better-Auth-Cookie", cookie);
         init = { ...init, headers };
       }

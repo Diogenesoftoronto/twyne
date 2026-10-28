@@ -1,7 +1,7 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { authComponent, createAuth } from "./auth";
+import { authComponent, createAuth, isTrustedOrigin } from "./auth";
 import { reportError } from "./lib/errors";
 import { tokenIdentifierFromIssuerAndSubject } from "./lib/authIdentity";
 import {
@@ -350,7 +350,45 @@ const LSP_ROUTES = [
   "/lsp/pull-v1",
 ];
 
+/* The relay lives on the Convex site origin and the editor on twyne.love, so
+ * every call is cross-origin. Its JSON body and Better-Auth-Cookie header make
+ * the browser ask first; without an answer here it never sends the request, and
+ * without Allow-Origin on the reply it hides the response from the page. The
+ * session travels in that header, never as a cookie, so credentials stay off. */
+function lspCorsHeaders(request: Request): Record<string, string> {
+  const origin = request.headers.get("origin");
+  return isTrustedOrigin(origin)
+    ? { "Access-Control-Allow-Origin": origin!, Vary: "Origin" }
+    : { Vary: "Origin" };
+}
+
+function withLspCors(request: Request, response: Response): Response {
+  const headers = new Headers(response.headers);
+  for (const [name, value] of Object.entries(lspCorsHeaders(request)))
+    headers.set(name, value);
+  return new Response(response.body, { status: response.status, headers });
+}
+
 for (const path of LSP_ROUTES) {
+  http.route({
+    path,
+    method: "OPTIONS",
+    handler: httpAction(async (_ctx, request) => {
+      const cors = lspCorsHeaders(request);
+      if (!cors["Access-Control-Allow-Origin"])
+        return new Response(null, { status: 403, headers: cors });
+      return new Response(null, {
+        status: 204,
+        headers: {
+          ...cors,
+          "Access-Control-Allow-Methods": "POST",
+          "Access-Control-Allow-Headers": "Content-Type, Better-Auth-Cookie",
+          "Access-Control-Max-Age": "86400",
+        },
+      });
+    }),
+  });
+
   http.route({
     path,
     method: "POST",
@@ -359,18 +397,24 @@ for (const path of LSP_ROUTES) {
       // is done through the authenticated shareFolio action. Block this path
       // so we don't create orphaned blobs without collaboration metadata.
       if (path === "/lsp/new-v1") {
-        return new Response("not found", { status: 404 });
+        return withLspCors(request, new Response("not found", { status: 404 }));
       }
 
       const body = await request.arrayBuffer().catch(() => new ArrayBuffer(0));
       const lixId = getLixIdFromBody(path, body);
       if (!lixId) {
-        return new Response("missing lix_id", { status: 400 });
+        return withLspCors(
+          request,
+          new Response("missing lix_id", { status: 400 }),
+        );
       }
 
       const userId = await getAuthenticatedTokenIdentifier(ctx, request);
       if (!userId) {
-        return new Response("unauthorized", { status: 401 });
+        return withLspCors(
+          request,
+          new Response("unauthorized", { status: 401 }),
+        );
       }
 
       try {
@@ -381,10 +425,13 @@ for (const path of LSP_ROUTES) {
           lixId,
           userId,
         });
-        return new Response(result.body ? new Blob([result.body]) : null, {
-          status: result.status,
-          headers: result.headers,
-        });
+        return withLspCors(
+          request,
+          new Response(result.body ? new Blob([result.body]) : null, {
+            status: result.status,
+            headers: result.headers,
+          }),
+        );
       } catch (err) {
         // A relay failure drops a multiplayer change-set silently; report
         // so we have a signal before a collaborator notices data loss.
@@ -393,7 +440,10 @@ for (const path of LSP_ROUTES) {
           error: err,
           context: { path, lixId },
         });
-        return new Response("relay error", { status: 502 });
+        return withLspCors(
+          request,
+          new Response("relay error", { status: 502 }),
+        );
       }
     }),
   });
