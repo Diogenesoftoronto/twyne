@@ -69,6 +69,7 @@ import {
   ROOM_CARD_WIDTH,
 } from "../../utils/margin-geometry";
 import { Icon } from "../ui/icon";
+import { markdownLiteral, renderMarkdownExcerpt } from "../../utils/markdown";
 import {
   openPassageGather,
   revealPassage,
@@ -228,6 +229,10 @@ const runLength = (ms: number) => {
 
 const clip = (text: string, n: number) =>
   text.length > n ? `${text.slice(0, n - 1).trimEnd()}…` : text;
+
+/** A margin note or persona note: written in Markdown, and opens a thread. */
+const isConversation = (item: FlowItem) =>
+  item.kind === "comment" || item.kind === "persona-note";
 
 export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
   (props) => {
@@ -813,7 +818,11 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           }`,
           color: accent(p.item),
           range,
-          notes: [p.item.body].filter(Boolean),
+          // Notes and replies are Markdown; any other body is manuscript
+          // or source text, shown exactly as written.
+          notes: [
+            isConversation(p.item) ? p.item.body : markdownLiteral(p.item.body),
+          ].filter(Boolean),
           go: () => {
             controller.engage(p.item.id);
             revealPassage(range);
@@ -1071,32 +1080,52 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
                 {item.body && <span>{item.body}</span>}
               </span>
             </a>
+          ) : isConversation(item) ? (
+            // A note is read here and opened by its own button: the note's
+            // links can't sit inside a button. A click on its prose opens
+            // the conversation too, unless it lands on a link or selects.
+            <div
+              class="flow-card__body flow-card__content"
+              onClick$={(event) => {
+                const target = event.target as Element | null;
+                if (target?.closest("a")) return;
+                if (window.getSelection()?.toString()) return;
+                void converse(item);
+              }}
+            >
+              {item.kind !== "persona-note" || item.title ? (
+                <strong class="flow-card__title">{item.title}</strong>
+              ) : null}
+              {item.body && (
+                <div
+                  class="flow-card__text comment-markdown"
+                  dangerouslySetInnerHTML={renderMarkdownExcerpt(
+                    item.body,
+                    280,
+                  )}
+                />
+              )}
+            </div>
           ) : (
             <button
               type="button"
               class="flow-card__body"
               onClick$={() =>
-                item.kind === "comment" || item.kind === "persona-note"
-                  ? converse(item)
-                  : flowController()?.focusAnchor(
-                      item,
-                      // The carbon is the other passage, so go there.
-                      item.kind === "echo" && item.anchors.length > 1
-                        ? 1
-                        : undefined,
-                    )
+                flowController()?.focusAnchor(
+                  item,
+                  // The carbon is the other passage, so go there.
+                  item.kind === "echo" && item.anchors.length > 1
+                    ? 1
+                    : undefined,
+                )
               }
               title={
-                item.kind === "comment" || item.kind === "persona-note"
-                  ? "Open the conversation"
-                  : item.kind === "echo" && item.anchors.length > 1
-                    ? "Go to the other passage"
-                    : "Go to the passage"
+                item.kind === "echo" && item.anchors.length > 1
+                  ? "Go to the other passage"
+                  : "Go to the passage"
               }
             >
-              {item.kind !== "persona-note" || item.title ? (
-                <strong class="flow-card__title">{item.title}</strong>
-              ) : null}
+              <strong class="flow-card__title">{item.title}</strong>
               {item.body && (
                 <span
                   class={
@@ -1112,10 +1141,25 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           )}
 
           {reply !== undefined && (reply || item.streaming) && (
-            <p class={["flow-card__reply", { "is-streaming": item.streaming }]}>
+            <div
+              class={["flow-card__reply", { "is-streaming": item.streaming }]}
+            >
               <span class="flow-card__reply-by">{item.data?.replyAuthor}</span>
-              {clip(reply ?? "", 420)}
-            </p>
+              <div
+                class="flow-card__reply-text comment-markdown"
+                dangerouslySetInnerHTML={renderMarkdownExcerpt(reply, 420)}
+              />
+            </div>
+          )}
+
+          {isConversation(item) && (
+            <button
+              type="button"
+              class="flow-link flow-card__open"
+              onClick$={() => converse(item)}
+            >
+              Open conversation
+            </button>
           )}
 
           {item.kind === "echo" && (
