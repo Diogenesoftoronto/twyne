@@ -17,7 +17,9 @@ export interface GatherPassage {
   range: Range;
   /** Refresh a tracked span after editor decorations replace its DOM nodes. */
   resolveRange?: () => Range | null;
-  /** What the note or relation says about this passage, verbatim. */
+  /** What the note or relation says about this passage, verbatim, as
+   * Markdown; plain text that must read literally goes through
+   * `markdownLiteral`. */
   notes?: string[];
   /** Take the writer to the passage; defaults to selecting `range`. */
   go?: () => void;

@@ -24,6 +24,7 @@ import {
   revealPassage,
   type GatherRequest,
 } from "../../utils/passage-gather";
+import { renderMarkdownExcerpt } from "../../utils/markdown";
 import styles from "./passage-gather.css?inline";
 
 interface Shown {
@@ -185,7 +186,7 @@ export const PassageGather = component$(() => {
         id: p.id,
         label: p.label,
         color: p.color,
-        notes: (p.notes ?? []).map((n) => clip(n, 240)),
+        notes: p.notes ?? [],
         ...excerptFromRange(p.range, doc),
       }));
       // The manuscript in miniature: one bar per block, as long as its text.
@@ -458,7 +459,14 @@ export const PassageGather = component$(() => {
                 {p.notes.length > 0 && (
                   <ul class="passage-gather__notes">
                     {p.notes.map((note, n) => (
-                      <li key={n}>{note}</li>
+                      <li
+                        key={n}
+                        class="comment-markdown"
+                        dangerouslySetInnerHTML={renderMarkdownExcerpt(
+                          note,
+                          240,
+                        )}
+                      />
                     ))}
                   </ul>
                 )}
