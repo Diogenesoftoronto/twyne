@@ -758,6 +758,54 @@ describe("folio sync (convex-sync)", () => {
     expect(payload.removedPersonaNoteIds).toEqual(["pn-f1"]);
   });
 
+  test("notes and replies filed by an old pull still go up with their draft", async () => {
+    // Before July a pull filed rows exactly as the server returned them, so
+    // a device that signed in then holds `createdAt` and `replyId` where the
+    // app now keeps `timestamp` and `id`.
+    lixFiles.set("/folios/f1/persona-notes.json", [
+      {
+        folioId: "f1",
+        noteId: "pn-devil-1",
+        personaId: "devil",
+        personaName: "Devil's Advocate",
+        personaColor: "red",
+        type: "critique",
+        feedback: "Who says the road forgot the sea?",
+        briefTitle: "Salt Roads",
+        createdAt: 1782789626697,
+      },
+    ]);
+    lixFiles.set("/folios/f1/persona-replies.json", [
+      {
+        folioId: "f1",
+        noteId: "pn-devil-1",
+        replyId: "r-1",
+        author: "You",
+        authorKind: "user",
+        text: "The narrator does.",
+        createdAt: 1782789700000,
+      },
+    ]);
+
+    const client = makeClient();
+    setConvexSyncContext(client as never, "user-filed-early");
+    await tick();
+
+    const payload = client.mutationCalls[0];
+    expect(payload.folioContent).toEqual([
+      { folioId: "f1", html: SAMPLE_HTML },
+    ]);
+    expect(payload.personaNotes).toEqual([
+      expect.objectContaining({
+        noteId: "pn-devil-1",
+        createdAt: 1782789626697,
+      }),
+    ]);
+    expect(payload.personaReplies).toEqual([
+      expect.objectContaining({ replyId: "r-1", createdAt: 1782789700000 }),
+    ]);
+  });
+
   test("a folio removed from the archive drops its scoped rows, not the whole cache", async () => {
     const client = makeClient();
     setConvexSyncContext(client as never, "user-folio-delete");

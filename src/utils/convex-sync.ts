@@ -1407,15 +1407,39 @@ export async function savePersonaNoteLocally(
   markDirty(["personaNotes"]);
 }
 
+/**
+ * Pulls before July filed notes and replies exactly as the server returned
+ * them: `createdAt` where the app keeps `timestamp`, and `replyId` where it
+ * keeps `id`. Pushed on in that shape they had no `createdAt`, the server
+ * refused the push, and every folio and draft in the same push went with it.
+ */
+type FiledNote = PersonaFeedback & { createdAt?: number };
+type FiledReply = PersonaReply & { replyId?: string; createdAt?: number };
+
+function readFiledNote(note: FiledNote): PersonaFeedback {
+  if (typeof note.timestamp === "number") return note;
+  const { createdAt, ...rest } = note;
+  return { ...rest, timestamp: createdAt ?? 0 };
+}
+
+function readFiledReply(reply: FiledReply): PersonaReply {
+  if (typeof reply.timestamp === "number" && reply.id) return reply;
+  const { replyId, createdAt, ...rest } = reply;
+  return {
+    ...rest,
+    id: reply.id ?? replyId ?? "",
+    timestamp: reply.timestamp ?? createdAt ?? 0,
+  };
+}
+
 export async function loadPersonaNotesLocally(
   folioId?: string | null,
 ): Promise<PersonaFeedback[]> {
   if (typeof window === "undefined" || !folioId) return [];
-  return (
-    (await readFileAsJson<PersonaFeedback[]>(
-      folioArtifactPath(folioId, "persona-notes.json"),
-    )) ?? []
+  const notes = await readFileAsJson<FiledNote[]>(
+    folioArtifactPath(folioId, "persona-notes.json"),
   );
+  return Array.isArray(notes) ? notes.map(readFiledNote) : [];
 }
 
 export async function clearPersonaNotesLocally(
@@ -1442,11 +1466,10 @@ export async function loadPersonaRepliesLocally(
   folioId?: string | null,
 ): Promise<PersonaReply[]> {
   if (typeof window === "undefined" || !folioId) return [];
-  return (
-    (await readFileAsJson<PersonaReply[]>(
-      folioArtifactPath(folioId, "persona-replies.json"),
-    )) ?? []
+  const replies = await readFileAsJson<FiledReply[]>(
+    folioArtifactPath(folioId, "persona-replies.json"),
   );
+  return Array.isArray(replies) ? replies.map(readFiledReply) : [];
 }
 
 export async function saveRubricLocally(
