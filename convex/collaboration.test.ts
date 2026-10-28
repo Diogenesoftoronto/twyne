@@ -283,3 +283,63 @@ describeConvex("collaboration sharing and permissions", () => {
     ).toEqual({ role: "owner" });
   });
 });
+
+describeConvex("shared document relay from the editor's origin", () => {
+  const editor = "https://twyne.love";
+  const ask = (t: ReturnType<typeof convexTest>, origin: string) =>
+    t.fetch("/lsp/get-v1", {
+      method: "OPTIONS",
+      headers: {
+        Origin: origin,
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type, better-auth-cookie",
+      },
+    });
+
+  test("the editor may send the session header and read the reply", async () => {
+    vi.stubEnv("SITE_URL", editor);
+    const { t } = setup();
+    for (const path of ["/lsp/get-v1", "/lsp/pull-v1", "/lsp/push-v1"]) {
+      const preflight = await t.fetch(path, {
+        method: "OPTIONS",
+        headers: {
+          Origin: editor,
+          "Access-Control-Request-Method": "POST",
+          "Access-Control-Request-Headers": "content-type, better-auth-cookie",
+        },
+      });
+      expect(preflight.status).toBe(204);
+      expect(preflight.headers.get("Access-Control-Allow-Origin")).toBe(editor);
+      expect(
+        preflight.headers.get("Access-Control-Allow-Headers")?.toLowerCase(),
+      ).toContain("better-auth-cookie");
+    }
+
+    // A refusal must be readable too, or the page sees a network failure
+    // instead of "sign in again".
+    const refused = await t.fetch("/lsp/get-v1", {
+      method: "POST",
+      headers: { Origin: editor, "content-type": "application/json" },
+      body: JSON.stringify({ lix_id: "lix-relay" }),
+    });
+    expect(refused.status).toBe(401);
+    expect(refused.headers.get("Access-Control-Allow-Origin")).toBe(editor);
+  });
+
+  test("another site is not let in", async () => {
+    vi.stubEnv("SITE_URL", editor);
+    const { t } = setup();
+    const preflight = await ask(t, "https://elsewhere.example");
+    expect(preflight.status).toBe(403);
+    expect(preflight.headers.get("Access-Control-Allow-Origin")).toBeNull();
+    const post = await t.fetch("/lsp/get-v1", {
+      method: "POST",
+      headers: {
+        Origin: "https://elsewhere.example",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ lix_id: "lix-relay" }),
+    });
+    expect(post.headers.get("Access-Control-Allow-Origin")).toBeNull();
+  });
+});

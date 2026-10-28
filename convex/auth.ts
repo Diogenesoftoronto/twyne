@@ -134,6 +134,11 @@ export function trustedOrigins(
   return [...origins];
 }
 
+/** Whether a page on `origin` may read Twyne's own HTTP routes. */
+export function isTrustedOrigin(origin: string | null): boolean {
+  return origin !== null && trustedOrigins(siteUrl).includes(origin);
+}
+
 function isTwyneProductionOrigin(value: string): boolean {
   try {
     return TWYNE_PRODUCTION_ORIGINS.includes(
