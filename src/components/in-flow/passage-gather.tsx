@@ -18,10 +18,14 @@ import {
   type NoSerialize,
 } from "@qwik.dev/core";
 import {
+  connectionPlaces,
   excerptFromRange,
   orderPassages,
   PASSAGE_GATHER_EVENT,
+  PROVENANCE_LABEL,
   revealPassage,
+  sameRange,
+  type ConnectionProvenance,
   type GatherRequest,
 } from "../../utils/passage-gather";
 import { renderMarkdownExcerpt } from "../../utils/markdown";
@@ -37,12 +41,22 @@ interface Shown {
   after: string;
   at: number;
 }
+/** A connection's recorded reason, placed against the numbered passages. */
+interface Reason {
+  id: string;
+  relation: string;
+  explanation: string;
+  provenance: ConnectionProvenance;
+  between: string;
+  stale: boolean;
+}
 interface GatherState {
   open: boolean;
   closing: boolean;
   title: string;
   note: string;
   notice: string;
+  reasons: Reason[];
   passages: Shown[];
   /** The manuscript's blocks in miniature: top and height as fractions. */
   blocks: { top: number; height: number; width: number }[];
@@ -71,6 +85,7 @@ export const PassageGather = component$(() => {
     title: "",
     note: "",
     notice: "",
+    reasons: [],
     passages: [],
     blocks: [],
     view: { top: 0, height: 0 },
@@ -189,6 +204,31 @@ export const PassageGather = component$(() => {
         notes: p.notes ?? [],
         ...excerptFromRange(p.range, doc),
       }));
+      // A passage's number is its place once twins are merged, so find it
+      // by its span, not by the id it was gathered under.
+      const numberOf = (id: string) => {
+        const range = request.passages.find((p) => p.id === id)?.range;
+        return range
+          ? ordered.findIndex((p) => sameRange(p.range, range)) + 1
+          : 0;
+      };
+      state.reasons = (request.connections ?? []).flatMap((c) => {
+        const places = connectionPlaces(
+          c,
+          c.passageIds.map(numberOf).filter((n) => n > 0),
+        );
+        return places
+          ? [
+              {
+                id: c.id,
+                relation: c.relation,
+                explanation: c.explanation,
+                provenance: c.provenance,
+                ...places,
+              },
+            ]
+          : [];
+      });
       // The manuscript in miniature: one bar per block, as long as its text.
       const docRect = doc.getBoundingClientRect();
       const height = Math.max(1, docRect.height);
@@ -378,6 +418,40 @@ export const PassageGather = component$(() => {
               {state.title}
             </h2>
             {state.note && <p class="passage-gather__note">{state.note}</p>}
+            {state.reasons.length > 0 && (
+              <section
+                class="passage-gather__why"
+                aria-labelledby="passage-gather-why"
+              >
+                <h3 id="passage-gather-why" class="passage-gather__why-title">
+                  Why these passages are linked
+                </h3>
+                <ul class="passage-gather__reasons">
+                  {state.reasons.map((r) => (
+                    <li
+                      key={r.id}
+                      class="passage-gather__reason"
+                      data-provenance={r.provenance}
+                    >
+                      <p class="passage-gather__reason-head">
+                        <strong>{r.relation}</strong>{" "}
+                        <span class="passage-gather__source">
+                          {PROVENANCE_LABEL[r.provenance]}
+                        </span>{" "}
+                        <span class="passage-gather__between">{r.between}</span>
+                      </p>
+                      <p class="passage-gather__reason-text">{r.explanation}</p>
+                      {r.stale && (
+                        <p class="passage-gather__reason-stale">
+                          The other passage has changed since this connection
+                          was found.
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
             {state.notice && (
               <p class="passage-gather__notice" role="status">
                 {state.notice}
