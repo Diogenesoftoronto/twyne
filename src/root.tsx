@@ -37,22 +37,27 @@ export default component$<{
   const convexUrl = (import.meta.env.PUBLIC_CONVEX_URL ??
     import.meta.env.VITE_CONVEX_URL) as string | undefined;
 
+  // The root's first element is <head>, which is never on screen, so a task
+  // left to wait for visibility here would never run.
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(() => {
-    installLixAuthInterceptor();
+  useVisibleTask$(
+    () => {
+      installLixAuthInterceptor();
 
-    // The bootstrap script resolves "System" once, at load. Keep following the
-    // OS afterwards, so flipping the machine to dark at dusk re-inks the room
-    // without a reload. Explicit presets are left alone.
-    const query = window.matchMedia("(prefers-color-scheme: dark)");
-    const sync = () => {
-      const preference = readThemePreference();
-      if (preference.preset !== "system") return;
-      applyTheme(preference, document.documentElement, query.matches);
-    };
-    query.addEventListener("change", sync);
-    return () => query.removeEventListener("change", sync);
-  });
+      // The bootstrap script resolves "System" once, at load. Keep following the
+      // OS afterwards, so flipping the machine to dark at dusk re-inks the room
+      // without a reload. Explicit presets are left alone.
+      const query = window.matchMedia("(prefers-color-scheme: dark)");
+      const sync = () => {
+        const preference = readThemePreference();
+        if (preference.preset !== "system") return;
+        applyTheme(preference, document.documentElement, query.matches);
+      };
+      query.addEventListener("change", sync);
+      return () => query.removeEventListener("change", sync);
+    },
+    { strategy: "document-ready" },
+  );
 
   return (
     <>
