@@ -54,6 +54,54 @@
   font: italic 0.875rem/1.5 var(--font-serif);
   color: var(--color-ink-light);
 }
+/* Why the passages are linked, as recorded: the relation, where the reason
+   came from, and which numbered passages it joins. */
+.passage-gather__why {
+  margin: 0.6rem 0 0;
+  max-width: 40rem;
+}
+.passage-gather__why-title {
+  margin: 0;
+  font: 0.6875rem var(--font-typewriter);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-light);
+}
+.passage-gather__reasons {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.3rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.passage-gather__reason-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.6rem;
+  margin: 0;
+  font: 600 0.875rem/1.4 var(--font-serif);
+}
+.passage-gather__source,
+.passage-gather__between {
+  font: 400 0.6875rem var(--font-typewriter);
+  letter-spacing: 0.04em;
+  color: var(--color-ink-light);
+}
+.passage-gather__reason[data-provenance="shared-words"] .passage-gather__source,
+.passage-gather__reason[data-provenance="unrecorded"] .passage-gather__source {
+  font-style: italic;
+}
+.passage-gather__reason-text {
+  margin: 0.1rem 0 0;
+  font: 0.875rem/1.5 var(--font-serif);
+  color: var(--color-ink);
+}
+.passage-gather__reason-stale {
+  margin: 0.15rem 0 0;
+  font: 0.8125rem/1.5 var(--font-sans);
+  color: var(--color-vermilion);
+}
 .passage-gather__notice {
   margin: 0.5rem 0 0;
   font: 0.8125rem/1.5 var(--font-sans);
