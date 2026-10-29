@@ -138,6 +138,9 @@ test("auto-research runs both strategies and the search through the app", async 
     expect(result.scores.anchors_verbatim.score).toBe(1);
   }
   expect(sources.errors).toBe(0);
+  expect(sources.evaluatorVersions?.clairic_value_support_v2).toMatch(
+    /^research-value-support-v2:[a-f0-9]{64}$/,
+  );
   for (const result of sources.cases) {
     expect(result.scores.found.score).toBe(1);
     expect(result.scores.live.score).toBe(1);

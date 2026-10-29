@@ -1,0 +1,838 @@
+{
+  "version": "research-value-support-v2",
+  "cases": {
+    "research-eclipse:eclipse-totality": {
+      "fact": "A total solar eclipse completely obscures the solar face for observers within the path of totality as the Moon passes between Earth and the Sun.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-eclipse:eclipse-ratio": {
+      "fact": "The Sun is approximately 400 times the diameter of the Moon and approximately 400 times farther from Earth.",
+      "check": {
+        "type": "number",
+        "expected": 400,
+        "unit": "diameter ratio",
+        "absoluteTolerance": 20,
+        "property": "Ratio of Sun diameter to Moon diameter as a multiple, not a distance"
+      }
+    },
+    "research-eclipse:eclipse-inclination": {
+      "fact": "The Moon's orbital plane is inclined by about five degrees to Earth's orbital plane.",
+      "check": {
+        "type": "number",
+        "expected": 5,
+        "unit": "degrees",
+        "absoluteTolerance": 0.25,
+        "property": "Inclination of lunar orbital plane to Earth orbital plane"
+      }
+    },
+    "research-eclipse:eclipse-annular": {
+      "fact": "An annular solar eclipse occurs when the Moon appears too small to cover the solar disk, leaving a visible ring.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-eclipse:eclipse-corona": {
+      "fact": "The solar corona has a much higher temperature than the Sun's visible photosphere.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-eclipse:eclipse-saros": {
+      "fact": "A saros is approximately 6585.32 days, commonly expressed as eighteen years, eleven days, and eight hours.",
+      "check": {
+        "type": "number",
+        "expected": 6585.32,
+        "unit": "days",
+        "absoluteTolerance": 0.1,
+        "property": "Length of a saros eclipse cycle in days"
+      }
+    },
+    "research-apollo:apollo-date": {
+      "fact": "Apollo 11 landed on the Moon on July 20, 1969, not in 1970.",
+      "check": {
+        "type": "date",
+        "expected": "1969-07-20",
+        "precision": "day",
+        "property": "Apollo 11 lunar landing date, not launch or return"
+      }
+    },
+    "research-apollo:apollo-collins": {
+      "fact": "Michael Collins piloted Columbia in lunar orbit while Neil Armstrong and Buzz Aldrin descended in Eagle.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-apollo:apollo-audience": {
+      "fact": "NASA estimates that 650 million people watched the television coverage of Armstrong's first steps on the Moon.",
+      "check": {
+        "type": "number",
+        "expected": 650000000,
+        "unit": "people",
+        "absoluteTolerance": 32500000,
+        "property": "NASA estimate of television audience for Armstrongs first steps"
+      }
+    },
+    "research-apollo:apollo-site": {
+      "fact": "Eagle landed in Mare Tranquillitatis, the Sea of Tranquility.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-apollo:apollo-quote": {
+      "fact": "Armstrong reported \"Houston, Tranquility Base here. The Eagle has landed\" after the lunar touchdown.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-apollo:apollo-return": {
+      "fact": "Apollo 11 splashed down in the Pacific Ocean on July 24, 1969.",
+      "check": {
+        "type": "date",
+        "expected": "1969-07-24",
+        "precision": "day",
+        "property": "Apollo 11 Pacific Ocean splashdown date"
+      }
+    },
+    "research-ozone:ozone-adoption": {
+      "fact": "The Montreal Protocol was adopted on September 16, 1987.",
+      "check": {
+        "type": "date",
+        "expected": "1987-09-16",
+        "precision": "day",
+        "property": "Montreal Protocol adoption date"
+      }
+    },
+    "research-ozone:ozone-controls": {
+      "fact": "The Montreal Protocol sets controls on both the production and consumption of ozone-depleting substances.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-ozone:ozone-phaseout": {
+      "fact": "The 2022 ozone assessment reported that nearly 99% of banned ozone-depleting substances had been phased out.",
+      "check": {
+        "type": "number",
+        "expected": 99,
+        "unit": "percent",
+        "absoluteTolerance": 1,
+        "property": "Percentage of banned ozone-depleting substances phased out in the 2022 assessment"
+      }
+    },
+    "research-ozone:ozone-nobel": {
+      "fact": "Crutzen, Molina, and Rowland shared the 1995 chemistry Nobel for work on atmospheric chemistry, particularly ozone formation and decomposition.",
+      "check": {
+        "type": "date",
+        "expected": "1995",
+        "precision": "year",
+        "property": "Year Crutzen, Molina and Rowland shared the chemistry Nobel"
+      }
+    },
+    "research-ozone:ozone-fund": {
+      "fact": "The interim Multilateral Fund began operating on January 1, 1991, to support developing countries in implementing the Montreal Protocol.",
+      "check": {
+        "type": "date",
+        "expected": "1991-01-01",
+        "precision": "day",
+        "property": "Date the interim Multilateral Fund began operating"
+      }
+    },
+    "research-ozone:ozone-hfcs": {
+      "fact": "Hydrofluorocarbons are greenhouse gases but do not deplete stratospheric ozone.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-frankenstein:frank-title": {
+      "fact": "Mary Shelley's novel is titled Frankenstein; or, The Modern Prometheus.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-frankenstein:frank-anonymous": {
+      "fact": "Frankenstein was first published anonymously in 1818.",
+      "check": {
+        "type": "date",
+        "expected": "1818",
+        "precision": "year",
+        "property": "First anonymous publication year of Frankenstein"
+      }
+    },
+    "research-frankenstein:frank-revision": {
+      "fact": "Mary Shelley revised Frankenstein for its 1831 edition.",
+      "check": {
+        "type": "date",
+        "expected": "1831",
+        "precision": "year",
+        "property": "Publication year of the revised Frankenstein edition"
+      }
+    },
+    "research-frankenstein:frank-adam": {
+      "fact": "The creature tells Frankenstein, \"I ought to be thy Adam, but I am rather the fallen angel,\" in the revised novel.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-frankenstein:frank-milton": {
+      "fact": "The creature reads Milton's Paradise Lost in Frankenstein.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-frankenstein:frank-fearless": {
+      "fact": "The creature says \"Beware, for I am fearless and therefore powerful\" in the revised Frankenstein.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-web:web-inventor": {
+      "fact": "Tim Berners-Lee invented the World Wide Web at CERN in 1989.",
+      "check": {
+        "type": "date",
+        "expected": "1989",
+        "precision": "year",
+        "property": "Year Tim Berners-Lee invented the World Wide Web at CERN"
+      }
+    },
+    "research-web:web-proposal": {
+      "fact": "Berners-Lee wrote Information Management: A Proposal in March 1989.",
+      "check": {
+        "type": "date",
+        "expected": "1989-03",
+        "precision": "month",
+        "property": "Date Berners-Lee wrote Information Management: A Proposal"
+      }
+    },
+    "research-web:web-cailliau": {
+      "fact": "Robert Cailliau and Tim Berners-Lee formalized the Web proposal in November 1990.",
+      "check": {
+        "type": "date",
+        "expected": "1990-11",
+        "precision": "month",
+        "property": "Date Cailliau and Berners-Lee formalized the Web proposal"
+      }
+    },
+    "research-web:web-editor": {
+      "fact": "The original WorldWideWeb browser included page-editing functionality.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-web:web-first-site": {
+      "fact": "The first website was devoted to explaining the World Wide Web project.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-web:web-release": {
+      "fact": "CERN placed its Web software in the public domain on April 30, 1993.",
+      "check": {
+        "type": "date",
+        "expected": "1993-04-30",
+        "precision": "day",
+        "property": "Date CERN released Web software into the public domain"
+      }
+    },
+    "research-palace:palace-opening": {
+      "fact": "The Great Exhibition opened in Hyde Park, London, on May 1, 1851.",
+      "check": {
+        "type": "date",
+        "expected": "1851-05-01",
+        "precision": "day",
+        "property": "Opening date of the Great Exhibition in Hyde Park"
+      }
+    },
+    "research-palace:palace-paxton": {
+      "fact": "Joseph Paxton designed the Crystal Palace for the Great Exhibition.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-palace:palace-materials": {
+      "fact": "The Crystal Palace for the Great Exhibition was constructed with an iron framework and glass.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-palace:palace-trees": {
+      "fact": "The Crystal Palace incorporated existing elm trees within its structure.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-palace:palace-diamond": {
+      "fact": "The Koh-i-Noor diamond was displayed at the Great Exhibition of 1851.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-palace:palace-visits": {
+      "fact": "The Great Exhibition of 1851 recorded more than six million visits, counting admissions rather than distinct individuals.",
+      "check": null,
+      "reason": "One-sided lower bound rather than an exact visitor count; admissions differ from unique people."
+    },
+    "research-wave:wave-artist": {
+      "fact": "Katsushika Hokusai was born in Edo, now Tokyo.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-wave:wave-series": {
+      "fact": "The Great Wave is a print from Hokusai's series Thirty-six Views of Mount Fuji.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-wave:wave-medium": {
+      "fact": "The Great Wave is a color woodblock print on paper.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-wave:wave-date": {
+      "fact": "The Met dates its Great Wave impression JP2569 to approximately 1830-1832.",
+      "check": null,
+      "reason": "Approximate year interval, not one date."
+    },
+    "research-wave:wave-pigment": {
+      "fact": "Hokusai used imported Prussian blue in his landscape prints.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-wave:wave-size": {
+      "fact": "The Met records its Great Wave impression JP2569 as 10 by 15 inches, or 25.4 by 38.1 centimeters.",
+      "check": null,
+      "reason": "Two dimensions and two units, not one scalar."
+    },
+    "research-alice-rules:alice-work": {
+      "fact": "Alice's Adventures in Wonderland is a novel by Lewis Carroll.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-alice-rules:alice-rabbit": {
+      "fact": "Alice follows the White Rabbit down a rabbit-hole.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-alice-rules:alice-tea": {
+      "fact": "The tea party brings Alice together with the Hatter, the March Hare, and the Dormouse.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-alice-rules:alice-cat": {
+      "fact": "The Cheshire Cat says \"we're all mad here\" during his conversation with Alice in the novel.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-alice-rules:alice-croquet": {
+      "fact": "The croquet game uses live flamingoes as mallets and live hedgehogs as balls.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-alice-rules:alice-trial": {
+      "fact": "The Knave of Hearts is accused of stealing the Queen of Hearts' tarts.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-austen-judgment:austen-date": {
+      "fact": "Pride and Prejudice was first published on 28 January 1813, not in 1815.",
+      "check": {
+        "type": "date",
+        "expected": "1813-01-28",
+        "precision": "day",
+        "property": "First publication date of Pride and Prejudice"
+      }
+    },
+    "research-austen-judgment:austen-earlier-title": {
+      "fact": "Jane Austen initially called the novel First Impressions.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-austen-judgment:austen-protagonists": {
+      "fact": "Elizabeth Bennet and Fitzwilliam Darcy are central characters in Pride and Prejudice.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-austen-judgment:austen-entail": {
+      "fact": "The Longbourn estate is entailed away from the Bennet daughters to a male heir.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-austen-judgment:austen-self-knowledge": {
+      "fact": "Elizabeth says \"Till this moment, I never knew myself\" after reading Darcy's letter.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-austen-judgment:austen-sisters": {
+      "fact": "There are five Bennet daughters.",
+      "check": {
+        "type": "number",
+        "expected": 5,
+        "unit": "daughters",
+        "absoluteTolerance": 0,
+        "property": "Number of Bennet daughters"
+      }
+    },
+    "research-moby-attention:moby-title": {
+      "fact": "Herman Melville's novel is titled Moby-Dick; or, The Whale.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-moby-attention:moby-opening": {
+      "fact": "The first chapter of Moby-Dick begins with the sentence \"Call me Ishmael\".",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-moby-attention:moby-vessel": {
+      "fact": "The whaling ship in the novel is the Pequod.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-moby-attention:moby-captain": {
+      "fact": "Captain Ahab pursues the white whale Moby Dick.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-moby-attention:moby-chapter": {
+      "fact": "Chapter 32 of Moby-Dick is titled Cetology.",
+      "check": {
+        "type": "number",
+        "expected": 32,
+        "unit": "chapter number",
+        "absoluteTolerance": 0,
+        "property": "Chapter number of Cetology in Moby-Dick"
+      }
+    },
+    "research-moby-attention:moby-coffin": {
+      "fact": "Ishmael survives the wreck by floating on Queequeg's coffin.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-darwin-notebooks:darwin-departure": {
+      "fact": "HMS Beagle left Plymouth with Charles Darwin aboard on 27 December 1831.",
+      "check": {
+        "type": "date",
+        "expected": "1831-12-27",
+        "precision": "day",
+        "property": "Date HMS Beagle departed Plymouth with Darwin aboard"
+      }
+    },
+    "research-darwin-notebooks:darwin-captain": {
+      "fact": "Robert FitzRoy commanded HMS Beagle during Darwin's voyage.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-darwin-notebooks:darwin-return": {
+      "fact": "The Beagle returned to England on 2 October 1836.",
+      "check": {
+        "type": "date",
+        "expected": "1836-10-02",
+        "precision": "day",
+        "property": "Date HMS Beagle returned to England at Falmouth; not the date Darwin reached his home in Shrewsbury"
+      }
+    },
+    "research-darwin-notebooks:darwin-journal": {
+      "fact": "Darwin's Journal of Researches appeared as a separate work in 1839.",
+      "check": {
+        "type": "date",
+        "expected": "1839",
+        "precision": "year",
+        "property": "Year Journal of Researches appeared as a separate work"
+      }
+    },
+    "research-darwin-notebooks:darwin-origin": {
+      "fact": "On the Origin of Species was published in 1859.",
+      "check": {
+        "type": "date",
+        "expected": "1859",
+        "precision": "year",
+        "property": "First publication year of On the Origin of Species"
+      }
+    },
+    "research-darwin-notebooks:darwin-mockingbirds": {
+      "fact": "Darwin collected Galapagos mockingbirds during the Beagle voyage.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-curie-credit:curie-birthplace": {
+      "fact": "Marie Curie was born Maria Sklodowska in Warsaw.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-curie-credit:curie-elements": {
+      "fact": "Marie and Pierre Curie discovered polonium and radium.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-curie-credit:curie-physics": {
+      "fact": "In 1903, Marie Curie shared the Nobel Prize in Physics with Pierre Curie and Henri Becquerel.",
+      "check": {
+        "type": "date",
+        "expected": "1903",
+        "precision": "year",
+        "property": "Year Marie Curie shared the Nobel Prize in Physics"
+      }
+    },
+    "research-curie-credit:curie-chemistry": {
+      "fact": "Marie Curie received the Nobel Prize in Chemistry in 1911.",
+      "check": {
+        "type": "date",
+        "expected": "1911",
+        "precision": "year",
+        "property": "Year Marie Curie received the Nobel Prize in Chemistry"
+      }
+    },
+    "research-curie-credit:curie-professor": {
+      "fact": "After Pierre Curie's death, Marie Curie succeeded him as Professor of General Physics at the Sorbonne.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-curie-credit:curie-citation": {
+      "fact": "Her chemistry prize recognized the discovery of radium and polonium, the isolation of radium, and study of radium's nature and compounds.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-voyager-message:voyager-launch": {
+      "fact": "Voyager 1 launched on September 5, 1977, not in 1980.",
+      "check": {
+        "type": "date",
+        "expected": "1977-09-05",
+        "precision": "day",
+        "property": "Voyager 1 launch date, not Voyager 2 launch"
+      }
+    },
+    "research-voyager-message:voyager-planets": {
+      "fact": "Voyager 1 flew past Jupiter and Saturn.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-voyager-message:voyager-boundary": {
+      "fact": "Voyager 1 crossed the heliopause into interstellar space in August 2012.",
+      "check": {
+        "type": "date",
+        "expected": "2012-08",
+        "precision": "month",
+        "property": "Date Voyager 1 crossed the heliopause into interstellar space"
+      }
+    },
+    "research-voyager-message:voyager-disk": {
+      "fact": "Each Voyager spacecraft carries a gold-plated copper record.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-voyager-message:voyager-greetings": {
+      "fact": "The Golden Record includes spoken greetings in 55 languages.",
+      "check": {
+        "type": "number",
+        "expected": 55,
+        "unit": "languages",
+        "absoluteTolerance": 0,
+        "property": "Number of spoken greeting languages on the Voyager Golden Record"
+      }
+    },
+    "research-voyager-message:voyager-sagan": {
+      "fact": "Carl Sagan chaired the committee that selected the Golden Record's contents.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-rosetta-scripts:rosetta-material": {
+      "fact": "The Rosetta Stone is made of granodiorite.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-rosetta-scripts:rosetta-date": {
+      "fact": "The decree inscribed on the Rosetta Stone dates to 196 BC.",
+      "check": null,
+      "reason": "BC year requires an era-aware date contract; not a positive ISO date."
+    },
+    "research-rosetta-scripts:rosetta-ruler": {
+      "fact": "The Rosetta Stone's decree concerns the Egyptian king Ptolemy V.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-rosetta-scripts:rosetta-scripts": {
+      "fact": "The inscription uses hieroglyphic, Demotic, and Greek scripts.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-rosetta-scripts:rosetta-languages": {
+      "fact": "The Rosetta Stone records two languages, Egyptian and Greek, in three writing systems.",
+      "check": {
+        "type": "number",
+        "expected": 2,
+        "unit": "languages",
+        "absoluteTolerance": 0,
+        "property": "Number of distinct languages on the Rosetta Stone, Egyptian and Greek; not the number of scripts or writing systems"
+      }
+    },
+    "research-rosetta-scripts:rosetta-discovery": {
+      "fact": "The Rosetta Stone was discovered by French soldiers in Egypt in 1799.",
+      "check": {
+        "type": "date",
+        "expected": "1799",
+        "precision": "year",
+        "property": "Year French soldiers discovered the Rosetta Stone"
+      }
+    },
+    "research-starry-object:starry-work": {
+      "fact": "The Starry Night is a painting by Vincent van Gogh.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-starry-object:starry-year": {
+      "fact": "MoMA dates The Starry Night to June 1889, not 1888.",
+      "check": {
+        "type": "date",
+        "expected": "1889-06",
+        "precision": "month",
+        "property": "Date Van Gogh painted The Starry Night"
+      }
+    },
+    "research-starry-object:starry-medium": {
+      "fact": "The Starry Night is painted in oil on canvas.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-starry-object:starry-size": {
+      "fact": "MoMA records the painting's dimensions as 73.7 by 92.1 centimeters.",
+      "check": null,
+      "reason": "Two dimensions, not one scalar."
+    },
+    "research-starry-object:starry-setting": {
+      "fact": "Van Gogh made the painting while staying at the Saint-Paul-de-Mausole asylum in Saint-Remy.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-starry-object:starry-acquisition": {
+      "fact": "The Museum of Modern Art acquired The Starry Night in 1941.",
+      "check": {
+        "type": "date",
+        "expected": "1941",
+        "precision": "year",
+        "property": "Year MoMA acquired The Starry Night"
+      }
+    },
+    "research-plate-boundaries:plates-layer": {
+      "fact": "The lithosphere includes the crust and the rigid uppermost mantle.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-plate-boundaries:plates-diverge": {
+      "fact": "At divergent boundaries, plates move apart and new crust forms.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-plate-boundaries:plates-converge": {
+      "fact": "At convergent boundaries, tectonic plates move toward one another.",
+      "check": null,
+      "reason": "Direction of motion; \"one another\" is not a count."
+    },
+    "research-plate-boundaries:plates-subduction": {
+      "fact": "Subduction carries one tectonic plate beneath another into the mantle.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-plate-boundaries:plates-transform": {
+      "fact": "At transform boundaries, plates slide horizontally past each other.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-plate-boundaries:plates-san-andreas": {
+      "fact": "The San Andreas Fault in California is a transform fault.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-seed-backup:seed-opening": {
+      "fact": "The Svalbard Global Seed Vault opened on 26 February 2008.",
+      "check": {
+        "type": "date",
+        "expected": "2008-02-26",
+        "precision": "day",
+        "property": "Opening date of the Svalbard Global Seed Vault"
+      }
+    },
+    "research-seed-backup:seed-purpose": {
+      "fact": "The vault stores backup copies of seeds held in genebanks.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-seed-backup:seed-ownership": {
+      "fact": "Depositors retain ownership of seeds stored under the vault's black box arrangement.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-seed-backup:seed-temperature": {
+      "fact": "Seeds in the vault are stored at minus 18 degrees Celsius.",
+      "check": {
+        "type": "number",
+        "expected": -18,
+        "unit": "degrees Celsius",
+        "absoluteTolerance": 0,
+        "property": "Storage temperature of seeds in Svalbard Global Seed Vault"
+      }
+    },
+    "research-seed-backup:seed-capacity": {
+      "fact": "The vault has capacity for 4.5 million seed samples.",
+      "check": {
+        "type": "number",
+        "expected": 4500000,
+        "unit": "seed samples",
+        "absoluteTolerance": 0,
+        "property": "Capacity of Svalbard Global Seed Vault in seed samples"
+      }
+    },
+    "research-seed-backup:seed-cooling": {
+      "fact": "The vault uses artificial cooling as well as the surrounding permafrost.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-webb-folding:webb-launch": {
+      "fact": "Webb launched on 25 December 2021 aboard an Ariane 5 from French Guiana.",
+      "check": {
+        "type": "date",
+        "expected": "2021-12-25",
+        "precision": "day",
+        "property": "James Webb Space Telescope launch date"
+      }
+    },
+    "research-webb-folding:webb-diameter": {
+      "fact": "Webb's primary mirror is approximately 6.5 meters across.",
+      "check": {
+        "type": "number",
+        "expected": 6.5,
+        "unit": "meters",
+        "absoluteTolerance": 0.1,
+        "property": "Diameter of Webbs primary mirror in meters"
+      }
+    },
+    "research-webb-folding:webb-segments": {
+      "fact": "The primary mirror consists of 18 hexagonal segments.",
+      "check": {
+        "type": "number",
+        "expected": 18,
+        "unit": "segments",
+        "absoluteTolerance": 0,
+        "property": "Number of hexagonal segments in Webbs primary mirror"
+      }
+    },
+    "research-webb-folding:webb-orbit": {
+      "fact": "Webb orbits around the Sun-Earth system's second Lagrange point, L2.",
+      "check": {
+        "type": "text",
+        "expected": "L2",
+        "property": "Sun-Earth Lagrange point identifier orbited by Webb (L1, L2, etc.); not its ordinal as a number or its distance from Earth"
+      }
+    },
+    "research-webb-folding:webb-material": {
+      "fact": "Webb's mirror segments are made of beryllium coated with gold.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-webb-folding:webb-shield": {
+      "fact": "Webb's sunshield has five layers.",
+      "check": {
+        "type": "number",
+        "expected": 5,
+        "unit": "layers",
+        "absoluteTolerance": 0,
+        "property": "Number of layers in Webbs sunshield"
+      }
+    },
+    "research-gutenberg-copy:gutenberg-date": {
+      "fact": "The Library of Congress says printing of the Gutenberg Bible was probably completed late in 1455 at Mainz.",
+      "check": {
+        "type": "date",
+        "expected": "1455",
+        "precision": "year",
+        "property": "Year Gutenberg Bible printing was completed at Mainz"
+      }
+    },
+    "research-gutenberg-copy:gutenberg-text": {
+      "fact": "The Gutenberg Bible prints the Latin Vulgate text.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-gutenberg-copy:gutenberg-lines": {
+      "fact": "Most pages of the Gutenberg Bible have 42 lines of type in each column.",
+      "check": {
+        "type": "number",
+        "expected": 42,
+        "unit": "lines per column",
+        "absoluteTolerance": 0,
+        "property": "Number of lines of type per column on most Gutenberg Bible pages"
+      }
+    },
+    "research-gutenberg-copy:gutenberg-finish": {
+      "fact": "Colored capital letters and headings were added by hand to the Library of Congress copy.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-gutenberg-copy:gutenberg-vellum": {
+      "fact": "The Library of Congress copy of the Gutenberg Bible is printed entirely on vellum.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-gutenberg-copy:gutenberg-purchase": {
+      "fact": "The Library of Congress acquired its Gutenberg Bible from Otto Vollbehr in 1930.",
+      "check": {
+        "type": "date",
+        "expected": "1930",
+        "precision": "year",
+        "property": "Year Library of Congress acquired its Gutenberg Bible from Otto Vollbehr"
+      }
+    },
+    "research-fire-ledger:fire-start": {
+      "fact": "The Great Fire of London began on 2 September 1666.",
+      "check": {
+        "type": "date",
+        "expected": "1666-09-02",
+        "precision": "day",
+        "property": "Date the Great Fire of London began, not its end or an anniversary"
+      }
+    },
+    "research-fire-ledger:fire-origin": {
+      "fact": "The fire started in a bakery on Pudding Lane.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-fire-ledger:fire-baker": {
+      "fact": "Thomas Farriner owned the bakery where the Great Fire began.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-fire-ledger:fire-cathedral": {
+      "fact": "The Great Fire destroyed Old St Paul's Cathedral.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-fire-ledger:fire-diarist": {
+      "fact": "Samuel Pepys recorded the Great Fire in his diary.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-fire-ledger:fire-cheese": {
+      "fact": "Pepys buried cheese and wine to protect them from the fire.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-chicago-height:chicago-opening": {
+      "fact": "The World's Columbian Exposition opened in Chicago on May 1, 1893.",
+      "check": {
+        "type": "date",
+        "expected": "1893-05-01",
+        "precision": "day",
+        "property": "Opening date of the Worlds Columbian Exposition; not the closing date"
+      }
+    },
+    "research-chicago-height:chicago-site": {
+      "fact": "Jackson Park was the main site of the fair.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-chicago-height:chicago-olmsted": {
+      "fact": "Frederick Law Olmsted helped design the exposition's landscape.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-chicago-height:chicago-midway": {
+      "fact": "The original Ferris Wheel stood on the Midway Plaisance.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    },
+    "research-chicago-height:chicago-height": {
+      "fact": "The wheel rose to a height of 264 feet.",
+      "check": {
+        "type": "number",
+        "expected": 264,
+        "unit": "feet",
+        "absoluteTolerance": 0,
+        "property": "Height of the original Chicago Worlds Fair Ferris Wheel in feet"
+      }
+    },
+    "research-chicago-height:chicago-builder": {
+      "fact": "George Washington Gale Ferris Jr. designed the fair's great wheel.",
+      "check": null,
+      "reason": "No single scalar property declared for this claim; use the semantic judges."
+    }
+  }
+}

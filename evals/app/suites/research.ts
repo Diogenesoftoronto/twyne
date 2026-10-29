@@ -20,16 +20,17 @@
  * results; the judge, when enabled, reads the returned snippets against the
  * fact.
  */
-import {
-  askJev,
-  judged,
-  type ClairicAsk,
-  type Judge,
-  type JevAsk,
-} from "../judges";
+import { askJev, judged, type Judge, type JevAsk } from "../judges";
 import { contains, fold, ratio, type Score } from "../scoring";
 import { readJsonl } from "./load";
 import type { ProjectBrief, Suite } from "./types";
+import {
+  clairicValueSupport,
+  validateValueManifest,
+  valueEntry,
+  VALUE_EVALUATOR,
+  VALUE_METRIC,
+} from "./research-value-support";
 
 type TargetKind = "quote" | "work" | "person" | "statistic" | "claim" | "event";
 type Strategy = "hosted" | "model";
@@ -377,186 +378,21 @@ async function jevSettles(
   };
 }
 
-/**
- * Clairic as a typed fact-checker. When the claim turns on a value — a year,
- * a date, a figure — the same typed field is extracted twice: from the
- * corpus' fact (the truth) and from the top sources' snippets. The two are
- * compared as dates or numbers, so "5.145°" agrees with "about five degrees"
- * and a source giving the wrong year does not. Claims without a single value
- * are left to the judges (n/a here).
- */
-function clairicField(
-  claim: ResearchSourceCase,
-): { type: "date" | "number"; instructions: string } | null {
-  // Clairic is exact when the field names its subject ("the date Apollo 11
-  // splashed down") and drifts when asked generically for "the date in this
-  // claim". The librarian query names the subject in a few words.
-  const subject = claim.query.replace(/["“”]/g, "").trim();
-  const fact = claim.fact;
-  if (/\b(1[0-9]{3}|20[0-9]{2})\b/.test(fact))
-    return {
-      type: "date",
-      instructions: `The date of the event in: ${subject}.`,
-    };
-  if (
-    /\d|\b(one|two|three|four|five|six|seven|eight|nine|ten|hundred|thousand|million|billion)\b/i.test(
-      fact,
-    )
-  )
-    return {
-      type: "number",
-      instructions:
-        `The quantity asked about in: ${subject}. Give the number the claim turns on` +
-        (/\btimes\b/i.test(fact)
-          ? ", as a multiple (how many times), not a distance or size."
-          : ", in full, not abbreviated."),
-    };
-  return null;
-}
-
-function valueOf(answer: unknown): {
-  value: unknown;
-  confidence?: number;
-  pNull?: number;
-} {
-  const a = (answer ?? {}) as {
-    value?: unknown;
-    confidence?: number;
-    p_null?: number;
-  };
-  return {
-    value: a.value ?? null,
-    confidence:
-      typeof a.confidence === "number" && Number.isFinite(a.confidence)
-        ? a.confidence
-        : undefined,
-    ...(typeof a.p_null === "number" && Number.isFinite(a.p_null)
-      ? { pNull: a.p_null }
-      : {}),
-  };
-}
-
-/**
- * Compare at the precision the fact states. Clairic fills a bare year out to
- * a full date ("1995" becomes 1995-11-19), so a fact that names only a year
- * is compared on the year, one with a month on the month.
- */
-function datesAgree(truth: string, found: string, factText: string): boolean {
-  const t = truth.trim(),
-    f = found.trim();
-  const statesDay =
-    /\b\d{1,2}(st|nd|rd|th)?,? \d{4}\b|\b\d{4}-\d{2}-\d{2}\b|\b(january|february|march|april|may|june|july|august|september|october|november|december) \d{1,2}\b|\b\d{1,2} (january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(
-      factText,
-    );
-  const statesMonth =
-    /\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(
-      factText,
-    );
-  const n = statesDay ? 10 : statesMonth ? 7 : 4;
-  return t.length >= n && f.length >= n && t.slice(0, n) === f.slice(0, n);
-}
-
-function numbersAgree(truth: number, found: number): boolean {
-  if (truth === found) return true;
-  const scale = Math.max(Math.abs(truth), Math.abs(found));
-  return scale > 0 && Math.abs(truth - found) / scale <= 0.05;
-}
-
-async function clairicFact(
-  extract: ClairicAsk,
-  claim: ResearchSourceCase,
-  sources: Source[],
-): Promise<Score> {
-  const field = clairicField(claim);
-  if (!field)
-    return {
-      score: null,
-      label: "n/a",
-      explanation: "no single typed value to compare",
-    };
-  const text = sources
-    .slice(0, 5)
-    .map((s) => `${s.title}. ${s.snippet ?? ""}`)
-    .join("\n\n")
-    .slice(0, 12_000);
-  if (!text.trim())
-    return { score: 0, label: "no sources", explanation: "nothing to read" };
-  try {
-    const [truth, found] = await Promise.all([
-      extract({ state: claim.fact, fields: { value: field } }),
-      extract({ state: text, fields: { value: field } }),
-    ]);
-    if (!truth.ok || !found.ok)
-      return {
-        score: null,
-        label: "clairic-error",
-        explanation: truth.error ?? found.error ?? "no answer",
-      };
-    if (!truth.answers?.value || !found.answers?.value)
-      return {
-        score: null,
-        label: "clairic-error",
-        explanation: "missing expected extraction answer",
-      };
-    const t = valueOf(truth.answers?.value);
-    const f = valueOf(found.answers?.value);
-    const detail =
-      `fact ${String(t.value)}, sources ${String(f.value)}` +
-      ` (confidence: fact ${t.confidence?.toFixed(2) ?? "missing"}, sources ${f.confidence?.toFixed(2) ?? "missing"})`;
-    // Eligibility is independent of whether the extracted values agree. A
-    // weak extraction of the answer key is just as uncertain as the source.
-    if (
-      t.value === null ||
-      t.confidence === undefined ||
-      t.confidence < 0.3 ||
-      (t.pNull ?? 0) > 0.3
-    )
-      return { score: null, label: "uncertain", explanation: detail };
-    if (f.value === null)
-      return (f.pNull ?? 0) >= 0.7
-        ? {
-            score: 0,
-            label: "not stated",
-            explanation: `the sources do not state it (fact: ${String(t.value)})`,
-          }
-        : { score: null, label: "uncertain", explanation: detail };
-    if (
-      f.confidence === undefined ||
-      f.confidence < 0.3 ||
-      (f.pNull ?? 0) > 0.3
-    )
-      return { score: null, label: "uncertain", explanation: detail };
-    const agrees =
-      field.type === "date"
-        ? datesAgree(String(t.value), String(f.value), claim.fact)
-        : typeof t.value === "number" && typeof f.value === "number"
-          ? numbersAgree(t.value, f.value)
-          : String(t.value) === String(f.value);
-    return {
-      score: agrees ? 1 : 0,
-      label: agrees ? "agrees" : "differs",
-      explanation: detail,
-    };
-  } catch (error) {
-    return {
-      score: null,
-      label: "clairic-error",
-      explanation: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
 export const researchSourcesSuite: Suite<ResearchSourceCase> = {
   name: "research-sources",
   surface: "integration research.sources",
-  load: () =>
-    loadDrafts().flatMap((draft) =>
+  evaluatorVersions: { [VALUE_METRIC]: VALUE_EVALUATOR },
+  load: () => {
+    const cases = loadDrafts().flatMap((draft) =>
       draft.mustFlag.map((claim) => ({
         ...claim,
         case_id: `${draft.case_id}:${claim.id}`,
         draft_id: draft.case_id,
       })),
-    ),
+    );
+    validateValueManifest(cases);
+    return cases;
+  },
 
   async run({ client }, testCase) {
     const raw = await client.request({
@@ -618,13 +454,19 @@ export const researchSourcesSuite: Suite<ResearchSourceCase> = {
     }
     if (jev) scores.jev_settles = await jevSettles(jev, testCase, sources);
     if (extract)
-      scores.clairic_fact = await clairicFact(extract, testCase, sources);
+      scores[VALUE_METRIC] = await clairicValueSupport(
+        extract,
+        testCase,
+        sources,
+      );
     return scores;
   },
 
   example: (testCase) => ({
     case_id: testCase.case_id,
     draft_id: testCase.draft_id,
+    clairic_evaluator: VALUE_EVALUATOR,
+    value_check: JSON.stringify(valueEntry(testCase)),
     kind: testCase.kind,
     passage: testCase.passage,
     fact: testCase.fact,

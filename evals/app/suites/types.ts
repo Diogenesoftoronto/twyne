@@ -58,6 +58,8 @@ export interface Suite<C extends { case_id: string }> {
   name: string;
   /** The surface the suite exercises, for the report. */
   surface: string;
+  /** Metric semantics and declared gold manifest identity, persisted with results. */
+  evaluatorVersions?: Record<string, string>;
   load(): C[];
   run(ctx: RunContext, testCase: C): Promise<CaseRun>;
   score(

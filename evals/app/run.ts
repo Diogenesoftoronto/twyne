@@ -118,6 +118,7 @@ Compare reports after the fact with evals/app/compare.ts.
 export interface SuiteReport {
   suite: string;
   surface: string;
+  evaluatorVersions?: Record<string, string>;
   experiment: string;
   target: string;
   model: string;
@@ -608,6 +609,9 @@ export async function runAppEvals(options: RunOptions): Promise<SuiteReport[]> {
         const report: SuiteReport = {
           suite: suiteName,
           surface: suite.surface,
+          ...(suite.evaluatorVersions
+            ? { evaluatorVersions: suite.evaluatorVersions }
+            : {}),
           experiment,
           target: options.target,
           model: modelLabel,
