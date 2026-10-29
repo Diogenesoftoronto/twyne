@@ -3,7 +3,7 @@
   "checkpoint_id": "b628bc84c19e",
   "strategy": "manual-commit",
   "branch": "feat/clairic-extraction",
-  "checkpoints_count": 3,
+  "checkpoints_count": 37,
   "files_touched": [
     "docs/writing-instruments.md",
     "e2e/fixtures/instrument-room.ts",
@@ -40,13 +40,20 @@
       "compact_transcript": "/b6/28bc84c19e/0/transcript.jsonl",
       "content_hash": "/b6/28bc84c19e/0/content_hash.txt",
       "prompt": "/b6/28bc84c19e/0/prompt.txt"
+    },
+    {
+      "metadata": "/b6/28bc84c19e/1/metadata.json",
+      "transcript": "/b6/28bc84c19e/1/full.jsonl",
+      "compact_transcript": "/b6/28bc84c19e/1/transcript.jsonl",
+      "content_hash": "/b6/28bc84c19e/1/content_hash.txt",
+      "prompt": "/b6/28bc84c19e/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 0,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 0,
-    "output_tokens": 0,
-    "api_call_count": 0
+    "input_tokens": 2,
+    "cache_creation_tokens": 759,
+    "cache_read_tokens": 597106,
+    "output_tokens": 354,
+    "api_call_count": 1
   }
 }
