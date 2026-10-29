@@ -97,9 +97,15 @@ async function selectPassage(page: Page, text: string) {
 }
 async function openBench(page: Page, text = INSTRUMENT_SENTENCE) {
   await selectPassage(page, text);
-  await page.getByRole("button", { name: "Rework", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Compare a revision", exact: true })
+    .click();
   await expect(bench(page)).toBeVisible();
 }
+const revision = (page: Page) =>
+  bench(page).getByRole("textbox", { name: "Your revision" });
+const useRevision = (page: Page) =>
+  bench(page).getByRole("button", { name: "Use revision", exact: true });
 async function draftText(page: Page) {
   return manuscript(page).evaluate((root) => {
     const copy = root.cloneNode(true) as HTMLElement;
@@ -119,133 +125,167 @@ async function capture(page: Page, info: TestInfo, name: string) {
   await info.attach(name, { path, contentType: "image/png" });
 }
 
-test("selection bench offers checked complete wordings, previews, applies and undoes offline", async ({
+test("Compare a revision opens cold with no request, diffs in context, applies once and undoes once", async ({
   page,
 }, info) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await seed(page);
-  const original = await draftText(page);
-  await openBench(page);
-  const candidate = bench(page).getByRole("button", {
-    name: /^Try Use a verb:/,
+  const providerRequests: string[] = [];
+  page.on("request", (request) => {
+    if (
+      /api\.(openai|anthropic)|generativelanguage|openrouter/.test(
+        request.url(),
+      )
+    )
+      providerRequests.push(request.url());
   });
-  await expect(candidate).toBeVisible();
-  // The working wording and its use control lead; provenance waits behind
-  // a disclosure instead of repeating under every wording.
-  const use = bench(page).getByRole("button", {
-    name: "Use this wording",
-    exact: true,
-  });
-  await expect(use).toBeInViewport();
-  await expect(bench(page).getByText("Harper checked")).toBeHidden();
-  await bench(page).getByText("How these were checked").click();
-  await expect(bench(page)).toContainText("Use a verb: Harper checked");
-  await candidate.hover();
-  await expect(page.locator(".sentence-bench-ghost")).toContainText(
-    "We decided to leave",
-  );
-  expect(await draftText(page)).toBe(original);
-  await capture(page, info, "01-complete-wording-preview");
-  await expect(benchHost(page)).toHaveScreenshot("sentence-bench-desktop.png");
-  await candidate.click();
-  await expect(bench(page).locator("textarea")).toHaveValue(
-    "We decided to leave in order to find a very quiet room.",
-  );
-  await bench(page)
-    .getByRole("button", { name: "Use this wording", exact: true })
-    .click();
-  await expect(manuscript(page)).toContainText("We decided to leave");
-  await expect(bench(page)).toHaveCount(0);
-  await capture(page, info, "02-wording-used");
-  await undo(page);
-  await expect.poll(() => draftText(page)).toBe(original);
-  expect(errors).toEqual([]);
-});
-
-test("Words changes one use in context and Place preserves marked text with one undo", async ({
-  page,
-}, info) => {
   await seed(page);
   const original = await manuscript(page).innerHTML();
+  const originalText = await draftText(page);
   await openBench(page);
-  await bench(page).getByRole("button", { name: "Words", exact: true }).click();
-  await bench(page).getByRole("button", { name: "quiet", exact: true }).click();
-  await bench(page)
-    .locator(".in-flow-choice")
-    .filter({ hasText: "no sound" })
-    .click();
-  await expect(bench(page).locator("textarea")).toHaveValue(
-    INSTRUMENT_SENTENCE.replace("quiet", "silent"),
+  // Cold start: the original, an editable copy and the paragraph, no list.
+  await expect(bench(page).locator(".sentence-bench-original")).toHaveText(
+    INSTRUMENT_SENTENCE,
   );
-  await capture(page, info, "03-word-alternatives-in-context");
+  await expect(revision(page)).toHaveValue(INSTRUMENT_SENTENCE);
+  await expect(revision(page)).toBeFocused();
+  await expect(bench(page)).toContainText("The old map remained.");
+  await expect(bench(page)).toContainText("We followed the river.");
+  await expect(bench(page).locator(".in-flow-choice")).toHaveCount(0);
+  await expect(useRevision(page)).toBeDisabled();
+  expect(await draftText(page)).toBe(originalText);
+
+  const trial = "We left to find a quiet room.";
+  await revision(page).fill(trial);
+  await expect(
+    bench(page).locator(".sentence-bench-paragraph del").first(),
+  ).toContainText("made a decision");
+  await expect(
+    bench(page).locator(".sentence-bench-paragraph ins").first(),
+  ).toContainText("left");
   await bench(page)
-    .getByRole("button", { name: "Keep original", exact: true })
+    .getByRole("button", { name: "Revision", exact: true })
     .click();
-  await bench(page)
-    .locator(".in-flow-choice")
-    .filter({ hasText: "no sound" })
-    .click();
-  await bench(page)
-    .getByRole("button", { name: "Use this wording", exact: true })
-    .click();
-  await expect(manuscript(page)).toContainText(
-    INSTRUMENT_SENTENCE.replace("quiet", "silent"),
+  await expect(bench(page).locator(".sentence-bench-slot-text")).toHaveText(
+    trial,
   );
-  await undo(page);
-  await expect.poll(() => manuscript(page).innerHTML()).toBe(original);
-  await openBench(page);
-  await bench(page).getByRole("button", { name: "Place", exact: true }).click();
-  const opening = bench(page)
-    .locator(".sentence-bench-slot")
-    .filter({ hasText: "Try it as the opening sentence." });
-  await capture(page, info, "04-placement-comparison");
-  await opening.getByRole("button", { name: "Move here", exact: true }).click();
+  await bench(page)
+    .getByRole("button", { name: "Original", exact: true })
+    .click();
+  await expect(bench(page).locator(".sentence-bench-slot-text")).toHaveText(
+    INSTRUMENT_SENTENCE,
+  );
+  await bench(page)
+    .getByRole("button", { name: "Changes", exact: true })
+    .click();
+  expect(await draftText(page)).toBe(originalText);
+  await capture(page, info, "01-compare-a-revision");
+  await expect(benchHost(page)).toHaveScreenshot("sentence-bench-desktop.png");
+
+  await useRevision(page).click();
+  await expect(bench(page)).toHaveCount(0);
   await expect(manuscript(page).locator("p").first()).toHaveText(
-    `${INSTRUMENT_SENTENCE} The old map remained. We followed the river.`,
+    `The old map remained. ${trial} We followed the river.`,
   );
   await expect(
     manuscript(page).locator("p").first().locator("strong"),
-  ).toHaveText(INSTRUMENT_SENTENCE);
+  ).toHaveText(trial);
+  await expect(manuscript(page)).toBeFocused();
+  await capture(page, info, "02-revision-used");
   await undo(page);
   await expect.poll(() => manuscript(page).innerHTML()).toBe(original);
+  expect(providerRequests).toEqual([]);
+  expect(errors).toEqual([]);
 });
 
-test("Words explains missing alternatives and incomplete working wording explains its disabled apply", async ({
+test("Keep original and Escape close without editing; fragments are allowed", async ({
   page,
 }) => {
   await seed(page);
+  const original = await manuscript(page).innerHTML();
   await openBench(page);
-  await bench(page).getByRole("button", { name: "Words", exact: true }).click();
-  await bench(page).getByRole("button", { name: "leave", exact: true }).click();
+  await revision(page).fill("a quieter room");
+  await expect(useRevision(page)).toBeEnabled();
   await expect(bench(page)).toContainText(
-    "No bundled alternatives for “leave”.",
+    "Fragments and more than one sentence are fine.",
   );
-  await expect(bench(page)).toContainText("Edit the wording above");
-  await bench(page).locator("textarea").fill("We left for a quieter room");
-  await expect(
-    bench(page).getByRole("button", { name: "Use this wording", exact: true }),
-  ).toBeDisabled();
-  await expect(bench(page)).toContainText(
-    "Finish the wording with sentence punctuation before using it.",
-  );
+  await page.keyboard.press("Escape");
+  await expect(bench(page)).toHaveCount(0);
+  await expect(manuscript(page)).toBeFocused();
+  expect(await manuscript(page).innerHTML()).toBe(original);
+  await openBench(page);
+  await expect(revision(page)).toHaveValue(INSTRUMENT_SENTENCE);
+  await revision(page).fill("We left.");
   await bench(page)
     .getByRole("button", { name: "Keep original", exact: true })
     .click();
-  await expect(bench(page).locator("textarea")).toHaveValue(
-    INSTRUMENT_SENTENCE,
-  );
+  await expect(bench(page)).toHaveCount(0);
+  expect(await manuscript(page).innerHTML()).toBe(original);
 });
 
-test("Hear starts the narration player for an unfinished working wording", async ({
+test("a source edit blocks use and keeps the revision copyable", async ({
   page,
 }) => {
   await seed(page);
   await openBench(page);
-  await bench(page).locator("textarea").fill("We left for a quieter room");
-  await bench(page).getByRole("button", { name: "Hear", exact: true }).click();
+  await revision(page).fill("We left for a quieter room.");
+  // Change the paragraph behind the open bench.
+  await manuscript(page).evaluate((root) => {
+    const p = root.querySelector("p")!;
+    const range = document.createRange();
+    range.setStart(p.firstChild!, 0);
+    range.collapse(true);
+    getSelection()!.removeAllRanges();
+    getSelection()!.addRange(range);
+  });
+  await page.keyboard.type("Then ");
+  await expect(bench(page)).toContainText("Your revision is kept here");
+  await expect(useRevision(page)).toBeDisabled();
+  await expect(revision(page)).toHaveValue("We left for a quieter room.");
+  await expect(
+    bench(page).getByRole("button", { name: "Copy revision", exact: true }),
+  ).toBeVisible();
+  await expect(manuscript(page)).toContainText(
+    `Then The old map remained. ${INSTRUMENT_SENTENCE}`,
+  );
+});
+
+test("a multi-sentence selection is refused, not narrowed", async ({
+  page,
+}) => {
+  await seed(page);
+  const original = await manuscript(page).innerHTML();
+  await openBench(page, `remained. ${INSTRUMENT_SENTENCE.slice(0, 20)}`);
+  await expect(bench(page)).toContainText("covers 2 sentences");
+  await expect(revision(page)).toHaveCount(0);
+  await bench(page).getByRole("button", { name: "Close", exact: true }).click();
+  expect(await manuscript(page).innerHTML()).toBe(original);
+});
+
+test("Read the difference without a provider says so and sends nothing", async ({
+  page,
+}) => {
+  await seed(page);
+  await openBench(page);
+  await revision(page).fill("We left for a quieter room.");
   await bench(page)
-    .getByRole("button", { name: "Hear this wording in context", exact: true })
+    .getByRole("button", { name: "Read the difference", exact: true })
+    .click();
+  await expect(bench(page)).toContainText(
+    "needs a prose model connected in Settings",
+  );
+  await expect(useRevision(page)).toBeEnabled();
+  await expect(revision(page)).toHaveValue("We left for a quieter room.");
+});
+
+test("Hear starts the narration player for an unfinished revision", async ({
+  page,
+}) => {
+  await seed(page);
+  await openBench(page);
+  await revision(page).fill("We left for a quieter room");
+  await bench(page)
+    .getByRole("button", { name: "Hear it in context", exact: true })
     .click();
   // This fixture has no voice provider. The real player must report its
   // configuration error rather than silently ignoring unfinished wording.
@@ -253,64 +293,6 @@ test("Hear starts the narration player for an unfinished working wording", async
     "Narration needs attention in player",
   );
   await expect(manuscript(page)).toContainText(INSTRUMENT_SENTENCE);
-});
-
-test("checked candidate refresh preserves the chosen pane and unfinished wording", async ({
-  page,
-}) => {
-  let release!: () => void;
-  const held = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-  let requests = 0;
-  await page.route(/harper_wasm.*\.wasm/, async (route) => {
-    requests++;
-    await held;
-    await route.continue();
-  });
-  try {
-    await seed(page);
-    const original = await manuscript(page).innerHTML();
-    const originalText = await draftText(page);
-    await openBench(page);
-    await bench(page)
-      .getByRole("button", { name: "Words", exact: true })
-      .click();
-    await bench(page)
-      .getByRole("button", { name: "quiet", exact: true })
-      .click();
-    await bench(page)
-      .locator(".in-flow-choice")
-      .filter({ hasText: "no sound" })
-      .click();
-    const chosen = INSTRUMENT_SENTENCE.replace("quiet", "silent");
-    await expect(bench(page).locator("textarea")).toHaveValue(chosen);
-    await expect.poll(() => requests).toBeGreaterThan(0);
-    release();
-    // A real Harper check updates the spec; no candidate or model response is stubbed.
-    await expect(benchHost(page)).toContainText("Wordings checked locally.");
-    await expect(
-      bench(page).getByRole("button", { name: "Words", exact: true }),
-    ).toHaveAttribute("aria-pressed", "true");
-    await expect(bench(page).locator("textarea")).toHaveValue(chosen);
-    await bench(page).locator("textarea").hover();
-    await expect.poll(() => draftText(page)).toBe(originalText);
-    await bench(page)
-      .getByRole("button", { name: "Use this wording", exact: true })
-      .click();
-    await expect(manuscript(page)).toContainText(chosen);
-    await undo(page);
-    await expect.poll(() => manuscript(page).innerHTML()).toBe(original);
-    await openBench(page);
-    await expect(bench(page).locator("textarea")).toHaveValue(
-      INSTRUMENT_SENTENCE,
-    );
-    await expect(
-      bench(page).getByRole("button", { name: "Rewrite", exact: true }),
-    ).toHaveAttribute("aria-pressed", "true");
-  } finally {
-    release();
-  }
 });
 
 test("Threads uses real spans, removes a repeat, undoes and closes with Escape", async ({
@@ -407,10 +389,16 @@ test("sentence and thread controls remain reachable on a narrow viewport", async
   await page.setViewportSize({ width: 390, height: 844 });
   await seed(page);
   await openBench(page);
-  await expect(
-    bench(page).getByRole("button", { name: "Words", exact: true }),
-  ).toBeInViewport();
-  await bench(page).getByRole("button", { name: "Words", exact: true }).click();
+  await revision(page).fill(
+    "We left, eventually, to find a very quiet room above the shop where nobody would think to ask what the ledger held.",
+  );
+  await expect(useRevision(page)).toBeInViewport();
+  const sheet = await benchHost(page).boundingBox();
+  expect(sheet!.x).toBeGreaterThanOrEqual(0);
+  expect(sheet!.x + sheet!.width).toBeLessThanOrEqual(390);
+  expect(
+    await bench(page).evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+  ).toBe(true);
   await capture(page, info, "06-narrow-sentence-bench");
   await expect(benchHost(page)).toHaveScreenshot(
     "sentence-bench-mobile-390.png",
@@ -446,23 +434,15 @@ test("@demo complete sentence and real span revision in a readable offline take"
     "A fictional manuscript. No prose or judgement model is connected.",
   );
   await openBench(take);
-  await hold("Select a complete sentence and open its bench.");
-  const wording = bench(take).getByRole("button", {
-    name: /^Try Use a verb:/,
-  });
-  await wording.hover();
-  await expect(take.locator(".sentence-bench-ghost")).toContainText(
-    "We decided",
-  );
-  await hold(
-    "Preview a complete local wording between its actual neighbouring sentences.",
-  );
-  await wording.click();
-  await bench(take)
-    .getByRole("button", { name: "Use this wording", exact: true })
-    .click();
+  await hold("Select a sentence and choose Compare a revision.");
+  await revision(take).fill("We decided to leave to find a quiet room.");
+  await expect(
+    bench(take).locator(".sentence-bench-paragraph ins").first(),
+  ).toContainText("decided");
+  await hold("Edit a copy. The changes show inside the paragraph.");
+  await useRevision(take).click();
   await expect(manuscript(take)).toContainText("We decided");
-  await hold("Use the checked wording. The change lands in the manuscript.");
+  await hold("Use the revision. The change lands in the manuscript.");
   await undo(take);
   await hold("Undo restores the original wording.");
   await selectPassage(take, INSTRUMENT_REPEAT);

@@ -1,38 +1,24 @@
 import type { SentenceLabProps } from "./catalog";
-import {
-  localSentenceCandidates,
-  sentenceContext,
-  sentencePlacementChoices,
-} from "../../utils/sentence-bench";
+import { sentenceContext } from "../../utils/sentence-bench";
 export const BENCH_SENTENCE =
-  "We made a decision to leave in order to find a very quiet room.";
-export const BENCH_PARAGRAPH = `The old map remained. ${BENCH_SENTENCE} We followed the river.`;
+  "She had not told her brother that the house was sold.";
+export const BENCH_PARAGRAPH = `Mara learned about the sale that morning. ${BENCH_SENTENCE} He was already packing for his visit.`;
 const from = BENCH_PARAGRAPH.indexOf(BENCH_SENTENCE);
 export const OFFLINE_BENCH_FIXTURE: SentenceLabProps = {
   sentence: BENCH_SENTENCE,
-  sentenceId: "fixture-map-room",
-  attempts: [],
-  variants: [],
-  candidates: localSentenceCandidates(BENCH_SENTENCE),
+  sentenceId: "fixture-house-sale",
   context: sentenceContext(BENCH_PARAGRAPH, from, from + BENCH_SENTENCE.length),
-  placements: sentencePlacementChoices(
-    BENCH_PARAGRAPH,
-    from,
-    from + BENCH_SENTENCE.length,
-  ),
 };
 export const STALE_BENCH_FIXTURE: SentenceLabProps = {
   ...OFFLINE_BENCH_FIXTURE,
   stale: true,
 };
-export const SETTLED_BENCH_FIXTURE: SentenceLabProps = {
+export const TRIAL_BENCH_FIXTURE: SentenceLabProps = {
   ...OFFLINE_BENCH_FIXTURE,
-  attempts: ["We chose a quieter room before setting out."],
-  candidates: localSentenceCandidates(BENCH_SENTENCE, [
-    {
-      text: "We chose a quieter room before setting out.",
-      at: 1770000000000,
-      source: "yours",
-    },
-  ]),
+  trial: "She had kept the sale from her brother.",
+};
+export const REFUSED_BENCH_FIXTURE: SentenceLabProps = {
+  sentence: BENCH_PARAGRAPH,
+  refusal:
+    "The selection covers 2 sentences. Select one sentence to compare a revision.",
 };

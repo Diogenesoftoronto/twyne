@@ -8,7 +8,7 @@ export const MANUAL_FILMS: Record<string, ManualFilm> = {
     description:
       "Preview a complete local wording, apply and undo it, then inspect two linked passages and remove a repeated sentence.",
     transcript:
-      "A fictional manuscript is open with no prose or judgement model connected. The writer selects a complete sentence and opens Sentence bench. A local wording is previewed between its actual neighbouring sentences, then applied to the manuscript. Undo restores the original wording. Threads connects two exact manuscript passages; the writer removes one literal repeated sentence, with undo available. This is one continuous local walkthrough after the initial loading screen.",
+      "Recorded with the earlier Sentence bench; its list of local wordings has since been replaced by Compare a revision, where the writer edits a copy of the sentence. A fictional manuscript is open with no prose or judgement model connected. The writer selects a complete sentence and opens Sentence bench. A local wording is previewed between its actual neighbouring sentences, then applied to the manuscript. Undo restores the original wording. Threads connects two exact manuscript passages; the writer removes one literal repeated sentence, with undo available. This is one continuous local walkthrough after the initial loading screen.",
     width: 1440,
     height: 900,
     credit: "Silent walkthrough · Fictional manuscript · Local rules and undo",

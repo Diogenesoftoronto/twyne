@@ -7,8 +7,8 @@
  * while it streams. There is no Qwik renderer upstream; `tool-renderer.tsx`
  * maps each component name to its Qwik component.
  *
- * Specs are seeded deterministically — the writer's own attempts, their
- * sentence lengths, their sentences — and a model only ever *adds* to the
+ * Specs are seeded deterministically — the writer's own sentence, their
+ * sentence lengths, their claim — and a model only ever *adds* to the
  * fields listed in {@link STREAMABLE_PATHS}.
  */
 import {
@@ -18,7 +18,6 @@ import {
 } from "@json-render/core";
 import { z } from "zod";
 import type { ToolKind } from "../../utils/struggle-signals";
-import { completeSentence } from "../../utils/sentence-ledger";
 
 const schema = defineSchema((s) => ({
   spec: s.object({
@@ -42,58 +41,17 @@ const schema = defineSchema((s) => ({
 }));
 
 const sentenceLabProps = z.object({
+  /** The exact source sentence, as it stood when the bench opened. */
   sentence: z.string().min(1).max(1200),
-  attempts: z.array(z.string().max(1200)).max(6),
-  variants: z.array(z.string().min(1).max(1200)).max(3),
-  candidates: z
-    .array(
-      z.object({
-        id: z.string(),
-        text: z.string().min(1).max(1200),
-        source: z.enum([
-          "yours",
-          "rule",
-          "thesaurus",
-          "on-device",
-          "text-model",
-          "spoken",
-        ]),
-        operation: z.string(),
-        wordDelta: z.number(),
-        caution: z.string().optional(),
-        at: z.number().optional(),
-        grammar: z.enum(["pending", "checked", "unavailable"]),
-        meaning: z
-          .object({ probability: z.number().min(0).max(1), model: z.string() })
-          .optional(),
-        likelihood: z
-          .object({ probability: z.number().min(0).max(1), model: z.string() })
-          .optional(),
-      }),
-    )
-    .max(16)
-    .optional(),
   context: z
     .object({ before: z.string(), after: z.string(), paragraph: z.string() })
     .optional(),
-  placements: z
-    .array(
-      z.object({
-        id: z.string(),
-        before: z.string(),
-        after: z.string(),
-        paragraph: z.string(),
-        reason: z.string(),
-        offset: z.number(),
-        source: z.literal("rule"),
-      }),
-    )
-    .max(12)
-    .optional(),
   sentenceId: z.string().optional(),
   stale: z.boolean().optional(),
-  initialSection: z.enum(["rewrite", "words", "place", "hear"]).optional(),
-  initialWord: z.object({ from: z.number(), to: z.number() }).optional(),
+  /** A trial handed in from elsewhere (an edited transcript); never applied. */
+  trial: z.string().max(1200).optional(),
+  /** The selection could not name one sentence; the bench says why. */
+  refusal: z.string().max(400).optional(),
 });
 const rhythmStripProps = z.object({
   sentences: z
@@ -126,7 +84,7 @@ export const toolCatalog = defineCatalog(schema, {
       props: sentenceLabProps,
       slots: [],
       description:
-        "Sentence bench: complete wordings, local alternatives, contextual comparison, words, placement and hearing.",
+        "Compare a revision: one source sentence, the writer's own trial, its word diff in paragraph context, and an optional reading of the difference.",
     },
     RhythmStrip: {
       props: rhythmStripProps,
@@ -211,7 +169,6 @@ export function validateToolSpec(spec: unknown): ToolSpec | null {
 
 /** The only fields a model may append to, per component. */
 export const STREAMABLE_PATHS: Partial<Record<ToolComponent, string>> = {
-  SentenceLab: "/elements/tool/props/variants/-",
   ReaderQuestions: "/elements/tool/props/questions/-",
 };
 
@@ -251,11 +208,7 @@ export function createToolStream(seed: ToolSpec, max: number) {
         value?: unknown;
       };
       return (
-        op.op === "add" &&
-        op.path === path &&
-        typeof op.value === "string" &&
-        (seed.elements.tool.type !== "SentenceLab" ||
-          completeSentence(op.value))
+        op.op === "add" && op.path === path && typeof op.value === "string"
       );
     } catch {
       return false;

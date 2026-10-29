@@ -8,8 +8,10 @@
  *      load-bearing sentence and which kinds of support are already present.
  *   2. `seedSpec` — a deterministic spec from the writer's own material:
  *      their earlier attempts, their sentence lengths, their claim.
- *   3. `fillSpec` — only Sentence Lab and Reader Questions call a text model,
- *      and only to append to the one list the catalog lets them stream into.
+ *   3. `fillSpec` — only Reader Questions calls a text model while filling,
+ *      and only to append to the one list the catalog lets it stream into.
+ *      Compare a revision calls one only when the writer asks it to read the
+ *      difference (`readRevision`), and never for wording.
  *
  * No step here touches the editor; the tracker extension owns that.
  */
@@ -38,8 +40,13 @@ import {
   type SystemOneAnswer,
   type SystemOneQuestion,
 } from "./system-one";
-import { localSentenceCandidates, sentenceCandidate } from "./sentence-bench";
-import { completeSentence } from "./sentence-ledger";
+import {
+  parseRevisionReading,
+  revisionReadingRequest,
+  sentenceContext,
+  type RevisionBinding,
+  type RevisionReading,
+} from "./sentence-bench";
 
 export {
   IN_FLOW_EVENT,
@@ -59,7 +66,7 @@ export const READER_QUESTION_BANK = [
 
 const LEAVE = "Leave the writer alone";
 const OPTION_FOR: Record<ToolKind, string> = {
-  "sentence-lab": "Try other wordings of one sentence",
+  "sentence-lab": "Compare a revision of one sentence",
   "rhythm-strip": "See the paragraph's sentence rhythm",
   "claim-check": "Check how strongly to state the claim",
   "reader-questions": "Hear what a reader would ask next",
@@ -201,22 +208,23 @@ export function seedSpec(
   const config = options.config ?? {};
   switch (kind) {
     case "sentence-lab": {
-      const index = Math.min(
-        Math.max(0, options.sentenceIndex ?? longestSentence(passage)),
-        Math.max(0, sentences.length - 1),
-      );
-      const sentence = sentences[index]?.text ?? passage.trim();
-      const attempts = (options.activity?.attempts[index] ?? [])
-        .filter((a) => a !== sentence && completeSentence(a))
-        .slice(-5);
+      // The source is named by position. Without one, the bench refuses
+      // rather than guessing a sentence for the writer.
+      const span =
+        options.sentenceIndex === undefined
+          ? undefined
+          : sentences[options.sentenceIndex];
       return toolSpec({
         type: "SentenceLab",
-        props: {
-          sentence,
-          attempts,
-          variants: [],
-          candidates: localSentenceCandidates(sentence),
-        },
+        props: span
+          ? {
+              sentence: span.text,
+              context: sentenceContext(passage, span.from, span.to),
+            }
+          : {
+              sentence: passage.trim().slice(0, 1200) || "—",
+              refusal: "Put the cursor in a sentence, or select one sentence.",
+            },
         children: [],
       });
     }
@@ -260,7 +268,6 @@ export function seedSpec(
   }
 }
 
-const MAX_VARIANTS = 3;
 const MAX_QUESTIONS = 3;
 
 type Generate = (request: {
@@ -300,16 +307,9 @@ export async function fillSpec(
         "General questions — connect a model in Settings for ones about this passage.",
     };
   }
-  if (element.type !== "SentenceLab" && element.type !== "ReaderQuestions")
-    return { spec: seed };
-  if (!generate)
-    return {
-      spec: seed,
-      notice:
-        "Local wordings. Read each in context; meaning has not been checked.",
-    };
+  if (element.type !== "ReaderQuestions" || !generate) return { spec: seed };
 
-  const max = element.type === "SentenceLab" ? MAX_VARIANTS : MAX_QUESTIONS;
+  const max = MAX_QUESTIONS;
   const stream = createToolStream(seed, max);
   const brief = [
     context.goal && `The piece's goal: ${context.goal.slice(0, 400)}`,
@@ -317,13 +317,7 @@ export async function fillSpec(
   ]
     .filter(Boolean)
     .join("\n");
-  const task =
-    element.type === "SentenceLab"
-      ? `The writer keeps rewording one sentence. Offer ${max} alternative wordings that keep its meaning and the writer's register. Each should solve the sentence a different way (reorder, cut, make concrete). Do not explain.
-
-SENTENCE: "${element.props.sentence}"
-EARLIER ATTEMPTS: ${JSON.stringify(element.props.attempts)}`
-      : `Imagine ${element.props.angle || "the piece's intended reader"} reaching the end of this paragraph. Write ${max} short questions they would ask next — the ones the draft has not yet answered. Plain words, under 20 words each.`;
+  const task = `Imagine ${element.props.angle || "the piece's intended reader"} reaching the end of this paragraph. Write ${max} short questions they would ask next — the ones the draft has not yet answered. Plain words, under 20 words each.`;
   const prompt = `${brief}
 
 CONTEXT BEFORE THE PASSAGE:
@@ -348,45 +342,41 @@ ${streamingInstructions(element.type, max)}`;
       notice: "The model didn't answer; showing what the draft already holds.",
     };
   stream.push(text);
-  const final = stream.finish();
-  if (final.elements.tool.type === "SentenceLab") {
-    const props = final.elements.tool.props;
-    return {
-      spec: toolSpec({
-        ...final.elements.tool,
-        props: {
-          ...props,
-          candidates: [
-            ...(props.candidates ?? []),
-            ...props.variants.map((text) =>
-              sentenceCandidate(
-                props.sentence,
-                text,
-                "text-model",
-                "Model wording",
-                "Meaning has not been checked.",
-              ),
-            ),
-          ].slice(0, 16),
-        },
-      }),
-    };
-  }
-  return { spec: final };
+  return { spec: stream.finish() };
 }
 
-/** The longest sentence: the default target when no rewrite pinned one. */
-function longestSentence(passage: string): number {
-  let best = 0;
-  let bestWords = -1;
-  splitSentences(passage).forEach((s, i) => {
-    const w = wordCount(s.text);
-    if (w > bestWords) {
-      best = i;
-      bestWords = w;
-    }
-  });
-  return best;
+/**
+ * Compare a revision: one explicit request to the writer's configured prose
+ * model, bound to the exact original, trial and paragraph. The caller owns
+ * staleness; this only refuses to show quotes the texts do not contain.
+ */
+export async function readRevision(
+  binding: RevisionBinding,
+  brief: { goal?: string; audience?: string },
+  generate: Generate | null,
+): Promise<RevisionReading> {
+  if (!generate)
+    return {
+      ok: false,
+      reason: "no-provider",
+      message:
+        "Reading the difference needs a prose model connected in Settings. The comparison above still works without one.",
+    };
+  const request = revisionReadingRequest(binding, brief);
+  let text: string | null;
+  try {
+    text = await generate({ ...request, tool: "SentenceLab" });
+  } catch {
+    text = null;
+  }
+  if (text === null)
+    return {
+      ok: false,
+      reason: "failed",
+      message:
+        "The model did not answer. Your revision is unchanged; try again or copy it.",
+    };
+  return parseRevisionReading(text, binding);
 }
 
 /** Without Jev: the first sentence that asserts without hedging. */

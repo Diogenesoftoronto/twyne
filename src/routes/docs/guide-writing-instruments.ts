@@ -6,13 +6,13 @@ export const WRITING_INSTRUMENT_GUIDES = {
   "instrument-room": {
     title: "Ask the room from inside the sentence",
     summary:
-      "Morgan has a rewording on the bench and can't tell if it's better. Instead of leaving the sentence, invite an editor to it.",
-    note: "Actual app screenshots with a fictional manuscript and explicitly simulated model responses. They demonstrate the interaction and attribution, not live Jev selection or the quality of a generated critique.",
+      "Morgan has a revision on the bench and can't tell if it's better. Instead of leaving the sentence, invite an editor to it.",
+    note: "Actual app screenshots with a fictional manuscript and explicitly simulated model responses. They demonstrate the interaction and attribution, not live Jev selection or the quality of a generated critique. The first screenshot was taken with the earlier Sentence bench, before it became Compare a revision.",
     steps: [
       {
         title: "Ask without leaving the bench",
         instruction:
-          "Sentence bench, each Threads pair and Scene bench carry an Ask the room button. Your judgement model reads the passage, the unapplied wording and the tool's question, then picks the editor most likely to help. It may pick nobody, which is an answer too. You can also name an editor yourself. The original passage and the proposal travel as separate context, so the editor knows which is which.",
+          "Compare a revision, each Threads pair and Scene bench carry an Ask the room button. Your judgement model reads the passage, the unapplied wording and the tool's question, then picks the editor most likely to help. It may pick nobody, which is an answer too. You can also name an editor yourself. The original passage and the proposal travel as separate context, so the editor knows which is which.",
         image: "/assets/manual/instrument-room-invitation-v1.webp",
         alt: "The real Sentence bench beside a fictional manuscript, showing its working wording and the Ask the room invitation before an editor is selected.",
         width: 1440,
