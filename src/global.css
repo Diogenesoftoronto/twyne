@@ -7614,6 +7614,24 @@ a {
 .flow-card__text {
   color: var(--color-ink-light);
 }
+/* A note's preview is prose, not a control: it keeps text selection, and
+   its Markdown sits tighter than a full note does. */
+.flow-card__content {
+  user-select: text;
+}
+.flow-card__content .comment-markdown :is(ul, ol) {
+  margin: 0.2em 0;
+}
+.flow-card__content .comment-markdown li {
+  margin: 0;
+}
+.flow-card__open {
+  align-self: flex-start;
+}
+.flow-card__open:focus-visible {
+  outline: 2px solid var(--color-cobalt);
+  outline-offset: 2px;
+}
 /* An echo reads as a carbon copy of the writer's own page. */
 .flow-card__carbon {
   font-family: var(--font-typewriter);
@@ -7636,7 +7654,16 @@ a {
   text-transform: uppercase;
   color: var(--color-ink-muted);
 }
-.flow-card__reply.is-streaming::after {
+.flow-card__reply-text :is(ul, ol) {
+  margin: 0.2em 0;
+}
+/* The caret follows the last words, inside the last block of the reply. */
+.flow-card__reply.is-streaming .flow-card__reply-text > p:last-child::after,
+.flow-card__reply.is-streaming
+  .flow-card__reply-text
+  > :is(ul, ol):last-child
+  > li:last-child::after,
+.flow-card__reply.is-streaming .flow-card__reply-text:empty::after {
   content: "▍";
   margin-left: 1px;
   color: var(--flow-accent, var(--color-ink));
@@ -8390,6 +8417,13 @@ a {
   display: block;
   margin-bottom: 0.15rem;
   font-weight: 600;
+}
+/* Where the reason came from: a reading, or only shared words. */
+.flow-relation__source {
+  margin-left: 0.2em;
+  font: 400 0.6rem/1.3 var(--font-typewriter);
+  letter-spacing: 0.04em;
+  color: var(--color-ink-muted);
 }
 .flow-relation__label {
   color: var(--flow-accent, var(--color-ink));

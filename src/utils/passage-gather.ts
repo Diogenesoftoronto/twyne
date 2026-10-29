@@ -17,16 +17,82 @@ export interface GatherPassage {
   range: Range;
   /** Refresh a tracked span after editor decorations replace its DOM nodes. */
   resolveRange?: () => Range | null;
-  /** What the note or relation says about this passage, verbatim. */
+  /** What the note or relation says about this passage, verbatim, as
+   * Markdown; plain text that must read literally goes through
+   * `markdownLiteral`. */
   notes?: string[];
   /** Take the writer to the passage; defaults to selecting `range`. */
   go?: () => void;
+}
+
+/**
+ * Where a connection's reason came from. A reading is a model's choice of
+ * relation, for the writer to keep or set aside; shared words are a lexical
+ * match nobody has read for meaning. Unrecorded means no reason was stored.
+ */
+export type ConnectionProvenance = "reading" | "shared-words" | "unrecorded";
+
+export const PROVENANCE_LABEL: Record<ConnectionProvenance, string> = {
+  reading: "Twyne's reading",
+  "shared-words": "Word match",
+  unrecorded: "No reason recorded",
+};
+
+/** Why two passages are linked, exactly as it was recorded when found. */
+export interface PassageConnection {
+  relation: string;
+  explanation: string;
+  provenance: ConnectionProvenance;
+}
+
+/**
+ * The reason an echo recorded for its connection. It is read from what was
+ * stored and never generated: a missing reason stays missing.
+ */
+export function connectionReason(item: {
+  kind: string;
+  data?: Record<string, string>;
+}): PassageConnection | null {
+  if (item.kind !== "echo") return null;
+  const relation = item.data?.relation?.trim() ?? "";
+  const explanation = item.data?.explanation?.trim() ?? "";
+  const stored = item.data?.provenance;
+  const provenance: ConnectionProvenance =
+    stored === "reading" || stored === "shared-words"
+      ? stored
+      : !explanation
+        ? "unrecorded"
+        : relation && relation !== "Shared words"
+          ? "reading"
+          : "shared-words";
+  return {
+    relation:
+      relation || (provenance === "unrecorded" ? "Connection" : "Shared words"),
+    explanation:
+      explanation ||
+      "Twyne found these passages together but did not record why.",
+    provenance,
+  };
+}
+
+/** A connection between passages in one gathering, and which ones it joins. */
+export interface GatherConnection extends PassageConnection {
+  /** Stable within one gathering. */
+  id: string;
+  /** The `GatherPassage` ids this connection joins. */
+  passageIds: string[];
+  /** How many of its passages were in this manuscript when it was found. */
+  expected: number;
+  /** Where its other passage lives, when that is another folio. */
+  elsewhere?: string;
 }
 
 export interface GatherRequest {
   title: string;
   /** The note or relation that connects the passages, verbatim. */
   note?: string;
+  /** Why the gathered passages are linked, as recorded; never generated. */
+  connections?: GatherConnection[];
   passages: GatherPassage[];
   /** The element that asked, to take focus back on close. */
   opener?: HTMLElement | null;
@@ -106,16 +172,45 @@ export function excerptFromRange(range: Range, doc: Element): PassageExcerpt {
   };
 }
 
+/** Two ranges over exactly the same span. */
+export const sameRange = (a: Range, b: Range) =>
+  a.startContainer === b.startContainer &&
+  a.startOffset === b.startOffset &&
+  a.endContainer === b.endContainer &&
+  a.endOffset === b.endOffset;
+
+/**
+ * Which numbered passages a connection joins ("Passages 1 and 3"), and
+ * whether one it joined when found is no longer in the text. Null when
+ * none of its passages are left to show.
+ */
+export function connectionPlaces(
+  connection: Pick<GatherConnection, "expected" | "elsewhere">,
+  numbers: number[],
+): { between: string; stale: boolean } | null {
+  const shown = [...new Set(numbers)].sort((a, b) => a - b);
+  if (!shown.length) return null;
+  const list =
+    shown.length === 1
+      ? `${shown[0]}`
+      : `${shown.slice(0, -1).join(", ")} and ${shown[shown.length - 1]}`;
+  return {
+    between:
+      shown.length > 1
+        ? `Passages ${list}`
+        : connection.elsewhere
+          ? `Passage ${list} and one in ${connection.elsewhere}`
+          : `Passage ${list}`,
+    stale: shown.length < connection.expected,
+  };
+}
+
 /** Passages in reading order. The same span named twice is one passage
  * with both names, so a note and a reply on one sentence read as one. */
 export function orderPassages<
   T extends { range: Range; label: string; notes?: string[] },
 >(passages: T[]): T[] {
-  const same = (a: Range, b: Range) =>
-    a.startContainer === b.startContainer &&
-    a.startOffset === b.startOffset &&
-    a.endContainer === b.endContainer &&
-    a.endOffset === b.endOffset;
+  const same = sameRange;
   const unique: T[] = [];
   for (const p of passages) {
     const twin = unique.find((q) => same(q.range, p.range));
