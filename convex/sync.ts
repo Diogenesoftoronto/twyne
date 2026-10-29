@@ -24,6 +24,7 @@ import { noteEvidenceFields } from "./lib/noteEvidence";
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { readCollection, writeCollection } from "./lib/collections";
+import { scheduleAchievementCheck } from "./achievements";
 
 /* ── Identity helpers ───────────────────────────────────────────── */
 
@@ -149,6 +150,7 @@ export const putFolioContent = mutation({
   returns: v.id("folioContent"),
   handler: async (ctx, { folioId, html, format, typstSource, kit }) => {
     const userId = await requireIdentity(ctx);
+    await scheduleAchievementCheck(ctx);
     const existing = await ctx.db
       .query("folioContent")
       .withIndex("by_userId_folioId", (q) =>
@@ -483,6 +485,8 @@ export const putSuggestion = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireIdentity(ctx);
+    if (args.status === "accepted")
+      await scheduleAchievementCheck(ctx, { soon: true });
     const existing = await ctx.db
       .query("suggestions")
       .withIndex("by_userId_suggestionId", (q) =>
@@ -517,6 +521,8 @@ export const updateSuggestionStatus = mutation({
   },
   handler: async (ctx, { folioId, suggestionId, status }) => {
     const userId = await requireIdentity(ctx);
+    if (status === "accepted")
+      await scheduleAchievementCheck(ctx, { soon: true });
     const existing = await ctx.db
       .query("suggestions")
       .withIndex("by_userId_suggestionId", (q) =>
@@ -695,6 +701,7 @@ export const pushAll = mutation({
   }),
   handler: async (ctx, args) => {
     const userId = await requireIdentity(ctx);
+    await scheduleAchievementCheck(ctx);
     const now = Date.now();
     const syncHead = await ctx.db
       .query("syncHeads")

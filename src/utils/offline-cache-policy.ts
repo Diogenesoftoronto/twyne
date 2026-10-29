@@ -9,6 +9,7 @@ export const OFFLINE_STATIC_CACHE = `${OFFLINE_CACHE_PREFIX}${OFFLINE_CACHE_VERS
  * belongs in Cache Storage.
  */
 const WRITING_SHELL_PATHS = new Set([
+  "/account/",
   "/analysis/",
   "/apparatus/",
   "/desk/",

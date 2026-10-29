@@ -7,7 +7,6 @@ import {
 } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
 import { api } from "../../../convex/_generated/api";
-import { DataControls } from "../../components/desk/data-controls";
 import {
   combinedDataIsPartial,
   combineDeskUsage,
@@ -70,7 +69,6 @@ interface DeskStore {
   titles: Record<string, string>;
   folioCount: number;
   writingDays: number;
-  eventCount: number;
   loaded: boolean;
   detailsTruncated: boolean;
   combinedPartial: boolean;
@@ -143,7 +141,6 @@ export default component$(() => {
   const auth = useAuth();
   const clientSignal = useConvexClient();
   const preset = useSignal<UsageRangePreset>("30d");
-  const revision = useSignal(0);
   const hostedRevision = useSignal(0);
   const hostedSummary = useSignal<HostedUsageSummary>();
   const hostedState = useSignal<HostedCostState>("loading");
@@ -160,7 +157,6 @@ export default component$(() => {
     titles: {},
     folioCount: 0,
     writingDays: 0,
-    eventCount: 0,
     loaded: false,
     detailsTruncated: false,
     combinedPartial: false,
@@ -255,7 +251,6 @@ export default component$(() => {
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async ({ cleanup, track }) => {
     const selectedPreset = track(() => preset.value);
-    track(() => revision.value);
     let cancelled = false;
     cleanup(() => {
       cancelled = true;
@@ -277,7 +272,6 @@ export default component$(() => {
       localFolios.folios.map((folio) => [folio.id, folio.name]),
     );
     store.folioCount = localFolios.folios.length;
-    store.eventCount = events.length;
     store.detailsTruncated = truncated || activities.length === 2_000;
     store.combinedPartial = false;
     const summary = buildUsageSummary({
@@ -456,16 +450,6 @@ export default component$(() => {
     history.replaceState(history.state, "", `/desk/?range=${range}`);
     void captureProductEvent("usage_range_changed", { range });
   });
-  const reloadLocal = $(() => {
-    revision.value += 1;
-  });
-  const deleteSynchronized = $(async () => {
-    const client = clientSignal.value;
-    if (!client || auth.value.provider !== "convex")
-      throw new Error("Synchronized deletion requires a signed-in account");
-    await client.mutation(api.usage.deleteMyUsageHistory, {});
-    store.synchronized = undefined;
-  });
 
   const sourceState = !store.loaded
     ? "loading"
@@ -478,8 +462,6 @@ export default component$(() => {
         : store.remoteState === "ready"
           ? "combined"
           : "local";
-  const accountId =
-    auth.value.provider === "convex" ? auth.value.user?.analyticsId : undefined;
   // Subscribe the route render so nested billing views receive each transition.
   const hostedBilling = {
     state: hostedState.value,
@@ -496,9 +478,14 @@ export default component$(() => {
           <Link href="/editor/" class="hover:text-[var(--color-vermilion)]">
             ← Writing room
           </Link>
-          <Link href="/settings/" class="hover:text-[var(--color-vermilion)]">
-            Preferences
-          </Link>
+          <span class="flex gap-4">
+            <Link href="/account/" class="hover:text-[var(--color-vermilion)]">
+              Account
+            </Link>
+            <Link href="/settings/" class="hover:text-[var(--color-vermilion)]">
+              Preferences
+            </Link>
+          </span>
         </nav>
         <DeskSummary
           displayName={
@@ -579,15 +566,13 @@ export default component$(() => {
               entries={store.summary.recentWork}
               folioTitles={store.titles}
             />
-            <DataControls
-              range={store.summary.range}
-              rowCount={store.eventCount}
-              accountId={accountId}
-              onLocalDeleted$={reloadLocal}
-              onSynchronizedDelete$={
-                accountId && clientSignal.value ? deleteSynchronized : undefined
-              }
-            />
+            <p class="border-t-2 border-[var(--color-ink)] py-7 text-sm text-[var(--color-ink-muted)]">
+              Export, sync across devices, or delete this history from{" "}
+              <Link href="/account/#data" class="underline">
+                Account → Your data
+              </Link>
+              .
+            </p>
           </>
         )}
       </div>
@@ -601,7 +586,7 @@ export const head: DocumentHead = {
     {
       name: "description",
       content:
-        "Review your writing activity, content-free AI usage, costs, and data controls.",
+        "Review your writing activity, content-free AI usage, and costs.",
     },
   ],
 };

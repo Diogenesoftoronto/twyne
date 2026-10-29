@@ -22,6 +22,9 @@ const sources = Object.fromEntries(
 const route = await Bun.file(
   new URL("../../routes/desk/index.tsx", import.meta.url),
 ).text();
+const accountRoute = await Bun.file(
+  new URL("../../routes/account/index.tsx", import.meta.url),
+).text();
 
 describe("My Desk accessible dossier contract", () => {
   test("gives every chart family a table equivalent", () => {
@@ -47,7 +50,9 @@ describe("My Desk accessible dossier contract", () => {
 
   test("keeps content and credentials outside export claims", () => {
     const controls = sources["data-controls.tsx"];
-    expect(controls).toContain("may include token counts");
+    expect(controls.replaceAll(/\s+/g, " ")).toContain(
+      "may include token counts",
+    );
     expect(controls.replaceAll(/\s+/g, " ")).toContain(
       "exclude manuscripts, prompts, responses, and API credentials",
     );
@@ -63,7 +68,8 @@ describe("My Desk accessible dossier contract", () => {
     expect(sources["usage-cost.tsx"]).toContain(
       "All-time totals and breakdowns",
     );
-    expect(route).toContain("api.usage.deleteMyUsageHistory");
+    expect(accountRoute).toContain("api.usage.deleteMyUsageHistory");
+    expect(route).toContain('href="/account/#data"');
   });
 
   test("does not introduce fixed palettes, gradients, glass, or raster UI", () => {

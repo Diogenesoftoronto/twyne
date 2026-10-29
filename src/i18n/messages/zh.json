@@ -6,9 +6,9 @@
     "partial": "Twyne 的部分内容仍以英语显示。"
   },
   "settings": {
-    "title": "编辑工作台",
-    "subtitle": "使用你自己的 API 密钥。选择你的模型。掌控你的创作空间。",
-    "back": "← 返回工作台",
+    "title": "偏好设置",
+    "subtitle": "Twyne 如何与你一起写作：语言、外观、访谈、模型与研究。",
+    "back": "← 返回写作室",
     "loading": "正在加载偏好设置…",
     "appearance": "外观"
   }

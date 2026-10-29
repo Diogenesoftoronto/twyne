@@ -123,6 +123,59 @@ export function validateHandle(input: string): string | null {
   return null;
 }
 
+export const PROFILE_LINK_MAX = 6;
+const PROFILE_LINK_LABEL_MAX = 40;
+const PROFILE_LINK_URL_MAX = 300;
+
+export interface ProfileLink {
+  label: string;
+  url: string;
+}
+
+/**
+ * Public profile links are rendered as anchors on an unauthenticated page, so
+ * only absolute https URLs survive. A bare domain gains `https://`; an empty
+ * label falls back to the hostname.
+ */
+export function normalizeProfileLinks(input: ProfileLink[]): ProfileLink[] {
+  const links: ProfileLink[] = [];
+  for (const entry of input) {
+    const raw = entry.url.trim();
+    if (!raw) continue;
+    if (links.length === PROFILE_LINK_MAX)
+      throw new ConvexError({
+        message: `Add up to ${PROFILE_LINK_MAX} links.`,
+      });
+    let url: URL;
+    try {
+      url = new URL(/^[a-z][a-z0-9+.-]*:/i.test(raw) ? raw : `https://${raw}`);
+    } catch {
+      throw new ConvexError({ message: `"${raw}" is not a valid link.` });
+    }
+    if (
+      url.protocol !== "https:" ||
+      !url.hostname.includes(".") ||
+      url.username ||
+      url.password
+    )
+      throw new ConvexError({
+        message: `Use an https:// address for "${raw}".`,
+      });
+    const href = url.toString();
+    if (href.length > PROFILE_LINK_URL_MAX)
+      throw new ConvexError({
+        message: "Links must be 300 characters or fewer.",
+      });
+    links.push({
+      label:
+        entry.label.trim().slice(0, PROFILE_LINK_LABEL_MAX) ||
+        url.hostname.replace(/^www\./, ""),
+      url: href,
+    });
+  }
+  return links;
+}
+
 export interface PublicStatsPreferences {
   writingHeatmap: boolean;
   daysWritten30: boolean;
@@ -354,7 +407,7 @@ export const updatePublicStats = mutation({
 });
 
 /**
- * Update the optional display name and bio shown on the profile page. The
+ * Update the optional display name, bio, and links shown on the profile page. The
  * alias itself is preserved after its initial claim.
  */
 export const updateProfile = mutation({
@@ -366,6 +419,10 @@ export const updateProfile = mutation({
      * `null` to clear the existing avatar. Omit to leave it unchanged.
      */
     avatarStorageId: v.optional(v.union(v.id("_storage"), v.null())),
+    /** Replaces the whole list. Omit to leave links unchanged. */
+    links: v.optional(
+      v.array(v.object({ label: v.string(), url: v.string() })),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await requireIdentity(ctx);
@@ -381,6 +438,10 @@ export const updateProfile = mutation({
     if (args.bio !== undefined) {
       const trimmed = args.bio.trim().slice(0, 280);
       patch.bio = trimmed || undefined;
+    }
+    if (args.links !== undefined) {
+      const links = normalizeProfileLinks(args.links);
+      patch.links = links.length ? links : undefined;
     }
     if (args.avatarStorageId !== undefined) {
       // Clearing or replacing the avatar: delete the previous blob so we don't
@@ -507,6 +568,7 @@ async function serializeHandle(ctx: { storage: any }, row: Doc<"handles">) {
     displayName: row.displayName ?? null,
     bio: row.bio ?? null,
     avatarUrl,
+    links: row.links ?? [],
     claimedAt: row.claimedAt,
     updatedAt: row.updatedAt,
     publicStats: effectivePublicStats(row),

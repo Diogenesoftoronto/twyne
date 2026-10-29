@@ -6,9 +6,9 @@
     "partial": "Algunas partes de Twyne todavía están en inglés."
   },
   "settings": {
-    "title": "El escritorio editorial",
-    "subtitle": "Usa tu propia clave API. Elige tus modelos. Toma las riendas.",
-    "back": "← Volver al escritorio",
+    "title": "Preferencias",
+    "subtitle": "Cómo escribe Twyne contigo: idioma, apariencia, entrevista, modelos e investigación.",
+    "back": "← Sala de escritura",
     "loading": "Cargando preferencias…",
     "appearance": "Apariencia"
   }

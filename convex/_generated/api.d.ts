@@ -9,6 +9,9 @@
  */
 
 import type * as account from "../account.js";
+import type * as accountExport from "../accountExport.js";
+import type * as accountExportBuild from "../accountExportBuild.js";
+import type * as achievements from "../achievements.js";
 import type * as admins from "../admins.js";
 import type * as agentPrompts from "../agentPrompts.js";
 import type * as agentTools from "../agentTools.js";
@@ -42,6 +45,7 @@ import type * as lib_integrationAiRequests from "../lib/integrationAiRequests.js
 import type * as lib_judgementContract from "../lib/judgementContract.js";
 import type * as lib_noteEvidence from "../lib/noteEvidence.js";
 import type * as lib_notorganic from "../lib/notorganic.js";
+import type * as lib_notorganicAchievements from "../lib/notorganicAchievements.js";
 import type * as lib_notorganicSignIn from "../lib/notorganicSignIn.js";
 import type * as lib_personaResearch from "../lib/personaResearch.js";
 import type * as lib_providerCheckout from "../lib/providerCheckout.js";
@@ -82,6 +86,9 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   account: typeof account;
+  accountExport: typeof accountExport;
+  accountExportBuild: typeof accountExportBuild;
+  achievements: typeof achievements;
   admins: typeof admins;
   agentPrompts: typeof agentPrompts;
   agentTools: typeof agentTools;
@@ -115,6 +122,7 @@ declare const fullApi: ApiFromModules<{
   "lib/judgementContract": typeof lib_judgementContract;
   "lib/noteEvidence": typeof lib_noteEvidence;
   "lib/notorganic": typeof lib_notorganic;
+  "lib/notorganicAchievements": typeof lib_notorganicAchievements;
   "lib/notorganicSignIn": typeof lib_notorganicSignIn;
   "lib/personaResearch": typeof lib_personaResearch;
   "lib/providerCheckout": typeof lib_providerCheckout;

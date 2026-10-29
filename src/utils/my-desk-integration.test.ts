@@ -36,6 +36,8 @@ describe("My Desk coordinator integration", () => {
     expect(accountMenu).toContain('nav("/desk/")');
     expect(desk).toContain('href="/editor/"');
     expect(desk).toContain('href="/settings/"');
+    expect(desk).toContain('href="/account/"');
+    expect(accountMenu).toContain('nav("/account/")');
   });
 
   test("guards range changes against stale local and remote responses", () => {

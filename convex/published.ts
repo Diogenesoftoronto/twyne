@@ -13,6 +13,7 @@
 import { mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { ownedHandles } from "./profiles";
+import { scheduleAchievementCheck } from "./achievements";
 
 /* ── Slug generation ──────────────────────────────────────────── */
 
@@ -106,6 +107,7 @@ export const publish = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
     const ownerId = identity.tokenIdentifier;
+    await scheduleAchievementCheck(ctx, { soon: true });
 
     // Look up the owner's claimed handle so reader URLs use the first-class
     // /<handle>/<slug> shape; null when the writer hasn't claimed one yet

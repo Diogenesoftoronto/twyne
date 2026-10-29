@@ -52,6 +52,28 @@ import {
 } from "./preference-outbox";
 import { reportApplicationError } from "./application-diagnostics";
 
+/** This device's preferences in their synced form: API keys are stripped. */
+export async function readPortablePreferences(): Promise<
+  Partial<Record<PreferenceKind, PreferenceValue>>
+> {
+  const result: Partial<Record<PreferenceKind, PreferenceValue>> = {};
+  for (const kind of [
+    "language",
+    "writer",
+    "ai",
+    "apparatus",
+    "room",
+    "appearance",
+  ] as const) {
+    try {
+      result[kind] = await readLocal(kind);
+    } catch {
+      // A preference that fails its schema is left out rather than raw.
+    }
+  }
+  return result;
+}
+
 async function readLocal(kind: PreferenceKind): Promise<PreferenceValue> {
   if (kind === "language")
     return {

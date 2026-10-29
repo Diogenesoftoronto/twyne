@@ -569,6 +569,10 @@ export default defineSchema({
     bio: v.optional(v.string()),
     /** Convex storage id for the writer's profile picture, if set. */
     avatarStorageId: v.optional(v.id("_storage")),
+    /** Writer-chosen links shown on the public profile (https only). */
+    links: v.optional(
+      v.array(v.object({ label: v.string(), url: v.string() })),
+    ),
     // Durable desired PDS state; no credentials. Missing means never opted in.
     deskPublication: v.optional(
       v.object({
@@ -666,6 +670,36 @@ export default defineSchema({
     notifiedAt: v.optional(v.number()),
     retiredAt: v.optional(v.number()),
   }).index("by_userId", ["userId"]),
+
+  /**
+   * Which Twyne achievements this account has reported to the Not Organic
+   * ledger, and when it was last checked. The ledger stays the authority.
+   */
+  achievementState: defineTable({
+    ownerId: v.string(),
+    productSubject: v.string(),
+    awarded: v.array(v.string()),
+    scheduledAt: v.number(),
+    checkedAt: v.optional(v.number()),
+  }).index("by_ownerId", ["ownerId"]),
+
+  /** "Export everything" archives. The zip lives in storage until expiresAt. */
+  accountExports: defineTable({
+    ownerId: v.string(),
+    productSubject: v.string(),
+    status: v.union(
+      v.literal("running"),
+      v.literal("ready"),
+      v.literal("failed"),
+    ),
+    storageId: v.optional(v.id("_storage")),
+    bytes: v.optional(v.number()),
+    rowCount: v.optional(v.number()),
+    error: v.optional(v.string()),
+    createdAt: v.number(),
+    completedAt: v.optional(v.number()),
+    expiresAt: v.number(),
+  }).index("by_ownerId", ["ownerId"]),
 
   accountDeletionJobs: defineTable({
     ownerId: v.string(),

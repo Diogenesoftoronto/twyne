@@ -34,6 +34,7 @@ interface Profile {
   displayName: string | null;
   bio: string | null;
   avatarUrl: string | null;
+  links?: Array<{ label: string; url: string }>;
 }
 
 interface PublishedSummary {
@@ -200,6 +201,25 @@ export default component$(() => {
                 >
                   {profile.value.bio}
                 </p>
+              )}
+              {!!profile.value.links?.length && (
+                <ul
+                  class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm"
+                  style="font-family: var(--font-serif);"
+                >
+                  {profile.value.links.map((link) => (
+                    <li key={link.url}>
+                      <a
+                        href={link.url}
+                        rel="me noopener nofollow ugc"
+                        target="_blank"
+                        class="text-[var(--color-ink)] underline decoration-[var(--color-paper-3)] underline-offset-2 hover:text-[var(--color-vermilion)]"
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               )}
             </>
           )}

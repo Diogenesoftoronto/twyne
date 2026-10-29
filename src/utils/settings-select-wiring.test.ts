@@ -5,6 +5,14 @@ const settingsSource = readFileSync(
   new URL("../routes/settings/index.tsx", import.meta.url),
   "utf8",
 );
+const profileSource = readFileSync(
+  new URL("../components/account/writer-profile-settings.tsx", import.meta.url),
+  "utf8",
+);
+const deleteAccountSource = readFileSync(
+  new URL("../components/account/delete-account.tsx", import.meta.url),
+  "utf8",
+);
 
 describe("settings dropdown wiring", () => {
   test("uses the site dropdown for every settings choice", () => {
@@ -19,12 +27,22 @@ describe("settings dropdown wiring", () => {
       "Praise preference",
       "Fact adherence mode",
       "Research provider",
-      "Public writing streak",
     ]) {
       expect(
         controls.some((control) => control.includes(`ariaLabel="${label}"`)),
       ).toBe(true);
     }
+  });
+
+  test("keeps account controls out of Preferences", () => {
+    expect(profileSource).not.toContain("<select");
+    expect(profileSource).toContain('ariaLabel="Public writing streak"');
+    for (const moved of [
+      "api.profiles.claimHandle",
+      "api.integrations.createToken",
+      "api.account.deleteAccount",
+    ])
+      expect(settingsSource).not.toContain(moved);
   });
 
   test("keeps model-derived reasoning choices on the site dropdown", () => {
@@ -34,31 +52,31 @@ describe("settings dropdown wiring", () => {
   });
 
   test("persists reversible public-stat choices and migrates legacy heatmaps", () => {
-    expect(settingsSource).toContain("api.profiles.updatePublicStats");
-    expect(settingsSource).toContain(
+    expect(profileSource).toContain("api.profiles.updatePublicStats");
+    expect(profileSource).toContain(
       "await client.mutation(api.profiles.updatePublicStats, row.publicStats)",
     );
-    expect(settingsSource).toContain("writingHeatmap");
-    expect(settingsSource).toContain("daysWritten30");
-    expect(settingsSource).toContain("publicPieceCount");
-    expect(settingsSource).toContain("folioCount");
-    expect(settingsSource).toContain('ariaLabel="Public writing streak"');
+    expect(profileSource).toContain("writingHeatmap");
+    expect(profileSource).toContain("daysWritten30");
+    expect(profileSource).toContain("publicPieceCount");
+    expect(profileSource).toContain("folioCount");
+    expect(profileSource).toContain('ariaLabel="Public writing streak"');
   });
 
   test("tracks only the aggregate enabled public-stat count", () => {
-    expect(settingsSource).toContain(
+    expect(profileSource).toContain(
       'captureProductEvent("public_profile_stats_updated", {',
     );
-    expect(settingsSource).toContain("enabled_stat_count:");
-    expect(settingsSource).toContain('Number(next.streak !== "off")');
-    expect(settingsSource).not.toContain('public_profile_stats_updated", next');
+    expect(profileSource).toContain("enabled_stat_count:");
+    expect(profileSource).toContain('Number(next.streak !== "off")');
+    expect(profileSource).not.toContain('public_profile_stats_updated", next');
   });
 
   test("describes account deletion as scheduled background work", () => {
-    expect(settingsSource).toContain("result.deletionScheduled");
-    expect(settingsSource).toContain("Account deletion started.");
-    expect(settingsSource).toContain("resumable background batches");
-    expect(settingsSource).not.toContain(
+    expect(deleteAccountSource).toContain("result.deletionScheduled");
+    expect(deleteAccountSource).toContain("Account deletion started.");
+    expect(deleteAccountSource).toContain("resumable background batches");
+    expect(deleteAccountSource).not.toContain(
       "Your account and synced data have been deleted.",
     );
   });

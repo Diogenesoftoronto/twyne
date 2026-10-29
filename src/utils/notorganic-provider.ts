@@ -37,3 +37,25 @@ export function createNotOrganicCheckout(
 ): Promise<{ checkoutUrl: string }> {
   return client.action(providerCheckout, input);
 }
+
+export interface NotOrganicAchievement {
+  id: string;
+  application: string;
+  title: string;
+  description: string;
+  imageUrl: string | null;
+  awardedAt: number;
+  recordUrl: string | null;
+}
+
+const achievements = makeFunctionReference<
+  "action",
+  Record<string, never>,
+  NotOrganicAchievement[]
+>("achievements:listMine");
+
+export function getNotOrganicAchievements(
+  client: ConvexClient,
+): Promise<NotOrganicAchievement[]> {
+  return client.action(achievements, {});
+}

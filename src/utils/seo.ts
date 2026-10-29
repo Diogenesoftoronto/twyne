@@ -4,6 +4,7 @@ export const TWYNE_SOCIAL_IMAGE_ALT =
   "Twyne's griffin logo and the words Make room for your writing, over a sunlit writer's desk with annotated manuscript pages, a fountain pen, a red pencil, and coffee.";
 
 const PRIVATE_ROUTE_ROOTS = new Set([
+  "account",
   "analysis",
   "apparatus",
   "auth",
