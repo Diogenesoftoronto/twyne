@@ -223,7 +223,7 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
       </button>
       {menuOpen.value && (
         <div
-          class="absolute right-0 top-full mt-2 w-72 folio p-3 space-y-2"
+          class="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-1rem)] whitespace-normal folio p-3 space-y-2"
           style="z-index: var(--z-dropdown);"
         >
           <div class="flex flex-col gap-1 pb-2 border-b border-[var(--color-paper-3)]">
