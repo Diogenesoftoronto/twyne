@@ -134,3 +134,18 @@ The published recipe specifies three MaskGIT passes; fewer passes were not
 claimed as supported or tested. The current slow laptop no longer gates phase
 2: routing must benchmark each adapter and choose LFM speech, Supertonic, or
 lagging local speech according to the writer's requested policy.
+
+
+### Incremental codec probe
+
+A follow-up on 2026-10-29 used the same short question and ORT Web 1.23.2,
+with GPU-resident decoder caches. After the first generated speech frame, the
+worker ran the codec on that frame and computed the first 1,440 PCM samples
+(60 ms) of the inverse STFT. Those samples were computed **1.773 s after turn
+start**, excluding the 8.651 s session load. This is a PCM-computation time,
+not a measurement of delivery to the audio device or audible playback; the
+probe did not post or play the samples. The first-frame codec output differed
+from the corresponding prefix of the final 25-frame decode by at most
+0.00000954 in STFT features. That provides a numerical check for this one
+input, not proof that a streaming implementation handles all boundaries,
+overlap, cancellation or longer conversations correctly.
