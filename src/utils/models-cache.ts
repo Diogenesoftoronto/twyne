@@ -78,10 +78,15 @@ function canPersist(): boolean {
   return typeof indexedDB !== "undefined";
 }
 
+/** Read a downloaded file without copying a large model into an ArrayBuffer. */
+export async function readModelBlob(url: string): Promise<Blob | null> {
+  if (!canPersist()) return null;
+  return loadModelFileFromIdb(url);
+}
+
 /** Read a downloaded file as bytes. Returns null when absent or unavailable. */
 export async function readModelBytes(url: string): Promise<ArrayBuffer | null> {
-  if (!canPersist()) return null;
-  const blob = await loadModelFileFromIdb(url);
+  const blob = await readModelBlob(url);
   if (!blob) return null;
   try {
     return await blob.arrayBuffer();

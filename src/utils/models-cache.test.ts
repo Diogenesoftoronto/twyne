@@ -29,8 +29,12 @@ mock.module("./idb", () => ({
   },
 }));
 
-const { evictModelBundle, isModelBundleDownloaded, modelDownloadState } =
-  await import(`./models-cache?models-cache-test=${Date.now()}`);
+const {
+  evictModelBundle,
+  isModelBundleDownloaded,
+  modelDownloadState,
+  readModelBlob,
+} = await import(`./models-cache?models-cache-test=${Date.now()}`);
 
 const REMOTE_BASE = "https://huggingface.co/example/voice-model/resolve/main/";
 const manifest = [
@@ -76,6 +80,7 @@ describe("model bundle download state", () => {
       expect(
         (await modelDownloadState(BUNDLE_ID, manifest)).downloadedBytes,
       ).toBe(10);
+      expect((await readModelBlob(`${REMOTE_BASE}config.json`))?.size).toBe(10);
       await evictModelBundle(BUNDLE_ID, manifest);
       expect(store.size).toBe(0);
     } finally {
