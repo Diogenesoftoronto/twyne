@@ -97,4 +97,54 @@ describe("renderMarkdown", () => {
     expect(html).toContain("<p>first</p>");
     expect(html).toContain("<p>second</p>");
   });
+
+  test("renders blockquotes rather than a literal >", () => {
+    const html = renderMarkdown("> She said no.\n\nThen left.");
+    expect(html).toContain("<blockquote>");
+    expect(html).not.toContain("&gt; She");
+  });
+
+  test("escapes code once, not twice", () => {
+    expect(renderMarkdown("say `don't <b>`")).toBe(
+      "<p>say <code>don&#39;t &lt;b&gt;</code></p>\n",
+    );
+    expect(renderMarkdown("```\na < b && c\n```")).toContain(
+      "a &lt; b &amp;&amp; c",
+    );
+  });
+
+  test("keeps query strings in links intact", () => {
+    expect(renderMarkdown("[q](https://x.com/?a=1&b=2)")).toContain(
+      'href="https://x.com/?a=1&amp;b=2"',
+    );
+  });
+
+  test("renders headings, rules, tables and strikethrough", () => {
+    const html = renderMarkdown(
+      "## Pace\n\n---\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n~~cut~~",
+    );
+    expect(html).toContain("<h2>Pace</h2>");
+    expect(html).toContain("<hr>");
+    expect(html).toContain("<table>");
+    expect(html).toContain("<del>cut</del>");
+  });
+
+  test("escapes inline raw HTML and event handlers", () => {
+    const html = renderMarkdown('a <img src=x onerror="alert(1)"> b');
+    expect(html).not.toContain("<img");
+    expect(html).toContain("&lt;img");
+  });
+
+  test("renders images as a safe link, never a remote load", () => {
+    const html = renderMarkdown("![chart](https://t.example/p.png)");
+    expect(html).not.toContain("<img");
+    expect(html).toContain('href="https://t.example/p.png"');
+    expect(html).toContain(">chart</a>");
+  });
+
+  test("renders inline Markdown inside link labels", () => {
+    expect(renderMarkdown("[**bold** `c`](https://x.com)")).toContain(
+      "><strong>bold</strong> <code>c</code></a>",
+    );
+  });
 });

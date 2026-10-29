@@ -52,14 +52,10 @@ export async function assistQuotation(
       const answer = result.ok ? result.answers?.passage : undefined;
       const source = window.resolve(answer?.span);
       if (!answer || !source) return literal;
-      if (answer.value === null) {
-        return answer.guess != null
-          ? { status: "near", ...source, pNull: answer.p_null ?? 1 }
-          : literal;
-      }
-      // The span only proposes text; the deterministic matcher still owns anchoring.
-      const checked = resolveQuotation(source.passage, draft, context);
-      return checked.status === "resolved" ? checked : literal;
+      if (answer.value == null && answer.guess == null) return literal;
+      // A valid span proves where the proposed passage is, not that the note
+      // quotes it. Only the original quotation can earn an exact quote link.
+      return { status: "near", ...source, pNull: answer.p_null ?? 1 };
     }
     if (literal.status === "ambiguous" && research.judge) {
       const candidates = quotationCandidates(quote, draft);
@@ -119,9 +115,16 @@ export async function assistQuotation(
   return literal;
 }
 
-/** Mounted notes share in-flight work and completed results for one draft snapshot. */
-export function createGroundingAssistCache(maxEntries = 128) {
-  const cache = new Map<string, Promise<AssistedQuotation[]>>();
+/** Share in-flight work and successful results; unresolved notes can retry later. */
+export function createGroundingAssistCache(
+  maxEntries = 128,
+  unresolvedTtlMs = 30_000,
+  now = Date.now,
+) {
+  const cache = new Map<
+    string,
+    { pending: Promise<AssistedQuotation[]>; expiresAt: number }
+  >();
   return async (
     note: string,
     draft: string,
@@ -135,7 +138,8 @@ export function createGroundingAssistCache(maxEntries = 128) {
       .join("");
     const key = `${hash}:${note}`;
     const existing = cache.get(key);
-    if (existing) return existing;
+    if (existing && existing.expiresAt > now()) return existing.pending;
+    cache.delete(key);
     const pending = (async () => {
       const grounded = groundQuotations(note, draft);
       const out: AssistedQuotation[] = [];
@@ -151,9 +155,24 @@ export function createGroundingAssistCache(maxEntries = 128) {
       }
       return out;
     })();
-    cache.set(key, pending);
+    const entry = { pending, expiresAt: Infinity };
+    cache.set(key, entry);
     while (cache.size > maxEntries) cache.delete(cache.keys().next().value!);
-    return pending;
+    try {
+      const result = await pending;
+      if (
+        result.some(
+          (q) =>
+            q.resolution.status === "unmatched" ||
+            q.resolution.status === "ambiguous",
+        )
+      )
+        entry.expiresAt = now() + unresolvedTtlMs;
+      return result;
+    } catch (error) {
+      if (cache.get(key) === entry) cache.delete(key);
+      throw error;
+    }
   };
 }
 

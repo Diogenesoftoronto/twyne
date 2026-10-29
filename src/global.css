@@ -1484,6 +1484,12 @@ body {
   display: flex;
   align-items: stretch;
 }
+/* On a phone the row wraps rather than clipping its last actions. */
+@media (max-width: 480px) {
+  .selection-actions__row {
+    flex-wrap: wrap;
+  }
+}
 .selection-actions__row > button {
   padding: 0.5rem 0.58rem;
   border-right: 1px solid
@@ -4627,6 +4633,88 @@ a {
 .comment-markdown a:hover {
   color: var(--color-vermilion);
 }
+.comment-markdown del {
+  text-decoration-thickness: 1px;
+  color: var(--color-ink-muted);
+}
+/* Notes are short, so headings are run-in labels, not page titles: one
+   step up from the body and set in the display face, never larger. */
+.comment-markdown :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0.7em 0 0.25em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.04em;
+  line-height: 1.3;
+  color: var(--color-ink);
+  text-wrap: balance;
+}
+.comment-markdown :is(h4, h5, h6) {
+  font-size: 1em;
+}
+.comment-markdown > :first-child {
+  margin-top: 0;
+}
+.comment-markdown > :last-child {
+  margin-bottom: 0;
+}
+.comment-markdown :is(ul, ol) :is(ul, ol) {
+  margin: 0.15em 0;
+}
+.comment-markdown :is(blockquote, pre, table, hr) {
+  margin: 0.55em 0;
+}
+.comment-markdown blockquote {
+  padding-left: 0.65em;
+  border-left: 2px solid
+    color-mix(
+      in srgb,
+      var(--card-accent, var(--color-paper-3)) 60%,
+      transparent
+    );
+  font-style: italic;
+  color: var(--color-ink-light);
+}
+.comment-markdown hr {
+  height: 0;
+  border: 0;
+  border-top: 1px solid var(--color-paper-3);
+}
+.comment-markdown pre {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0.45em 0.6em;
+  border-radius: 2px;
+  background: var(--color-paper-3);
+  line-height: 1.45;
+}
+.comment-markdown pre code {
+  padding: 0;
+  background: none;
+  white-space: pre;
+}
+/* A table scrolls inside its own box rather than widening the card. */
+.comment-markdown table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.92em;
+}
+.comment-markdown :is(th, td) {
+  padding: 0.25em 0.75em 0.25em 0;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--color-paper-3) 80%, transparent);
+  text-align: left;
+  vertical-align: top;
+}
+.comment-markdown th {
+  font-family: var(--font-typewriter);
+  font-weight: 400;
+  font-size: 0.85em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
 
 /* ── The editorial board panels ────────────────────────────── */
 /* The board shares the viewport shell with the drawer and main column. It
@@ -5866,6 +5954,357 @@ a {
 .card-key--arming {
   color: var(--color-paper);
   background: var(--color-vermilion);
+}
+
+/* ── Room notes ──
+   Two kinds of note share one skeleton. A filed note is something the
+   writer asked for: a sheet of paper with the editor's colour along its top
+   edge and a stamped category. A note left in passing arrived on its own:
+   no sheet, a rule down the margin, its kind said in italic rather than
+   stamped. Both wear the same head, so a glance compares them line for line. */
+.note-card {
+  container-type: inline-size;
+  gap: 0.6rem;
+}
+.note-card--filed {
+  border: 1px solid
+    color-mix(in srgb, var(--card-accent) 30%, var(--color-paper-3));
+  border-radius: 2px;
+  background: var(--color-paper);
+  box-shadow:
+    inset 0 3px 0 color-mix(in srgb, var(--card-accent) 80%, transparent),
+    0 8px 16px -14px rgb(31 27 22 / 0.35);
+  padding-top: calc(var(--card-pad-y) + 3px);
+}
+.note-card--passing {
+  --card-pad-y: 0.65rem;
+  border-left: 2px solid color-mix(in srgb, var(--card-accent) 75%, transparent);
+  border-radius: 0;
+  background: transparent;
+  transition: background 0.18s ease;
+}
+.note-card--passing:hover,
+.note-card--passing:focus-within {
+  background: color-mix(in srgb, var(--card-accent) 5%, var(--color-paper));
+}
+.note-card--passing .desk-card__body {
+  font-size: 0.84375rem;
+}
+
+/* The head. Three columns, all rows sized by their content. */
+.note-card__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "mark who kind"
+    "mark who tools";
+  align-items: start;
+  column-gap: 0.65rem;
+  row-gap: 0.15rem;
+  min-width: 0;
+}
+.note-card__head > .persona-portrait {
+  grid-area: mark;
+  align-self: center;
+}
+.note-card__who {
+  grid-area: who;
+  min-width: 0;
+  align-self: center;
+}
+.note-card__name {
+  margin: 0;
+  font: 600 0.9375rem/1.25 var(--font-display);
+  color: var(--color-ink);
+  /* Two lines and an ellipsis: a long name grows the head but never
+     takes it over. The full name is in the title and the open sheet. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.note-card--passing .note-card__name {
+  font-size: 0.875rem;
+}
+.note-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.45rem;
+  margin: 0.15rem 0 0;
+  font: 400 0.75rem/1.35 var(--font-sans);
+  color: var(--color-ink-muted);
+}
+.note-card__role {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-ink-light);
+}
+.note-card__when {
+  font-family: var(--font-typewriter);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.note-card__role + .note-card__when::before {
+  content: "·";
+  margin-right: 0.45rem;
+}
+.note-card__kind {
+  grid-area: kind;
+  justify-self: end;
+  max-width: 11rem;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--card-accent) 55%, transparent);
+  border-radius: 2px;
+  font-family: var(--font-typewriter);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  text-align: right;
+  color: color-mix(in srgb, var(--card-accent) 80%, var(--color-ink));
+}
+.note-card--passing .note-card__kind {
+  padding: 0;
+  border: 0;
+  font: italic 400 0.8125rem/1.3 var(--font-serif);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink-muted);
+}
+.note-card__tools {
+  grid-area: tools;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+.note-card__open {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 2px;
+  color: var(--color-ink-muted);
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+.note-card__open:hover,
+.note-card__open:focus-visible {
+  color: var(--color-ink);
+  background: color-mix(in srgb, var(--card-accent) 12%, transparent);
+}
+.note-card__open:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 1px;
+}
+/* A narrow column: the kind and the tools drop under the name, so the
+   name keeps its measure instead of being squeezed to a word a line. */
+@container (max-width: 23rem) {
+  .note-card__head {
+    grid-template-areas:
+      "mark who who"
+      "kind kind tools";
+    row-gap: 0.45rem;
+  }
+  .note-card__kind {
+    justify-self: start;
+    align-self: center;
+    max-width: none;
+    text-align: left;
+    white-space: nowrap;
+  }
+}
+
+/* ── The open note ──
+   A sheet over the desk at a reading measure. The head and foot stay put;
+   only the note and its thread scroll. */
+.note-sheet {
+  --card-key-inset: 0.45rem;
+  width: min(42rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: min(48rem, calc(100dvh - 2rem));
+  margin: auto;
+  padding: 0;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--card-accent, var(--color-paper-3)) 35%,
+      var(--color-paper-3)
+    );
+  border-radius: 3px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  box-shadow: 0 24px 60px -24px rgb(21 18 14 / 0.5);
+  overflow: hidden;
+}
+.note-sheet[open] {
+  display: flex;
+}
+.note-sheet::backdrop {
+  background: rgb(21 18 14 / 0.42);
+}
+.note-sheet__page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+.note-sheet--filed .note-sheet__page {
+  box-shadow: inset 0 4px 0
+    color-mix(in srgb, var(--card-accent) 80%, transparent);
+}
+.note-sheet--passing .note-sheet__page {
+  box-shadow: inset 3px 0 0
+    color-mix(in srgb, var(--card-accent) 75%, transparent);
+}
+.note-sheet__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.25rem 1.25rem 1rem 1.5rem;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--color-paper-3) 70%, transparent);
+}
+.note-sheet__who {
+  min-width: 0;
+}
+.note-sheet__kind {
+  margin: 0 0 0.2rem;
+  font-family: var(--font-typewriter);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--card-accent) 75%, var(--color-ink));
+}
+.note-sheet--passing .note-sheet__kind {
+  font: italic 400 0.8125rem/1.3 var(--font-serif);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink-muted);
+}
+.note-sheet__name {
+  margin: 0;
+  font: 600 1.25rem/1.25 var(--font-display);
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.note-sheet__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.5rem;
+  margin: 0.25rem 0 0;
+  font: 400 0.8125rem/1.4 var(--font-sans);
+  color: var(--color-ink-light);
+}
+.note-sheet__meta > span + span::before {
+  content: "·";
+  margin-right: 0.5rem;
+  color: var(--color-ink-muted);
+}
+.note-sheet__tools {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  align-self: start;
+}
+.note-sheet__scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.1rem 1.5rem 1.25rem;
+}
+.note-sheet__quote {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0.15rem 0 0.15rem 0.75rem;
+  border-left: 2px solid color-mix(in srgb, var(--card-accent) 70%, transparent);
+  text-align: left;
+  cursor: pointer;
+}
+.note-sheet__quote-text {
+  font: italic 400 0.9375rem/1.55 var(--font-serif);
+  color: var(--color-ink-light);
+  overflow-wrap: anywhere;
+}
+.note-sheet__quote-go {
+  font-family: var(--font-typewriter);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.note-sheet__quote:hover .note-sheet__quote-text,
+.note-sheet__quote:focus-visible .note-sheet__quote-text {
+  color: var(--color-ink);
+}
+.note-sheet__quote:hover .note-sheet__quote-go,
+.note-sheet__quote:focus-visible .note-sheet__quote-go {
+  color: var(--color-vermilion);
+}
+.note-sheet__quote:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 2px;
+}
+.note-sheet__body {
+  max-width: 65ch;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--color-ink);
+}
+.note-sheet__foot,
+.note-sheet__reply {
+  flex-shrink: 0;
+  padding: 0.6rem 1.5rem 0.75rem;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-paper-3) 70%, transparent);
+}
+@media (max-width: 30rem) {
+  .note-sheet {
+    width: 100vw;
+    max-height: 100dvh;
+    margin: auto 0 0;
+    border-radius: 3px 3px 0 0;
+  }
+  .note-sheet__head {
+    padding: 1rem 0.75rem 0.85rem 1rem;
+    gap: 0.65rem;
+  }
+  .note-sheet__scroll,
+  .note-sheet__foot,
+  .note-sheet__reply {
+    padding-inline: 1rem;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .note-sheet[open] {
+    animation: noteSheetIn 0.18s ease-out;
+  }
+  @keyframes noteSheetIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .note-card--passing,
+  .note-card__open {
+    transition: none;
+  }
 }
 
 /* Chrome that only matters once the writer is looking at this card.
