@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "b628bc84c19e",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "docs/writing-instruments.md",
+    "e2e/fixtures/instrument-room.ts",
+    "e2e/instrument-room.e2e.ts",
+    "e2e/instruments.e2e.ts",
+    "e2e/visual-baselines/instruments.e2e.ts/sentence-bench-desktop.png",
+    "e2e/visual-baselines/instruments.e2e.ts/sentence-bench-mobile-390.png",
+    "public/assets/manual/narration/writing-instruments.m4a",
+    "public/llms.txt",
+    "src/components/editor/extensions/struggle-tracker.test.ts",
+    "src/components/editor/extensions/struggle-tracker.ts",
+    "src/components/in-flow/catalog.test.ts",
+    "src/components/in-flow/catalog.ts",
+    "src/components/in-flow/sentence-bench.css",
+    "src/components/in-flow/sentence-bench.fixtures.ts",
+    "src/components/in-flow/sentence-bench.stories.tsx",
+    "src/components/in-flow/sentence-bench.tsx",
+    "src/components/instruments/local-writing-tools.tsx",
+    "src/routes/docs/guide-writing-instruments.ts",
+    "src/routes/docs/index.tsx",
+    "src/routes/docs/manual-films.ts",
+    "src/routes/docs/manual-narration-script.ts",
+    "src/routes/docs/manual-narration.generated.json",
+    "src/utils/in-flow-tools.test.ts",
+    "src/utils/in-flow-tools.ts",
+    "src/utils/sentence-bench.test.ts",
+    "src/utils/sentence-bench.ts",
+    "src/utils/struggle-signals.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/b6/28bc84c19e/0/metadata.json",
+      "transcript": "/b6/28bc84c19e/0/full.jsonl",
+      "compact_transcript": "/b6/28bc84c19e/0/transcript.jsonl",
+      "content_hash": "/b6/28bc84c19e/0/content_hash.txt",
+      "prompt": "/b6/28bc84c19e/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
+}
