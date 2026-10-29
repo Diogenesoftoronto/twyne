@@ -249,6 +249,25 @@ export function echoReading(
   };
 }
 
+/**
+ * What an echo card records about why its passages connect: Jev's reading
+ * when it named one, otherwise only the words they share, and which it was.
+ */
+export function echoData(
+  shared: readonly string[],
+  reading: { label: string; explanation: string } | null | undefined,
+  passage: string,
+): Record<string, string> {
+  return {
+    relation: reading?.label ?? "Shared words",
+    explanation:
+      reading?.explanation ??
+      `These passages share ${shared.slice(0, 3).join(", ")}. Twyne matched the words; nobody has read them for meaning yet.`,
+    provenance: reading ? "reading" : "shared-words",
+    passage: passage.slice(0, 400),
+  };
+}
+
 export function startFlowConductor(
   editor: Editor,
   options: {
@@ -955,13 +974,7 @@ export function startFlowConductor(
           title: where,
           body: match.passage.text,
           byline: `Shares ${match.shared.join(", ")}`,
-          data: {
-            relation: reading?.label ?? "Shared words",
-            explanation:
-              reading?.explanation ??
-              `These passages share ${match.shared.slice(0, 3).join(", ")}. Twyne matched the words; nobody has read them for meaning yet.`,
-            passage: text.slice(0, 400),
-          },
+          data: echoData(match.shared, reading, text),
           createdAt: Date.now(),
           relevance,
           folioId: match.passage.source,
