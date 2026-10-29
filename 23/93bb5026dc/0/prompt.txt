@@ -1,0 +1,35 @@
+I  think Twyne account setting locations are confusing and they are in the wrong places and arent organized logically. some things  like you handle, mcp access a nd cocntrols to delete your account are in preferences which make no sense exporting data and stuff is in my desk whichc also doesn't make sense therre isn't wannywhere that i could find for some added app specific profile links annd stuff or to see your awards witih not organic.
+
+---
+
+i want that new backend job for t he export everything lets get those achiements woorking too
+
+---
+
+Continue where you left off.
+
+---
+
+Continue where you left off.
+
+---
+
+deploy
+
+---
+
+[User attached one or more files without additional text. Respond using the conversation context and the attached files.]
+
+[Attached image "image.png" is saved at: /home/diogenes/.t3/userdata/attachments/4fdcb60e-4e6e-42d7-ab9d-de08e5e87d01-3a0a9fb9-8079-4013-810b-9ae41bbbfb9e.png]
+
+---
+
+commit annd push
+
+---
+
+hey I noticed thata i thhink sync is causing some blocking issues in the user intneface  thaht has lead to serverly degrated performance also a lot the fixes i made including compact markdown and the likie don't seem to have landed in from what i see check the other threads active
+
+---
+
+assume you are correct because i had multiple tabs and devices

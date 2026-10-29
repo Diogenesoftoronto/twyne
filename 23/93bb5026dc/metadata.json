@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "2393bb5026dc",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "convex/sync.ts",
+    "src/routes/editor/index.tsx",
+    "src/utils/convex-sync.test.ts",
+    "src/utils/convex-sync.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/23/93bb5026dc/0/metadata.json",
+      "transcript": "/23/93bb5026dc/0/full.jsonl",
+      "compact_transcript": "/23/93bb5026dc/0/transcript.jsonl",
+      "content_hash": "/23/93bb5026dc/0/content_hash.txt",
+      "prompt": "/23/93bb5026dc/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 130,
+    "cache_creation_tokens": 3738395,
+    "cache_read_tokens": 18994533,
+    "output_tokens": 54472,
+    "api_call_count": 66
+  }
+}
