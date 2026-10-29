@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Model explorer · Twyne</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="wordmark" href="#" aria-label="Twyne trace explorer home">twyne<span> / Model explorer</span></a>
+    <div class="header-actions"><span id="connection" class="connection">Loading traces</span><button id="refresh" type="button">Refresh traces</button><button id="pause" type="button" hidden>Pause updates</button><a id="snapshot" class="button" href="/snapshot.html" download>Save snapshot</a></div>
+  </header>
+  <main>
+    <div class="workbench-heading"><div><h1>Explore the writing harness.</h1><p>Compare saved benchmark cases, then follow the evidence into model requests and native generation.</p></div><a id="assessment-link" href="/report" target="_blank" rel="noopener">Read the assessment ↗</a></div>
+    <nav class="workspace-tabs" aria-label="Explorer views"><button id="view-benchmarks" aria-pressed="true">Benchmarks</button><button id="view-traces" aria-pressed="false">Request inspector</button></nav>
+    <section id="benchmarks" aria-label="Harness benchmarks"></section>
+    <section id="batch-status" class="batch-status" aria-label="Current batch"></section>
+    <div class="workbench" id="trace-workbench" hidden>
+      <aside class="request-browser" aria-label="Find a trace">
+        <label class="search-label" for="search">Find in traces <kbd>⌘ / Ctrl K</kbd></label>
+        <input id="search" type="search" placeholder="Case, output, error or passage…" autocomplete="off">
+        <div class="filters"><label>Model<select id="model"><option value="trained">Trained Flint</option><option value="all">Both models</option><option value="stock">Original Flint</option></select></label><label>Task<select id="suite"><option value="all">All tasks</option><option value="rewrite">Rewrite</option><option value="interview">Interview</option><option value="room">Editor room</option><option value="diagnostic">Short diagnostics</option></select></label></div>
+        <label class="filter-run">Run<select id="variant"><option value="all">All runs</option></select></label>
+        <label class="check"><input id="dispatched" type="checkbox" checked> Model dispatches only</label>
+        <div class="list-heading"><span id="result-count" aria-live="polite">Loading…</span><button id="clear" class="text-button" type="button">Clear filters</button></div>
+        <div id="trace-list" class="trace-list" aria-label="Requests"><div class="skeleton"></div><div class="skeleton"></div></div>
+        <p class="browser-note">A retry that reached a closed worker is a transport failure, not another model trial.</p>
+      </aside>
+      <section class="reading-room" aria-label="Trace detail">
+        <div id="selection"></div>
+        <div id="error-banner" class="error-banner" role="status" hidden></div>
+        <div id="detail"></div>
+      </section>
+    </div>
+    <footer id="capture-note">Loading the saved evaluation artifacts.</footer>
+  </main>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
