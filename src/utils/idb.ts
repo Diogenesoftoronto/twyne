@@ -1504,27 +1504,20 @@ export async function saveModelFileToIdb(
   id: string,
   blob: Blob,
 ): Promise<void> {
-  if (!isBrowser()) return;
-  try {
-    const rec: ModelFileRecord = {
-      id,
-      blob,
-      bytes: blob.size,
-      updatedAt: Date.now(),
-    };
-    await reqAsPromise(
-      (await openDb())
-        .transaction("models", "readwrite")
-        .objectStore("models")
-        .put(rec),
-    );
-  } catch {
-    // A cache write failure must not fail a download the caller awaited.
-  }
+  if (!hasIndexedDb()) throw new Error("IndexedDB unavailable");
+  const rec: ModelFileRecord = {
+    id,
+    blob,
+    bytes: blob.size,
+    updatedAt: Date.now(),
+  };
+  await tx("models", "readwrite", (transaction) => {
+    transaction.objectStore("models").put(rec);
+  });
 }
 
 export async function loadModelFileFromIdb(id: string): Promise<Blob | null> {
-  if (!isBrowser()) return null;
+  if (!hasIndexedDb()) return null;
   try {
     const db = await openDb();
     const rec = await reqAsPromise<ModelFileRecord | undefined>(
@@ -1539,7 +1532,7 @@ export async function loadModelFileFromIdb(id: string): Promise<Blob | null> {
 export async function listModelFilesFromIdb(
   prefix: string,
 ): Promise<ModelFileRecord[]> {
-  if (!isBrowser()) return [];
+  if (!hasIndexedDb()) return [];
   try {
     const db = await openDb();
     const all = await reqAsPromise<ModelFileRecord[]>(
@@ -1552,7 +1545,7 @@ export async function listModelFilesFromIdb(
 }
 
 export async function deleteModelFileFromIdb(id: string): Promise<void> {
-  if (!isBrowser()) return;
+  if (!hasIndexedDb()) return;
   try {
     await reqAsPromise(
       (await openDb())
