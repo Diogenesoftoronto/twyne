@@ -69,9 +69,13 @@ import {
   ROOM_CARD_WIDTH,
 } from "../../utils/margin-geometry";
 import { Icon } from "../ui/icon";
+import { markdownLiteral, renderMarkdownExcerpt } from "../../utils/markdown";
 import {
+  connectionReason,
   openPassageGather,
+  PROVENANCE_LABEL,
   revealPassage,
+  type GatherConnection,
   type GatherPassage,
 } from "../../utils/passage-gather";
 import { PersonaMasthead } from "../personas/persona-portrait";
@@ -229,6 +233,10 @@ const runLength = (ms: number) => {
 const clip = (text: string, n: number) =>
   text.length > n ? `${text.slice(0, n - 1).trimEnd()}…` : text;
 
+/** A margin note or persona note: written in Markdown, and opens a thread. */
+const isConversation = (item: FlowItem) =>
+  item.kind === "comment" || item.kind === "persona-note";
+
 export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
   (props) => {
     const root = useSignal<HTMLDivElement>();
@@ -274,6 +282,10 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       const canvas = el?.closest<HTMLElement>(".page-canvas");
       const scroller = canvas?.parentElement;
       if (!el || !canvas || !scroller) return;
+      // The surface re-renders its root when it switches between the hidden,
+      // quiet and full branches, so measure cards in the root that is
+      // mounted now, not the one this task first saw.
+      const surface = () => root.value ?? el;
       let frame = 0;
       let latest: FlowSnapshot = flowSnapshot();
       let lastSlot = "";
@@ -348,7 +360,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
               SIDE_FOR[item.kind] === "archive" && state.archive
                 ? "archive"
                 : "room";
-            const card = el.querySelector<HTMLElement>(
+            const card = surface().querySelector<HTMLElement>(
               `[data-flow-card="${CSS.escape(item.id)}"]`,
             );
             const open = item.id === state.openId;
@@ -377,7 +389,9 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           const shelf = rel(canvas.querySelector(".in-flow-shelf__inner"));
           // The galley slip rests at the foot of the room; cards give way.
           const galley =
-            state.room === "rail" ? rel(el.querySelector(".flow-slip")) : null;
+            state.room === "rail"
+              ? rel(surface().querySelector(".flow-slip"))
+              : null;
           let cardless =
             state.openId &&
             state.openTop != null &&
@@ -801,30 +815,62 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
               p.item.anchors.some((a) => anchors.has(a))),
         ),
       ];
-      const passages: GatherPassage[] = related.flatMap((p) =>
-        controller.anchorRanges(p.item).map((range, i) => ({
-          id: `${p.item.id}:${i}`,
-          label: `${KIND_LABELS[p.item.kind]}${
-            p.item.kind === "persona-note" && p.item.byline
-              ? ` · ${p.item.byline}`
-              : p.item.kind === "comment" && p.item.title
-                ? ` · ${p.item.title}`
+      const found = related.map((p) => ({
+        item: p.item,
+        ranges: controller.anchorRanges(p.item),
+      }));
+      const passages: GatherPassage[] = found.flatMap(({ item, ranges }) =>
+        ranges.map((range, i) => ({
+          id: `${item.id}:${i}`,
+          label: `${KIND_LABELS[item.kind]}${
+            item.kind === "persona-note" && item.byline
+              ? ` · ${item.byline}`
+              : item.kind === "comment" && item.title
+                ? ` · ${item.title}`
                 : ""
           }`,
-          color: accent(p.item),
+          color: accent(item),
           range,
-          notes: [p.item.body].filter(Boolean),
+          // Notes and replies are Markdown; any other body is manuscript
+          // or source text, shown exactly as written. An echo's body is its
+          // other passage, already gathered when it is in this manuscript.
+          notes: [
+            isConversation(item)
+              ? item.body
+              : item.kind === "echo" && item.anchors.length > 1
+                ? ""
+                : markdownLiteral(item.body),
+          ].filter(Boolean),
           go: () => {
-            controller.engage(p.item.id);
+            controller.engage(item.id);
             revealPassage(range);
           },
         })),
+      );
+      // Each echo's reason travels as it was recorded; opening asks nothing.
+      const connections: GatherConnection[] = found.flatMap(
+        ({ item, ranges }) => {
+          const reason = connectionReason(item);
+          if (!reason) return [];
+          return [
+            {
+              ...reason,
+              id: item.id,
+              passageIds: ranges.map((_, i) => `${item.id}:${i}`),
+              expected: item.anchors.length,
+              ...(item.anchors.length < 2
+                ? { elsewhere: item.folioName || item.title }
+                : {}),
+            },
+          ];
+        },
       );
       openPassageGather({
         title:
           focus.item.kind === "comment"
             ? `Margin note · ${focus.item.title}`
             : focus.item.title || KIND_LABELS[focus.item.kind],
+        connections,
         passages,
         opener,
       });
@@ -933,6 +979,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       const { item } = placed;
       const color = accent(item);
       const reply = item.data?.reply;
+      const reason = connectionReason(item);
       // A way in may point at an earlier passage worth picking up.
       const thread =
         item.kind === "way-in"
@@ -1024,15 +1071,16 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             </span>
           )}
 
-          {item.kind === "echo" && (
+          {reason && (
             <div class="flow-relation">
-              <p class="flow-relation__why">
+              <p class="flow-relation__why" data-provenance={reason.provenance}>
                 <strong class="flow-relation__heading">
-                  {item.data?.relation || "Shared words"}
+                  {reason.relation}{" "}
+                  <span class="flow-relation__source">
+                    {PROVENANCE_LABEL[reason.provenance]}
+                  </span>
                 </strong>
-                {item.data?.explanation ||
-                  item.byline ||
-                  "This passage may connect to the one you are reading."}
+                {reason.explanation}
               </p>
             </div>
           )}
@@ -1071,32 +1119,52 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
                 {item.body && <span>{item.body}</span>}
               </span>
             </a>
+          ) : isConversation(item) ? (
+            // A note is read here and opened by its own button: the note's
+            // links can't sit inside a button. A click on its prose opens
+            // the conversation too, unless it lands on a link or selects.
+            <div
+              class="flow-card__body flow-card__content"
+              onClick$={(event) => {
+                const target = event.target as Element | null;
+                if (target?.closest("a")) return;
+                if (window.getSelection()?.toString()) return;
+                void converse(item);
+              }}
+            >
+              {item.kind !== "persona-note" || item.title ? (
+                <strong class="flow-card__title">{item.title}</strong>
+              ) : null}
+              {item.body && (
+                <div
+                  class="flow-card__text comment-markdown"
+                  dangerouslySetInnerHTML={renderMarkdownExcerpt(
+                    item.body,
+                    280,
+                  )}
+                />
+              )}
+            </div>
           ) : (
             <button
               type="button"
               class="flow-card__body"
               onClick$={() =>
-                item.kind === "comment" || item.kind === "persona-note"
-                  ? converse(item)
-                  : flowController()?.focusAnchor(
-                      item,
-                      // The carbon is the other passage, so go there.
-                      item.kind === "echo" && item.anchors.length > 1
-                        ? 1
-                        : undefined,
-                    )
+                flowController()?.focusAnchor(
+                  item,
+                  // The carbon is the other passage, so go there.
+                  item.kind === "echo" && item.anchors.length > 1
+                    ? 1
+                    : undefined,
+                )
               }
               title={
-                item.kind === "comment" || item.kind === "persona-note"
-                  ? "Open the conversation"
-                  : item.kind === "echo" && item.anchors.length > 1
-                    ? "Go to the other passage"
-                    : "Go to the passage"
+                item.kind === "echo" && item.anchors.length > 1
+                  ? "Go to the other passage"
+                  : "Go to the passage"
               }
             >
-              {item.kind !== "persona-note" || item.title ? (
-                <strong class="flow-card__title">{item.title}</strong>
-              ) : null}
+              <strong class="flow-card__title">{item.title}</strong>
               {item.body && (
                 <span
                   class={
@@ -1112,10 +1180,25 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           )}
 
           {reply !== undefined && (reply || item.streaming) && (
-            <p class={["flow-card__reply", { "is-streaming": item.streaming }]}>
+            <div
+              class={["flow-card__reply", { "is-streaming": item.streaming }]}
+            >
               <span class="flow-card__reply-by">{item.data?.replyAuthor}</span>
-              {clip(reply ?? "", 420)}
-            </p>
+              <div
+                class="flow-card__reply-text comment-markdown"
+                dangerouslySetInnerHTML={renderMarkdownExcerpt(reply, 420)}
+              />
+            </div>
+          )}
+
+          {isConversation(item) && (
+            <button
+              type="button"
+              class="flow-link flow-card__open"
+              onClick$={() => converse(item)}
+            >
+              Open conversation
+            </button>
           )}
 
           {item.kind === "echo" && (
@@ -1136,7 +1219,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
                   <button
                     type="button"
                     class="flow-link"
-                    data-gather-opener={`flow:${item.id}`}
+                    data-gather-opener={`flow:${item.id}:compare`}
                     onClick$={(_, el) => gather(item.id, el)}
                   >
                     Compare passages

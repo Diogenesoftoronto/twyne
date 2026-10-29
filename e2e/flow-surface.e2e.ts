@@ -85,7 +85,11 @@ test("margin conversations preserve replies, own one surface and adapt to mobile
   });
   const card = page.locator(".flow-card").first();
   await card.hover();
-  await card.locator(".flow-card__body").focus();
+  // Whichever control the first card has: Open conversation or Go to.
+  await card
+    .locator(".flow-card__open, button.flow-card__body")
+    .first()
+    .focus();
   const more = page.getByRole("button", { name: /more in the margin/ });
   await expect(more).toBeVisible();
   await more.click();
