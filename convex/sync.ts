@@ -983,6 +983,24 @@ export const pushAll = mutation({
 });
 
 /**
+ * The account's sync revision alone. Open tabs subscribe to this rather than
+ * to `pullAll`, so a push re-sends one number to every tab instead of the
+ * whole account, and only a tab that is behind fetches the snapshot.
+ */
+export const syncRevision = query({
+  args: {},
+  returns: v.number(),
+  handler: async (ctx) => {
+    const userId = await requireIdentity(ctx);
+    const head = await ctx.db
+      .query("syncHeads")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .unique();
+    return head?.revision ?? 0;
+  },
+});
+
+/**
  * Pull the full user state in a single round-trip. The browser calls
  * this on sign-in to hydrate; it then merges the result with whatever
  * was already in IndexedDB (newer-wins by `updatedAt`).
