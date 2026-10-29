@@ -207,6 +207,84 @@ test("cancel during microphone permission stops late capture without purchasing 
   expect(requests).toBe(0);
   expect(live.liveVoiceState().status).toBe("idle");
 });
+
+test("local session captures, interrupts and responds without a hosted connect", async () => {
+  let requests = 0,
+    localPlays = 0,
+    cleared = 0;
+  let callback: ((audio: string, level: number) => void) | undefined;
+  const worker = {
+    onmessage: null as ((event: { data: unknown }) => void) | null,
+    onerror: null,
+    postMessage(data: { type: string; id: number; mode?: string }) {
+      if (data.type === "load")
+        queueMicrotask(() =>
+          this.onmessage?.({ data: { type: "loaded", id: data.id } }),
+        );
+      if (data.type === "turn")
+        queueMicrotask(() => {
+          if (data.mode === "asr")
+            this.onmessage?.({
+              data: { type: "text", id: data.id, delta: "Hello" },
+            });
+          else {
+            this.onmessage?.({
+              data: { type: "text", id: data.id, delta: "Hello back" },
+            });
+            this.onmessage?.({
+              data: {
+                type: "audio",
+                id: data.id,
+                samples: new Float32Array(20),
+              },
+            });
+          }
+          this.onmessage?.({ data: { type: "done", id: data.id } });
+        });
+    },
+    terminate() {},
+  };
+  capture.playLocal = () => {
+    localPlays++;
+  };
+  capture.stopPlayback = () => {
+    cleared++;
+  };
+  await live.startLiveVoice(
+    {
+      action: async () => {
+        requests++;
+        throw new Error("unexpected hosted request");
+      },
+    } as unknown as ConvexClient,
+    "Le Lecteur",
+    "",
+    false,
+    {
+      local: true,
+      localWorker: () => worker as unknown as Worker,
+      audio: async (onChunk) => {
+        callback = onChunk;
+        return capture;
+      },
+    },
+  );
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(live.liveVoiceState().status).toBe("listening");
+  const chunk = btoa(String.fromCharCode(...new Uint8Array(4800)));
+  for (let i = 0; i < 3; i++) callback!(chunk, 0.2);
+  for (let i = 0; i < 8; i++) callback!(chunk, 0);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(cleared).toBe(1);
+  expect(localPlays).toBe(1);
+  expect(requests).toBe(0);
+  expect(live.liveVoiceState().turns).toEqual([
+    { role: "user", text: "Hello" },
+    { role: "assistant", text: "Hello back" },
+  ]);
+  live.endLiveVoice();
+  expect(live.liveVoiceState().status).toBe("idle");
+});
 test("repeated delegations run once and results after end cannot act or speak", async () => {
   let calls = 0;
   let resolve!: (result: unknown) => void;
