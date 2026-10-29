@@ -26,7 +26,7 @@ test("conditional remaining quantiles exclude completed/equal runs and preserve 
     interval(50, 50, 50),
   );
 });
-test("baseline independently conditions the current run and pause", () => {
+test("baseline uses scored focus outcomes and conditions the observed pause", () => {
   expect(
     rhythmBaseline(
       {
@@ -34,14 +34,25 @@ test("baseline independently conditions the current run and pause", () => {
         runs: Array(8).fill(120_000),
         pauses: Array(8).fill(15_000),
       },
-      90,
+      Array(8).fill(30),
       4,
     ),
   ).toEqual({ focus: interval(30, 30, 30), pause: interval(11, 11, 11) });
-  expect(rhythmBaseline(emptyProfile(), 90, 4)).toEqual({
+  expect(rhythmBaseline(emptyProfile(), [], 4)).toEqual({
     focus: null,
     pause: null,
   });
+});
+test("terminal pauses contribute zero focus instead of disappearing from history", () => {
+  const profile = { ...emptyProfile(), runs: Array(8).fill(240_000) };
+  expect(rhythmBaseline(profile, Array(8).fill(0), 4).focus).toEqual(
+    interval(0, 0, 0),
+  );
+  expect(
+    rhythmBaseline(profile, [0, 0, 20, 40, 60, 80, 100, 120], 4).focus,
+  ).toEqual(interval(0, 50, 106));
+  // Long cadence history alone cannot stand in for observed reference bouts.
+  expect(rhythmBaseline(profile, [0, NaN, Infinity, -1], 4).focus).toBeNull();
 });
 test("hold/release thresholds are exact, and old predictions lose their hold", () => {
   const estimate = { focus: interval(30, 50, 90), pause: interval(1, 24, 60) };

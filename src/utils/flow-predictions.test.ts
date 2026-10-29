@@ -83,7 +83,7 @@ test("trust needs twenty paired, resolved, calibrated wins on both targets", () 
   ).toBe(false);
   expect(
     trustClairic(calibratedLog().map((p) => ({ ...p, actualFocus: 20 }))),
-  ).toBe(false);
+  ).toBe(true);
   expect(
     trustClairic(calibratedLog().map((p) => ({ ...p, actualFocus: 1000 }))),
   ).toBe(false);
@@ -96,6 +96,21 @@ test("trust needs twenty paired, resolved, calibrated wins on both targets", () 
       ),
     ),
   ).toBe(false);
+});
+test("tight predictions of terminal focus can win despite full interval coverage", () => {
+  const log = calibratedLog().map((p) => ({
+    ...p,
+    actualFocus: 0,
+    estimate: {
+      ...p.estimate,
+      focus:
+        p.source === "clairic"
+          ? { p10: 0, median: 0, p90: 0 }
+          : { p10: 0, median: 50, p90: 100 },
+    },
+  }));
+  expect(calibration(log, "clairic", "focus").coverage).toBe(1);
+  expect(trustClairic(log)).toBe(true);
 });
 test("calibration rolls over fifty pairs; storage rejects bad intervals and stays bounded", () => {
   const log = calibratedLog(100);

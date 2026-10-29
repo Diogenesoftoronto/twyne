@@ -21,6 +21,7 @@ import {
 } from "../../../utils/flow-session";
 import type { JudgementRequest } from "../../../utils/judgement-client";
 import type { ProjectBrief } from "../../../types";
+import { PREDICTION_LOG_KEY } from "../../../utils/flow-predictions";
 
 const releaseGlobals = await lockBrowserGlobalsForTestFile();
 const originals = new Map(
@@ -821,9 +822,28 @@ test("a selected way in uses the dossier's purpose and audience", async () => {
   expect(way.body).toContain("Explain seaside trade");
 });
 
-test("empirical rhythm keeps flow through a thinking pause and logs actual resumed focus", async () => {
+function seedFocusOutcomes(withPause = true, actualFocus = 150) {
+  metadata.set(
+    PREDICTION_LOG_KEY,
+    Array.from({ length: 8 }, (_, i) => ({
+      id: `history:${i}`,
+      source: "baseline",
+      at: i + 1,
+      runStartedAt: 0,
+      lastKeyAt: 0,
+      runSeconds: 0,
+      pauseSeconds: 0,
+      estimate: { focus: null, pause: null },
+      actualFocus,
+      ...(withPause ? { actualPause: 6 } : {}),
+    })),
+  );
+}
+
+test("empirical rhythm keeps flow through a thinking pause and logs actual stopped focus", async () => {
   resetRequests();
   const time = clock();
+  seedFocusOutcomes();
   metadata.set("flow-profile", {
     version: 1,
     runs: Array(8).fill(240_000),
@@ -845,10 +865,13 @@ test("empirical rhythm keeps flow through a thinking pause and logs actual resum
   expect(extractionRequests).toHaveLength(0);
   current.stop();
   await flush();
-  const log = metadata.get("flow-rhythm-predictions") as Array<{
-    source: string;
-    actualFocus: number;
-  }>;
+  const log = (
+    metadata.get(PREDICTION_LOG_KEY) as Array<{
+      id: string;
+      source: string;
+      actualFocus: number;
+    }>
+  ).filter((p) => !p.id.startsWith("history:"));
   expect(log[0].source).toBe("baseline");
   expect(log[0].actualFocus).toBe(0);
 });
@@ -870,7 +893,7 @@ test("reference focus outcomes span short pauses independently of the UI gate", 
   current.tick();
   current.stop();
   await flush();
-  const log = metadata.get("flow-rhythm-predictions") as Array<{
+  const log = metadata.get(PREDICTION_LOG_KEY) as Array<{
     actualFocus?: number;
     actualPause?: number;
   }>;
@@ -880,6 +903,7 @@ test("reference focus outcomes span short pauses independently of the UI gate", 
 test("the conductor requests Clairic once on a quiet pause with rhythm-only state", async () => {
   resetRequests();
   const time = clock();
+  seedFocusOutcomes();
   metadata.set("flow-profile", {
     version: 1,
     runs: Array(8).fill(240_000),
@@ -900,4 +924,34 @@ test("the conductor requests Clairic once on a quiet pause with rhythm-only stat
   await flush();
   expect(extractionRequests).toHaveLength(1);
   expect(JSON.stringify(extractionRequests[0])).not.toContain("Odyssey");
+});
+
+test("terminal focus history survives remount without a later key to resolve the pause", async () => {
+  resetRequests();
+  const time = clock();
+  seedFocusOutcomes(false, 0);
+  metadata.set("flow-profile", {
+    pauses: Array(8).fill(10_000),
+    runs: Array(8).fill(240_000),
+  });
+  const current = start("terminal-history");
+  await enterFlow(current, time);
+  time.advance(4000);
+  current.tick();
+  current.stop();
+  await flush();
+  const saved = metadata.get(PREDICTION_LOG_KEY) as Array<{
+    id: string;
+    actualFocus?: number;
+    actualPause?: number;
+    estimate: { focus: { p10: number; median: number; p90: number } | null };
+  }>;
+  expect(saved.filter((p) => p.id.startsWith("history:"))).toHaveLength(8);
+  expect(
+    saved.find((p) => !p.id.startsWith("history:"))?.estimate.focus,
+  ).toEqual({
+    p10: 0,
+    median: 0,
+    p90: 0,
+  });
 });

@@ -1,7 +1,7 @@
 /**
  * The forecast line in the status bar, beside the word count.
  *
- *   on pace for ~900 today (700–1,100) · done ~Nov 14 (Nov 8 – 25)
+ *   on pace for ~900 today (700–1,100) · word target ~Nov 14 (Nov 8 – 25)
  *
  * It also keeps the pace ledger: every saved draft's word count is folded
  * into `writing-pace-ledger`, so the history exists whether or not the line
@@ -74,8 +74,15 @@ export const ForecastLine = component$<{
   useVisibleTask$(
     ({ track, cleanup }) => {
       const folioId = track(() => props.folioId);
-      track(() => auth.value.user?.analyticsId);
+      const accountId = track(() =>
+        hasAuthenticatedConvexIdentity(auth.value)
+          ? auth.value.user?.analyticsId
+          : undefined,
+      );
       const client = track(() => clientSignal.value);
+      state.pace = null;
+      state.finish = null;
+      state.credit = null;
       let disposed = false;
       let preview = false;
       let pending: { folioId: string; words: number } | null = null;
@@ -85,9 +92,15 @@ export const ForecastLine = component$<{
         if (disposed || preview) return;
         const now = Date.now();
         const ledger = await loadPaceLedger();
-        const ask = clientAsk(client);
+        if (disposed || preview) return;
+        const request = clientAsk(client, accountId);
+        const ask: typeof request = request
+          ? (input) => disposed
+              ? Promise.resolve({ ok: false })
+              : request(input)
+          : undefined;
         const [pace, finish] = await Promise.all([
-          paceForecast(ledger, now, { ask }).catch(() => null),
+          paceForecast(ledger, now, { ask, accountId }).catch(() => null),
           folioId
             ? loadBriefFromIdb(folioId)
                 .then((brief) =>
@@ -97,7 +110,7 @@ export const ForecastLine = component$<{
                     currentWords: props.wordCount,
                     target: briefWordTarget(brief),
                     now,
-                    options: { ask },
+                    options: { ask, accountId },
                   }),
                 )
                 .catch(() => null)
@@ -109,10 +122,10 @@ export const ForecastLine = component$<{
       };
 
       const loadCredit = async () => {
-        const accountId = auth.value.user?.analyticsId;
-        if (!client || !accountId || !hasAuthenticatedConvexIdentity(auth.value))
-          return;
-        const credit = await dailyCreditRunway(client, accountId).catch(
+        if (!client || !accountId) return;
+        const credit = await dailyCreditRunway(client, accountId, Date.now(), {
+          isCurrent: () => !disposed,
+        }).catch(
           () => null,
         );
         if (!disposed && !preview) state.credit = credit;
@@ -159,7 +172,10 @@ export const ForecastLine = component$<{
         window.addEventListener(FORECAST_PREVIEW_EVENT, onPreview);
       void refresh();
       void loadCredit();
-      const timer = window.setInterval(() => void refresh(), REFRESH_MS);
+      const timer = window.setInterval(() => {
+        void refresh();
+        void loadCredit();
+      }, REFRESH_MS);
       cleanup(() => {
         disposed = true;
         window.clearInterval(timer);
@@ -200,7 +216,7 @@ export const ForecastLine = component$<{
       )}
       {!hidden && state.finish && (
         <span class="editor-forecast__item" title={finishText}>
-          done ~{formatDay(state.finish.median)}
+          word target ~{formatDay(state.finish.median)}
           {state.finish.early !== state.finish.late && (
             <span class="editor-forecast__range">
               {" "}({formatDayRange(state.finish.early, state.finish.late)})

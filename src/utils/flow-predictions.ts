@@ -2,7 +2,9 @@
 import type { Interval } from "./extraction";
 import { validInterval, type RhythmEstimate } from "./flow-rhythm";
 
-export const PREDICTION_LOG_KEY = "flow-rhythm-predictions";
+// The zero-inclusive target and matched empirical baseline must earn trust
+// afresh; old cadence-based comparisons cannot qualify this version.
+export const PREDICTION_LOG_KEY = "flow-rhythm-predictions-v2";
 export const MAX_PREDICTIONS = 240;
 export const MIN_CALIBRATION_PAIRS = 20;
 const CALIBRATION_WINDOW = 50;
@@ -167,7 +169,8 @@ export function trustClairic(log: readonly RhythmPrediction[]): boolean {
     const baseline = calibration(paired, "baseline", target);
     return (
       model.coverage >= 0.7 &&
-      model.coverage <= 0.9 &&
+      // Discrete outcomes (especially zero) can validly exceed 80% coverage.
+      // Proper scores below still penalize unhelpfully wide intervals.
       model.pinball < baseline.pinball &&
       model.intervalScore < baseline.intervalScore
     );

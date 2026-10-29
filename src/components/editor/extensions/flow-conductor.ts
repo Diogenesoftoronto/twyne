@@ -1676,10 +1676,12 @@ export function startFlowConductor(
       ]);
     if (!active()) return;
     profile = normalizeProfile(savedProfile);
-    // Keep only resolved old observations; a previous editor cannot finish its pauses.
+    // Keep each resolved target: a final pause can have a known focus outcome
+    // of zero without a next key to resolve its duration. Calibration still
+    // requires both outcomes, but the focus baseline must retain these stops.
     rhythm.log = [
       ...normalizePredictions(savedPredictions).filter(
-        (p) => p.actualFocus !== undefined && p.actualPause !== undefined,
+        (p) => p.actualFocus !== undefined || p.actualPause !== undefined,
       ),
       ...rhythm.log,
     ].slice(-240);

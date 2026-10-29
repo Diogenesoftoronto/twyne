@@ -30,11 +30,24 @@ export function remainingQuantiles(
 
 export function rhythmBaseline(
   profile: FlowProfile,
-  runSeconds: number,
+  observedRemainingFocus: readonly number[],
   pauseSeconds: number,
 ): RhythmEstimate {
+  // Use the outcome we actually score: seconds from a prediction to the
+  // reference bout's last key, including zero when that key is already past.
+  // Cadence-run lengths end at shorter gaps and are not this target.
+  const focus = observedRemainingFocus
+    .filter((seconds) => Number.isFinite(seconds) && seconds >= 0)
+    .slice(-50);
   return {
-    focus: remainingQuantiles(profile.runs, runSeconds),
+    focus:
+      focus.length >= MIN_RHYTHM_HISTORY
+        ? {
+            p10: quantile(focus, 0.1)!,
+            median: quantile(focus, 0.5)!,
+            p90: quantile(focus, 0.9)!,
+          }
+        : null,
     pause: remainingQuantiles(profile.pauses, pauseSeconds),
   };
 }
