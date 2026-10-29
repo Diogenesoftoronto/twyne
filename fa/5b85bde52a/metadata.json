@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "fa5b85bde52a",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "src/components/editor/extensions/flow-conductor.test.ts",
+    "src/components/editor/extensions/flow-conductor.ts",
+    "src/components/editor/forecast-line.tsx",
+    "src/utils/flow-predictions.test.ts",
+    "src/utils/flow-predictions.ts",
+    "src/utils/flow-rhythm-estimator.test.ts",
+    "src/utils/flow-rhythm-estimator.ts",
+    "src/utils/flow-rhythm.test.ts",
+    "src/utils/flow-rhythm.ts",
+    "src/utils/forecast-baselines.ts",
+    "src/utils/forecast-cache.ts",
+    "src/utils/writing-forecasts.test.ts",
+    "src/utils/writing-forecasts.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/fa/5b85bde52a/0/metadata.json",
+      "transcript": "/fa/5b85bde52a/0/full.jsonl",
+      "compact_transcript": "/fa/5b85bde52a/0/transcript.jsonl",
+      "content_hash": "/fa/5b85bde52a/0/content_hash.txt",
+      "prompt": "/fa/5b85bde52a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 289365,
+    "cache_read_tokens": 618672,
+    "output_tokens": 1871,
+    "api_call_count": 3
+  }
+}
