@@ -10,88 +10,76 @@ import {
 import type { SentenceLabProps } from "./catalog";
 import { inFlowController } from "../editor/extensions/struggle-tracker";
 import { SpeechTransport } from "../ui/speech-transport";
-import { completeSentence } from "../../utils/sentence-ledger";
 import {
-  localSentenceCandidates,
-  sentenceCandidate,
+  bindingKey,
+  checkTrial,
   sentenceWordDiff,
-  sentenceWords,
-  wordAlternatives,
-  type SentenceCandidate,
+  type RevisionBinding,
+  type RevisionObservation,
 } from "../../utils/sentence-bench";
 import styles from "./sentence-bench.css?inline";
 import { InstrumentRoom } from "../instruments/instrument-room";
-import {
-  InstrumentMotion,
-  InstrumentMotionPart,
-} from "../instruments/instrument-motion";
-import { localWritingStatus } from "../../utils/local-writing-models";
-import { onModelDownload } from "../../utils/models-cache";
-import { localPackId } from "../../utils/local-writing-manifest";
 
+type View = "changes" | "revision" | "original";
+interface Reading {
+  /** The binding the reading belongs to; any edit makes it stale. */
+  key: string;
+  status: "loading" | "ready" | "error";
+  observations: RevisionObservation[];
+  dropped: number;
+  message: string;
+}
 interface BenchSession {
   sentence: string;
-  working: string;
-  tab: string;
-  typing: boolean;
-  wordFrom: number;
-  wordTo: number;
-  compare: string;
-  applying: boolean;
+  trial: string;
+  /** The last trial handed in by the controller, so a new one replaces it. */
+  offered: string;
+  view: View;
+  preview: boolean;
   message: string;
-  modelBusy: boolean;
-  modelWords: SentenceCandidate[];
-  /** Disclosures the writer opened; a replaced instance keeps them open. */
-  contextOpen: boolean;
-  paragraphOpen: boolean;
   roomOpen: boolean;
+  /** The caret went into the revision once; a replaced instance never steals it. */
+  focused: boolean;
 }
 
-// The collapsed context keeps one sentence on each side of the working wording.
-const SENTENCE_PATTERN = /[^.!?]+[.!?]+["'”’)]*\s*|[^.!?]+$/g;
-function lastSentence(text: string): string {
-  const parts = text.trim().match(SENTENCE_PATTERN) ?? [];
-  return parts.length > 1 ? (parts.at(-1)?.trim() ?? text) : text;
+// The margin can replace this component's instance while a reading is in
+// flight, so readings live per tool session, outside any one instance, and
+// every instance for that tool follows them.
+const READING_EVENT = "twyne:revision-reading";
+const readings = new Map<string, Reading>();
+function publishReading(toolId: string, reading: Reading | null) {
+  if (reading) readings.set(toolId, reading);
+  else readings.delete(toolId);
+  while (readings.size > 8) readings.delete(readings.keys().next().value!);
+  window.dispatchEvent(
+    new CustomEvent<string>(READING_EVENT, { detail: toolId }),
+  );
 }
-function firstSentence(text: string): string {
-  const parts = text.trim().match(SENTENCE_PATTERN) ?? [];
-  return parts.length > 1 ? (parts[0]?.trim() ?? text) : text;
-}
+const copyReading = (toolId: string): Reading | null => {
+  const r = readings.get(toolId);
+  return r
+    ? { ...r, observations: r.observations.map((o) => ({ ...o })) }
+    : null;
+};
 
-const SECTIONS = [
-  ["rewrite", "Rewrite"],
-  ["words", "Words"],
-  ["place", "Place"],
-  ["hear", "Hear"],
-] as const;
-
-// Checked candidate updates can replace the renderer's component instance.
-// Keep the writer's unfinished choices with this tool session, not that
-// instance. Each instance owns its own store and copies its changes back
-// here: a store shared between instances keeps the replaced instance's
-// subscriptions, and every choice then renders one click late.
-// This is browser-only, bounded, and a new tool ID starts a fresh working copy.
+// A spec update (a stale flag, a handed-in transcript) can replace the
+// renderer's component instance. Keep the writer's trial with this tool
+// session, not that instance. Each instance owns its own store and copies its
+// changes back here: a store shared between instances keeps the replaced
+// instance's subscriptions. Browser-only, bounded; a new tool ID starts fresh.
 const benchSessions = new Map<string, BenchSession>();
 function benchSession(toolId: string, props: SentenceLabProps): BenchSession {
   const previous = typeof window !== "undefined" && benchSessions.get(toolId);
-  // Work in flight belongs to the instance that started it.
-  if (previous && previous.sentence === props.sentence)
-    return { ...previous, applying: false, modelBusy: false };
+  if (previous && previous.sentence === props.sentence) return { ...previous };
   const session: BenchSession = {
     sentence: props.sentence,
-    working: props.sentence,
-    tab: props.initialSection ?? "rewrite",
-    typing: false,
-    wordFrom: props.initialWord?.from ?? -1,
-    wordTo: props.initialWord?.to ?? -1,
-    compare: "",
-    applying: false,
+    trial: props.trial ?? props.sentence,
+    offered: props.trial ?? "",
+    view: "changes",
+    preview: false,
     message: "",
-    modelBusy: false,
-    modelWords: [],
-    contextOpen: false,
-    paragraphOpen: false,
     roomOpen: false,
+    focused: false,
   };
   if (typeof window !== "undefined") {
     benchSessions.set(toolId, session);
@@ -101,81 +89,134 @@ function benchSession(toolId: string, props: SentenceLabProps): BenchSession {
   return { ...session };
 }
 
-const signedDelta = (n: number) =>
-  `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n)} word${Math.abs(n) === 1 ? "" : "s"}`;
+const VIEWS: Array<[View, string]> = [
+  ["changes", "Changes"],
+  ["revision", "Revision"],
+  ["original", "Original"],
+];
 
 export const SentenceBench = component$<{
   props: SentenceLabProps;
   filling: boolean;
   toolId: string;
-}>(({ props, filling, toolId }) => {
+}>(({ props, toolId }) => {
   useStyles$(styles);
-  const wordPackReady = useSignal(false);
+  const field = useSignal<HTMLTextAreaElement>();
   const state = useStore<BenchSession>(benchSession(toolId, props));
+  const current = useStore<{ reading: Reading | null }>({
+    reading: typeof window === "undefined" ? null : copyReading(toolId),
+  });
   useTask$(({ track }) => {
-    const next = track(() => ({ ...state, modelWords: [...state.modelWords] }));
+    const next = track(() => ({ ...state }));
     if (typeof window === "undefined") return;
     const kept = benchSessions.get(toolId);
     if (kept && kept.sentence === next.sentence) Object.assign(kept, next);
   });
+  // An edited transcript arrives as a new trial; it never touches the page.
+  useTask$(({ track }) => {
+    const offered = track(() => props.trial);
+    if (offered && offered !== state.offered) {
+      state.offered = offered;
+      state.trial = offered;
+      state.message = "";
+    }
+  });
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup }) => {
-    let alive = true;
-    const refresh = async () => {
-      try {
-        const status = await localWritingStatus("words");
-        if (alive) wordPackReady.value = status.phase === "ready";
-      } catch {
-        if (alive) wordPackReady.value = false;
-      }
+    const follow = (event: Event) => {
+      if ((event as CustomEvent<string>).detail === toolId)
+        current.reading = copyReading(toolId);
     };
-    void refresh();
-    const off = onModelDownload(localPackId("words"), () => {
-      void refresh();
-    });
-    cleanup(() => {
-      alive = false;
-      off();
-    });
+    current.reading = copyReading(toolId);
+    window.addEventListener(READING_EVENT, follow);
+    cleanup(() => window.removeEventListener(READING_EVENT, follow));
+    // Opened by the writer's request: put the caret in the revision, once.
+    if (!state.focused) {
+      state.focused = true;
+      field.value?.focus({ preventScroll: true });
+    }
   });
-  const candidates = props.candidates ?? [
-    ...localSentenceCandidates(props.sentence),
-    ...props.attempts
-      .filter(completeSentence)
-      .map((text) =>
-        sentenceCandidate(props.sentence, text, "yours", "Earlier wording"),
-      ),
-    ...props.variants
-      .filter(completeSentence)
-      .map((text) =>
-        sentenceCandidate(
-          props.sentence,
-          text,
-          "text-model",
-          "Model wording",
-          "Meaning has not been checked.",
-        ),
-      ),
-  ];
+
   const before = props.context?.before ?? "";
   const after = props.context?.after ?? "";
-  const contextTrimmed =
-    (!!before && lastSentence(before) !== before) ||
-    (!!after && firstSentence(after) !== after);
-  const changed = state.working !== props.sentence;
-  const words = sentenceWords(props.sentence);
-  const alternatives = wordAlternatives(
-    props.sentence,
-    state.wordFrom,
-    state.wordTo,
-  );
-  const allWords = sentenceWords(props.context?.paragraph ?? props.sentence);
-  const repeated = (word: string) =>
-    allWords.filter(
-      (w) => w.word.toLocaleLowerCase() === word.toLocaleLowerCase(),
-    ).length;
+  const checked = checkTrial(state.trial);
+  const changed = checked.ok && checked.text !== props.sentence;
+  const key = changed
+    ? bindingKey({
+        original: props.sentence,
+        trial: checked.text,
+        before,
+        after,
+      })
+    : "";
+  const reading = current.reading;
+  const readingCurrent = !!reading && reading.key === key;
+  const blocked = !!props.stale;
+
+  const close = $(() => {
+    inFlowController()?.previewVariant(null);
+    inFlowController()?.closeRevision();
+  });
+  const use = $(() => {
+    state.message = "";
+    const result = inFlowController()?.applyRevision(state.trial) ?? {
+      ok: false as const,
+      message:
+        "This bench is no longer connected to the manuscript. Copy your revision and reopen it.",
+    };
+    if (!result.ok) state.message = result.message;
+  });
+  const read = $(async () => {
+    // Bind to the texts on the bench at the moment of the click.
+    const trial = checkTrial(state.trial);
+    if (!trial.ok || trial.text === props.sentence || props.stale) return;
+    const binding: RevisionBinding = {
+      original: props.sentence,
+      trial: trial.text,
+      before: props.context?.before ?? "",
+      after: props.context?.after ?? "",
+    };
+    const requestKey = bindingKey(binding);
+    publishReading(toolId, {
+      key: requestKey,
+      status: "loading",
+      observations: [],
+      dropped: 0,
+      message: "",
+    });
+    let result;
+    try {
+      result = await inFlowController()?.readRevision(toolId, binding);
+    } catch {
+      result = undefined;
+    }
+    // Discard an answer that was stopped or superseded.
+    const pending = readings.get(toolId);
+    if (pending?.key !== requestKey || pending.status !== "loading") return;
+    publishReading(
+      toolId,
+      result?.ok === true
+        ? {
+            key: requestKey,
+            status: "ready",
+            observations: result.observations,
+            dropped: result.dropped,
+            message: "",
+          }
+        : {
+            key: requestKey,
+            status: "error",
+            observations: [],
+            dropped: 0,
+            message:
+              result?.message ??
+              "This bench is no longer connected to the manuscript. Your revision is unchanged.",
+          },
+    );
+  });
+
   const Diff = ({ text }: { text: string }) => (
-    <span class="sentence-bench-diff">
+    <>
       {sentenceWordDiff(props.sentence, text).map((part, i) =>
         part.kind === "removed" ? (
           <del key={i}>{part.text}</del>
@@ -185,512 +226,277 @@ export const SentenceBench = component$<{
           <span key={i}>{part.text}</span>
         ),
       )}
-    </span>
+    </>
   );
-  /** Provenance and caveats stay one deliberate click away. */
-  const About = ({ label, lines }: { label: string; lines: string[] }) => (
-    <details class="sentence-bench-about">
-      <summary>{label}</summary>
-      <ul>
-        {lines.map((line, i) => (
-          <li key={i}>{line}</li>
-        ))}
-      </ul>
-    </details>
-  );
-  const choose = $((text: string) => {
-    state.typing = false;
-    state.working = text;
-    state.message = "";
-  });
+
+  if (props.refusal)
+    return (
+      <div class="in-flow-body sentence-bench" data-sentence-bench="refused">
+        <p class="sentence-bench-notice" role="status">
+          {props.refusal}
+        </p>
+        <div class="sentence-bench-actions">
+          <button type="button" class="btn-paper in-flow-mini" onClick$={close}>
+            Close
+          </button>
+        </div>
+      </div>
+    );
+
   return (
     <div
       class="in-flow-body sentence-bench"
       data-sentence-bench={props.sentenceId ?? "selection"}
+      onKeyDown$={(event) => {
+        if (event.key === "Escape") void close();
+        // The controller re-checks the trial and the source before editing.
+        else if (event.key === "Enter" && (event.metaKey || event.ctrlKey))
+          void use();
+      }}
     >
-      {props.stale && (
+      {blocked && (
         <p class="sentence-bench-notice" role="status">
-          This sentence changed. Reopen the bench before using a wording or
-          moving it.
+          The sentence or its paragraph changed in the manuscript. Your revision
+          is kept here: copy it, or close and reopen the bench on the current
+          text.
         </p>
       )}
-      <section
-        class="sentence-bench-working"
-        aria-label="Working sentence in context"
-      >
-        <label class="in-flow-label" for={`sentence-bench-working-${toolId}`}>
-          Working wording
+      <section class="sentence-bench-source" aria-label="Original sentence">
+        <p class="in-flow-label">Original</p>
+        <p class="sentence-bench-original">{props.sentence}</p>
+      </section>
+      <section class="sentence-bench-working">
+        <label class="in-flow-label" for={`sentence-bench-trial-${toolId}`}>
+          Your revision
         </label>
-        {state.contextOpen && before && (
-          <p
-            id={`sentence-bench-before-${toolId}`}
-            class="sentence-bench-context"
-          >
-            {state.paragraphOpen ? before : lastSentence(before)}
-          </p>
-        )}
         <textarea
-          id={`sentence-bench-working-${toolId}`}
+          ref={field}
+          id={`sentence-bench-trial-${toolId}`}
           class="in-flow-textarea sentence-bench-textarea"
           rows={3}
-          value={state.working}
+          maxLength={1400}
+          aria-describedby={`sentence-bench-trial-hint-${toolId}`}
+          value={state.trial}
           onInput$={(_, el) => {
-            state.typing = true;
-            state.working = el.value;
+            state.trial = el.value;
             state.message = "";
+            if (state.preview)
+              inFlowController()?.previewVariant(el.value || null);
           }}
         />
-        {state.contextOpen && after && (
-          <p
-            id={`sentence-bench-after-${toolId}`}
-            class="sentence-bench-context"
-          >
-            {state.paragraphOpen ? after : firstSentence(after)}
-          </p>
-        )}
-        {changed && (
-          <p
-            class="sentence-bench-preview"
-            aria-label="Changes from the original"
-          >
-            <Diff text={state.working} />
-          </p>
-        )}
-        <div class="sentence-bench-actions">
-          <button
-            type="button"
-            class="btn-press"
-            disabled={
-              props.stale ||
-              state.applying ||
-              !completeSentence(state.working) ||
-              !changed
-            }
-            onClick$={async () => {
-              state.applying = true;
-              state.message = "";
-              try {
-                const used = await inFlowController()?.applyVariant(
-                  state.working.trim(),
-                );
-                if (!used)
-                  state.message =
-                    "The wording could not be used. Check the bench notice and try again.";
-              } catch {
-                state.message =
-                  "The wording could not be checked. Try again or reopen the bench.";
-              } finally {
-                state.applying = false;
-              }
-            }}
-          >
-            {state.applying ? "Checking…" : "Use this wording"}
-          </button>
-          <button
-            type="button"
-            class="btn-paper in-flow-mini"
-            disabled={!changed}
-            onClick$={() => {
-              choose(props.sentence);
-              inFlowController()?.previewVariant(null);
-            }}
-          >
-            Keep original
-          </button>
-          {(before || after) && (
-            <button
-              type="button"
-              class="sentence-bench-link"
-              aria-expanded={state.contextOpen}
-              onClick$={() => {
-                state.contextOpen = !state.contextOpen;
-              }}
-            >
-              {state.contextOpen ? "Hide context" : "Context"}
-            </button>
-          )}
-          {state.contextOpen && contextTrimmed && (
-            <button
-              type="button"
-              class="sentence-bench-link"
-              aria-expanded={state.paragraphOpen}
-              aria-controls={`sentence-bench-before-${toolId} sentence-bench-after-${toolId}`}
-              onClick$={() => {
-                state.paragraphOpen = !state.paragraphOpen;
-              }}
-            >
-              {state.paragraphOpen ? "Less" : "Whole paragraph"}
-            </button>
-          )}
-        </div>
-        {changed && !completeSentence(state.working) && (
-          <p class="sentence-bench-hint" role="status">
-            Finish the wording with sentence punctuation before using it.
-          </p>
-        )}
-        {state.message && (
-          <p class="sentence-bench-notice" role="status">
-            {state.message}
-          </p>
-        )}
+        <p
+          id={`sentence-bench-trial-hint-${toolId}`}
+          class="sentence-bench-hint"
+          role={!checked.ok && state.trial.trim() ? "status" : undefined}
+        >
+          {!checked.ok && state.trial.trim()
+            ? checked.message
+            : changed
+              ? "Fragments and more than one sentence are fine."
+              : "Edit the copy above. The original stays as it is until you use the revision."}
+        </p>
       </section>
-      <nav aria-label="Sentence bench sections" class="sentence-bench-tabs">
-        {SECTIONS.map(([id, label]) => (
+
+      <div class="sentence-bench-actions">
+        <button
+          type="button"
+          class="btn-press"
+          disabled={blocked || !changed}
+          aria-keyshortcuts="Control+Enter Meta+Enter"
+          onClick$={use}
+        >
+          Use revision
+        </button>
+        <button
+          type="button"
+          class="btn-paper in-flow-mini"
+          aria-keyshortcuts="Escape"
+          onClick$={close}
+        >
+          Keep original
+        </button>
+        {state.trial.trim() && (
           <button
             type="button"
-            key={id}
-            aria-pressed={state.tab === id}
-            class={state.tab === id ? "is-on" : ""}
-            onClick$={() => {
-              state.tab = id;
-              state.message = "";
-              inFlowController()?.previewVariant(null);
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-      {state.tab === "rewrite" && (
-        <section
-          aria-label="Complete sentence alternatives"
-          class="sentence-bench-pane"
-        >
-          <ol class="in-flow-list sentence-bench-candidates">
-            {candidates.map((candidate) => (
-              <li key={candidate.id}>
-                <button
-                  type="button"
-                  class={[
-                    "in-flow-choice",
-                    { "in-flow-choice--on": state.working === candidate.text },
-                  ]}
-                  aria-pressed={state.working === candidate.text}
-                  onClick$={() => choose(candidate.text)}
-                  onMouseEnter$={() =>
-                    inFlowController()?.previewVariant(candidate.text)
-                  }
-                  onMouseLeave$={() => inFlowController()?.previewVariant(null)}
-                  onFocus$={() =>
-                    inFlowController()?.previewVariant(candidate.text)
-                  }
-                  onBlur$={() => inFlowController()?.previewVariant(null)}
-                  aria-label={`Try ${candidate.operation}: ${candidate.text}`}
-                >
-                  <Diff text={candidate.text} />
-                  <span class="sentence-bench-meta">
-                    {candidate.source !== "rule" && (
-                      <span class="sentence-bench-chip">
-                        {candidate.source === "text-model"
-                          ? "model"
-                          : candidate.source}
-                      </span>
-                    )}
-                    {candidate.operation} · {signedDelta(candidate.wordDelta)}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  class="sentence-bench-side"
-                  aria-pressed={state.compare === candidate.text}
-                  aria-label={`Compare alongside the original: ${candidate.operation}`}
-                  onClick$={() => {
-                    state.compare =
-                      state.compare === candidate.text ? "" : candidate.text;
-                  }}
-                >
-                  Compare
-                </button>
-              </li>
-            ))}
-          </ol>
-          {filling && (
-            <p class="sentence-bench-hint" role="status">
-              Checking complete alternatives…
-            </p>
-          )}
-          {!candidates.length && !filling && (
-            <p class="sentence-bench-hint">
-              No safe rule change for this sentence. Try Words, Place or Hear,
-              or edit the wording above.
-            </p>
-          )}
-          {candidates.length > 0 && (
-            <About
-              label="How these were checked"
-              lines={candidates.map(
-                (candidate) =>
-                  `${candidate.operation}: ${
-                    candidate.grammar === "checked"
-                      ? "Harper checked"
-                      : candidate.grammar === "pending"
-                        ? "grammar check pending"
-                        : "grammar check unavailable"
-                  }${
-                    candidate.meaning
-                      ? `, ${candidate.meaning.model} meaning ${candidate.meaning.probability.toFixed(2)}`
-                      : ", meaning unverified"
-                  }${candidate.caution ? `. ${candidate.caution}` : "."}`,
-              )}
-            />
-          )}
-        </section>
-      )}
-      {state.tab === "words" && (
-        <section aria-label="Word alternatives" class="sentence-bench-pane">
-          <p class="sentence-bench-word-line">
-            {words.map((word) => (
-              <span key={word.from}>
-                <button
-                  type="button"
-                  aria-pressed={state.wordFrom === word.from}
-                  class={{
-                    "is-repeated": repeated(word.word) > 1,
-                    "is-on": state.wordFrom === word.from,
-                  }}
-                  title={`${repeated(word.word)} use${repeated(word.word) === 1 ? "" : "s"} in this paragraph`}
-                  onClick$={() => {
-                    state.wordFrom = word.from;
-                    state.wordTo = word.to;
-                    state.modelWords = [];
-                    state.message = "";
-                  }}
-                >
-                  {word.word}
-                </button>{" "}
-              </span>
-            ))}
-          </p>
-          {state.wordFrom < 0 ? (
-            <p class="sentence-bench-hint" role="status">
-              Pick a word. Dotted words repeat in this paragraph.
-            </p>
-          ) : !alternatives.length ? (
-            <p class="sentence-bench-hint" role="status">
-              No bundled alternatives for “
-              {props.sentence.slice(state.wordFrom, state.wordTo)}”.
-              {wordPackReady.value
-                ? " Try on-device alternatives."
-                : " Edit the wording above, or add word alternatives in Preferences."}
-            </p>
-          ) : null}
-          <ol class="in-flow-list">
-            {alternatives.map((choice) => (
-              <li key={choice.replacement}>
-                <button
-                  type="button"
-                  class={[
-                    "in-flow-choice",
-                    {
-                      "in-flow-choice--on": state.working === choice.sentence,
-                    },
-                  ]}
-                  aria-pressed={state.working === choice.sentence}
-                  onClick$={() => choose(choice.sentence)}
-                  onMouseEnter$={() =>
-                    inFlowController()?.previewVariant(choice.sentence)
-                  }
-                  onMouseLeave$={() => inFlowController()?.previewVariant(null)}
-                  onFocus$={() =>
-                    inFlowController()?.previewVariant(choice.sentence)
-                  }
-                  onBlur$={() => inFlowController()?.previewVariant(null)}
-                >
-                  <Diff text={choice.sentence} />
-                  <span class="sentence-bench-meta">{choice.nuance}</span>
-                </button>
-              </li>
-            ))}
-          </ol>
-          {wordPackReady.value && (
-            <button
-              type="button"
-              class="btn-paper in-flow-mini"
-              disabled={props.stale || state.modelBusy || state.wordFrom < 0}
-              onClick$={async () => {
-                const from = state.wordFrom,
-                  to = state.wordTo;
-                state.modelBusy = true;
-                state.message = "";
-                try {
-                  const result = await inFlowController()?.wordVariants(
-                    from,
-                    to,
-                  );
-                  if (state.wordFrom === from && state.wordTo === to) {
-                    state.modelWords = result ?? [];
-                    if (!result?.length)
-                      state.message =
-                        "No checked word predictions for this use.";
-                  }
-                } catch (error) {
-                  state.message =
-                    error instanceof Error
-                      ? error.message
-                      : "The on-device word check could not finish.";
-                } finally {
-                  state.modelBusy = false;
-                }
-              }}
-            >
-              {state.modelBusy
-                ? "Checking word predictions…"
-                : "On-device alternatives"}
-            </button>
-          )}
-          <ol class="in-flow-list">
-            {state.modelWords.map((candidate) => (
-              <li key={candidate.id}>
-                <button
-                  type="button"
-                  class={[
-                    "in-flow-choice",
-                    {
-                      "in-flow-choice--on": state.working === candidate.text,
-                    },
-                  ]}
-                  aria-pressed={state.working === candidate.text}
-                  onClick$={() => choose(candidate.text)}
-                  onMouseEnter$={() =>
-                    inFlowController()?.previewVariant(candidate.text)
-                  }
-                  onMouseLeave$={() => inFlowController()?.previewVariant(null)}
-                  title={`${candidate.likelihood?.model ?? "On-device model"} · Harper checked · meaning unverified`}
-                >
-                  <Diff text={candidate.text} />
-                  <span class="sentence-bench-meta">
-                    <span class="sentence-bench-chip">on-device</span>
-                    likelihood {candidate.likelihood?.probability.toFixed(3)}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ol>
-          <About
-            label="About word choices"
-            lines={[
-              "The bundled thesaurus offers possible meanings; it does not rank fit.",
-              "A word can change the meaning. Harper checks the whole sentence before it is used.",
-              ...(state.modelWords.length
-                ? [
-                    `On-device predictions come from ${state.modelWords[0]?.likelihood?.model ?? "a local model"}; their meaning is unverified.`,
-                  ]
-                : []),
-            ]}
-          />
-        </section>
-      )}
-      {state.tab === "place" && (
-        <section
-          aria-label="Sentence placement choices"
-          class="sentence-bench-pane"
-        >
-          <ol class="in-flow-list">
-            {(props.placements ?? []).map((slot) => (
-              <li key={slot.id} class="sentence-bench-slot">
-                <p class="sentence-bench-meta">{slot.reason}</p>
-                <p class="sentence-bench-context">
-                  {slot.before && <span>{slot.before} </span>}
-                  <strong>{props.sentence}</strong>
-                  {slot.after && <span> {slot.after}</span>}
-                </p>
-                <button
-                  type="button"
-                  class="btn-paper in-flow-mini"
-                  disabled={props.stale}
-                  onClick$={() => {
-                    if (!inFlowController()?.moveSentence(slot.id))
-                      state.message =
-                        "The paragraph changed. Reopen the bench to choose a position.";
-                  }}
-                >
-                  Move here
-                </button>
-              </li>
-            ))}
-          </ol>
-          {props.placements?.length ? (
-            <About
-              label="About positions"
-              lines={[
-                "These are neighbouring slots, chosen by rule. Their fit has not been judged.",
-                "Moving keeps the sentence's marks; one undo puts it back.",
-              ]}
-            />
-          ) : (
-            <p class="sentence-bench-hint">
-              Add another complete sentence to compare positions.
-            </p>
-          )}
-        </section>
-      )}
-      {state.tab === "hear" && (
-        <section
-          aria-label="Hear the sentence in context"
-          class="sentence-bench-pane"
-        >
-          <p class="sentence-bench-hint">
-            The sentence before, this wording, then the one after.
-          </p>
-          <SpeechTransport
-            id={`sentence-bench-${toolId}`}
-            playLabel="Hear this wording in context"
-            onPlay$={() => {
-              state.message = "";
-              if (!state.working.trim()) {
-                state.message = "Enter a wording to hear it in context.";
-              } else if (!inFlowController()?.hearVariant(state.working)) {
+            class="sentence-bench-link"
+            onClick$={async () => {
+              try {
+                await navigator.clipboard.writeText(state.trial.trim());
+                state.message = "Revision copied.";
+              } catch {
+                field.value?.select();
                 state.message =
-                  "This bench is no longer connected to the manuscript. Reopen it to hear the wording.";
+                  "Copying was blocked. The revision is selected; copy it with your keyboard.";
               }
             }}
-          />
-        </section>
-      )}
-      {state.compare && (
-        <InstrumentMotion
-          key={state.compare}
-          state="compare"
-          quiet={state.typing}
-        >
-          <section
-            aria-label="Candidate comparison"
-            class="sentence-bench-comparison"
           >
-            <InstrumentMotionPart part="source">
-              <p>
-                <span class="sentence-bench-chip">original</span>
-                {props.sentence}
-              </p>
-            </InstrumentMotionPart>
-            <InstrumentMotionPart part="alternative">
-              <p>
-                <span class="sentence-bench-chip">alternative</span>
-                <Diff text={state.compare} />
-              </p>
-            </InstrumentMotionPart>
-            <div class="sentence-bench-actions">
+            Copy revision
+          </button>
+        )}
+      </div>
+      {state.message && (
+        <p class="sentence-bench-notice" role="status">
+          {state.message}
+        </p>
+      )}
+
+      {props.context && (
+        <section
+          class="sentence-bench-paragraph-wrap"
+          aria-label="Sentence in its paragraph"
+        >
+          <div
+            class="sentence-bench-views"
+            role="group"
+            aria-label="Show in the paragraph"
+          >
+            {VIEWS.map(([id, label]) => (
               <button
                 type="button"
-                class="btn-paper in-flow-mini"
-                disabled={state.working === state.compare}
-                onClick$={() => choose(state.compare)}
+                key={id}
+                aria-pressed={state.view === id}
+                class={state.view === id ? "is-on" : ""}
+                onClick$={() => {
+                  state.view = id;
+                }}
               >
-                Try this one
+                {label}
               </button>
+            ))}
+          </div>
+          <p class="sentence-bench-paragraph">
+            {before && <span class="sentence-bench-context">{before}</span>}
+            <mark class="sentence-bench-slot-text">
+              {state.view === "original" || !changed ? (
+                props.sentence
+              ) : state.view === "revision" ? (
+                checked.ok ? (
+                  checked.text
+                ) : (
+                  props.sentence
+                )
+              ) : (
+                <Diff text={checked.ok ? checked.text : props.sentence} />
+              )}
+            </mark>
+            {after && <span class="sentence-bench-context">{after}</span>}
+          </p>
+        </section>
+      )}
+
+      <section class="sentence-bench-reading" aria-label="Read the difference">
+        <div class="sentence-bench-actions">
+          {reading?.status === "loading" && readingCurrent ? (
+            <>
+              <span class="sentence-bench-hint" role="status">
+                Reading the difference…
+              </span>
               <button
                 type="button"
                 class="sentence-bench-link"
-                onClick$={() => {
-                  state.compare = "";
-                }}
+                onClick$={() => publishReading(toolId, null)}
               >
-                Close comparison
+                Stop
               </button>
-            </div>
-          </section>
-        </InstrumentMotion>
-      )}
+            </>
+          ) : (
+            <button
+              type="button"
+              class="btn-paper in-flow-mini"
+              disabled={blocked || !changed}
+              onClick$={read}
+            >
+              Read the difference
+            </button>
+          )}
+        </div>
+        {!readingCurrent && (
+          <p class="sentence-bench-hint">
+            {reading && reading.status !== "loading"
+              ? "The revision changed since the last reading. Read the difference again for this version."
+              : "Sends the original, your revision and this paragraph to your connected prose model, once. It points out up to two changes in what a reader would understand; it does not rewrite or rank."}
+          </p>
+        )}
+        {readingCurrent && reading.status === "error" && (
+          <p class="sentence-bench-notice" role="status">
+            {reading.message}
+          </p>
+        )}
+        {readingCurrent && reading.status === "ready" && (
+          <>
+            {reading.observations.length ? (
+              <ol class="sentence-bench-observations">
+                {reading.observations.map((o, i) => (
+                  <li key={i}>
+                    <p class="sentence-bench-quotes">
+                      {o.originalQuote ? (
+                        <del>“{o.originalQuote}”</del>
+                      ) : (
+                        <span class="sentence-bench-quiet">
+                          new in revision
+                        </span>
+                      )}
+                      <span aria-hidden="true"> → </span>
+                      <span class="sentence-bench-sr"> becomes </span>
+                      {o.trialQuote ? (
+                        <ins>“{o.trialQuote}”</ins>
+                      ) : (
+                        <span class="sentence-bench-quiet">gone</span>
+                      )}
+                    </p>
+                    <p class="sentence-bench-observation">{o.reading}</p>
+                    {o.contextQuote && (
+                      <p class="sentence-bench-hint">
+                        Uses the paragraph: “{o.contextQuote}”
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p class="sentence-bench-hint" role="status">
+                The model returned no observations for this revision.
+              </p>
+            )}
+            {reading.dropped > 0 && (
+              <p class="sentence-bench-hint">
+                {reading.dropped === 1
+                  ? "One observation was left out: its quotes did not match the text."
+                  : `${reading.dropped} observations were left out: their quotes did not match the text.`}
+              </p>
+            )}
+          </>
+        )}
+      </section>
+
+      <div class="sentence-bench-tools">
+        <button
+          type="button"
+          class="sentence-bench-link"
+          aria-pressed={state.preview}
+          disabled={blocked || !changed}
+          onClick$={() => {
+            state.preview = !state.preview;
+            inFlowController()?.previewVariant(
+              state.preview ? state.trial : null,
+            );
+          }}
+        >
+          {state.preview ? "Hide in manuscript" : "Preview in manuscript"}
+        </button>
+        <SpeechTransport
+          id={`sentence-bench-${toolId}`}
+          playLabel="Hear it in context"
+          onPlay$={() => {
+            state.message = "";
+            const text = checked.ok ? checked.text : props.sentence;
+            if (!inFlowController()?.hearVariant(text))
+              state.message =
+                "This bench is no longer connected to the manuscript. Reopen it to hear the revision.";
+          }}
+        />
+      </div>
+
       <details
         class="sentence-bench-room"
         open={state.roomOpen}
@@ -705,39 +511,24 @@ export const SentenceBench = component$<{
           <InstrumentRoom
             context={{
               instrument: "sentence",
-              key: JSON.stringify([
-                toolId,
-                props.sentence,
-                state.working,
-                state.tab,
-              ]),
+              key: JSON.stringify([toolId, props.sentence, state.trial]),
               source: props.sentence,
-              proposal: state.working,
+              proposal: state.trial,
               question:
-                {
-                  rewrite:
-                    "What might this wording lose or strengthen in its context?",
-                  words:
-                    "Does this word choice fit this use and preserve the intended nuance?",
-                  place:
-                    "What should guide this sentence's position among its neighbours?",
-                  hear: "How does this wording's rhythm read aloud beside its neighbours?",
-                }[state.tab] ??
-                "What would you attend to in this sentence and its proposed wording?",
+                "What might this revision change for a reader of this paragraph?",
               detail: [
-                `Active pane: ${state.tab}`,
                 before ? `Before: ${before}` : "",
                 after ? `After: ${after}` : "",
               ]
                 .filter(Boolean)
                 .join("\n"),
             }}
-            disabled={props.stale || filling || state.applying}
+            disabled={blocked}
             onAsk$={async (request) =>
               (await inFlowController()?.askRoom(request, toolId)) ?? {
                 ok: false,
                 message:
-                  "This sentence bench is no longer connected to the manuscript. Reopen it before asking an editor.",
+                  "This bench is no longer connected to the manuscript. Reopen it before asking an editor.",
               }
             }
           />

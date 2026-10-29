@@ -3,6 +3,7 @@ import {
   classify,
   fallbackClassification,
   fillSpec,
+  readRevision,
   seedSpec,
   type Ask,
 } from "./in-flow-tools";
@@ -20,22 +21,33 @@ const reading = (
 });
 
 describe("seedSpec", () => {
-  test("Sentence Lab shows the writer's own earlier attempts", () => {
-    const activity = {
-      ...emptyActivity(passage, 0),
-      attempts: { 1: ["They cram people in.", "They put people close."] },
-    };
+  test("Compare a revision seeds the named sentence and its paragraph only", () => {
     const spec = seedSpec("sentence-lab", passage, {
-      activity,
+      activity: {
+        ...emptyActivity(passage, 0),
+        attempts: { 1: ["They cram people in."] },
+      },
       sentenceIndex: 1,
     });
-    expect(spec.elements.tool).toMatchObject({
+    const from = passage.indexOf("They pack");
+    expect(spec.elements.tool).toEqual({
       type: "SentenceLab",
       props: {
         sentence: "They pack people together.",
-        attempts: ["They cram people in.", "They put people close."],
-        variants: [],
+        context: {
+          before: passage.slice(0, from),
+          after: passage.slice(from + "They pack people together.".length),
+          paragraph: passage,
+        },
       },
+      children: [],
+    });
+  });
+
+  test("Compare a revision refuses instead of guessing a sentence", () => {
+    const spec = seedSpec("sentence-lab", passage);
+    expect(spec.elements.tool.props).toMatchObject({
+      refusal: expect.stringContaining("select one sentence"),
     });
   });
 
@@ -159,34 +171,20 @@ describe("classify", () => {
 describe("fillSpec", () => {
   const context = { passage, preceding: "", goal: "", audience: "" };
 
-  test("streams variants into Sentence Lab as the model writes", async () => {
+  test("Compare a revision never calls a model while filling", async () => {
     const seed = seedSpec("sentence-lab", passage, { sentenceIndex: 1 });
-    const seen: number[] = [];
-    const lines = ["They crowd people close.", "They bring people near."].map(
-      (value) =>
-        JSON.stringify({
-          op: "add",
-          path: "/elements/tool/props/variants/-",
-          value,
-        }),
-    );
+    let called = false;
     const { spec } = await fillSpec(
       seed,
       context,
-      async ({ onText }) => {
-        onText?.(`${lines[0]}\n`);
-        onText?.(`${lines[0]}\n${lines[1]}`);
-        return `${lines[0]}\n${lines[1]}`;
+      async () => {
+        called = true;
+        return "";
       },
-      (partial) => {
-        const props = partial.elements.tool.props as { variants: string[] };
-        seen.push(props.variants.length);
-      },
+      () => {},
     );
-    expect(seen[0]).toBe(1);
-    expect(spec.elements.tool.props).toMatchObject({
-      variants: ["They crowd people close.", "They bring people near."],
-    });
+    expect(called).toBe(false);
+    expect(spec).toEqual(seed);
   });
 
   test("Reader Questions fall back to general questions without a model", async () => {
@@ -212,5 +210,63 @@ describe("fillSpec", () => {
     );
     expect(called).toBe(false);
     expect(spec).toEqual(seed);
+  });
+});
+
+describe("readRevision", () => {
+  const binding = {
+    original: "She had not told her brother that the house was sold.",
+    trial: "She had kept the sale from her brother.",
+    before: "Mara learned about the sale that morning. ",
+    after: " He was already packing for his visit.",
+  };
+
+  test("without a configured provider it makes no request and says why", async () => {
+    const result = await readRevision(binding, {}, null);
+    expect(result).toMatchObject({ ok: false, reason: "no-provider" });
+  });
+
+  test("sends the exact texts once and keeps only grounded observations", async () => {
+    const prompts: string[] = [];
+    const result = await readRevision(
+      binding,
+      { goal: "A family story" },
+      async ({ prompt, system }) => {
+        prompts.push(prompt);
+        expect(system).toContain("never rewrite");
+        return JSON.stringify({
+          observations: [
+            {
+              originalQuote: "had not told",
+              trialQuote: "had kept the sale from",
+              reading: "The trial suggests deliberate concealment.",
+            },
+            {
+              originalQuote: "had never mentioned",
+              trialQuote: "kept",
+              reading: "Invented quote.",
+            },
+          ],
+        });
+      },
+    );
+    expect(prompts).toHaveLength(1);
+    expect(prompts[0]).toContain(binding.original);
+    expect(prompts[0]).toContain(binding.trial);
+    expect(prompts[0]).toContain("He was already packing");
+    expect(result).toMatchObject({ ok: true, dropped: 1, binding });
+    if (result.ok) expect(result.observations).toHaveLength(1);
+  });
+
+  test("a provider failure reports failure, never an empty reading", async () => {
+    expect(await readRevision(binding, {}, async () => null)).toMatchObject({
+      ok: false,
+      reason: "failed",
+    });
+    expect(
+      await readRevision(binding, {}, async () => {
+        throw new Error("network");
+      }),
+    ).toMatchObject({ ok: false, reason: "failed" });
   });
 });

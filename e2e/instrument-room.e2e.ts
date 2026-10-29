@@ -43,7 +43,7 @@ async function openSentence(page: Page, source = INSTRUMENT_SENTENCE) {
   await selectRoomPassage(page, source);
   await page
     .getByRole("toolbar", { name: /^Actions for/ })
-    .getByRole("button", { name: "Rework", exact: true })
+    .getByRole("button", { name: "Compare a revision", exact: true })
     .click();
   await page.getByText("Ask an editor", { exact: true }).click();
   const invitation = room(page);
@@ -234,8 +234,8 @@ test("Sentence room selects a real editor and saves the exact unapplied comparis
   expect(transport.replies).toHaveLength(0);
   await page
     .locator(".sentence-bench")
-    .getByRole("button", { name: /^Try Use a verb:/ })
-    .click();
+    .getByRole("textbox", { name: "Your revision" })
+    .fill(PROPOSAL);
   await expect(page.locator(".sentence-bench textarea")).toHaveValue(PROPOSAL);
   await inspectInvitation(invitation, INSTRUMENT_SENTENCE, PROPOSAL);
   expect(await draftRoomText(page)).toBe(original);
@@ -264,7 +264,7 @@ test("Sentence room selects a real editor and saves the exact unapplied comparis
   expect(selected.state.source).toBe(INSTRUMENT_SENTENCE);
   expect(selected.state.unappliedProposal).toBe(PROPOSAL);
   expect(selected.state.question).toBe(
-    "What might this wording lose or strengthen in its context?",
+    "What might this revision change for a reader of this paragraph?",
   );
   expect(saved.text).toContain(
     `Source passage (current manuscript; quoted evidence):\n${INSTRUMENT_SENTENCE}`,

@@ -26,7 +26,6 @@ import {
 } from "../../utils/local-writing-models";
 import type { ModelDownloadState } from "../../utils/models-cache";
 import { inFlowController } from "../editor/extensions/struggle-tracker";
-import { completeSentence } from "../../utils/sentence-ledger";
 import { InstrumentArt } from "./instrument-art";
 import { InstrumentMotion, InstrumentMotionPart } from "./instrument-motion";
 
@@ -342,10 +341,7 @@ export const LocalWritingTools = component$<{
             </p>
             <button
               type="button"
-              disabled={
-                !completeSentence(transcript.value) ||
-                !props.selectedText?.trim()
-              }
+              disabled={!transcript.value.trim() || !props.selectedText?.trim()}
               onClick$={async () => {
                 const controller = inFlowController();
                 controller?.openKind("sentence-lab", props.selectedText);
@@ -353,10 +349,10 @@ export const LocalWritingTools = component$<{
                   await props.onCandidate$?.();
                 else
                   notice.value =
-                    "The sentence changed, or the transcript needs a grammar correction. Review it before trying again.";
+                    "Compare a revision needs one sentence selected in the manuscript, and a transcript under 1,200 characters on one line.";
               }}
             >
-              Use as a sentence candidate
+              Compare as a revision
             </button>
             {!props.selectedText?.trim() && (
               <p>

@@ -11,8 +11,9 @@ import type { SentenceLabProps } from "./catalog";
 import { SentenceBench } from "./sentence-bench";
 import {
   OFFLINE_BENCH_FIXTURE,
-  SETTLED_BENCH_FIXTURE,
+  REFUSED_BENCH_FIXTURE,
   STALE_BENCH_FIXTURE,
+  TRIAL_BENCH_FIXTURE,
 } from "./sentence-bench.fixtures";
 const Preview = component$<{ fixture: SentenceLabProps }>(({ fixture }) => {
   useContextProvider(
@@ -25,8 +26,8 @@ const Preview = component$<{ fixture: SentenceLabProps }>(({ fixture }) => {
   return (
     <ConvexProvider>
       <main class="sentence-story">
-        <aside aria-label="Sentence bench preview">
-          <h1>Sentence bench</h1>
+        <aside aria-label="Compare a revision preview">
+          <h1>Compare a revision</h1>
           <SentenceBench props={fixture} filling={false} toolId="story" />
         </aside>
       </main>
@@ -41,8 +42,9 @@ const meta = {
 } satisfies Meta<{ fixture: SentenceLabProps }>;
 export default meta;
 type Story = StoryObj<{ fixture: SentenceLabProps }>;
-export const Offline: Story = {};
-export const SettledHistory: Story = {
-  args: { fixture: SETTLED_BENCH_FIXTURE },
+export const ColdStart: Story = {};
+export const WithRevision: Story = {
+  args: { fixture: TRIAL_BENCH_FIXTURE },
 };
+export const Refused: Story = { args: { fixture: REFUSED_BENCH_FIXTURE } };
 export const Stale: Story = { args: { fixture: STALE_BENCH_FIXTURE } };

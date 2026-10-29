@@ -9,10 +9,9 @@
 
 Canonical site: https://twyne.love/
 
-Twyne is for writers who want editorial pushback while they draft, without
-handing their work to a hosted service. The default AI provider is Anthropic's
-Claude; OpenAI, Google, and gateways (Portkey, self-hosted Rivet) are also
-supported. Authentication supports email + one-time codes, passkeys, and
+Twyne is for writers who want editorial pushback while they draft. Writers
+can use their own Anthropic, OpenAI, or Google credentials, or link a Not Organic
+account for hosted AI charged to their wallet. Authentication supports email + one-time codes, passkeys, and
 Bluesky / ATProto sign-in.
 
 ## Docs

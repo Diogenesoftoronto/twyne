@@ -89,7 +89,7 @@ const MANUSCRIPT_TOPICS = [
 ] as const;
 
 const INSTRUMENT_TOPICS = [
-  ["sentence-bench", "Sentence bench"],
+  ["sentence-bench", "Compare a revision"],
   ["writing-threads", "Threads"],
   ["writing-entities", "Entities & continuity"],
   ["paragraph-readings", "Paragraphs & Charter"],
@@ -692,42 +692,46 @@ export default component$(() => {
               />
               <p class="manual-p">
                 Select text in the manuscript and the tools that fit it appear.
-                A single word offers Alternatives. A passage offers Rework, with
-                Hear it read, Threads, Scene bench and Task desk under More. The
-                Compositor also opens Task desk from Review. Close a tool, or
-                press Escape, and the page is back.
+                Compare a revision works on one sentence; Hear it read, Threads,
+                Scene bench and Task desk sit under More. The Compositor also
+                opens Task desk from Review. Close a tool, or press Escape, and
+                the page is back.
               </p>
               <ChapterIllustrations chapter="writing-instruments" />
               <h3 id="sentence-bench" class="manual-h3">
-                Work on a whole sentence
+                Compare a revision
               </h3>
               <p class="manual-p">
-                Morgan's opening line has been rewritten nine times. Sentence
-                bench keeps the working wording at the top with Use this wording
-                beside it. <strong>Rewrite</strong> lists complete earlier
-                wordings, rule-based changes and model alternatives, each with
-                its word-count change. Choose one to make it the working
-                wording, or Compare to keep the original alongside. Hover or
-                keyboard-focus a candidate to preview it in place on the page.
-                How these were checked shows the grammar status and any meaning
-                the check could not verify. Undo restores the edit.
+                Put the cursor in a sentence, or select it, and choose{" "}
+                <strong>Compare a revision</strong>. The original stays fixed at
+                the top. Below it is a copy for you to change, and the sentence
+                in its paragraph, showing the changes word by word. Switch to
+                Revision or Original to read the paragraph either way. Fragments
+                and more than one sentence are fine; nothing is generated for
+                you, and grammar never blocks your own wording.
               </p>
               <p class="manual-p">
-                <strong>Words</strong> offers bundled thesaurus choices shown
-                inside the full sentence, and underlines words you have already
-                used in the paragraph. A synonym can change the meaning, so read
-                the sentence again. With the Words in context pack installed,
-                On-device alternatives adds local word predictions. Likely is
-                not the same as right.
+                <strong>Use revision</strong> makes the change as one edit, so
+                one Undo puts the original back, and returns you to the page.
+                Bold, italics, links and notes outside the words you changed are
+                kept. If a change would cut through a note or mix formatting,
+                the bench says so and leaves the page alone; copy the revision
+                and make that edit yourself. <strong>Keep original</strong>, or
+                Escape, closes the bench without touching the manuscript. If the
+                sentence or its paragraph changes while the bench is open, Use
+                revision stops working and your revision stays there to copy.
               </p>
               <p class="manual-p">
-                <strong>Place</strong> shows where else the sentence could sit,
-                with the sentences on either side. Read each arrangement before
-                choosing Move here; the reasons come from local rules and no
-                model has judged them. <strong>Hear</strong> reads the sentence
-                before, the working wording and the sentence after through your
-                narration player, using a downloaded local voice or your voice
-                service.
+                <strong>Read the difference</strong> is optional, and only when
+                you ask. It sends the original, your revision and the paragraph
+                to your connected prose model once, and shows at most two
+                changes in what a reader would understand, each quoting the
+                words it is about. It does not rewrite, rank the versions or
+                call a change safe. If it returns nothing, that is all it means;
+                if you edit the revision, read it again. Selecting more than one
+                sentence, or text that appears twice without a selection, is
+                refused rather than guessed. Hear it in context reads the
+                sentence before, your revision and the sentence after.
               </p>
               <h3 id="writing-threads" class="manual-h3">
                 Follow a thread
@@ -787,7 +791,7 @@ export default component$(() => {
                 Invite an editor into the work
               </h3>
               <p class="manual-p">
-                Sentence bench, each Threads pair and Scene bench offer
+                Compare a revision, each Threads pair and Scene bench offer
                 <strong> Ask the room</strong>. Your judgement model, Jev when
                 selected, reads the passage, your working proposal and the
                 tool's question, then chooses the editor most likely to help. It

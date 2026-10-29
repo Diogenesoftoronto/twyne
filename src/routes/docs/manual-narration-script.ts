@@ -71,7 +71,7 @@ export const MANUAL_NARRATION: Record<string, ManualNarration> = {
   "writing-instruments": {
     script: [
       "Morgan's opening line has been rewritten nine times. Morgan selects it, and the tools that fit a whole sentence open beside it, not on top of it.",
-      "Sentence bench keeps the working wording at the top. Below it are Morgan's own earlier versions, rule-based changes, and alternatives from a model, each showing what it adds or cuts. Resting on one previews it in place, between its real neighbours. Morgan reads the fourth twice, and keeps it. Undo is always there.",
+      "Compare a revision keeps the original where it is and gives Morgan a copy to change. Morgan cuts the line hard and reads it back inside the paragraph, the changes marked word for word. Read the difference points out that a guess has become a certainty, quoting the words. Morgan puts the doubt back, uses the revision, and Undo is always there.",
       "Threads pairs sentences that may be talking to each other. One of Morgan's sentences appears twice, word for word, three pages apart. Repetition is sometimes the point. This time it is not, and Morgan removes one copy in a single edit.",
       "The river crossing feels thin. Scene bench takes stock of it by sense: place, time, light, sound, movement and pressure, each backed by an exact quote. Sound is doing the least work. Morgan saves an idea, the creak of loaded saddlebags, without touching the manuscript.",
       "And from any of these tools, Ask the room brings the right editor into the question Morgan is already working on. The reply arrives in the margin. The manuscript stays Morgan's.",

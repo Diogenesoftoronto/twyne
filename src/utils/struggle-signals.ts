@@ -10,7 +10,8 @@
  *
  * The four readings map one-to-one onto the in-flow tools:
  *
- *   sentence-lab      the same sentence rewritten again and again
+ *   sentence-lab      the same sentence rewritten again and again (a margin
+ *                     tick only; the writer opens Compare a revision)
  *   rhythm-strip      sentences split and joined, a long paragraph churning
  *   claim-check       hedges put in and taken out — unsure how hard to claim
  *   reader-questions  a stall at the end of a paragraph after cutting
@@ -30,7 +31,7 @@ export const TOOL_KINDS: readonly ToolKind[] = [
 ];
 
 export const TOOL_LABELS: Record<ToolKind, string> = {
-  "sentence-lab": "Sentence bench",
+  "sentence-lab": "Compare a revision",
   "rhythm-strip": "Rhythm Strip",
   "claim-check": "Claim Check",
   "reader-questions": "Reader Questions",

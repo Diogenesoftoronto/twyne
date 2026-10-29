@@ -133,7 +133,6 @@ export async function installRoomTransports(
   const replies: ReplyWireRequest[] = [];
   const research: ReplyWireRequest[] = [];
   const wordings: ReplyWireRequest[] = [];
-  const meaning: JudgementWireRequest[] = [];
   const paragraphs: JudgementWireRequest[] = [];
   const threads: JudgementWireRequest[] = [];
   const fulfillJudgement = async (route: Route) => {
@@ -276,35 +275,6 @@ export async function installRoomTransports(
       });
       return;
     }
-    if (!request.questions.editor) {
-      // Existing Sentence bench meaning checks are independent of room routing.
-      expect(
-        Object.keys(request.questions).every((key) => /^meaning\d+$/.test(key)),
-      ).toBe(true);
-      expect(
-        Object.values(request.questions).every(
-          (question) => question.type === "noul",
-        ),
-      ).toBe(true);
-      expect(request.state.original).toBeTruthy();
-      expect(request.state.paragraph).toContain(request.state.original);
-      meaning.push(request);
-      await route.fulfill({
-        contentType: "application/json",
-        headers: { "access-control-allow-origin": "*" },
-        body: JSON.stringify({
-          model: "fixture-meaning-not-live",
-          usage: { input_tokens: 16, output_tokens: 2 },
-          answers: Object.fromEntries(
-            Object.keys(request.questions).map((key) => [
-              key,
-              { type: "noul", noul: 0.82 },
-            ]),
-          ),
-        }),
-      });
-      return;
-    }
     expect(Object.keys(request.questions)).toEqual(["editor"]);
     expect(["sentence", "threads", "scene"]).toContain(
       request.state.instrument,
@@ -395,7 +365,6 @@ export async function installRoomTransports(
     replies,
     research,
     wordings,
-    meaning,
     paragraphs,
     threads,
   };
