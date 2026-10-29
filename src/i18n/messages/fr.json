@@ -6,9 +6,9 @@
     "partial": "Certaines parties de Twyne sont encore en anglais."
   },
   "settings": {
-    "title": "Le bureau de la rédaction",
-    "subtitle": "Apportez votre clé API. Choisissez vos modèles. Gardez les commandes.",
-    "back": "← Retour au bureau",
+    "title": "Préférences",
+    "subtitle": "Comment Twyne écrit avec vous : langue, apparence, entretien, modèles et recherche.",
+    "back": "← Salle d’écriture",
     "loading": "Chargement des préférences…",
     "appearance": "Apparence"
   }

@@ -231,7 +231,9 @@ type Phase =
         | "providerIdentity"
         | "rateBuckets"
         | "accountPreferences"
-        | "aliasRequests";
+        | "aliasRequests"
+        | "accountExports"
+        | "achievementState";
     };
 
 const PHASES: readonly Phase[] = [
@@ -251,6 +253,8 @@ const PHASES: readonly Phase[] = [
   // Append to preserve numeric phases of existing in-progress deletion jobs.
   { kind: "aliasRequests" },
   { kind: "accountPreferences" },
+  { kind: "accountExports" },
+  { kind: "achievementState" },
 ];
 
 async function deleteRows(ctx: MutationCtx, rows: Row[]) {
@@ -326,6 +330,26 @@ async function deletePhase(
     for (const row of rows) {
       if (row.avatarStorageId)
         await ctx.storage.delete(row.avatarStorageId).catch(() => undefined);
+      await ctx.db.delete(row._id);
+    }
+    return rows.length;
+  }
+  if (phase.kind === "achievementState")
+    return await deleteRows(
+      ctx,
+      await ctx.db
+        .query("achievementState")
+        .withIndex("by_ownerId", (q) => q.eq("ownerId", job.ownerId))
+        .take(DELETE_BATCH_SIZE),
+    );
+  if (phase.kind === "accountExports") {
+    const rows = await ctx.db
+      .query("accountExports")
+      .withIndex("by_ownerId", (q) => q.eq("ownerId", job.ownerId))
+      .take(DELETE_BATCH_SIZE);
+    for (const row of rows) {
+      if (row.storageId)
+        await ctx.storage.delete(row.storageId).catch(() => undefined);
       await ctx.db.delete(row._id);
     }
     return rows.length;

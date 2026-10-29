@@ -52,7 +52,8 @@ interface SharedFolio {
  *
  * Signed out, it's a single user icon that opens the sign-in panel. Signed in,
  * it shows the writer's name (and avatar, if their session carries one) with a
- * dropdown to Preferences, the Manual, and the AuthPanel (which holds sign-out).
+ * dropdown to My Desk, Account, Preferences, the Manual, and the AuthPanel
+ * (which holds sign-out).
  *
  * This is the exact control the editor toolbar uses; the landing header mounts
  * the same component so a signed-in writer sees a consistent account menu
@@ -240,6 +241,28 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
               style={{ fontFamily: "var(--font-display)" }}
               onClick$={() => {
                 menuOpen.value = false;
+                void nav("/desk/");
+              }}
+            >
+              <Icon name="house" size={16} /> My Desk
+            </button>
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
+              style={{ fontFamily: "var(--font-display)" }}
+              onClick$={() => {
+                menuOpen.value = false;
+                void nav("/account/");
+              }}
+            >
+              <Icon name="user" size={16} /> Account
+            </button>
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
+              style={{ fontFamily: "var(--font-display)" }}
+              onClick$={() => {
+                menuOpen.value = false;
                 void nav("/settings/");
               }}
             >
@@ -258,17 +281,6 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
                 <Icon name="list" size={16} /> Plans &amp; billing
               </button>
             )}
-            <button
-              type="button"
-              class="flex w-full items-center gap-2 text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
-              style={{ fontFamily: "var(--font-display)" }}
-              onClick$={() => {
-                menuOpen.value = false;
-                void nav("/desk/");
-              }}
-            >
-              <Icon name="house" size={16} /> My Desk
-            </button>
             <button
               type="button"
               class="flex w-full items-center gap-2 text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"

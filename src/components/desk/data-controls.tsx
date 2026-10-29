@@ -18,6 +18,7 @@ import {
   usageExportRowCountBucket,
 } from "../../utils/product-analytics";
 import { USAGE_SYNC_REQUEST_EVENT } from "./usage-sync-controller";
+import { ExportEverything } from "../account/export-everything";
 
 function download(content: string, filename: string, mime: string): void {
   const href = URL.createObjectURL(new Blob([content], { type: mime }));
@@ -28,11 +29,26 @@ function download(content: string, filename: string, mime: string): void {
   URL.revokeObjectURL(href);
 }
 
+async function countUsageRows(range: UsageRange): Promise<number> {
+  let rows = 0;
+  let cursor: string | undefined;
+  do {
+    const page = await usageLedger.listUsageEvents({
+      from: range.from,
+      to: range.to,
+      cursor,
+    });
+    rows += page.events.length;
+    cursor = page.cursor;
+  } while (cursor);
+  return rows;
+}
+
+/** Export, sync, and delete the content-free usage ledger. Lives in Account. */
 export const DataControls = component$<{
   range: UsageRange;
-  rowCount: number;
   accountId?: string;
-  onLocalDeleted$: QRL<() => void>;
+  onLocalDeleted$?: QRL<() => void>;
   onSynchronizedDelete$?: QRL<() => Promise<void>>;
 }>((props) => {
   const message = useSignal("");
@@ -57,11 +73,14 @@ export const DataControls = component$<{
   const exportHistory = $(async (format: "json" | "csv") => {
     busy.value = true;
     try {
-      const content = await usageLedger.exportUsageHistory({
-        from: props.range.from,
-        to: props.range.to,
-        format,
-      });
+      const [content, rowCount] = await Promise.all([
+        usageLedger.exportUsageHistory({
+          from: props.range.from,
+          to: props.range.to,
+          format,
+        }),
+        countUsageRows(props.range),
+      ]);
       download(
         content,
         `twyne-usage-${new Date().toISOString().slice(0, 10)}.${format}`,
@@ -69,9 +88,9 @@ export const DataControls = component$<{
       );
       void captureProductEvent("usage_exported", {
         format,
-        row_count_bucket: usageExportRowCountBucket(props.rowCount),
+        row_count_bucket: usageExportRowCountBucket(rowCount),
       });
-      message.value = `Downloaded ${props.rowCount.toLocaleString()} content-free usage rows.`;
+      message.value = `Downloaded ${rowCount.toLocaleString()} content-free usage rows.`;
     } catch {
       message.value =
         "The export could not be prepared. Your local history was not changed.";
@@ -145,10 +164,10 @@ export const DataControls = component$<{
       confirmLocal.value = false;
       message.value =
         "Local usage and writing-activity history was removed from this browser.";
-      props.onLocalDeleted$();
+      await props.onLocalDeleted$?.();
     } catch {
       message.value =
-        "Local deletion could not be verified. Reload the desk before trying again.";
+        "Local deletion could not be verified. Reload the page before trying again.";
     } finally {
       busy.value = false;
     }
@@ -173,22 +192,29 @@ export const DataControls = component$<{
   });
 
   return (
-    <section
-      aria-labelledby="data-controls-heading"
-      class="border-t-2 border-[var(--color-ink)] py-7"
-    >
-      <p class="dept-label">05 / Custody</p>
-      <h2 id="data-controls-heading" class="mt-1 font-display text-2xl">
-        Your data controls
+    <section aria-labelledby="data-controls-heading">
+      <h2
+        id="data-controls-heading"
+        class="text-base font-semibold mb-1"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        Your data
       </h2>
-      <p class="mt-2 max-w-2xl text-sm text-[var(--color-ink-muted)]">
-        Exports contain usage metadata and may include token counts. They
-        structurally exclude manuscripts, prompts, responses, and API
-        credentials.
+      {props.accountId && (
+        <div class="mt-4">
+          <ExportEverything />
+        </div>
+      )}
+      <p class="mt-6 max-w-2xl text-xs text-[var(--color-ink-light)]">
+        Usage history is the record behind My Desk. Its exports contain usage
+        metadata and may include token counts. They structurally exclude
+        manuscripts, prompts, responses, and API credentials.
       </p>
       <div class="mt-5 grid gap-5 lg:grid-cols-3">
         <div class="border-t border-[var(--color-ink)] pt-3">
-          <h3 class="font-display text-lg">Export this range</h3>
+          <h3 class="font-display text-sm font-semibold">
+            Export usage history
+          </h3>
           <div class="mt-3 flex gap-2">
             <button
               type="button"
@@ -209,7 +235,7 @@ export const DataControls = component$<{
           </div>
         </div>
         <div class="border-t border-[var(--color-ink)] pt-3">
-          <h3 class="font-display text-lg">Combine devices</h3>
+          <h3 class="font-display text-sm font-semibold">Combine devices</h3>
           {props.accountId ? (
             <>
               <button
@@ -256,7 +282,7 @@ export const DataControls = component$<{
           )}
         </div>
         <div class="border-t border-[var(--color-ink)] pt-3">
-          <h3 class="font-display text-lg">Delete history</h3>
+          <h3 class="font-display text-sm font-semibold">Delete history</h3>
           <div class="mt-3 flex flex-wrap gap-2">
             <button
               type="button"

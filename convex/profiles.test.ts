@@ -18,6 +18,41 @@ function setup() {
   };
 }
 describeConvex("authenticated Twyne alias ownership", () => {
+  test("public profile links are https-only, labelled, and capped", async () => {
+    const { t, writer } = setup();
+    await writer.mutation(api.profiles.claimHandle, { handle: "linked" });
+    await writer.mutation(api.profiles.updateProfile, {
+      links: [
+        { label: "", url: "www.example.com/me" },
+        { label: "Bluesky", url: "https://bsky.app/profile/linked" },
+        { label: "Empty row", url: "  " },
+      ],
+    });
+    expect(
+      (await t.query(api.profiles.getProfile, { handle: "linked" }))?.links,
+    ).toEqual([
+      { label: "example.com", url: "https://www.example.com/me" },
+      { label: "Bluesky", url: "https://bsky.app/profile/linked" },
+    ]);
+    for (const url of ["javascript:alert(1)", "http://example.com"])
+      await expect(
+        writer.mutation(api.profiles.updateProfile, {
+          links: [{ label: "x", url }],
+        }),
+      ).rejects.toThrow("https://");
+    await expect(
+      writer.mutation(api.profiles.updateProfile, {
+        links: Array.from({ length: 7 }, (_, i) => ({
+          label: "",
+          url: `https://example.com/${i}`,
+        })),
+      }),
+    ).rejects.toThrow("up to 6");
+    await writer.mutation(api.profiles.updateProfile, { links: [] });
+    expect(
+      (await t.query(api.profiles.getProfile, { handle: "linked" }))?.links,
+    ).toEqual([]);
+  });
   test("requires authentication, persists ownership, and exposes it only to its account", async () => {
     const { t, writer, other } = setup();
     await expect(

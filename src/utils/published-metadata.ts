@@ -37,6 +37,7 @@ export interface PublicWriterProfileMetadata {
   displayName: string | null;
   bio: string | null;
   avatarUrl: string | null;
+  links?: Array<{ label: string; url: string }>;
 }
 
 export interface PublicWriterPostMetadata {

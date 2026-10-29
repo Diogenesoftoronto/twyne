@@ -6,9 +6,9 @@
     "partial": "Some parts of Twyne still appear in English."
   },
   "settings": {
-    "title": "The Editor’s Desk",
-    "subtitle": "Bring your own key. Choose your models. Own the room.",
-    "back": "← Back to desk",
+    "title": "Preferences",
+    "subtitle": "How Twyne writes with you: language, look, interview, models, and research.",
+    "back": "← Writing room",
     "loading": "Loading preferences…",
     "appearance": "Appearance"
   }
