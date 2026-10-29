@@ -1,9 +1,8 @@
 # Local Live voice feasibility: preliminary hardware check
 
-Status: **not ready for phase 2**. A WebGPU worker produced audio-code frames
-slower than real time and a 24 kHz WAV, but the output has not passed a speech
-sanitation check. The timings below are experimental, not a validated voice-chat
-benchmark.
+Status: TTS and one complete short voice-chat turn pass a model-ASR check with
+ORT Web 1.23.2. The initial experiment below used a different runtime and is
+not a valid speed benchmark. Phase 2 is in progress.
 
 On 2026-10-29, Playwright's cached Chromium was launched on this Linux machine
 with `LD_LIBRARY_PATH` unset, `--enable-unsafe-webgpu`, and
@@ -18,17 +17,17 @@ The model repository API at revision
 `df2b3ed2ea10824030b3ff29ee46705754e72b99` reports these sizes for the
 requested WebGPU combination. The ONNX graphs use separate external data files:
 
-| File | Bytes |
-| --- | ---: |
-| `decoder_q4f16.onnx` | 274,325 |
+| File                      |         Bytes |
+| ------------------------- | ------------: |
+| `decoder_q4f16.onnx`      |       274,325 |
 | `decoder_q4f16.onnx_data` | 1,413,388,288 |
-| `audio_encoder.onnx` | 162,507 |
-| `audio_encoder.onnx_data` | 510,351,360 |
-| `depth_decoder.onnx` | 34,498 |
-| `depth_decoder.onnx_data` | 335,597,568 |
-| `codec_decoder.onnx` | 94,000 |
-| `codec_decoder.onnx_data` | 179,046,408 |
-| Total | 2,438,948,954 |
+| `audio_encoder.onnx`      |       162,507 |
+| `audio_encoder.onnx_data` |   510,351,360 |
+| `depth_decoder.onnx`      |        34,498 |
+| `depth_decoder.onnx_data` |   335,597,568 |
+| `codec_decoder.onnx`      |        94,000 |
+| `codec_decoder.onnx_data` |   179,046,408 |
+| Total                     | 2,438,948,954 |
 
 The eight files were downloaded into `~/.cache/twyne-lfm3/` and their sizes
 matched this table. Tokenizer assets were downloaded separately. Sessions read
@@ -49,19 +48,19 @@ speech frame, codec decoding and inverse STFT. It used greedy text and the
 model-card speech sampling settings. The experimental worker is in
 `tools/live-voice-local-spike/worker.mjs`; it is not production code.
 
-| Measurement | Result |
-| --- | --- |
-| Downloaded graph and external-data bytes | 2,438,948,954 |
-| Session load, local files, one measured run | 8.194 s |
-| Audio encoder including WAV fetch and log-mel | 0.571 s |
-| Prefill complete, from turn start | 1.097 s |
-| First generated audio-code frame, from turn start | 2.065 s |
-| First playable audio | Not measured incrementally; this harness batch-decodes. Full WAV ready at 9.171 s |
-| Speech generation speed | 0.319 audio seconds / wall second, 18 intervals of 80 ms over 4.514 s between first and nineteenth frame |
-| Decoder slots per second | 4.08 slots/s: 19 frames plus 5 text tokens over 5.878 s from prefill completion to generation completion |
-| Output | 19 frames, 1.52 s, 24 kHz WAV; nonzero signal, intelligibility unverified |
-| Peak system memory | Not measured. One non-peak process RSS snapshot during a run showed renderer 1,677,516 KiB and GPU process 898,972 KiB; these are not a combined peak and can include shared memory. |
-| Peak GPU memory | Not available from the tools checked; not measured |
+| Measurement                                       | Result                                                                                                                                                                               |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Downloaded graph and external-data bytes          | 2,438,948,954                                                                                                                                                                        |
+| Session load, local files, one measured run       | 8.194 s                                                                                                                                                                              |
+| Audio encoder including WAV fetch and log-mel     | 0.571 s                                                                                                                                                                              |
+| Prefill complete, from turn start                 | 1.097 s                                                                                                                                                                              |
+| First generated audio-code frame, from turn start | 2.065 s                                                                                                                                                                              |
+| First playable audio                              | Not measured incrementally; this harness batch-decodes. Full WAV ready at 9.171 s                                                                                                    |
+| Speech generation speed                           | 0.319 audio seconds / wall second, 18 intervals of 80 ms over 4.514 s between first and nineteenth frame                                                                             |
+| Decoder slots per second                          | 4.08 slots/s: 19 frames plus 5 text tokens over 5.878 s from prefill completion to generation completion                                                                             |
+| Output                                            | 19 frames, 1.52 s, 24 kHz WAV; nonzero signal, intelligibility unverified                                                                                                            |
+| Peak system memory                                | Not measured. One non-peak process RSS snapshot during a run showed renderer 1,677,516 KiB and GPU process 898,972 KiB; these are not a combined peak and can include shared memory. |
+| Peak GPU memory                                   | Not available from the tools checked; not measured                                                                                                                                   |
 
 The generation emitted text tokens decoded as `<|mixed_start|><|mixed_start|>Each<|text_end|><|im_end|>`.
 A separate attempt to transcribe the generated WAV with the same model and
@@ -75,5 +74,63 @@ against a reference implementation. The WAV is at
 The measured code-frame rate is below the 12.5 frames/s needed for 24 kHz
 real-time audio, even before incremental codec decoding. Because correctness
 is unverified, this does not establish an optimal or production-quality
-performance figure. Do not integrate the desk until a correct implementation
-passes an audible or independent transcription check and meets the speed gate.
+performance figure. This initial run did not validate correctness; see the follow-up below.
+
+## Correctness follow-up: 2026-10-29
+
+The initial results above used ORT Web `1.26.0-dev.20260416-b7804b056c` and
+should **not** be used to select a speech path. For an identical TTS prefix
+and one audio frame, its cached vs full-prefix decoder logits differed by up
+to 10.988; native CPU ORT 1.23.2 differed by 0.031. Cached ORT Web 1.23.2
+reduced the maximum difference to 0.271 (the two WebGPU values of the first
+logit were 0.507 and 0.449). This isolates a substantial runtime-dependent
+mismatch, but does not identify the responsible operator or driver.
+
+With ORT Web 1.23.2, the reference TTS prompt and sentence “The quick brown fox
+jumps over the lazy dog.” produced a 24 kHz WAV that the model transcribed
+back to exactly that sentence using “Perform ASR in English.” With the
+interleaved prompt, an `espeak-ng` 16 kHz question “What is two plus two?”
+produced text “The answer is four.” and audio that the model's English ASR
+transcribed as the same sentence. These are model-based checks, not a human
+listening assessment. Outputs are in the local cache as `tts123.wav` and
+`chatshort.wav`.
+
+The worker was checked against LiquidONNX's Python implementation: audio and
+output placeholder tokens, assistant mode markers, 16 kHz Slaney log-mel,
+position advancement, cache names, three passes revealing four of 12 codes per
+pass, and the 1,280-point periodic Hann inverse STFT with 320-sample hop. The
+experimental chat mode also needed a transition to text after an audio EOS.
+There is no validated multi-chunk prefill test, tool-calling test, interruption
+test, or independent human listening assessment yet.
+
+### Measurements on this laptop
+
+These are one-run, local-file experiments, not a first-use device benchmark.
+The speech path's rate includes generation from prefill completion through the
+last slot; it excludes batch codec and inverse STFT. First playable audio was
+not measured incrementally. The short complete turn used GPU-resident decoder
+cache outputs and finished its 24 speech frames in 5.104 s after prefill: 1.92 s
+of audio, **0.376 audio seconds/wall second**. Encoder including WAV fetch and
+mel was 0.464 s; prefill finished at 0.817 s from turn start; batch codec took
+0.123 s; the full batch WAV was ready at 8.518 s. Decoder steps took 0.496 s
+for six text steps and 2.063 s for 25 audio steps (including the EOS step);
+the depth decoder took 2.141 s over its three passes per frame. Thus neither
+component alone accounts for the whole cost.
+
+For the longer question, an 80-slot capped run produced 30 text tokens and 50
+speech frames. Its speech rate was 0.315 with GPU-resident caches versus 0.201
+with CPU-returned caches, measured over the interval from prefill completion
+to generation completion. ASR matched the first spoken sentence, but the
+response was truncated, so this is not a whole-turn validation. A separate
+text-only reply reached 80 tokens in 14.801 s after prefill (**5.41 tokens/s**)
+and was also capped. Supertonic speed has not yet been measured in combination.
+
+Enabling graph capture with the experiment's CPU-returned logits and hidden
+states failed with `Not supported preferred output location: cpu. Only
+'gpu-buffer' location is supported when enableGraphCapture is true.` This is
+not a test of an all-GPU fixed-shape graph. The local offline Python environment
+did not contain `onnxconverter-common`, so no fp16 depth graph was exported.
+The published recipe specifies three MaskGIT passes; fewer passes were not
+claimed as supported or tested. The current slow laptop no longer gates phase
+2: routing must benchmark each adapter and choose LFM speech, Supertonic, or
+lagging local speech according to the writer's requested policy.
