@@ -206,10 +206,13 @@ export default component$(() => {
       cancelled = true;
     });
     const accountId = authState.user?.analyticsId;
+    hostedRunway.value = null;
     if (!client || !accountId || !hasAuthenticatedConvexIdentity(authState))
       return;
     try {
-      const runway = await computeCreditRunway(client, accountId);
+      const runway = await computeCreditRunway(client, accountId, Date.now(), {
+        isCurrent: () => !cancelled,
+      });
       if (!cancelled) hostedRunway.value = runway;
     } catch {
       if (!cancelled) hostedRunway.value = null;
@@ -234,7 +237,9 @@ export default component$(() => {
       hostedRunway.value = detail?.credit ?? null;
     };
     window.addEventListener(FORECAST_PREVIEW_EVENT, onPreview);
-    cleanup(() => window.removeEventListener(FORECAST_PREVIEW_EVENT, onPreview));
+    cleanup(() =>
+      window.removeEventListener(FORECAST_PREVIEW_EVENT, onPreview),
+    );
   });
 
   // Validate the URL before the ledger tasks react to a non-default range.
