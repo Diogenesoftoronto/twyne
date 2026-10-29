@@ -134,7 +134,7 @@ export async function liveVoiceAudio(
         localEnd = onEnd;
         speaker.port.postMessage(
           { type: "audio", samples: copy, sequence: ++localSequence },
-          [copy.buffer],
+          [copy.buffer as ArrayBuffer],
         );
       },
       /** Discard queued speech while leaving microphone capture active. */

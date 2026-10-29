@@ -262,6 +262,7 @@ test("local session captures, interrupts and responds without a hosted connect",
     false,
     {
       local: true,
+      localRoute: async () => "local",
       localWorker: () => worker as unknown as Worker,
       audio: async (onChunk) => {
         callback = onChunk;
