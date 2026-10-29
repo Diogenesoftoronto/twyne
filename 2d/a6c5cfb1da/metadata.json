@@ -3,7 +3,7 @@
   "checkpoint_id": "2da6c5cfb1da",
   "strategy": "manual-commit",
   "branch": "feat/clairic-extraction",
-  "checkpoints_count": 3,
+  "checkpoints_count": 37,
   "files_touched": [
     "src/components/personas/personas-panel.tsx",
     "src/global.css",
@@ -21,13 +21,20 @@
       "compact_transcript": "/2d/a6c5cfb1da/0/transcript.jsonl",
       "content_hash": "/2d/a6c5cfb1da/0/content_hash.txt",
       "prompt": "/2d/a6c5cfb1da/0/prompt.txt"
+    },
+    {
+      "metadata": "/2d/a6c5cfb1da/1/metadata.json",
+      "transcript": "/2d/a6c5cfb1da/1/full.jsonl",
+      "compact_transcript": "/2d/a6c5cfb1da/1/transcript.jsonl",
+      "content_hash": "/2d/a6c5cfb1da/1/content_hash.txt",
+      "prompt": "/2d/a6c5cfb1da/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 0,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 0,
-    "output_tokens": 0,
-    "api_call_count": 0
+    "input_tokens": 2,
+    "cache_creation_tokens": 4255,
+    "cache_read_tokens": 581442,
+    "output_tokens": 4272,
+    "api_call_count": 1
   }
 }
