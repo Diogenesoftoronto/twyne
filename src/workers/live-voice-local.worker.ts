@@ -26,15 +26,18 @@ let generation = 0;
 let loading = false;
 let running = false;
 let activeTurn: Promise<void> | null = null;
+let queuedTurn: Extract<Command, { type: "turn" }> | null = null;
 
 self.onmessage = ({ data }: MessageEvent<Command>) => {
   if (data.type === "cancel") {
     generation++;
+    queuedTurn = null;
     self.postMessage({ type: "cancelled", id: data.id });
     return;
   }
   if (data.type === "close") {
     generation++;
+    queuedTurn = null;
     const old = sessions;
     sessions = null;
     tokenizer = null;
@@ -50,13 +53,16 @@ self.onmessage = ({ data }: MessageEvent<Command>) => {
     return;
   }
   if (data.type === "turn") {
-    if (!sessions || !tokenizer || running) {
+    if (running) {
+      generation++;
+      queuedTurn = data;
+      return;
+    }
+    if (!sessions || !tokenizer) {
       self.postMessage({
         type: "error",
         id: data.id,
-        message: running
-          ? "Local Live is already generating."
-          : "Local Live is not loaded.",
+        message: "Local Live is not loaded.",
       });
       return;
     }
@@ -122,6 +128,11 @@ self.onmessage = ({ data }: MessageEvent<Command>) => {
       } finally {
         running = false;
         activeTurn = null;
+        if (queuedTurn && sessions) {
+          const next = queuedTurn;
+          queuedTurn = null;
+          self.dispatchEvent(new MessageEvent("message", { data: next }));
+        }
       }
     })();
     return;
