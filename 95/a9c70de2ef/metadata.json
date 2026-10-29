@@ -3,8 +3,12 @@
   "checkpoint_id": "95a9c70de2ef",
   "strategy": "manual-commit",
   "branch": "feat/clairic-extraction",
-  "checkpoints_count": 1,
-  "files_touched": null,
+  "checkpoints_count": 9,
+  "files_touched": [
+    "e2e/helpers/fake-sync-server.ts",
+    "src/utils/convex-sync.test.ts",
+    "src/utils/live-subscription-budget.test.ts"
+  ],
   "sessions": [
     {
       "metadata": "/95/a9c70de2ef/0/metadata.json",
@@ -12,13 +16,20 @@
       "compact_transcript": "/95/a9c70de2ef/0/transcript.jsonl",
       "content_hash": "/95/a9c70de2ef/0/content_hash.txt",
       "prompt": "/95/a9c70de2ef/0/prompt.txt"
+    },
+    {
+      "metadata": "/95/a9c70de2ef/1/metadata.json",
+      "transcript": "/95/a9c70de2ef/1/full.jsonl",
+      "compact_transcript": "/95/a9c70de2ef/1/transcript.jsonl",
+      "content_hash": "/95/a9c70de2ef/1/content_hash.txt",
+      "prompt": "/95/a9c70de2ef/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 70,
-    "cache_creation_tokens": 2763994,
-    "cache_read_tokens": 11058441,
-    "output_tokens": 33276,
-    "api_call_count": 35
+    "input_tokens": 176,
+    "cache_creation_tokens": 9249086,
+    "cache_read_tokens": 41472190,
+    "output_tokens": 55066,
+    "api_call_count": 85
   }
 }
