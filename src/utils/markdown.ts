@@ -8,19 +8,22 @@
  * importer relies on.
  *
  * Safety:
- *   - Input is HTML-escaped before `marked` sees it. Without this,
- *     marked v18 would pass raw `<script>` blocks through unchanged.
- *     Pre-escaping guarantees that angle brackets from user text can never
- *     reach the DOM as live tags.
+ *   - Raw HTML never reaches the DOM. `marked` hands every raw-HTML token
+ *     (block or inline) to the `html` renderer, which returns it escaped,
+ *     so `<script>` shows as text. Text, code spans and code blocks are
+ *     escaped by `marked` itself. Escaping the input *before* parsing, as
+ *     this module once did, broke `>` blockquotes and double-escaped code
+ *     and link URLs (`don&#39;t`, `a=1&amp;amp;b=2`).
  *   - Links are normalized: any URL that isn't `http:`, `https:`, or
  *     `mailto:` is rewritten to `about:blank`, blocking `javascript:` and
  *     `data:` payloads. Every link gets `target="_blank"` and
  *     `rel="noopener noreferrer"` so a hostile target page can't reach
- *     back into Twyne via `window.opener`.
+ *     back into Twyne via `window.opener`. Images render as their alt text
+ *     linked the same way, so a note can't load a remote tracker.
  *   - `breaks: true` mirrors GFM-style soft line breaks, which is what
  *     comment authors intuitively expect from short prose.
  */
-import { Marked, marked as globalMarked } from "marked";
+import { Marked } from "marked";
 
 const SAFE_URL = /^(https?:|mailto:)/i;
 
@@ -36,21 +39,6 @@ function escapeHtml(value: string): string {
 function safeHref(href: string | null | undefined): string {
   if (!href) return "about:blank";
   return SAFE_URL.test(href.trim()) ? href : "about:blank";
-}
-
-/**
- * Render inline-Markdown inside a link label.
- *
- * Marked v18's `parseInline` only accepts string input (a quirk in the
- * bundled build — its parameter guard types as `Token[]` but rejects
- * arrays at runtime). To stay sync and safe we re-parse the label through
- * the block parser and strip the `<p>…</p>` wrapper it adds for single-
- * line input. The label was already HTML-escaped by the caller, so this
- * recursion path is just inline-formatting.
- */
-function renderLinkLabel(label: string): string {
-  const html = (globalMarked.parse(label, { async: false }) as string).trim();
-  return html.replace(/^<p>([\s\S]*)<\/p>\s*$/i, "$1");
 }
 
 const md = new Marked({
@@ -74,8 +62,18 @@ md.use({
       const titleAttr = token.title
         ? ` title="${escapeHtml(token.title)}"`
         : "";
-      const inner = renderLinkLabel(token.text ?? "");
+      const inner = this.parser.parseInline(token.tokens);
       return `<a href="${escapeHtml(href)}"${titleAttr} target="_blank" rel="noopener noreferrer">${inner}</a>`;
+    },
+    /** Remote images would load on render; a note shows the alt text as a link. */
+    image(token): string {
+      const href = safeHref(token.href);
+      const label = escapeHtml(token.text || token.href || "image");
+      return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    },
+    /** Raw HTML, block or inline, is shown as the text it is. */
+    html(token): string {
+      return escapeHtml(token.text);
     },
   },
 });
@@ -93,9 +91,5 @@ export function renderMarkdown(input: string | null | undefined): string {
   if (!input) return "";
   const text = input.replace(/\r\n?/g, "\n").trim();
   if (!text) return "";
-  // Pre-escape HTML-significant characters so user text can never escape
-  // into live markup. Markdown syntax itself doesn't rely on `<`/`>`/`&`
-  // (it uses `*`, `_`, `[`, `` ` ``, etc.) so escaping is safe.
-  const escaped = escapeHtml(text);
-  return md.parse(escaped) as string;
+  return md.parse(text) as string;
 }
