@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "43d2f9d19bee",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "bun.lock",
+    "package.json",
+    "packages/gt-qwik/CHANGELOG.md",
+    "packages/gt-qwik/README.md",
+    "packages/gt-qwik/package.json",
+    "packages/gt-qwik/tests/preload.ts",
+    "src/components/editor/selection-actions.tsx",
+    "src/utils/anti-tabula-rasa.ts",
+    "tests/qwik-test-preload.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/43/d2f9d19bee/0/metadata.json",
+      "transcript": "/43/d2f9d19bee/0/full.jsonl",
+      "compact_transcript": "/43/d2f9d19bee/0/transcript.jsonl",
+      "content_hash": "/43/d2f9d19bee/0/content_hash.txt",
+      "prompt": "/43/d2f9d19bee/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 600,
+    "cache_creation_tokens": 8909111,
+    "cache_read_tokens": 48580672,
+    "output_tokens": 170482,
+    "api_call_count": 300
+  }
+}
