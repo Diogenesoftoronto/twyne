@@ -5,7 +5,8 @@
  * there is no average worth drifting toward. So each surface is computed here
  * first, from the writer's own numbers, and the model is only allowed to
  * replace it when there is enough history and it lands near this answer
- * (`preferForecast`). Everything is an 80% interval: median, p10, p90.
+ * (`preferForecast`). Ranges describe plausible scenarios; summing step
+ * quantiles does not establish 80% coverage for a total or crossing date.
  */
 import type { Interval } from "./extraction";
 
@@ -152,6 +153,13 @@ export function periodTotalBaseline(input: {
 
 /* ── Model vs baseline ──────────────────────────────────────────── */
 
+export interface ReachInterval {
+  median: number;
+  p10: number;
+  /** Null when the slow scenario does not reach the target in the horizon. */
+  p90: number | null;
+}
+
 /**
  * Take the model's interval only when history is long enough to trust it
  * and its median sits within the baseline's band widened by half its width
@@ -159,11 +167,11 @@ export function periodTotalBaseline(input: {
  * steady record does not shut the model out entirely). Otherwise the baseline stands: a model answer far from the
  * writer's own record is the drift-to-average failure, not insight.
  */
-export function preferForecast(
+export function preferForecast<Model extends ReachInterval = Interval>(
   baseline: Interval | null,
-  model: Interval | null,
+  model: Model | null,
   enoughHistory: boolean,
-): { value: Interval; source: "baseline" | "clairic" } | null {
+): { value: Interval | Model; source: "baseline" | "clairic" } | null {
   if (!baseline) return null;
   if (!model || !enoughHistory) return { value: baseline, source: "baseline" };
   const half = Math.max(
@@ -175,7 +183,7 @@ export function preferForecast(
     model.median >= baseline.p10 - half &&
     model.median <= baseline.p90 + half &&
     model.p10 <= model.median &&
-    model.median <= model.p90;
+    (model.p90 === null || model.median <= model.p90);
   return ok
     ? { value: model, source: "clairic" }
     : { value: baseline, source: "baseline" };
@@ -186,12 +194,13 @@ export function preferForecast(
  * `remaining`. Returns the 1-based step index where the median, the fast
  * edge (p90 increments) and the slow edge (p10 increments) cross, or null
  * when the median never crosses inside the horizon. A slow edge that never
- * crosses is reported at the horizon's end + 1 so the caller can see it.
+ * crosses has a null upper bound, not an invented crossing date. These
+ * scenario crossings are not quantiles of the total's crossing time.
  */
 export function stepsToReach(
   steps: readonly Interval[],
   remaining: number,
-): Interval | null {
+): ReachInterval | null {
   if (remaining <= 0) return { median: 0, p10: 0, p90: 0 };
   const cross = (pick: (s: Interval) => number) => {
     let sum = 0;
@@ -206,11 +215,11 @@ export function stepsToReach(
   return {
     median,
     p10: cross((s) => s.p90) ?? median,
-    p90: cross((s) => s.p10) ?? steps.length + 1,
+    p90: cross((s) => s.p10),
   };
 }
 
-/** Sum of step intervals: a loose but honest bound on a total. */
+/** Sum corresponding step scenarios, not calibrated quantiles of the total. */
 export function sumSteps(steps: readonly Interval[]): Interval {
   return steps.reduce(
     (acc, s) => ({

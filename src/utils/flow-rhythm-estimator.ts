@@ -75,8 +75,8 @@ export function rhythmRequest(
     ].join("\n"),
     fields: {
       focus_remaining: estimate(
-        "Seconds from now to the last keystroke of this rhythmic focus bout. The reference bout ends when a pause reaches the writer's exit pause, regardless of UI decisions. Shorter gaps can resume. Cadence-run history is an empirical baseline, not cognitive focus evidence.",
-        { min: 1, max: 3600, unit: "seconds", log: true, step: 1 },
+        "Nonnegative seconds from now to the last keystroke of this rhythmic focus bout. Return zero when the last keystroke has already happened and writing will not resume before the reference exit pause. The reference bout ends when a pause reaches the writer's exit pause, regardless of UI decisions. Shorter gaps can resume. The empirical focus interval uses previously observed outcomes; cadence-run history is additional rhythm context, not cognitive focus evidence.",
+        { min: 0, max: 3600, unit: "seconds", step: 1 },
       ),
       pause_length: estimate(
         "Remaining seconds from now until the next keystroke, conditional on the pause already observed. Compare the empirical remaining-pause interval.",
@@ -105,7 +105,11 @@ export class FlowRhythmEstimator {
     this.current = input.current;
     const baseline = rhythmBaseline(
       input.profile,
-      input.runSeconds,
+      this.log.flatMap((p) =>
+        p.source === "baseline" && p.actualFocus !== undefined
+          ? [p.actualFocus]
+          : [],
+      ),
       (input.now - input.lastKeyAt) / 1000,
     );
     this.pause = {
@@ -174,7 +178,7 @@ export class FlowRhythmEstimator {
           (pauseAnswer.p_null ?? 0) > 0.5 ||
           !validInterval(focus) ||
           !validInterval(pause) ||
-          focus.p10 < 1 ||
+          focus.p10 < 0 ||
           focus.p90 > 3600 ||
           pause.p10 < 1 ||
           pause.p90 > 600

@@ -1,10 +1,10 @@
 /**
- * The three forecasts the writer sees — today's pace, when the draft is
- * done, and how long hosted credit lasts — each a baseline from
+ * The three forecasts the writer sees — today's pace, reaching a word
+ * target, and how long hosted credit lasts — each a baseline from
  * `forecast-baselines`, optionally replaced by one Clairic forecast a day.
  *
- * Nothing here renders. Callers get a median and an 80% interval, or null
- * when there is nothing honest to say yet.
+ * Nothing here renders. Callers get a central estimate and a scenario
+ * range, or null when there is nothing honest to say yet.
  */
 import type { ConvexClient } from "convex/browser";
 import type { ProjectBrief } from "../types";
@@ -25,6 +25,7 @@ import {
   sumSteps,
   type DailyAmount,
   type PaceHistoryDay,
+  type ReachInterval,
 } from "./forecast-baselines";
 import { dailyForecast, type ForecastCacheStore } from "./forecast-cache";
 import {
@@ -54,11 +55,16 @@ type Ask = (request: ExtractionRequest) => Promise<ExtractionResult>;
 interface ModelOptions {
   /** Absent → baseline only. */
   ask?: Ask;
+  /** Stable identifier of the authenticated account paying for the call. */
+  accountId?: string;
   store?: ForecastCacheStore;
 }
 
-export function clientAsk(client: ConvexClient | null | undefined): Ask | undefined {
-  return client ? (request) => askExtraction(client, request) : undefined;
+export function clientAsk(
+  client: ConvexClient | null | undefined,
+  accountId: string | null | undefined,
+): Ask | undefined {
+  return client && accountId ? (request) => askExtraction(client, request) : undefined;
 }
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -111,11 +117,12 @@ export async function paceForecast(
   const writingDays = history.filter((d) => d.hours.some((n) => n > 0)).length;
   const enough = writingDays >= MODEL_MIN_DAYS;
   let model: Interval | null = null;
-  if (enough && options.ask) {
+  if (enough && options.ask && options.accountId) {
     const ask = options.ask;
     const startHour = date.getHours();
     const cached = await dailyForecast({
       surface: "pace",
+      accountId: options.accountId,
       scope: "all",
       day: today,
       now,
@@ -194,14 +201,14 @@ export function briefWordTarget(brief: ProjectBrief | null | undefined): number 
       .filter((p) => p.relatesTo === "format" || p.relatesTo === "constraints")
       .map((p) => (Array.isArray(p.answer) ? p.answer.join(" ") : String(p.answer ?? ""))),
   ].join(" \n ");
-  const number = String.raw`(\d{1,3}(?:[,  ]\d{3})+|\d+(?:\.\d+)?)\s*(k)?`;
+  const number = String.raw`(\d{1,3}(?:[,\u202f ]\d{3})+|\d+(?:\.\d+)?)\s*(k)?`;
   const match = new RegExp(
     String.raw`(?:${number})\s*(?:(?:-|–|—|to)\s*(?:${number})\s*)?(?:words?|wds)\b`,
     "i",
   ).exec(text);
   if (!match) return null;
   const value = (raw: string, k?: string) =>
-    Number(raw.replace(/[,  ]/g, "")) * (k ? 1_000 : 1);
+    Number(raw.replace(/[,\u202f ]/g, "")) * (k ? 1_000 : 1);
   // "3–5k words": the k on the upper end applies to a bare lower one.
   const sharedK = !match[2] && match[4] && Number(match[1]) < 1_000;
   const low = value(match[1], match[2] ?? (sharedK ? "k" : undefined));
@@ -215,7 +222,8 @@ export interface FinishForecast {
   /** Local day keys. */
   median: string;
   early: string;
-  late: string;
+  /** Null when the slow scenario does not reach the word target in the horizon. */
+  late: string | null;
   source: ForecastSource;
 }
 
@@ -243,11 +251,13 @@ export async function finishForecast(input: {
   if (!baseline || baseline.median > 366) return null;
 
   const enough = observedDays - 1 >= MODEL_MIN_DAYS;
-  let model: Interval | null = null;
+  let model: ReachInterval | null = null;
   const ask = input.options?.ask;
-  if (enough && ask) {
+  const accountId = input.options?.accountId;
+  if (enough && ask && accountId) {
     const cached = await dailyForecast({
       surface: "finish",
+      accountId,
       scope: input.folioId,
       day: today,
       now: input.now,
@@ -279,7 +289,7 @@ export async function finishForecast(input: {
       model = {
         median: crossing.median - 1,
         p10: crossing.p10 - 1,
-        p90: crossing.p90 - 1,
+        p90: crossing.p90 === null ? null : crossing.p90 - 1,
       };
   }
   const chosen = preferForecast(baseline, model, enough)!;
@@ -289,7 +299,7 @@ export async function finishForecast(input: {
     current: currentWords,
     median: day(chosen.value.median),
     early: day(chosen.value.p10),
-    late: day(chosen.value.p90),
+    late: chosen.value.p90 === null ? null : day(chosen.value.p90),
     source: chosen.source,
   };
 }
@@ -308,8 +318,8 @@ export interface CreditForecast {
   spentMicros: number;
   availableMicros: number;
   /** Local day keys when credit runs out, or null when it outlasts the horizon. */
-  runsOut: { median: string; early: string; late: string } | null;
-  /** True when even the slow edge lands before month end. */
+  runsOut: { median: string; early: string; late: string | null } | null;
+  /** True when even the earliest projected run-out is after month end. */
   outlastsMonth: boolean;
   monthEnd: string;
   source: ForecastSource;
@@ -373,11 +383,12 @@ export async function creditForecast(input: {
   const spendDays = input.history.filter((h) => h.micros > 0).length;
   const enough = spendDays >= MODEL_MIN_DAYS;
   let monthModel: Interval | null = null;
-  let runModel: Interval | null = null;
+  let runModel: ReachInterval | null = null;
   const ask = input.options?.ask;
   if (enough && ask) {
     const cached = await dailyForecast({
       surface: "credit",
+      accountId: input.scope,
       scope: input.scope,
       day: today,
       now: input.now,
@@ -418,7 +429,7 @@ export async function creditForecast(input: {
       ? {
           median: day(run.value.median),
           early: day(run.value.p10),
-          late: day(run.value.p90),
+          late: run.value.p90 === null ? null : day(run.value.p90),
         }
       : null;
   return {
@@ -460,7 +471,8 @@ export function formatDay(day: string, locale?: string): string {
 }
 
 /** "Nov 8 – 25" in one month, "Oct 29 – Nov 4" across two. */
-export function formatDayRange(early: string, late: string, locale?: string): string {
+export function formatDayRange(early: string, late: string | null, locale?: string): string {
+  if (late === null) return `${formatDay(early, locale)} or later`;
   if (early === late) return formatDay(early, locale);
   const a = new Date(dayToTime(early));
   const b = new Date(dayToTime(late));

@@ -57,9 +57,23 @@ const input = (
 });
 const estimator = () => {
   const e = new FlowRhythmEstimator();
+  e.log = Array.from({ length: 8 }, (_, i) => ({
+    id: `history:${i}`,
+    source: "baseline" as const,
+    at: i + 1,
+    lastKeyAt: 0,
+    runStartedAt: 0,
+    runSeconds: 0,
+    pauseSeconds: 0,
+    estimate: { focus: null, pause: null },
+    actualFocus: 150,
+    actualPause: 6,
+  }));
   estimators.push(e);
   return e;
 };
+const newPredictions = (e: FlowRhythmEstimator) =>
+  e.log.filter((p) => !p.id.startsWith("history:"));
 async function flush() {
   for (let i = 0; i < 20; i++) await Promise.resolve();
 }
@@ -71,7 +85,7 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
-test("one request has two log estimates and only compact rhythm state", () => {
+test("focus includes zero on a linear grid; pause is logarithmic; state is rhythm only", () => {
   const request = rhythmRequest(input(), { focus: null, pause: null });
   expect(Object.keys(request.fields)).toEqual([
     "focus_remaining",
@@ -79,12 +93,12 @@ test("one request has two log estimates and only compact rhythm state", () => {
   ]);
   expect(request.fields.focus_remaining).toMatchObject({
     type: "estimate",
-    min: 1,
+    min: 0,
     max: 3600,
     unit: "seconds",
-    scale: "log",
     step: 1,
   });
+  expect(request.fields.focus_remaining.scale).toBeUndefined();
   expect(request.fields.pause_length).toMatchObject({
     min: 1,
     max: 600,
@@ -126,17 +140,60 @@ test("shadow estimates are logged once per pause; resolved outcomes are paired",
   e.begin(input(ask));
   await flush();
   expect(calls).toBe(1);
-  expect(e.log.map((p) => p.source)).toEqual(["baseline", "clairic"]);
+  expect(newPredictions(e).map((p) => p.source)).toEqual([
+    "baseline",
+    "clairic",
+  ]);
   expect(e.selected()?.source).toBe("baseline");
   e.key(now - 4000, now + 6000);
   e.finishRun(now - 94_000, now + 50_000);
-  expect(e.log.map((p) => [p.actualFocus, p.actualPause])).toEqual([
+  expect(newPredictions(e).map((p) => [p.actualFocus, p.actualPause])).toEqual([
     [50, 6],
     [50, 6],
   ]);
   e.begin(input(ask)); // Even invalidating a pause cannot spend on it twice.
   await flush();
   expect(calls).toBe(1);
+});
+test("a terminal pause accepts and scores zero remaining focus", async () => {
+  const e = estimator();
+  const paused = input(async () => ({
+    ...result,
+    answers: {
+      ...result.answers,
+      focus_remaining: {
+        type: "estimate",
+        value: 0,
+        p10: 0,
+        median: 0,
+        p90: 0,
+      },
+    },
+  }));
+  e.begin(paused);
+  await flush();
+  e.finishRun(paused.runStartedAt, paused.lastKeyAt);
+  const model = newPredictions(e).find((p) => p.source === "clairic");
+  expect(model?.estimate.focus).toEqual({ p10: 0, median: 0, p90: 0 });
+  expect(model?.actualFocus).toBe(0);
+  expect(extractionWait(now)).toBe(0);
+});
+test("cadence runs alone cannot qualify as reference-focus history", async () => {
+  const e = estimator();
+  e.log = [];
+  let calls = 0;
+  e.begin(
+    input(async () => {
+      calls++;
+      return result;
+    }),
+  );
+  await flush();
+  expect(calls).toBe(0);
+  expect(e.selected()?.estimate.focus).toBeNull();
+  // Even without a model or focus baseline, the outcome is collected for warmup.
+  e.finishRun(now - 94_000, now - 4000);
+  expect(e.log[0].actualFocus).toBe(0);
 });
 test("a key, teardown, account change, or deadline drops a late answer", async () => {
   for (const cause of ["key", "stop", "account", "deadline"] as const) {
@@ -172,7 +229,7 @@ test("timeout backs off without awaiting the provider and errors cannot retry th
   expect(extractionWait(now)).toBe(30_000);
   pending.resolve(result);
   await flush();
-  expect(e.log).toHaveLength(1);
+  expect(newPredictions(e)).toHaveLength(1);
 });
 test("unconfigured service disables future calls, and malformed intervals back off", async () => {
   const e = estimator();
@@ -205,7 +262,7 @@ test("unconfigured service disables future calls, and malformed intervals back o
     })),
   );
   await flush();
-  expect(bad.log).toHaveLength(1);
+  expect(newPredictions(bad)).toHaveLength(1);
   expect(extractionWait(now)).toBe(30_000);
 });
 test("twelve-call session cap holds after the rolling rate window expires", async () => {
