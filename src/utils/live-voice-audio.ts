@@ -3,7 +3,11 @@ const WORKLET = `class TwynePcm extends AudioWorkletProcessor {
  process(inputs){const channel=inputs[0]?.[0];if(!channel)return true;
  for(const value of channel){const s=Math.max(-1,Math.min(1,value));this.samples[this.index++]=s<0?s*32768:s*32767;
  if(this.index===2400){this.port.postMessage(this.samples.buffer,[this.samples.buffer]);this.samples=new Int16Array(2400);this.index=0;}}return true;}
-} registerProcessor('twyne-pcm',TwynePcm);`;
+} registerProcessor('twyne-pcm',TwynePcm);
+class TwynePlayback extends AudioWorkletProcessor {
+ constructor(){super();this.queue=[];this.offset=0;this.port.onmessage=({data})=>{if(data.type==='clear'){this.queue=[];this.offset=0;}else if(data.type==='audio'&&data.samples.length)this.queue.push(data);};}
+ process(_inputs,outputs){const out=outputs[0]?.[0];if(!out)return true;out.fill(0);let i=0;while(i<out.length&&this.queue.length){const item=this.queue[0],part=item.samples;const n=Math.min(out.length-i,part.length-this.offset);out.set(part.subarray(this.offset,this.offset+n),i);i+=n;this.offset+=n;if(this.offset===part.length){this.queue.shift();this.offset=0;if(!this.queue.length)this.port.postMessage({type:'drained',sequence:item.sequence});}}return true;}
+} registerProcessor('twyne-playback',TwynePlayback);`;
 
 /** A single audio clock for microphone capture and speech, with echo cancellation. */
 export async function liveVoiceAudio(
@@ -18,6 +22,10 @@ export async function liveVoiceAudio(
   let source: MediaStreamAudioSourceNode | null = null;
   let node: AudioWorkletNode | null = null;
   let silent: GainNode | null = null;
+  let speaker: AudioWorkletNode | null = null;
+  let localPlaying = false;
+  let localSequence = 0;
+  let localEnd: (() => void) | null = null;
   let nextTime = 0;
   let stopped = false;
   const playing = new Set<AudioBufferSourceNode>();
@@ -36,6 +44,8 @@ export async function liveVoiceAudio(
     node?.disconnect();
     source?.disconnect();
     silent?.disconnect();
+    if (speaker) speaker.port.onmessage = null;
+    speaker?.disconnect();
     playing.forEach((audio) => {
       try {
         audio.stop();
@@ -67,6 +77,22 @@ export async function liveVoiceAudio(
     }
     source = context.createMediaStreamSource(stream);
     node = new AudioWorkletNode(context, "twyne-pcm");
+    speaker = new AudioWorkletNode(context, "twyne-playback", {
+      numberOfInputs: 0,
+      numberOfOutputs: 1,
+      outputChannelCount: [1],
+    });
+    speaker.connect(output);
+    speaker.port.onmessage = ({ data }) => {
+      if (
+        data?.type === "drained" &&
+        data.sequence === localSequence &&
+        localPlaying
+      ) {
+        localPlaying = false;
+        localEnd?.();
+      }
+    };
     silent = context.createGain();
     silent.gain.value = 0;
     node.port.onmessage = ({ data }: MessageEvent<ArrayBuffer>) => {
@@ -92,11 +118,42 @@ export async function liveVoiceAudio(
       },
       /** Loudness of the voice being played right now, 0–1. */
       outputLevel() {
-        if (stopped || !playing.size) return 0;
+        if (stopped || (!playing.size && !localPlaying)) return 0;
         output.getFloatTimeDomainData(frame);
         let sum = 0;
         for (const value of frame) sum += value * value;
         return Math.min(1, Math.sqrt(sum / frame.length) * 6);
+      },
+      /** Queue a local model's 24 kHz mono PCM without a WAV conversion. */
+      playLocal(samples: Float32Array, onEnd: () => void) {
+        if (stopped || !speaker || samples.length === 0) return;
+        if (context.state !== "running")
+          throw new Error("Audio playback is paused by your browser.");
+        const copy = new Float32Array(samples);
+        localPlaying = true;
+        localEnd = onEnd;
+        speaker.port.postMessage(
+          { type: "audio", samples: copy, sequence: ++localSequence },
+          [copy.buffer],
+        );
+      },
+      /** Discard queued speech while leaving microphone capture active. */
+      stopPlayback() {
+        localPlaying = false;
+        localSequence++;
+        localEnd = null;
+        speaker?.port.postMessage({ type: "clear" });
+        for (const part of playing) {
+          part.onended = null;
+          try {
+            part.stop();
+          } catch {
+            /* already ended */
+          }
+          part.disconnect();
+        }
+        playing.clear();
+        nextTime = context.currentTime;
       },
       play(base64: string, onEnd: () => void) {
         if (stopped) return;

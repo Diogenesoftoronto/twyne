@@ -85,6 +85,8 @@ beforeEach(async () => {
     play: () => {
       plays++;
     },
+    playLocal: () => {},
+    stopPlayback: () => {},
     outputLevel: () => 0.4,
   };
 });
