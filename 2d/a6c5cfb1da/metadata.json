@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "2da6c5cfb1da",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "src/components/personas/personas-panel.tsx",
+    "src/global.css",
+    "src/utils/markdown.test.ts",
+    "src/utils/markdown.ts",
+    "src/utils/personas-markdown-wiring.test.ts",
+    "src/utils/quote-grounding-assist.test.ts",
+    "src/utils/quote-grounding-assist.ts",
+    "src/utils/quote-grounding.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/2d/a6c5cfb1da/0/metadata.json",
+      "transcript": "/2d/a6c5cfb1da/0/full.jsonl",
+      "compact_transcript": "/2d/a6c5cfb1da/0/transcript.jsonl",
+      "content_hash": "/2d/a6c5cfb1da/0/content_hash.txt",
+      "prompt": "/2d/a6c5cfb1da/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
+}
