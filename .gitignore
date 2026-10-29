@@ -100,3 +100,5 @@ stryker.log
 .house-shots/
 **/.hyperframes/
 /launch-videos/renders/work-*/
+
+__pycache__/

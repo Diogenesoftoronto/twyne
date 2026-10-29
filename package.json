@@ -82,14 +82,14 @@
     "desktop.gpui.test-ui": "cargo test --locked --features ui-tests --manifest-path desktop/gpui/Cargo.toml"
   },
   "devDependencies": {
-    "@builder.io/qwik": "npm:@qwik.dev/core@2.0.0-beta.42",
-    "@builder.io/qwik-city": "npm:@qwik.dev/router@2.0.0-beta.42",
+    "@builder.io/qwik": "npm:@qwik.dev/core@2.0.0-rc.4",
+    "@builder.io/qwik-city": "npm:@qwik.dev/router@2.0.0-rc.4",
     "@edge-runtime/vm": "^5.0.0",
     "@eslint/js": "^9",
     "@playwright/test": "^1.61.0",
     "@popmelt.com/core": "0.24.2",
-    "@qwik.dev/core": "2.0.0-beta.42",
-    "@qwik.dev/router": "2.0.0-beta.42",
+    "@qwik.dev/core": "2.0.0-rc.4",
+    "@qwik.dev/router": "2.0.0-rc.4",
     "@stryker-mutator/core": "^9.6.1",
     "@tailwindcss/vite": "^4.2.4",
     "@types/node": "^25.9.3",
@@ -99,7 +99,7 @@
     "electrobun": "^1.18.1",
     "entities": "^8.0.0",
     "eslint": "9.32.0",
-    "eslint-plugin-qwik": "2.0.0-beta.40",
+    "eslint-plugin-qwik": "2.0.0-rc.4",
     "globals": "16.4.0",
     "gt": "^2.21.3",
     "gt-qwik": "workspace:*",
@@ -121,8 +121,8 @@
     "vitest": "^4.1.10"
   },
   "overrides": {
-    "@builder.io/qwik": "npm:@qwik.dev/core@2.0.0-beta.42",
-    "@builder.io/qwik-city": "npm:@qwik.dev/router@2.0.0-beta.42",
+    "@builder.io/qwik": "npm:@qwik.dev/core@2.0.0-rc.4",
+    "@builder.io/qwik-city": "npm:@qwik.dev/router@2.0.0-rc.4",
     "undici": "^6.21.0"
   },
   "dependencies": {

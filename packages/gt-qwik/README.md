@@ -13,7 +13,7 @@ bun run i18n:prepare
 
 For a separate local project, build this package, run `npm pack --ignore-scripts`, and install that tarball. Do not use `bun add gt-qwik` from the public registry to obtain this implementation.
 
-Supported versions: `@qwik.dev/core@2.0.0-beta.42` (peer), `gt-i18n@1.0.28`, and `@generaltranslation/format@0.1.9`. Qwik 1 and other Qwik 2 betas have not been validated.
+Supported versions: `@qwik.dev/core@2.0.0-rc.4` (peer), `gt-i18n@1.0.28`, and `@generaltranslation/format@0.1.9`. Qwik 1 and other Qwik 2 versions are outside the supported contract.
 
 ## Provider and rendering
 
