@@ -320,6 +320,15 @@ export const CONSTRUCTS: Record<string, Construct[]> = {
         metric("expected_source", "deterministic"),
       ],
     },
+    {
+      name: "declared scalar support (v2) vs source-settlement judgments",
+      level: "case",
+      evaluators: [
+        metric("clairic_value_support_v2", "clairic"),
+        metric("settles", "llm"),
+        metric("jev_settles", "jev"),
+      ],
+    },
   ],
 };
 

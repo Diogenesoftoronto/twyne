@@ -158,7 +158,55 @@ since Jev reads the whole state for every question.
 |                    | `jev_field_recall`                                                   | blind to the filed dossier: per field, has the writer stated it (Noul), a second reading of what Clairic extracts                                                                                                                      |
 |                    | `jev_question_value`, `jev_no_repeat`                                | question turns: how much the answer will shape the piece (Score); does it ask for something already answered (inverted Noul)                                                                                                           |
 |                    | `jev_record_faithful`                                                | second request: is each newly filed field true to the conversation (and, in refine mode, the brief on file)                                                                                                                            |
-| `research-sources` | `jev_settles`, `clairic_fact`                                        | see `suites/research.ts`                                                                                                                                                                                                               |
+| `research-sources` | `jev_settles`, `clairic_value_support_v2`                            | see `suites/research.ts`                                                                                                                                                                                                               |
+
+### Research source values: evaluator v2
+
+`clairic_value_support_v2` replaces the legacy `clairic_fact` for new runs.
+The old metric guessed a date/number from the fact text and asked Clairic to
+extract the answer key as well as a value from concatenated snippets. Keep
+those historical scores unchanged; they measure extraction agreement, not
+application factual accuracy. Do not pool v1 and v2 or rescore only failures.
+
+`cases/research-value-checks.v2.json` declares eligibility for every one of the
+126 source cases: 47 have one scalar property, 79 have an explicit exclusion.
+Each eligible check declares its gold value, exact event/property, date
+precision or numeric unit and absolute tolerance. For example, Rosetta has two
+**languages**, Webb's `L2` is a text identifier, and plates moving toward “one
+another” is not a count. Ranges, multiple dimensions and undeclared properties
+remain n/a. Missing/stale entries or an edited gold fact fail validation rather
+than silently selecting a new check. The research JSONL corpus is unchanged.
+
+The evaluator reads each of the top five ranked sources separately, serially,
+with up to 12,000 characters per source (at most five requests, two fields each).
+Only the source text and the property definition go to Clairic; the declared
+answer is never inferred by a model or sent as an answer-key request. The
+returned value needs confidence >= 0.3, p_null <= 0.3, and a confident supporting
+text span that exactly matches its source. A conservative lexical check requires
+the extracted scalar to occur in that span; dates cannot combine components
+from different events. Unsupported number/date notation abstains. A returned
+numeric unit, when present, must match the requested unit; conversions without
+a literal representation remain ungrounded.
+
+A case scores 1 when any examined source has a grounded value matching gold;
+0 when every examined source conclusively differs or does not state the value
+(or no sources were returned). Without a match, any uncertain or ungrounded
+reading leaves the case unscored. A clipped snippet cannot establish absence.
+Any provider/schema failure leaves the case `clairic-error`, preserving partial
+readings without a partial aggregate score. Explanations retain each source's
+rank, URL, input hash, clipping flag, extracted value, and supporting passage.
+
+This remains **typed extraction support**, conditional on eligible and scored
+cases. Literal evidence does not prove that Clairic selected the right event,
+converted units correctly, or understood entailment. Read it beside Jev/LLM
+source-settlement judgments and report its scored/uncertain/n/a/error counts.
+
+Reports persist the evaluator version and full gold-manifest SHA256. Arize
+example rows include that identity and the declared check, so the dataset
+content hash changes for v2. Agreement statistics keep the legacy metric and
+v2 in separate constructs. Changes to these semantics require a new version;
+new comparisons must use the same evaluator and reviewed gold definitions.
+No historical report, journal, dataset or experiment is rewritten by this fix.
 
 Probes on known cases, before these were settled: the observation Noul put
 true complaints at 0.97-0.99 and planted false ones at 0.02-0.24 (AUC 1.00 on

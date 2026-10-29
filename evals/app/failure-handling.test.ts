@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { researchSourcesSuite } from "./suites/research";
 import { rewriteSuite } from "./suites/rewrite";
 import { rubricSuite } from "./suites/rubric";
-import type { ClairicAsk, Judge } from "./judges";
+import type { Judge } from "./judges";
 
 const noJudge = { judge: null, jev: null, extract: null };
 const brokenJudge: Judge = {
@@ -56,38 +56,6 @@ test("a judge cannot settle a claim with a source index outside the shown result
     sources,
   );
   expect(result.settles).toMatchObject({ score: null, label: "judge-error" });
-});
-
-test("Clairic uncertainty excludes both matches and mismatches, on either extraction", async () => {
-  const datedCase = researchSourcesSuite
-    .load()
-    .find((c) => /\b(1[0-9]{3}|20[0-9]{2})\b/.test(c.fact))!;
-  for (const agrees of [true, false])
-    for (const uncertainTruth of [true, false]) {
-      let calls = 0;
-      const extract: ClairicAsk = async () => {
-        const truth = calls++ === 0;
-        return {
-          ok: true,
-          answers: {
-            value: {
-              value: truth || agrees ? "2024-04-08" : "2025-04-08",
-              confidence: truth === uncertainTruth ? 0.1 : 0.99,
-              p_null: 0.001,
-            },
-          },
-        };
-      };
-      const result = await researchSourcesSuite.score(
-        { ...noJudge, extract },
-        datedCase,
-        sources,
-      );
-      expect(result.clairic_fact).toMatchObject({
-        score: null,
-        label: "uncertain",
-      });
-    }
 });
 
 test("a partial Jev source batch stays visibly incomplete", async () => {
