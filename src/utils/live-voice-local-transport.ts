@@ -72,6 +72,10 @@ export class LocalLiveTransport {
     private readonly onAudio: (audio: Float32Array) => void,
     private readonly onClearAudio: () => void,
     worker?: Worker,
+    private readonly route?: (
+      worker: Worker,
+    ) => Promise<"local" | "hosted" | "local-slow">,
+    private readonly onHosted?: () => void,
   ) {
     this.worker =
       worker ??
@@ -100,8 +104,25 @@ export class LocalLiveTransport {
   }) {
     if (this.closed) return;
     if (data.type === "loaded") {
-      this.readyState = 1;
-      this.emit({ type: "twyne.live.ready" });
+      void (async () => {
+        try {
+          const route = this.route ? await this.route(this.worker) : "local";
+          if (this.closed) return;
+          if (route === "hosted") {
+            this.onHosted?.();
+            return;
+          }
+          this.readyState = 1;
+          if (route === "local-slow") this.emit({ type: "twyne.local.slow" });
+          this.emit({ type: "twyne.live.ready" });
+        } catch (error) {
+          this.fail(
+            error instanceof Error
+              ? error.message
+              : "Local Live benchmark failed.",
+          );
+        }
+      })();
       return;
     }
     if (data.type === "error") {
@@ -142,7 +163,7 @@ export class LocalLiveTransport {
         type: "turn",
         id: this.activeId,
         audio,
-        instructions: `${this.instructions}\n\nRecent conversation:\n${this.history.slice(-12).join("\n")}\n\n<tools>\n${tools}\n</tools>`,
+        instructions: `Respond with interleaved text and audio.\n${this.instructions}\n\nRecent conversation:\n${this.history.slice(-12).join("\n")}\n\n<tools>\n${tools}\n</tools>`,
         mode: "interleaved",
       });
       return;

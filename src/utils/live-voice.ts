@@ -246,7 +246,7 @@ export function reviewVoiceEdit(apply: boolean) {
 
 async function runAction(
   action: LiveAction,
-  client: ConvexClient,
+  client: ConvexClient | null,
   revision: string,
 ) {
   switch (action.kind) {
@@ -273,6 +273,8 @@ async function runAction(
     case "find":
       return findVoicePassage(action.text);
     case "research": {
+      if (!client || !navigator.onLine)
+        throw new Error("Web research is unavailable offline.");
       const result = await client.action(api.research.searchSources, {
         query: action.text.slice(0, 500),
         context: voiceWorkspace()?.selection ?? "",
@@ -306,7 +308,7 @@ async function runAction(
 }
 
 export async function startLiveVoice(
-  client: ConvexClient,
+  client: ConvexClient | null,
   author: string,
   passage: string,
   consent: boolean,
@@ -315,6 +317,8 @@ export async function startLiveVoice(
     socket?: (url: URL) => WebSocket;
     local?: boolean;
     localWorker?: () => Worker;
+    hostedAvailable?: boolean;
+    localRoute?: (worker: Worker) => Promise<"local" | "hosted" | "local-slow">;
   } = {},
 ) {
   if (!["idle", "error"].includes(state.status)) return;
@@ -352,9 +356,11 @@ export async function startLiveVoice(
       finish(
         "Live could not start in time. Check microphone permission and try again.",
       ),
-    useLocal ? 180_000 : 30_000,
+    useLocal ? 300_000 : 30_000,
   );
   try {
+    if (!useLocal && !client)
+      throw new Error("Live connection is unavailable.");
     const capture = await (dependencies.audio ?? liveVoiceAudio)(
       (chunk, level) => {
         if (!alive() || !state.startedAt || state.muted) return;
@@ -378,7 +384,7 @@ export async function startLiveVoice(
     audio = capture;
     const credentials = useLocal
       ? null
-      : await client.action(
+      : await client!.action(
           makeFunctionReference<
             "action",
             { consent: boolean },
@@ -428,6 +434,10 @@ export async function startLiveVoice(
         return;
       }
       if (!alive()) return;
+      if (event.type === "twyne.local.slow") {
+        state.notice = "Replies may lag on this device.";
+        emit();
+      }
       if (event.type === "twyne.live.ready") {
         try {
           send({
@@ -525,7 +535,7 @@ export async function startLiveVoice(
         }).slice(0, 40_000);
         const interpretation = useLocal
           ? Promise.resolve(event.delegation.action as LiveAction)
-          : client.action(
+          : client!.action(
               makeFunctionReference<"action", { context: string }, LiveAction>(
                 "liveVoice:interpret",
               ),
@@ -592,6 +602,24 @@ export async function startLiveVoice(
           }
         },
         dependencies.localWorker?.(),
+        dependencies.localRoute ??
+          (async (worker) => {
+            const { resolveLocalLiveRoute } = await import(
+              "./live-voice-local-benchmark"
+            );
+            return resolveLocalLiveRoute(
+              worker,
+              dependencies.hostedAvailable === true,
+            );
+          }),
+        () => {
+          if (!alive()) return;
+          finish();
+          void startLiveVoice(client, author, passage, consent, {
+            ...dependencies,
+            local: false,
+          });
+        },
       );
       localConnection = connection;
       connection.onmessage = onMessage;

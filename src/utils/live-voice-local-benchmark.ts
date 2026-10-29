@@ -1,4 +1,5 @@
 import { LOCAL_LIVE_REVISION } from "./live-voice-local-model";
+import { localLiveAdapter } from "./browser-inference";
 
 export interface LocalLiveRate {
   adapter: string;
@@ -98,4 +99,53 @@ export function localLiveRoute(
   if (!Number.isFinite(rate) || rate <= 0) return "unknown";
   if (rate >= 1) return "local";
   return hostedAvailable ? "hosted" : "local-slow";
+}
+
+/** Identify the adapter and benchmark the pinned voice when no matching result exists. */
+export async function resolveLocalLiveRoute(
+  worker: Worker,
+  hostedAvailable: boolean,
+): Promise<"local" | "hosted" | "local-slow"> {
+  const adapter = await localLiveAdapter();
+  if (!adapter || !adapter.features.has("shader-f16"))
+    throw new Error("Local Live is not available on this device.");
+  const info = adapter.info;
+  const parts = [
+    info?.vendor,
+    info?.architecture,
+    info?.device,
+    info?.description,
+  ].filter(Boolean);
+  const fingerprint = parts.length ? parts.join("|") : "";
+  let rate = readLocalLiveRate(fingerprint)?.rate;
+  if (!rate) {
+    const { default: fixture } = await import(
+      "../assets/live-voice-benchmark.wav?inline"
+    );
+    const bytes = await (await fetch(fixture)).arrayBuffer();
+    const view = new DataView(bytes);
+    let offset = 12;
+    while (
+      offset + 8 <= bytes.byteLength &&
+      String.fromCharCode(...new Uint8Array(bytes, offset, 4)) !== "data"
+    ) {
+      const size = view.getUint32(offset + 4, true);
+      offset += 8 + size + (size % 2);
+    }
+    if (offset + 8 > bytes.byteLength)
+      throw new Error("Local Live benchmark sample is invalid.");
+    const length = view.getUint32(offset + 4, true) / 2;
+    if (!Number.isInteger(length) || offset + 8 + length * 2 > bytes.byteLength)
+      throw new Error("Local Live benchmark sample is invalid.");
+    const audio = Float32Array.from(
+      { length },
+      (_, i) => view.getInt16(offset + 8 + i * 2, true) / 32768,
+    );
+    rate = await benchmarkLocalLive(worker, audio, -1);
+    saveLocalLiveRate(fingerprint, rate);
+  }
+  const route = localLiveRoute(rate, hostedAvailable);
+  if (route === "unknown")
+    throw new Error("Local Live benchmark did not return a valid rate.");
+  return route;
 }

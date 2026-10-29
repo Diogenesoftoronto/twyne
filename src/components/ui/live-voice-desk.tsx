@@ -13,6 +13,14 @@ import { PERSONAS } from "../../utils/personas";
 import { loadPersonasFromIdb } from "../../utils/idb";
 import { LIVE_OPEN_EVENT } from "../../utils/live-voice-workspace";
 import {
+  LOCAL_LIVE_MODEL_ID,
+  downloadLocalLive,
+  evictLocalLive,
+  localLiveDownloadState,
+} from "../../utils/live-voice-local-model";
+import { onModelDownload } from "../../utils/models-cache";
+import { localLiveAdapter } from "../../utils/browser-inference";
+import {
   endLiveVoice,
   liveVoiceLevels,
   liveVoiceState,
@@ -91,6 +99,18 @@ export const LiveVoiceDesk = component$(() => {
     consent: false,
     elapsed: 0,
     transcript: false,
+    localReady: false,
+    localSelected: false,
+    localSupported: false,
+    localDownloading: false,
+    localProgress: 0,
+  });
+  const refreshLocal = $(async () => {
+    const adapter = await localLiveAdapter();
+    ui.localSupported = !!adapter && adapter.features.has("shader-f16");
+    ui.localReady = (await localLiveDownloadState()).phase === "ready";
+    ui.localSelected =
+      ui.localReady && localStorage.getItem("twyne.live.local") === "selected";
   });
   const refresh = $(async () => {
     if (!client.value || !auth.value.user) return;
@@ -149,6 +169,7 @@ export const LiveVoiceDesk = component$(() => {
         }
         ui.open = true;
         ui.compact = false;
+        await refreshLocal();
         await refresh();
         document.getElementById("live-voice-heading")?.focus();
       };
@@ -176,7 +197,13 @@ export const LiveVoiceDesk = component$(() => {
       frame = requestAnimationFrame(animate);
       window.addEventListener(LIVE_STATE_EVENT, sync);
       window.addEventListener(LIVE_OPEN_EVENT, open);
+      const unsubscribe = onModelDownload(LOCAL_LIVE_MODEL_ID, (state) => {
+        ui.localDownloading = state.phase === "downloading";
+        ui.localProgress = state.progress;
+        ui.localReady = state.phase === "ready";
+      });
       cleanup(() => {
+        unsubscribe();
         cancelAnimationFrame(frame);
         clearInterval(tick);
         window.removeEventListener(LIVE_STATE_EVENT, sync);
@@ -195,8 +222,10 @@ export const LiveVoiceDesk = component$(() => {
   const signedIn = Boolean(auth.value.user);
   const access = ui.access;
   const affordable = !!access && access.availableMicros >= 500_000;
+  const localActive = ui.localSelected && ui.localReady && ui.localSupported;
   const canStart =
-    signedIn && !!access?.eligible && affordable && ui.consent && !ui.loading;
+    localActive ||
+    (signedIn && !!access?.eligible && affordable && ui.consent && !ui.loading);
   const status =
     live.status === "connecting"
       ? "Connecting…"
@@ -433,58 +462,123 @@ export const LiveVoiceDesk = component$(() => {
 
           {!active && (
             <div class="lvd-gate">
-              {!signedIn ? (
-                <p>
-                  <a href="/signin/">Sign in</a> to talk with your editors. New
-                  accounts start with welcome credit.
-                </p>
-              ) : ui.loading && !access ? (
-                <p>Checking your credit…</p>
-              ) : !access ? (
-                <button type="button" class="lvd-link" onClick$={refresh}>
-                  Check voice access
-                </button>
-              ) : !access.eligible ? (
-                <p>
-                  Voice is part of Pro. <a href="/pricing/">See plans</a>
-                </p>
-              ) : !affordable ? (
-                <p>
-                  ${(access.availableMicros / 1_000_000).toFixed(2)} left — a
-                  conversation needs $0.50. <a href="/pricing/">Add credit</a>
-                </p>
-              ) : (
-                !access.consentGranted && (
-                  <label class="lvd-consent">
-                    <input
-                      type="checkbox"
-                      checked={ui.consent}
-                      onChange$={(_, element) => {
-                        ui.consent = element.checked;
+              <section aria-label="Local Live voice">
+                <p>Local voice · 2.44 GB · runs on this device</p>
+                {!ui.localSupported ? (
+                  <p>Not available on this device.</p>
+                ) : ui.localReady ? (
+                  <>
+                    <button
+                      type="button"
+                      class="lvd-link"
+                      onClick$={() => {
+                        ui.localSelected = !ui.localSelected;
+                        localStorage.setItem(
+                          "twyne.live.local",
+                          ui.localSelected ? "selected" : "hosted",
+                        );
                       }}
-                    />
-                    <span>
-                      Let the voice provider process and log my microphone audio
-                      and the draft I share, through Not Organic.
-                    </span>
-                  </label>
-                )
-              )}
-              {access && (
-                <details class="lvd-fine">
-                  <summary>
-                    ${(access.availableMicros / 1_000_000).toFixed(2)}{" "}
-                    {access.welcome ? "welcome credit" : "in your wallet"} · how
-                    billing works
-                  </summary>
-                  <p>
-                    Up to $0.50 is reserved per conversation; app requests use
-                    up to $0.05 each on top. Unused credit is released when the
-                    session settles. GPT Live voice, speaking from your editor’s
-                    perspective. Audio isn’t recorded in Twyne; captions stay in
-                    this session.
-                  </p>
-                </details>
+                    >
+                      {ui.localSelected
+                        ? "Using local voice"
+                        : "Use local voice"}
+                    </button>{" "}
+                    <button
+                      type="button"
+                      class="lvd-link"
+                      onClick$={async () => {
+                        await evictLocalLive();
+                        ui.localReady = false;
+                        ui.localSelected = false;
+                        localStorage.removeItem("twyne.live.local");
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    class="lvd-link"
+                    disabled={ui.localDownloading}
+                    onClick$={async () => {
+                      ui.error = "";
+                      try {
+                        await downloadLocalLive();
+                        ui.localSelected = true;
+                        localStorage.setItem("twyne.live.local", "selected");
+                      } catch (error) {
+                        ui.localDownloading = false;
+                        ui.error =
+                          error instanceof Error
+                            ? error.message
+                            : "Local voice could not be downloaded.";
+                      }
+                    }}
+                  >
+                    {ui.localDownloading
+                      ? `Downloading ${Math.round(ui.localProgress * 100)}%`
+                      : "Download local voice"}
+                  </button>
+                )}
+              </section>
+              {!localActive && (
+                <>
+                  {!signedIn ? (
+                    <p>
+                      <a href="/signin/">Sign in</a> to talk with your editors.
+                      New accounts start with welcome credit.
+                    </p>
+                  ) : ui.loading && !access ? (
+                    <p>Checking your credit…</p>
+                  ) : !access ? (
+                    <button type="button" class="lvd-link" onClick$={refresh}>
+                      Check voice access
+                    </button>
+                  ) : !access.eligible ? (
+                    <p>
+                      Voice is part of Pro. <a href="/pricing/">See plans</a>
+                    </p>
+                  ) : !affordable ? (
+                    <p>
+                      ${(access.availableMicros / 1_000_000).toFixed(2)} left —
+                      a conversation needs $0.50.{" "}
+                      <a href="/pricing/">Add credit</a>
+                    </p>
+                  ) : (
+                    !access.consentGranted && (
+                      <label class="lvd-consent">
+                        <input
+                          type="checkbox"
+                          checked={ui.consent}
+                          onChange$={(_, element) => {
+                            ui.consent = element.checked;
+                          }}
+                        />
+                        <span>
+                          Let the voice provider process and log my microphone
+                          audio and the draft I share, through Not Organic.
+                        </span>
+                      </label>
+                    )
+                  )}
+                  {access && (
+                    <details class="lvd-fine">
+                      <summary>
+                        ${(access.availableMicros / 1_000_000).toFixed(2)}{" "}
+                        {access.welcome ? "welcome credit" : "in your wallet"} ·
+                        how billing works
+                      </summary>
+                      <p>
+                        Up to $0.50 is reserved per conversation; app requests
+                        use up to $0.05 each on top. Unused credit is released
+                        when the session settles. GPT Live voice, speaking from
+                        your editor’s perspective. Audio isn’t recorded in
+                        Twyne; captions stay in this session.
+                      </p>
+                    </details>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -523,12 +617,21 @@ export const LiveVoiceDesk = component$(() => {
             class="lvd-start"
             disabled={!canStart}
             onClick$={async () => {
-              if (!client.value) return;
+              if (!client.value && !localActive) return;
               await startLiveVoice(
-                client.value,
+                client.value ?? null,
                 ui.author,
                 ui.passage,
                 !ui.access?.consentGranted && ui.consent,
+                {
+                  local: localActive,
+                  hostedAvailable:
+                    signedIn &&
+                    !!access?.eligible &&
+                    affordable &&
+                    ui.consent &&
+                    navigator.onLine,
+                },
               );
             }}
           >
