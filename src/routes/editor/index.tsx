@@ -738,7 +738,10 @@ export default component$(() => {
     };
     window.addEventListener("twyne:panel-activity", onActivity);
 
-    const onRemoteSync = async () => {
+    const onRemoteSync = async (event: Event) => {
+      const detail = (event as CustomEvent).detail as
+        | { folioContent?: string[]; briefs?: string[] }
+        | undefined;
       const folios = await loadFoliosFromIdb();
       const storedActive = await loadActiveFolioIdFromIdb();
       const activeFolioId = folios.some(
@@ -748,6 +751,22 @@ export default component$(() => {
         : storedActive && folios.some((folio) => folio.id === storedActive)
           ? storedActive
           : (folios[0]?.id ?? null);
+      // Another tab or device edited something else: keep this editor, its
+      // cursor and its undo history, and refresh only the folio list.
+      if (
+        detail?.folioContent &&
+        activeFolioId === store.activeFolioId &&
+        activeFolioId &&
+        !detail.folioContent.includes(activeFolioId)
+      ) {
+        store.folios = folios;
+        if (detail.briefs?.includes(activeFolioId)) {
+          store.brief = await loadProjectBriefForFolio(activeFolioId);
+          store.briefEditions = await loadBriefEditions(activeFolioId);
+        }
+        store.activity = panelActivity();
+        return;
+      }
       const [content, brief, briefEditions] = activeFolioId
         ? await Promise.all([
             loadFolioContentFromIdb(activeFolioId),

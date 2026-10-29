@@ -625,6 +625,32 @@ async function buildLocalSnapshot(
   return next;
 }
 
+/** Fields that identify a persona note's content, as pushed and stored. */
+const PERSONA_NOTE_FIELDS = [
+  "noteId",
+  "personaId",
+  "personaName",
+  "personaColor",
+  "type",
+  "feedback",
+  "traceId",
+  "anchor",
+  "anchors",
+  "facts",
+  "briefTitle",
+  "createdAt",
+] as const;
+
+const PERSONA_REPLY_FIELDS = [
+  "replyId",
+  "noteId",
+  "author",
+  "authorKind",
+  "personaId",
+  "text",
+  "createdAt",
+] as const;
+
 /** Everything the server could be told, in the shape it accepts. */
 function buildPushPayload(snap: LocalSnapshot) {
   return {
@@ -978,26 +1004,59 @@ function startRemoteSubscription(
 ): void {
   if (typeof client.onUpdate !== "function") return;
   remoteUnsubscribe?.();
-  remoteUnsubscribe = client.onUpdate(
-    api.sync.pullAll,
+  const current = () => state.client === client && state.userId === userId;
+  // Only the revision is live. A push re-sends one number to every open tab;
+  // a tab that is behind then fetches the snapshot once, and a hidden tab
+  // waits until it is looked at instead of rewriting its cache meanwhile.
+  let latest = -1;
+  let fetching = false;
+  const catchUp = async () => {
+    if (fetching || !current()) return;
+    if (latest <= (state.remoteRevision ?? -1)) return;
+    if (typeof document !== "undefined" && document.hidden) return;
+    fetching = true;
+    try {
+      const snapshot = (await client.query(
+        api.sync.pullAll,
+        {},
+      )) as SyncedSnapshot;
+      if (!snapshot || !current()) return;
+      remoteApplyChain = remoteApplyChain.then(() =>
+        handleRemoteSnapshot(snapshot),
+      );
+      await remoteApplyChain;
+    } catch (err) {
+      if (!current()) return;
+      setSyncFailure(err, "remote-update");
+      notifyStatusChange();
+    } finally {
+      fetching = false;
+    }
+    // A revision that arrived while fetching is caught up now.
+    if (latest > (state.remoteRevision ?? -1)) void catchUp();
+  };
+  const onVisible = () => void catchUp();
+  if (typeof document !== "undefined")
+    document.addEventListener("visibilitychange", onVisible);
+  const unsubscribe = client.onUpdate(
+    api.sync.syncRevision,
     {},
-    (snapshot) => {
-      if (!snapshot || state.client !== client || state.userId !== userId) {
-        return;
-      }
-      remoteApplyChain = remoteApplyChain
-        .then(() => handleRemoteSnapshot(snapshot as SyncedSnapshot))
-        .catch((err) => {
-          setSyncFailure(err, "remote-update");
-          notifyStatusChange();
-        });
+    (revision) => {
+      if (typeof revision !== "number" || !current()) return;
+      latest = revision;
+      void catchUp();
     },
     (err) => {
-      if (state.client !== client || state.userId !== userId) return;
+      if (!current()) return;
       setSyncFailure(err, "remote-subscription");
       notifyStatusChange();
     },
   );
+  remoteUnsubscribe = () => {
+    unsubscribe();
+    if (typeof document !== "undefined")
+      document.removeEventListener("visibilitychange", onVisible);
+  };
 }
 
 async function handleRemoteSnapshot(remote: SyncedSnapshot): Promise<void> {
@@ -1009,84 +1068,166 @@ async function handleRemoteSnapshot(remote: SyncedSnapshot): Promise<void> {
   if (state.pushing || state.dirtySections.size > 0) return;
 
   const local = await buildLocalSnapshot();
-  await replaceFromRemote(local, remote);
-  const replaced = await buildLocalSnapshot();
+  const changes = await replaceFromRemote(local, remote);
+  // Re-read only what was rewritten; everything else is already `local`.
+  state.lastSnapshot = local;
+  const replaced = await buildLocalSnapshot(changes.sections);
   state.remoteRevision = remote.syncRevision;
   state.lastSnapshot = replaced;
   state.lastPushed = buildPushPayload(replaced);
   state.lastSyncedAt = Date.now();
   state.lastErrorAt = null;
   state.lastErrorMessage = null;
-  window.dispatchEvent(
-    new CustomEvent("twyne:remote-sync", {
-      detail: { revision: remote.syncRevision, reason: "subscription" },
-    }),
-  );
+  if (changes.sections.size > 0)
+    window.dispatchEvent(
+      new CustomEvent("twyne:remote-sync", {
+        detail: {
+          revision: remote.syncRevision,
+          reason: "subscription",
+          sections: [...changes.sections],
+          folioContent: [...changes.folioContent],
+          briefs: [...changes.briefs],
+        },
+      }),
+    );
   notifyStatusChange();
 }
 
+/** What a remote snapshot actually changed locally. */
+interface RemoteChanges {
+  sections: Set<PushSection>;
+  /** Folios whose manuscript was rewritten or removed. */
+  folioContent: Set<string>;
+  /** Folios whose brief was rewritten or removed. */
+  briefs: Set<string>;
+}
+
 /** Replace a clean local cache with the authoritative remote snapshot. Unlike
- * sign-in conflict merging, this path mirrors deletions as well as additions. */
+ * sign-in conflict merging, this path mirrors deletions as well as additions.
+ * Rows that already match are left alone, so another tab's edit to one folio
+ * does not rewrite every manuscript, note and file on this device. */
 async function replaceFromRemote(
   local: LocalSnapshot,
   remote: SyncedSnapshot,
-): Promise<void> {
-  const remoteFolioIds = new Set(remote.folios.map((folio) => folio.id));
-  for (const folio of local.folios) {
-    if (!remoteFolioIds.has(folio.id)) await deleteFolioFromIdb(folio.id);
-  }
-  await saveFoliosToIdb(remote.folios);
+): Promise<RemoteChanges> {
+  const changes: RemoteChanges = {
+    sections: new Set(),
+    folioContent: new Set(),
+    briefs: new Set(),
+  };
+  let lixChanged = false;
 
+  const remoteFolioIds = new Set(remote.folios.map((folio) => folio.id));
+  if (!sameJson(local.folios, remote.folios)) {
+    for (const folio of local.folios) {
+      if (!remoteFolioIds.has(folio.id)) await deleteFolioFromIdb(folio.id);
+    }
+    await saveFoliosToIdb(remote.folios);
+    changes.sections.add("folios");
+  }
+
+  const localBriefs = new Map(local.briefs.map((e) => [e.folioId, e.brief]));
   const remoteBriefIds = new Set(remote.briefs.map((entry) => entry.folioId));
   for (const entry of local.briefs) {
     if (!remoteBriefIds.has(entry.folioId)) {
       await deleteBriefFromIdb(entry.folioId);
+      changes.briefs.add(entry.folioId);
     }
   }
   for (const entry of remote.briefs) {
+    if (sameJson(localBriefs.get(entry.folioId), entry.brief)) continue;
     await saveBriefToIdb(entry.folioId, entry.brief);
     await writeFileAsJson(`/folios/${entry.folioId}/brief.json`, entry.brief);
+    changes.briefs.add(entry.folioId);
+    lixChanged = true;
   }
+  if (changes.briefs.size) changes.sections.add("briefs");
 
+  const manuscript = (entry: Partial<FolioContentSnapshot> | undefined) =>
+    entry && {
+      html: entry.html ?? "",
+      format: entry.format,
+      typstSource: entry.typstSource,
+      kit: entry.kit,
+    };
+  const localContent = new Map(
+    local.folioContent.map((entry) => [entry.folioId, entry]),
+  );
   const remoteContentIds = new Set(
     remote.folioContent.map((entry) => entry.folioId),
   );
   for (const entry of local.folioContent) {
-    if (!remoteContentIds.has(entry.folioId)) {
+    // A folio with no stored manuscript reads back as empty; it is not a row.
+    if (
+      !remoteContentIds.has(entry.folioId) &&
+      (entry.html || entry.typstSource)
+    ) {
       await deleteFolioContentFromIdb(entry.folioId);
+      changes.folioContent.add(entry.folioId);
     }
   }
   for (const entry of remote.folioContent) {
+    if (
+      sameJson(
+        manuscript(localContent.get(entry.folioId)),
+        manuscript(entry as FolioContentSnapshot),
+      )
+    )
+      continue;
     await saveFolioContentSnapshotToIdb(entry);
+    changes.folioContent.add(entry.folioId);
+  }
+  if (changes.folioContent.size) changes.sections.add("folioContent");
+
+  if (!sameJson(local.customPersonas ?? [], remote.customPersonas ?? [])) {
+    await savePersonasToIdb(remote.customPersonas ?? []);
+    changes.sections.add("customPersonas");
   }
 
-  await savePersonasToIdb(remote.customPersonas ?? []);
-
-  const notesByFolio = new Map<string, PersonaFeedback[]>();
-  for (const folio of local.folios) notesByFolio.set(folio.id, []);
-  for (const note of remote.personaNotes) {
-    const folioId = note.folioId;
-    if (!folioId) continue;
-    notesByFolio.set(folioId, [
-      ...(notesByFolio.get(folioId) ?? []),
-      { ...note, folioId, timestamp: note.createdAt },
-    ]);
-  }
-  for (const [folioId, notes] of notesByFolio) {
+  // Notes and replies are compared in the shape they are pushed in, which is
+  // the shape the server stores; anything that differs is rewritten.
+  const pushed = buildPushPayload(local);
+  const byFolio = <T extends { folioId?: string }>(
+    rows: readonly T[],
+    folios: readonly Folio[],
+  ) => {
+    const grouped = new Map<string, T[]>();
+    for (const folio of folios) grouped.set(folio.id, []);
+    for (const row of rows) {
+      if (!row.folioId) continue;
+      grouped.set(row.folioId, [...(grouped.get(row.folioId) ?? []), row]);
+    }
+    return grouped;
+  };
+  const noteFields = (n: Record<string, unknown>) =>
+    serialize(PERSONA_NOTE_FIELDS.map((key) => [key, n[key] ?? null] as const));
+  const localNotes = byFolio(pushed.personaNotes, local.folios);
+  const remoteNotes = byFolio(remote.personaNotes, local.folios);
+  for (const [folioId, notes] of remoteNotes) {
+    const before = (localNotes.get(folioId) ?? []).map(noteFields).sort();
+    const after = notes.map((n) => noteFields(n)).sort();
+    if (sameJson(before, after)) continue;
     await writeFileAsJson(
       folioArtifactPath(folioId, "persona-notes.json"),
-      notes,
+      notes.map((note) => ({ ...note, folioId, timestamp: note.createdAt })),
     );
+    changes.sections.add("personaNotes");
+    lixChanged = true;
   }
 
-  const repliesByFolio = new Map<string, PersonaReply[]>();
-  for (const folio of local.folios) repliesByFolio.set(folio.id, []);
-  for (const reply of remote.personaReplies) {
-    const folioId = reply.folioId;
-    if (!folioId) continue;
-    repliesByFolio.set(folioId, [
-      ...(repliesByFolio.get(folioId) ?? []),
-      {
+  const replyFields = (r: Record<string, unknown>) =>
+    serialize(
+      PERSONA_REPLY_FIELDS.map((key) => [key, r[key] ?? null] as const),
+    );
+  const localReplies = byFolio(pushed.personaReplies, local.folios);
+  const remoteReplies = byFolio(remote.personaReplies, local.folios);
+  for (const [folioId, replies] of remoteReplies) {
+    const before = (localReplies.get(folioId) ?? []).map(replyFields).sort();
+    const after = replies.map((r) => replyFields(r)).sort();
+    if (sameJson(before, after)) continue;
+    await writeFileAsJson(
+      folioArtifactPath(folioId, "persona-replies.json"),
+      replies.map((reply) => ({
         id: reply.replyId,
         folioId,
         noteId: reply.noteId,
@@ -1095,16 +1236,15 @@ async function replaceFromRemote(
         personaId: reply.personaId,
         text: reply.text,
         timestamp: reply.createdAt,
-      },
-    ]);
-  }
-  for (const [folioId, replies] of repliesByFolio) {
-    await writeFileAsJson(
-      folioArtifactPath(folioId, "persona-replies.json"),
-      replies,
+      })),
     );
+    changes.sections.add("personaReplies");
+    lixChanged = true;
   }
 
+  const localRubrics = new Map(
+    local.rubricResults.map((entry) => [entry.folioId, entry.result]),
+  );
   const remoteRubricIds = new Set(
     remote.rubricResults.flatMap((entry) =>
       entry.folioId ? [entry.folioId] : [],
@@ -1117,19 +1257,28 @@ async function replaceFromRemote(
         folioArtifactPath(entry.folioId, "rubric-result.json"),
         null,
       );
+      changes.sections.add("rubricResults");
+      lixChanged = true;
     }
   }
   for (const entry of remote.rubricResults) {
     if (!entry.folioId) continue;
     const result = { ...entry.result, folioId: entry.folioId };
+    if (sameJson(localRubrics.get(entry.folioId), result)) continue;
     await saveRubricResultToIdb(result, entry.folioId);
     await writeFileAsJson(
       folioArtifactPath(entry.folioId, "rubric-result.json"),
       result,
     );
+    changes.sections.add("rubricResults");
+    lixChanged = true;
   }
 
-  await writeFileAsJson(BIBLIOGRAPHY_PATH, remote.bibliography ?? []);
+  if (!sameJson(local.bibliography, remote.bibliography ?? [])) {
+    await writeFileAsJson(BIBLIOGRAPHY_PATH, remote.bibliography ?? []);
+    changes.sections.add("bibliography");
+    lixChanged = true;
+  }
 
   const activeFolioId = await loadActiveFolioIdFromIdb();
   if (!activeFolioId || !remoteFolioIds.has(activeFolioId)) {
@@ -1138,8 +1287,12 @@ async function replaceFromRemote(
     } else {
       await clearActiveFolioIdFromIdb();
     }
+    changes.sections.add("folios");
   }
-  await persistToIdb();
+  // Serialising the whole Lix workspace is the expensive step; skip it when
+  // nothing in Lix moved.
+  if (lixChanged) await persistToIdb();
+  return changes;
 }
 
 function isSyncConflict(error: unknown): boolean {

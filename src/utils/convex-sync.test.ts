@@ -68,6 +68,8 @@ let foliosStore = [...SAMPLE_FOLIOS];
 /** Mutable view of the active-folio pointer — cleared when its folio leaves. */
 let activeFolioIdForTest: string | null = "f1";
 const SAMPLE_HTML = "<p>hello from the folio</p>";
+let contentWrites = 0;
+let lixPersists = 0;
 /** The draft as it currently stands locally. Tests move it to model typing. */
 let folioHtml = SAMPLE_HTML;
 let folioTypstSource: string | undefined;
@@ -199,6 +201,7 @@ mock.module("./idb", () => ({
   saveBriefToIdb: async () => {},
   deleteBriefFromIdb: async () => {},
   saveFolioContentSnapshotToIdb: async (snapshot: { html: string }) => {
+    contentWrites++;
     folioHtml = snapshot.html;
   },
   deleteFolioContentFromIdb: async () => {
@@ -249,7 +252,9 @@ mock.module("./lix", () => ({
     lixFiles.set(path, value);
     writtenLixFiles.push({ path, value });
   },
-  persistToIdb: async () => {},
+  persistToIdb: async () => {
+    lixPersists++;
+  },
 }));
 
 const {
@@ -575,18 +580,22 @@ describe("folio sync (convex-sync)", () => {
 
   test("a clean device applies reactive remote edits without echoing them back", async () => {
     const subscription: {
-      onRemote: ((snapshot: SyncedSnapshot) => void) | null;
-    } = { onRemote: null };
+      onRevision: ((revision: number) => void) | null;
+    } = { onRevision: null };
     const mutationCalls: Array<Record<string, unknown>> = [];
-    const initial = {
+    let remote: SyncedSnapshot = {
       ...emptyRemoteSnapshot(),
       syncRevision: 1,
       folios: SAMPLE_FOLIOS,
       foliosUpdatedAt: 2,
       folioContent: [{ folioId: "f1", html: SAMPLE_HTML, updatedAt: 2 }],
     };
+    let pulls = 0;
     const client = {
-      query: async () => initial,
+      query: async () => {
+        pulls++;
+        return remote;
+      },
       mutation: async (
         ref: Parameters<typeof getFunctionName>[0],
         args: Record<string, unknown>,
@@ -596,13 +605,15 @@ describe("folio sync (convex-sync)", () => {
         return { revision: 2 };
       },
       onUpdate: (
-        _ref: unknown,
+        ref: Parameters<typeof getFunctionName>[0],
         _args: unknown,
-        callback: (snapshot: SyncedSnapshot) => void,
+        callback: (revision: number) => void,
       ) => {
-        subscription.onRemote = callback;
+        // Only the revision is live; the snapshot is fetched on demand.
+        expect(getFunctionName(ref)).toBe("sync:syncRevision");
+        subscription.onRevision = callback;
         return () => {
-          subscription.onRemote = null;
+          subscription.onRevision = null;
         };
       },
     };
@@ -610,15 +621,23 @@ describe("folio sync (convex-sync)", () => {
     setConvexSyncContext(client as never, "user-reactive");
     await tick();
     await tick();
-    expect(subscription.onRemote).not.toBeNull();
+    expect(subscription.onRevision).not.toBeNull();
     const callsBeforeRemote = mutationCalls.length;
 
+    // Our own push echoes back as a revision we already hold: no pull.
+    const pullsBefore = pulls;
+    subscription.onRevision?.(2);
+    await tick();
+    expect(pulls).toBe(pullsBefore);
+
     const remoteHtml = "<p>edited on the other device</p>";
-    subscription.onRemote?.({
-      ...initial,
+    remote = {
+      ...remote,
       syncRevision: 3,
       folioContent: [{ folioId: "f1", html: remoteHtml, updatedAt: 3 }],
-    });
+    };
+    subscription.onRevision?.(3);
+    await tick();
     await tick();
     await tick();
 
@@ -626,10 +645,22 @@ describe("folio sync (convex-sync)", () => {
     await flushNow();
     expect(mutationCalls).toHaveLength(callsBeforeRemote);
 
-    subscription.onRemote?.({
-      ...emptyRemoteSnapshot(),
-      syncRevision: 4,
-    });
+    // A change elsewhere in the account rewrites no manuscript and no Lix.
+    const writesBefore = contentWrites;
+    const persistsBefore = lixPersists;
+    const refreshesBefore = syncRefreshes.length;
+    remote = { ...remote, syncRevision: 4, customPersonas: [] };
+    subscription.onRevision?.(4);
+    await tick();
+    await tick();
+    await tick();
+    expect(contentWrites).toBe(writesBefore);
+    expect(lixPersists).toBe(persistsBefore);
+    expect(syncRefreshes.length).toBe(refreshesBefore);
+
+    remote = { ...emptyRemoteSnapshot(), syncRevision: 5 };
+    subscription.onRevision?.(5);
+    await tick();
     await tick();
     await tick();
     expect(foliosStore).toEqual([]);
