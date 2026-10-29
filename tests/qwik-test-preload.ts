@@ -10,7 +10,11 @@
   }
 ).__EXPERIMENTAL__ ??= {
   each: false,
-  errorBoundary: false,
   show: false,
-  suspense: false,
+  pendingBoundary: false,
+  catchBoundary: false,
+  valibot: false,
+  noSPA: false,
+  insights: false,
+  blockSSR: false,
 };

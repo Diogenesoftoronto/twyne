@@ -17,9 +17,13 @@ const g = globalThis as typeof globalThis & {
 
 g.__EXPERIMENTAL__ ??= {
   each: false,
-  errorBoundary: false,
   show: false,
-  suspense: false,
+  pendingBoundary: false,
+  catchBoundary: false,
+  valibot: false,
+  noSPA: false,
+  insights: false,
+  blockSSR: false,
 };
 
 const manifestPath = new URL("../dist/q-manifest.json", import.meta.url);

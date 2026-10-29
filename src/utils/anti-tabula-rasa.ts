@@ -14,6 +14,11 @@ import {
   saveBriefToIdb,
 } from "./idb";
 import { archiveBriefEdition } from "./brief-history";
+import { htmlToPlainText } from "./html-to-plain-text";
+
+// The conversion moved to a dependency-free module so the server can share
+// it; re-exported here so existing imports keep working.
+export { htmlToPlainText };
 
 export const BRIEF_STORAGE_KEY = "twyne-project-brief";
 export const DRAFT_STORAGE_KEY = "twyne-document";
@@ -273,23 +278,6 @@ function titleHeading(answers: ProjectInterviewAnswers): string {
 export function summarizeBrief(brief: ProjectBrief | null): string {
   const answers = brief?.answers ?? DEFAULT_INTERVIEW_ANSWERS;
   return `${answers.format} for ${answers.audience}. Goal: ${answers.goal}`;
-}
-
-export function htmlToPlainText(html: string): string {
-  return html
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<\/(p|h[1-6]|li|blockquote|tr|div)>/gi, "\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/[ \t]+/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
 }
 
 function normalizeInterviewAnswers(

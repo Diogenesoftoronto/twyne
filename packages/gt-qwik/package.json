@@ -34,14 +34,14 @@
     "prepublishOnly": "bun run check && bun run test && bun run build"
   },
   "peerDependencies": {
-    "@qwik.dev/core": "2.0.0-beta.42"
+    "@qwik.dev/core": "2.0.0-rc.4"
   },
   "dependencies": {
     "@generaltranslation/format": "0.1.9",
     "gt-i18n": "1.0.28"
   },
   "devDependencies": {
-    "@qwik.dev/core": "2.0.0-beta.42",
+    "@qwik.dev/core": "2.0.0-rc.4",
     "@types/bun": "1.4.2",
     "gt": "2.21.3",
     "typescript": "5.4.5",

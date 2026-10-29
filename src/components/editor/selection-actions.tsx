@@ -210,11 +210,11 @@ export const SelectionActions = component$<SelectionActionsProps>((props) => {
         {props.onSentenceBench$ && (
           <button
             type="button"
-            title="Open the Sentence bench for this passage"
+            title="Write your own revision of this sentence and compare it with the original"
             onClick$={props.onSentenceBench$}
             disabled={props.disabled}
           >
-            {multiWord ? "Rework" : "Alternatives"}
+            Compare a revision
           </button>
         )}
         <button
