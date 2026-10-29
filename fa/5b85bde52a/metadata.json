@@ -3,7 +3,7 @@
   "checkpoint_id": "fa5b85bde52a",
   "strategy": "manual-commit",
   "branch": "feat/clairic-extraction",
-  "checkpoints_count": 3,
+  "checkpoints_count": 37,
   "files_touched": [
     "src/components/editor/extensions/flow-conductor.test.ts",
     "src/components/editor/extensions/flow-conductor.ts",
@@ -26,13 +26,20 @@
       "compact_transcript": "/fa/5b85bde52a/0/transcript.jsonl",
       "content_hash": "/fa/5b85bde52a/0/content_hash.txt",
       "prompt": "/fa/5b85bde52a/0/prompt.txt"
+    },
+    {
+      "metadata": "/fa/5b85bde52a/1/metadata.json",
+      "transcript": "/fa/5b85bde52a/1/full.jsonl",
+      "compact_transcript": "/fa/5b85bde52a/1/transcript.jsonl",
+      "content_hash": "/fa/5b85bde52a/1/content_hash.txt",
+      "prompt": "/fa/5b85bde52a/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 6,
-    "cache_creation_tokens": 289365,
-    "cache_read_tokens": 618672,
-    "output_tokens": 1871,
-    "api_call_count": 3
+    "input_tokens": 14,
+    "cache_creation_tokens": 300774,
+    "cache_read_tokens": 2990112,
+    "output_tokens": 4546,
+    "api_call_count": 7
   }
 }
