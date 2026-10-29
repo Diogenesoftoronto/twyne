@@ -187,6 +187,7 @@
     "marked": "^18.0.5",
     "mathjax-full": "^3.2.2",
     "mermaid": "^11.15.0",
+    "onnxruntime-web": "1.23.2",
     "posthog-js": "^1.386.6",
     "reicon": "1.2.1",
     "resend": "^6.12.4",
