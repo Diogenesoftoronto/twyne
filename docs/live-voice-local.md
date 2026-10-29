@@ -149,3 +149,19 @@ from the corresponding prefix of the final 25-frame decode by at most
 0.00000954 in STFT features. That provides a numerical check for this one
 input, not proof that a streaming implementation handles all boundaries,
 overlap, cancellation or longer conversations correctly.
+
+### Persistent-profile worker round trip
+
+On 2026-10-29, headless Chromium on port 5174 used a fresh persistent
+profile on `/home` and loaded the actual worker from the pinned IndexedDB
+bundle. The 16 kHz spoken question “What is two plus two?” produced the text
+“The answer is four.”; the model’s ASR transcribed the generated speech as
+“The answer is four.” The worker emitted 2.48 seconds of PCM in 15.894 seconds
+(0.156 audio seconds per wall second), with the first PCM chunk 2.297 seconds
+after turn start. This is not a measurement of audible AudioWorklet playback.
+
+`navigator.storage.persist()` returned false. Before the load, the storage
+estimate was quota 10,737,418,240 bytes and usage 0; after loading four graphs
+and tokenizer assets, IndexedDB usage was 2,456,890,431 bytes and the reported
+quota was 13,194,308,671 bytes. This run succeeded without OPFS. Persistence was
+not granted, so the browser may evict the model cache.
