@@ -1,4 +1,4 @@
-name: Editor typing performance
+name: Editor typing and sync performance
 
 on:
   push:
@@ -26,6 +26,8 @@ jobs:
       - run: bunx playwright install --with-deps chromium
       - name: Measure editor latency and verify saved typing
         run: bun run test:typing
+      - name: Sync budgets with several tabs open
+        run: bun run test:sync-perf
       - name: Upload latency data and charts
         if: always()
         uses: actions/upload-artifact@v4

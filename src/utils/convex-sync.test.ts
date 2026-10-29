@@ -23,7 +23,7 @@ import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 
 const originalWindow = globalThis.window;
 const originalLocalStorage = globalThis.localStorage;
-const syncRefreshes: Array<{ html: string }> = [];
+const syncRefreshes: Array<{ html: string; detail?: unknown }> = [];
 const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
 const localStorageShim = (() => {
   const store: Record<string, string> = {};
@@ -50,7 +50,10 @@ Object.defineProperty(globalThis, "window", {
     removeEventListener: () => undefined,
     dispatchEvent: (event: Event) => {
       if (event.type === "twyne:remote-sync")
-        syncRefreshes.push({ html: folioHtml });
+        syncRefreshes.push({
+          html: folioHtml,
+          detail: (event as CustomEvent).detail,
+        });
       return true;
     },
   },
@@ -70,6 +73,10 @@ let activeFolioIdForTest: string | null = "f1";
 const SAMPLE_HTML = "<p>hello from the folio</p>";
 let contentWrites = 0;
 let lixPersists = 0;
+/** Folio ids whose manuscript was written to IndexedDB, in order. */
+const contentWrittenIds: string[] = [];
+/** Manuscripts of folios other than f1, for tests with several pieces. */
+const otherContent = new Map<string, string>();
 /** The draft as it currently stands locally. Tests move it to model typing. */
 let folioHtml = SAMPLE_HTML;
 let folioTypstSource: string | undefined;
@@ -180,9 +187,9 @@ mock.module("./idb", () => ({
   loadAllBriefsFromIdb: async () => [],
   loadActiveFolioIdFromIdb: async () => activeFolioIdForTest,
   loadFolioContentFromIdb: async () => folioHtml,
-  loadFolioContentSnapshotFromIdb: async () => ({
-    folioId: "f1",
-    html: folioHtml,
+  loadFolioContentSnapshotFromIdb: async (id = "f1") => ({
+    folioId: id,
+    html: id === "f1" ? folioHtml : (otherContent.get(id) ?? ""),
     ...(folioTypstSource !== undefined
       ? { format: "typst", typstSource: folioTypstSource }
       : {}),
@@ -200,9 +207,15 @@ mock.module("./idb", () => ({
   },
   saveBriefToIdb: async () => {},
   deleteBriefFromIdb: async () => {},
-  saveFolioContentSnapshotToIdb: async (snapshot: { html: string }) => {
+  saveFolioContentSnapshotToIdb: async (snapshot: {
+    folioId?: string;
+    html: string;
+  }) => {
     contentWrites++;
-    folioHtml = snapshot.html;
+    const id = snapshot.folioId ?? "f1";
+    contentWrittenIds.push(id);
+    if (id === "f1") folioHtml = snapshot.html;
+    else otherContent.set(id, snapshot.html);
   },
   deleteFolioContentFromIdb: async () => {
     folioHtml = "";
@@ -372,6 +385,8 @@ afterEach(() => {
   folioTypstSource = undefined;
   foliosStore = [...SAMPLE_FOLIOS];
   activeFolioIdForTest = "f1";
+  contentWrittenIds.length = 0;
+  otherContent.clear();
 });
 
 afterAll(() => {
@@ -426,7 +441,7 @@ describe("folio sync (convex-sync)", () => {
     await tick();
     await tick();
     expect(folioHtml).toBe(remoteHtml);
-    expect(syncRefreshes).toEqual([{ html: remoteHtml }]);
+    expect(syncRefreshes.map((r) => r.html)).toEqual([remoteHtml]);
   });
 
   test("sends canonical native source alongside its HTML projection", async () => {
@@ -668,6 +683,229 @@ describe("folio sync (convex-sync)", () => {
     expect(folioHtml).toBe("");
     await flushNow();
     expect(mutationCalls).toHaveLength(callsBeforeRemote);
+  });
+
+  /**
+   * A live sync subscription and a fetch counter, shared by the regression
+   * tests below. `remote` is what the server would return from pullAll.
+   */
+  function liveClient(initial: SyncedSnapshot) {
+    const live = {
+      remote: initial,
+      pulls: 0,
+      revisionPushes: 0,
+      subscribed: [] as string[],
+      onRevision: null as ((revision: number) => void) | null,
+      mutationCalls: [] as Array<Record<string, unknown>>,
+    };
+    const client = {
+      query: async () => {
+        live.pulls++;
+        return live.remote;
+      },
+      mutation: async (
+        ref: Parameters<typeof getFunctionName>[0],
+        args: Record<string, unknown>,
+      ) => {
+        if (getFunctionName(ref) === WRITING_ACTIVITY_FN) return null;
+        live.mutationCalls.push(args);
+        live.remote = {
+          ...live.remote,
+          syncRevision: live.remote.syncRevision + 1,
+        };
+        return { revision: live.remote.syncRevision };
+      },
+      onUpdate: (
+        ref: Parameters<typeof getFunctionName>[0],
+        _args: unknown,
+        callback: (revision: number) => void,
+      ) => {
+        live.subscribed.push(getFunctionName(ref));
+        live.onRevision = (revision) => {
+          live.revisionPushes++;
+          callback(revision);
+        };
+        return () => {
+          live.onRevision = null;
+        };
+      },
+    };
+    return { live, client };
+  }
+  const settle = async () => {
+    for (let i = 0; i < 6; i++) await tick();
+  };
+
+  test("a tab never subscribes live to the whole account snapshot", async () => {
+    // Regression: subscribing to pullAll re-sent every manuscript to every
+    // open tab on each push, and each tab rewrote them all.
+    const { live, client } = liveClient({
+      ...emptyRemoteSnapshot(),
+      syncRevision: 1,
+      folios: SAMPLE_FOLIOS,
+    });
+    setConvexSyncContext(client as never, "user-live-shape");
+    await settle();
+    expect(live.subscribed).toEqual(["sync:syncRevision"]);
+  });
+
+  test("typing for a minute pulls nothing back and rewrites nothing locally", async () => {
+    const { live, client } = liveClient({
+      ...emptyRemoteSnapshot(),
+      syncRevision: 1,
+      folios: SAMPLE_FOLIOS,
+      folioContent: [{ folioId: "f1", html: SAMPLE_HTML, updatedAt: 2 }],
+    });
+    setConvexSyncContext(client as never, "user-typing");
+    await settle();
+    const pullsBefore = live.pulls;
+    const writesBefore = contentWrites;
+    const persistsBefore = lixPersists;
+    const refreshesBefore = syncRefreshes.length;
+
+    // Fifteen pushes, as fifteen 4-second debounces of steady typing would
+    // send, each echoed back by the live revision as Convex does.
+    for (let i = 0; i < 15; i++) {
+      folioHtml = `<p>draft revision ${i}</p>`;
+      markDirty(["folioContent"], "f1");
+      await flushNow();
+      live.onRevision?.(live.remote.syncRevision);
+      await settle();
+    }
+
+    expect(live.mutationCalls.length).toBeGreaterThanOrEqual(15);
+    // Our own pushes come back as revisions we already hold.
+    expect(live.pulls).toBe(pullsBefore);
+    expect(contentWrites).toBe(writesBefore);
+    expect(lixPersists).toBe(persistsBefore);
+    expect(syncRefreshes.length).toBe(refreshesBefore);
+  });
+
+  test("another device's edit to one piece rewrites only that piece", async () => {
+    const pieces = Array.from({ length: 20 }, (_, i) => ({
+      ...SAMPLE_FOLIOS[0],
+      id: i === 0 ? "f1" : `f${i + 1}`,
+      name: `Piece ${i + 1}`,
+    }));
+    foliosStore = pieces;
+    for (const piece of pieces.slice(1))
+      otherContent.set(piece.id, `<p>${piece.name}</p>`);
+    const content = pieces.map((piece) => ({
+      folioId: piece.id,
+      html: piece.id === "f1" ? SAMPLE_HTML : `<p>${piece.name}</p>`,
+      updatedAt: 2,
+    }));
+    const { live, client } = liveClient({
+      ...emptyRemoteSnapshot(),
+      syncRevision: 1,
+      folios: pieces,
+      foliosUpdatedAt: 2,
+      folioContent: content,
+    });
+    setConvexSyncContext(client as never, "user-many-pieces");
+    await settle();
+    contentWrittenIds.length = 0;
+    const persistsBefore = lixPersists;
+    const refreshesBefore = syncRefreshes.length;
+
+    live.remote = {
+      ...live.remote,
+      syncRevision: live.remote.syncRevision + 1,
+      folioContent: content.map((row) =>
+        row.folioId === "f7"
+          ? { ...row, html: "<p>edited elsewhere</p>", updatedAt: 9 }
+          : row,
+      ),
+    };
+    live.onRevision?.(live.remote.syncRevision);
+    await settle();
+
+    expect(contentWrittenIds).toEqual(["f7"]);
+    expect(otherContent.get("f7")).toBe("<p>edited elsewhere</p>");
+    // A manuscript is not a Lix file; the Lix workspace is left alone.
+    expect(lixPersists).toBe(persistsBefore);
+    // The open editor is told which piece moved, so it can stay mounted.
+    expect(syncRefreshes.slice(refreshesBefore).map((r) => r.detail)).toEqual([
+      expect.objectContaining({ folioContent: ["f7"] }),
+    ]);
+  });
+
+  test("a hidden tab waits, then catches up once when it is looked at", async () => {
+    const listeners = new Map<string, () => void>();
+    let hidden = true;
+    const originalDocument = globalThis.document;
+    Object.defineProperty(globalThis, "document", {
+      configurable: true,
+      value: {
+        get hidden() {
+          return hidden;
+        },
+        addEventListener: (type: string, fn: () => void) =>
+          listeners.set(type, fn),
+        removeEventListener: (type: string) => listeners.delete(type),
+      },
+    });
+    try {
+      const { live, client } = liveClient({
+        ...emptyRemoteSnapshot(),
+        syncRevision: 1,
+        folios: SAMPLE_FOLIOS,
+        folioContent: [{ folioId: "f1", html: SAMPLE_HTML, updatedAt: 2 }],
+      });
+      setConvexSyncContext(client as never, "user-hidden");
+      await settle();
+      const pullsBefore = live.pulls;
+      for (let revision = 2; revision <= 11; revision++) {
+        live.remote = {
+          ...live.remote,
+          syncRevision: revision,
+          folioContent: [
+            {
+              folioId: "f1",
+              html: `<p>remote ${revision}</p>`,
+              updatedAt: revision,
+            },
+          ],
+        };
+        live.onRevision?.(revision);
+        await settle();
+      }
+      expect(live.pulls).toBe(pullsBefore);
+
+      hidden = false;
+      listeners.get("visibilitychange")?.();
+      await settle();
+      expect(live.pulls).toBe(pullsBefore + 1);
+      expect(folioHtml).toBe("<p>remote 11</p>");
+    } finally {
+      Object.defineProperty(globalThis, "document", {
+        configurable: true,
+        value: originalDocument,
+      });
+    }
+  });
+
+  test("revisions that arrive mid-fetch collapse into one more catch-up", async () => {
+    const { live, client } = liveClient({
+      ...emptyRemoteSnapshot(),
+      syncRevision: 1,
+      folios: SAMPLE_FOLIOS,
+      folioContent: [{ folioId: "f1", html: SAMPLE_HTML, updatedAt: 2 }],
+    });
+    setConvexSyncContext(client as never, "user-burst");
+    await settle();
+    const pullsBefore = live.pulls;
+    live.remote = {
+      ...live.remote,
+      syncRevision: 30,
+      folioContent: [{ folioId: "f1", html: "<p>latest</p>", updatedAt: 30 }],
+    };
+    // Twenty revisions land back to back, faster than one fetch completes.
+    for (let revision = 11; revision <= 30; revision++)
+      live.onRevision?.(revision);
+    await settle();
+    expect(live.pulls - pullsBefore).toBeLessThanOrEqual(2);
+    expect(folioHtml).toBe("<p>latest</p>");
   });
 
   test("swallows a failing backend without throwing", async () => {
