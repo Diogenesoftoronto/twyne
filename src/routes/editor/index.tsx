@@ -1,5 +1,9 @@
 import { loadModelBriefForFolio } from "../../utils/model-context";
 import { HOUSE_CHANGED_EVENT } from "../../utils/house-store";
+import {
+  OPEN_FULL_THREAD_EVENT,
+  type OpenFullThreadDetail,
+} from "../../components/editor/card-parts";
 import { Icon } from "../../components/ui/icon";
 import type { Editor } from "@tiptap/core";
 import { WritingToolsPanel } from "../../components/writing-tools/writing-tools-panel";
@@ -730,6 +734,15 @@ export default component$(() => {
     };
     window.addEventListener("twyne:persona-reply", onPersonaReply);
 
+    // A margin card's expand button: show its full thread on the board.
+    const onOpenFullThread = (event: Event) => {
+      const { kind } = (event as CustomEvent<OpenFullThreadDetail>).detail;
+      store.rightPanel = kind === "comment" ? "comments" : "personas";
+      store.rightPanelOpen = true;
+      setVisiblePanel(store.rightPanel);
+    };
+    window.addEventListener(OPEN_FULL_THREAD_EVENT, onOpenFullThread);
+
     // ── Unread counts on the board tabs ──
     const stopActivity = startPanelActivity();
     setVisiblePanel(store.rightPanelOpen ? store.rightPanel : null);
@@ -792,6 +805,7 @@ export default component$(() => {
       window.removeEventListener("twyne:panel-activity", onActivity);
       window.removeEventListener("twyne:content", onDraftContent);
       window.removeEventListener("twyne:persona-reply", onPersonaReply);
+      window.removeEventListener(OPEN_FULL_THREAD_EVENT, onOpenFullThread);
       window.removeEventListener("twyne:remote-sync", onRemoteSync);
     });
   });

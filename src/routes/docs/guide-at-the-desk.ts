@@ -23,7 +23,7 @@ export const AT_THE_DESK_GUIDES = {
       {
         title: "Read a note where it was written",
         instruction:
-          "A coloured dot and a soft underline mean an editor has something to say about those exact words. Select either to open the note beside the passage, with the editor standing on it. Press the microphone to argue it out loud, the speaker to hear it read, or write back in the box underneath. Strike it from the ⋯ menu once you've dealt with it. The manuscript never moves while you read.",
+          "A coloured dot and a soft underline mean an editor has something to say about those exact words. Select either to open the note beside the passage, with the editor standing on it. Press the microphone to argue it out loud, the speaker to hear it read, or write back in the box underneath. Strike it from the ⋯ menu once you've dealt with it, or press the arrows to open the whole note on the board. The manuscript never moves while you read.",
         image: "/assets/manual/desk/desk-note.webp",
         alt: "Marguerite’s staged Pacing note beside the marked passage, with her editorial role, the quoted passage, a reply field, Strike and Reply controls.",
         width: 1100,
@@ -32,7 +32,7 @@ export const AT_THE_DESK_GUIDES = {
       {
         title: "Decide on a proposed edit",
         instruction:
-          "Some marks carry a replacement, not just an opinion. Select the dot to see Morgan's words beside the editor's, with the reason underneath. Accept & stamp swaps the words in. Strike keeps the original. Closing the card leaves the decision for later, which is a perfectly good decision.",
+          "Some marks carry a replacement, not just an opinion. Select the dot to see the change as one passage: Morgan's cut words struck through, the editor's new ones inked in, the reason underneath. The tick accepts and stamps it; the struck S keeps the original. Closing the card leaves the decision for later, which is a perfectly good decision.",
         image: "/assets/manual/desk/desk-suggestion.webp",
         alt: "A staged proposed replacement beside Salt Roads, showing the current words, the replacement, the editor’s reason, Strike, and Accept & stamp.",
         width: 1100,
