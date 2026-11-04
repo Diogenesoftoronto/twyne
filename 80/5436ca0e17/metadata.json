@@ -1,0 +1,22 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "805436ca0e17",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "public/assets/landing/room-grain.png",
+    "src/components/landing/landing-artwork.css",
+    "src/components/landing/landing-page.tsx",
+    "src/components/landing/launch-film.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/80/5436ca0e17/0/metadata.json",
+      "transcript": "/80/5436ca0e17/0/full.jsonl",
+      "compact_transcript": "/80/5436ca0e17/0/transcript.jsonl",
+      "content_hash": "/80/5436ca0e17/0/content_hash.txt",
+      "prompt": "/80/5436ca0e17/0/prompt.txt"
+    }
+  ]
+}
