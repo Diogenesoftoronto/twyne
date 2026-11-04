@@ -1,0 +1,92 @@
+a few things, i think that the persona note panel needs a much better redesign, more compact with a lack of redundant text and more prominent controls for voice interactions as the primary way to interact. Think  about what we don't need to show the user over and over each time. For example we have this text who the persona is and their title, we have the label for this card, i think that takes away from what is important and that is the text. The face and colour these visual cues give you the peprsona in question already. I think that the persona not needs a lot of work.
+
+---
+
+Note: the T3 server restarted, and this background work was cancelled before it finished. It will not report back on its own, so resume or restart what you still need and wait for its result:
+- shell: Start Storybook on port 6116 (id baci5s134)
+
+Continue where you left off.
+
+---
+
+<task-notification>
+<task-id>bafkbt7q6</task-id>
+<tool-use-id>toolu_01Kkim5JUyViTLQ96xwUPLer</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/f05ccee4-84f4-46de-846a-0bccd9ff3fa2/tasks/bafkbt7q6.output</output-file>
+<status>completed</status>
+<summary>Background command "Restart Storybook on port 6116" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+show me what it would like removed and  show me how it looks now
+
+---
+
+<task-notification>
+<task-id>bskhjh3u4</task-id>
+<tool-use-id>toolu_01CZAXEdhCx1r52kfrM8XTUN</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/f05ccee4-84f4-46de-846a-0bccd9ff3fa2/tasks/bskhjh3u4.output</output-file>
+<status>completed</status>
+<summary>Background command "Start Storybook on port 6116" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+oh god those buttons are huge and look terrible and ugly, keep the icons, but i don't want this text next to them here and strike should have an option button somewhere in the card but not take up as much space. we need this more compact I also think that the reply needn't be in a little box and highlight can just be on the border. we know which persona the reply is already in the context so we can take more space in the reply i also think we need better animations for the replies for persona. I  would lke the peran picture to be above the card an outline and think of a two box column laid vertically. The top half contains this transparent background with the potrait of the persona the bottom contains this text box reply.
+
+---
+
+<task-notification>
+<task-id>bl54x4dvh</task-id>
+<tool-use-id>toolu_01UZ3pfTUMe9TZvFtouPDAFS</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/f05ccee4-84f4-46de-846a-0bccd9ff3fa2/tasks/bl54x4dvh.output</output-file>
+<status>completed</status>
+<summary>Background command "Start Storybook on port 6116" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+this looks good, can we get better warning blocks and messages icon and stuff make them compact too
+
+---
+
+<task-notification>
+<task-id>bnl2ik55q</task-id>
+<tool-use-id>toolu_01GzX2eAbky5JWHu5XXMkG8t</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/f05ccee4-84f4-46de-846a-0bccd9ff3fa2/tasks/bnl2ik55q.output</output-file>
+<status>completed</status>
+<summary>Background command "Start Storybook on port 6116" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+I love this we can use a retry icon instead of send again as text.
+
+---
+
+alright this is good we need to deploy our changes to prod now annd get a new release goging
+
+---
+
+we have worked on stuff in otherr threads too so creating a new release wiithh those fixes also makes sense
+
+---
+
+<task-notification>
+<task-id>bo4vrtnre</task-id>
+<tool-use-id>toolu_01B5Ljw9YiKovNtiQM9z3Tnf</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/f05ccee4-84f4-46de-846a-0bccd9ff3fa2/tasks/bo4vrtnre.output</output-file>
+<status>completed</status>
+<summary>Background command "Rescreenshot after stories finish loading" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bo5pap97d</task-id>
+<tool-use-id>toolu_016KgA276mnQsVmny4Pz8BpB</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/f05ccee4-84f4-46de-846a-0bccd9ff3fa2/tasks/bo5pap97d.output</output-file>
+<status>completed</status>
+<summary>Background command "Wait for the Railway deploy to finish" completed (exit code 0)</summary>
+</task-notification>
