@@ -154,7 +154,7 @@ interface RubricCriterion {
   feedback: string;
 }
 
-interface RubricResult {
+export interface RubricResult {
   folioId?: string;
   criteria: RubricCriterion[];
   overallScore: number;
@@ -177,6 +177,16 @@ interface RubricResult {
 interface RubricPanelProps {
   brief: ProjectBrief | null;
   activeFolioId: string;
+  /** Isolated UI preview: fixture state, local interactions, no storage or inference. */
+  preview?: RubricPanelPreview;
+}
+
+export interface RubricPanelPreview {
+  result: RubricResult | null;
+  section?: RubricSection;
+  isAnalyzing?: boolean;
+  criteriaOpen?: boolean;
+  history?: RubricHistoryEntry[];
 }
 
 /** Include edits still waiting for the editor's persistence debounce. */
@@ -189,7 +199,7 @@ async function loadRubricDraftHtml(folioId: string): Promise<string> {
 }
 
 export const RubricPanel = component$(
-  ({ brief, activeFolioId }: RubricPanelProps) => {
+  ({ brief, activeFolioId, preview }: RubricPanelProps) => {
     const clientSig = useConvexClient();
     const store = useStore<RubricStore>({
       result: null,
@@ -235,8 +245,25 @@ export const RubricPanel = component$(
       }
     });
 
+    useTask$(({ track }) => {
+      const fixture = track(() => preview);
+      if (!fixture) return;
+      const copy = JSON.parse(JSON.stringify(fixture)) as RubricPanelPreview;
+      store.result = copy.result;
+      store.judges = copy.result?.judges ?? [];
+      store.static = copy.result?.staticScore ?? null;
+      store.section = copy.section ?? "marks";
+      store.isAnalyzing = copy.isAnalyzing ?? false;
+      store.criteriaOpen = copy.criteriaOpen ?? false;
+      store.history = copy.history ?? [];
+    });
+
     // `quiet` reads in the background and leaves the current grade on screen.
     const runAnalysis = $(async (frontierOnly = false, quiet = false) => {
+      if (preview) {
+        store.status = "Preview only. No grading request was sent.";
+        return;
+      }
       if (store.isAnalyzing || store.isReviewing) return;
       const folioId = activeFolioId;
       const runId = ++store.runId;
@@ -754,6 +781,7 @@ export const RubricPanel = component$(
 
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(async ({ track, cleanup }) => {
+      if (preview) return;
       const folioId = track(() => activeFolioId);
       let cancelled = false;
       cleanup(() => {
@@ -794,6 +822,7 @@ export const RubricPanel = component$(
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(
       ({ cleanup }) => {
+        if (preview) return;
         const update = (event?: Event) => {
           const snapshot = event
             ? (event as CustomEvent<LiveReviewSnapshot>).detail
@@ -863,7 +892,7 @@ export const RubricPanel = component$(
         store.result.writerScore =
           weightedCriteriaScore(next, scores) ?? undefined;
       }
-      await saveCriteriaSpecs(next, activeFolioId);
+      if (!preview) await saveCriteriaSpecs(next, activeFolioId);
     });
 
     const toggleCriterion = $((id: string) => {
@@ -910,6 +939,10 @@ export const RubricPanel = component$(
     });
 
     const suggestCriteria = $(async () => {
+      if (preview) {
+        store.status = "Preview only. No criteria request was sent.";
+        return;
+      }
       if (store.isSuggesting) return;
       store.isSuggesting = true;
       store.error = null;

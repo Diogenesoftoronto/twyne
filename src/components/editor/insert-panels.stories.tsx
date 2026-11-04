@@ -11,6 +11,8 @@ const callbacks = {
   onImageUrlChange$: $(() => {}),
   onInsertImage$: $(() => {}),
   onCancelImage$: $(() => {}),
+  onCancelCodeLines$: $(() => {}),
+  onConfirmCodeLines$: $(() => {}),
 };
 
 const meta = {
@@ -42,6 +44,14 @@ export const FootnoteModal: Story = {
 
 export const EndnoteModal: Story = {
   args: { mermaidOpen: false, noteKind: "endnote" },
+};
+
+export const CodeLineHighlights: Story = {
+  args: { mermaidOpen: false, codeLinesOpen: "3,5-7" },
+};
+
+export const ClearCodeLineHighlights: Story = {
+  args: { mermaidOpen: false, codeLinesOpen: "" },
 };
 
 export const ImageBar: Story = {
