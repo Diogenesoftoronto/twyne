@@ -1,0 +1,26 @@
+what ports does devenv up open
+
+---
+
+hey there are many components missing in the storybook that I  would like you to add please
+
+---
+
+specifically the modal cards in the  editor
+
+---
+
+include the selection ui for when a person writes and that part of the text is selected by the personanote
+
+---
+
+inclcude the ui for the quick mark ruule estimate of what i am getting and theh section stuff
+
+---
+
+For “quick mark,” do you mean the rubric’s estimated grade and criteria breakdown?
+i thought both were the same but i think putting them both in the storybook is important
+
+---
+
+the marked passage in the real editor has a clickable red button at the end of the text that is missing  here.
