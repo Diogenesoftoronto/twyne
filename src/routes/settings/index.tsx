@@ -12,7 +12,6 @@ import { SearchableModelSelect } from "../../components/ui/searchable-model-sele
 import { ThemedDialog } from "../../components/ui/themed-dialog";
 import { NumericStepper } from "../../components/ui/numeric-stepper";
 import { useConvexClient } from "../../utils/convex-context";
-import { api } from "../../../convex/_generated/api";
 import type {
   AiSettings,
   JudgementSettings,

@@ -8,8 +8,8 @@ self.onmessage = () => {
   void (async () => {
     try {
       const read = async (url: string) => {
-        let n = url.split("/").at(-1);
-        let r = await fetch(`http://127.0.0.1:18743/${n}`, {
+        const n = url.split("/").at(-1);
+        const r = await fetch(`http://127.0.0.1:18743/${n}`, {
           cache: "no-store",
         });
         if (!r.ok) throw Error(`missing ${n}`);
@@ -40,10 +40,10 @@ self.onmessage = () => {
         );
       const conv =
         "<|im_start|>system\nRespond with interleaved text and audio.<|im_end|>\n<|im_start|>user\n<|audio|><|im_end|>\n<|im_start|>assistant\n<|mixed_start|>";
-      let chunks: Float32Array[] = [],
-        tokens: number[] = [],
+      const chunks: Float32Array[] = [];
+      let tokens: number[] = [],
         first = 0;
-      let turn = performance.now();
+      const turn = performance.now();
       await generateLocalLive({
         ort,
         sessions,

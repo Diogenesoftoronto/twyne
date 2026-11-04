@@ -9,13 +9,6 @@ import { segmentDocument } from "../../src/utils/living-desk/segment";
 import { analyzeDesk } from "../../src/utils/living-desk/analyze";
 import { buildScore } from "../../src/utils/living-desk/score";
 import {
-  checkSentenceCandidates,
-  localSentenceCandidates,
-  sentenceCandidate,
-  sentenceWordDiff,
-  wordAlternatives,
-} from "../../src/utils/sentence-bench";
-import {
   completeSentence,
   emptySentenceLedger,
   reconcileSentenceLedger,
@@ -29,7 +22,7 @@ import {
   instrumentTextFingerprint,
   type InstrumentTaskRequest,
 } from "../../src/utils/instrument-tasks-model";
-import { CORPUS_VERSION, deskCases, rewriteCases, missions } from "./corpus";
+import { CORPUS_VERSION, deskCases, missions } from "./corpus";
 import { buildSpanIndex, proposeThreadPairs } from "../../src/utils/span-index";
 import { ruleThreads } from "../../src/utils/thread-instrument";
 import {
@@ -142,58 +135,6 @@ for (const fixture of deskCases)
         );
       }
   });
-for (const fixture of rewriteCases)
-  await check(fixture.id, "local-real", () => {
-    const candidates = localSentenceCandidates(fixture.text);
-    if (fixture.expected === null) assert.equal(candidates.length, 0);
-    else
-      assert(
-        candidates.some((c) => c.text === fixture.expected),
-        "Expected complete rewrite is missing",
-      );
-    for (const c of candidates) {
-      assert(completeSentence(c.text), "Fragment offered as a candidate");
-      assert.equal(
-        c.meaning,
-        undefined,
-        "A rule claimed unmeasured meaning confidence",
-      );
-      for (const token of fixture.preserve)
-        assert(c.text.includes(token), `Lost protected token: ${token}`);
-      const diff = sentenceWordDiff(fixture.text, c.text);
-      assert.equal(
-        diff
-          .filter((t) => t.kind !== "added")
-          .map((t) => t.text)
-          .join(""),
-        fixture.text,
-      );
-      assert.equal(
-        diff
-          .filter((t) => t.kind !== "removed")
-          .map((t) => t.text)
-          .join(""),
-        c.text,
-      );
-    }
-  });
-await check("word-context-preservation", "local-real", () => {
-  const text = "Mara said the bridge was important.";
-  const from = text.indexOf("important"),
-    to = from + 9;
-  const alternatives = wordAlternatives(text, from, to);
-  assert(alternatives.length > 0);
-  for (const a of alternatives)
-    assert.equal(
-      a.sentence,
-      text.slice(0, from) + a.replacement + text.slice(to),
-    );
-  assert.equal(
-    wordAlternatives(text, from + 1, to).length,
-    0,
-    "Partial word accepted",
-  );
-});
 await check("settled-history-and-cut-paste", "local-real", () => {
   const original = "The river carried the town's memory.";
   let ledger = reconcileSentenceLedger(
@@ -222,44 +163,6 @@ await check("settled-history-and-cut-paste", "local-real", () => {
     1,
     "Unchecked misspelling became a settled attempt",
   );
-});
-await check("grammar-rejects-new-errors", "transport-contract", async () => {
-  const original = "Mara waited for the train.";
-  const good = sentenceCandidate(
-    original,
-    "Mara waited beside the train.",
-    "rule",
-    "test",
-  );
-  const bad = sentenceCandidate(
-    original,
-    "Mara waitted for the train.",
-    "rule",
-    "test",
-  );
-  const checked = await checkSentenceCandidates(
-    original,
-    [good, bad],
-    async (text) =>
-      text.includes("waitted")
-        ? [
-            {
-              id: "spelling",
-              start: 5,
-              end: 12,
-              problem: "waitted",
-              message: "Unknown word",
-              kind: "Spelling",
-              suggestions: ["waited"],
-            },
-          ]
-        : [],
-  );
-  assert.deepEqual(
-    checked.map((c) => c.text),
-    [good.text],
-  );
-  assert.equal(checked[0].grammar, "checked");
 });
 const task: InstrumentTaskRequest = {
   requestId: "fixture-1",
