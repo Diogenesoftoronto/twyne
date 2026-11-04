@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "6711b74bf830",
+  "session_id": "01a1a645-64fe-7221-a686-c1790e2dd393",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-04T11:40:26.222238559Z",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/components/personas/personas-panel.tsx",
+    "src/routes/analysis/index.tsx",
+    "src/utils/room-analysis.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6.1-sol",
+  "turn_id": "535e6b71b2af",
+  "checkpoint_transcript_start": 189,
+  "transcript_lines_at_start": 189,
+  "compact_transcript_start": 25,
+  "token_usage": {
+    "input_tokens": 58207,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 2505472,
+    "output_tokens": 9913,
+    "api_call_count": 28,
+    "subagent_tokens_complete": true
+  },
+  "session_metrics": {
+    "turn_count": 2
+  }
+}
