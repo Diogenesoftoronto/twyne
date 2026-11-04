@@ -29,8 +29,12 @@ mock.module("./idb", () => ({
   },
 }));
 
-const { evictModelBundle, isModelBundleDownloaded, modelDownloadState } =
-  await import(`./models-cache?models-cache-test=${Date.now()}`);
+const {
+  evictModelBundle,
+  isModelBundleDownloaded,
+  modelDownloadState,
+  readModelBlob,
+} = await import(`./models-cache?models-cache-test=${Date.now()}`);
 
 const REMOTE_BASE = "https://huggingface.co/example/voice-model/resolve/main/";
 const manifest = [
@@ -69,6 +73,23 @@ function seed(name: string, size: number): void {
 }
 
 describe("model bundle download state", () => {
+  test("works when IndexedDB exists in a worker without window", async () => {
+    delete (globalThis as Record<string, unknown>).window;
+    try {
+      seed("config.json", 10);
+      expect(
+        (await modelDownloadState(BUNDLE_ID, manifest)).downloadedBytes,
+      ).toBe(10);
+      expect((await readModelBlob(`${REMOTE_BASE}config.json`))?.size).toBe(10);
+      await evictModelBundle(BUNDLE_ID, manifest);
+      expect(store.size).toBe(0);
+    } finally {
+      Object.defineProperty(globalThis, "window", {
+        value: {},
+        configurable: true,
+      });
+    }
+  });
   test("is ready when every manifest file is on disk, keyed by URL", async () => {
     seed("config.json", 10);
     seed("onnx/model.onnx", 20);
