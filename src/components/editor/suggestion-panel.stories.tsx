@@ -61,6 +61,18 @@ export default meta;
 type Story = StoryObj<typeof SuggestionPreview>;
 
 export const ProposedEdit: Story = {};
+export const SmallEdit: Story = {
+  args: {
+    suggestion: {
+      ...proposedEdit,
+      original:
+        "The library was the only room in the city where nobody really had to buy anything at all to stay.",
+      replacement:
+        "The library was the only room in the city where nobody had to buy anything to stay.",
+      rationale: "Two qualifiers soften the claim; **cut them**.",
+    },
+  },
+};
 export const WithoutRationale: Story = {
   args: { suggestion: { ...proposedEdit, rationale: "" } },
 };

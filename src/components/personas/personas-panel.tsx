@@ -1,4 +1,9 @@
 import { PREFERENCES_APPLIED } from "../../utils/preference-outbox";
+import {
+  OPEN_FULL_THREAD_EVENT,
+  takeFullThread,
+  type OpenFullThreadDetail,
+} from "../editor/card-parts";
 import { GroundedNote } from "./grounded-note";
 import { NoteEvidenceList } from "./note-evidence-list";
 import { evidenceFields, noteEvidence } from "../../utils/note-evidence";
@@ -381,6 +386,26 @@ export const PersonasPanel = component$(
       analysisCollapsed: {},
       analysisCopiedId: null,
       backgroundRoom: null,
+    });
+
+    // A margin card's expand button opens the same full-note sheet as the
+    // card's own button here, so a note has one expanded view wherever it
+    // was read.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ track, cleanup }) => {
+      // Re-run as notes load, so a request made before they arrived lands.
+      track(() => store.feedback.length);
+      const open = (event?: Event) => {
+        const request = takeFullThread(
+          "note",
+          (event as CustomEvent<OpenFullThreadDetail> | undefined)?.detail,
+          (id) => store.feedback.some((f) => f.noteId === id),
+        );
+        if (request) store.openNoteKey = request.id;
+      };
+      window.addEventListener(OPEN_FULL_THREAD_EVENT, open);
+      open();
+      cleanup(() => window.removeEventListener(OPEN_FULL_THREAD_EVENT, open));
     });
 
     /* The full-note sheet follows `openNoteKey`: showModal when a card opens

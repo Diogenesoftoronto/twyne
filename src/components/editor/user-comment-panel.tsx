@@ -1,8 +1,32 @@
-import { component$, type PropFunction } from "@qwik.dev/core";
+import {
+  $,
+  useComputed$,
+  component$,
+  sync$,
+  type PropFunction,
+} from "@qwik.dev/core";
 import { renderMarkdown } from "../../utils/markdown";
 import { CommentBody } from "../comments/comment-body";
 import { SpeakButton } from "../ui/speak-button";
-import { PersonaMasthead } from "../personas/persona-portrait";
+import { PersonaPortrait } from "../personas/persona-portrait";
+import { resolvePersonaPortrait } from "../../utils/persona-portrait";
+import { useAuth } from "../../utils/auth-context";
+import {
+  accountAvatarUrl,
+  accountDisplayName,
+} from "../../utils/account-display";
+import { stopSpeech } from "../../utils/speech";
+import {
+  CardBust,
+  CardMenu,
+  CardNotice,
+  CheckIcon,
+  CloseIcon,
+  ExpandIcon,
+  openFullThread,
+  SendIcon,
+  useSpeechError,
+} from "./card-parts";
 import type { UserCommentPopover } from "./editor-state";
 
 interface UserCommentPanelProps {
@@ -15,7 +39,10 @@ interface UserCommentPanelProps {
   onDelete$: PropFunction<(commentId: string) => void>;
 }
 
-/** The writer's conversation around one inline comment mark. */
+/**
+ * The writer's conversation around one inline comment mark: the same two
+ * boxes as a persona's note, with the writer's own face on the first.
+ */
 export const UserCommentPanel = component$<UserCommentPanelProps>((props) => {
   const comment = props.comment;
   const onCreate$ = props.onCreate$;
@@ -23,16 +50,28 @@ export const UserCommentPanel = component$<UserCommentPanelProps>((props) => {
   const onSubmit$ = props.onSubmit$;
   const onToggleResolved$ = props.onToggleResolved$;
   const onDelete$ = props.onDelete$;
+  const auth = useAuth();
+  const speechError = useSpeechError(
+    useComputed$(() => `user-comment-${props.comment?.id ?? ""}`),
+  );
+  // Enter sends and Shift+Enter breaks the line, as in every chat box.
+  const holdEnter = sync$((event: KeyboardEvent) => {
+    if (event.key === "Enter" && !event.shiftKey && !event.isComposing)
+      event.preventDefault();
+  });
 
   if (!comment || !comment.visible) return null;
 
   const composing = comment.mode === "compose";
+  const user = auth.value.user;
+  const writer = user ? accountDisplayName(user) : "You";
+  const avatar = accountAvatarUrl(user?.image);
 
   return (
     <div
       class={[
-        "manuscript-comment-card manuscript-comment-card--writer",
-        { "is-in-margin": !!comment.margin },
+        "manuscript-comment-card manuscript-comment-card--writer user-comment-card twyne-card",
+        { "is-in-margin": !!comment.margin, "is-resolved": comment.resolved },
       ]}
       data-margin-item={comment.margin ?? undefined}
       style={{
@@ -49,178 +88,201 @@ export const UserCommentPanel = component$<UserCommentPanelProps>((props) => {
       }
       onClick$={(event) => event.stopPropagation()}
     >
-      <div class="manuscript-comment-card__head">
-        <div class="min-w-0">
-          <p class="manuscript-comment-card__author">You</p>
-          <p
-            class="manuscript-comment-card__label"
-            style={{
-              color: comment.resolved
-                ? "var(--color-accent-green)"
-                : "var(--color-writer-note)",
-            }}
-          >
-            {composing
-              ? "New margin"
-              : `${comment.resolved ? "resolved" : "open"} · ${timeAgo(comment.createdAt)}`}
-          </p>
-        </div>
-        <div class="flex items-center gap-1.5 flex-shrink-0">
-          {!composing && (
-            <SpeakButton
-              compact
-              id={`user-comment-${comment.id}`}
-              text={comment.text}
+      {!composing && (
+        <section class="persona-note__note">
+          <div class="persona-note__head">
+            <CardBust
+              personaId="writer"
+              name={writer}
+              imageUrl={avatar}
+              color="var(--color-writer-note)"
             />
-          )}
-          <button
-            onClick$={props.onClose$}
-            class="manuscript-comment-card__close"
-            aria-label="Close margin note"
-          >
-            ✕
-          </button>
-        </div>
-      </div>
-
-      <div class="manuscript-comment-card__body">
-        {comment.quote && (
-          <blockquote class="manuscript-comment-card__quote">
-            {`« ${comment.quote.length > 280 ? comment.quote.slice(0, 279) + "…" : comment.quote} »`}
-          </blockquote>
-        )}
-
-        {composing ? (
-          <div class="manuscript-comment-card__composer">
-            <textarea
-              autoFocus
-              value={comment.draft}
-              data-thread-draft-kind="comment"
-              data-thread-draft-id={comment.id}
-              onKeyDown$={(event) => {
-                if (
-                  (event.metaKey || event.ctrlKey) &&
-                  event.key === "Enter" &&
-                  comment.draft.trim()
-                ) {
-                  event.preventDefault();
-                  onCreate$();
+            <span class="user-comment-card__when">
+              {timeAgo(comment.createdAt)}
+            </span>
+            <div class="persona-note__tools">
+              <span class="persona-note__tool">
+                <SpeakButton
+                  id={`user-comment-${comment.id}`}
+                  text={comment.text}
+                />
+              </span>
+              <button
+                type="button"
+                class={[
+                  "persona-note__tool user-comment-card__resolve focus-ring",
+                  { "is-on": comment.resolved },
+                ]}
+                aria-pressed={comment.resolved}
+                aria-label={comment.resolved ? "Reopen" : "Resolve"}
+                title={
+                  comment.resolved ? "Resolved — reopen" : "Mark resolved"
                 }
-                if (event.key === "Escape") onDiscard$();
-              }}
-              placeholder="What belongs in the margin here?"
-              class="manuscript-comment-card__textarea"
-              rows={5}
-            />
-            <div class="manuscript-comment-card__actions">
-              <span>⌘↩ to place</span>
-              <div class="flex gap-2">
-                <button onClick$={onDiscard$} class="btn-paper text-[11px]">
-                  Discard
-                </button>
+                onClick$={() => onToggleResolved$(comment.id)}
+              >
+                <CheckIcon />
+              </button>
+              <CardMenu>
                 <button
-                  onClick$={onCreate$}
-                  disabled={!comment.draft.trim()}
-                  class="btn-press text-[11px] disabled:opacity-30 disabled:cursor-not-allowed"
+                  type="button"
+                  role="menuitem"
+                  class="focus-ring"
+                  onClick$={() => onDelete$(comment.id)}
                 >
-                  Place note
+                  Erase this note
                 </button>
-              </div>
+              </CardMenu>
+              <button
+                type="button"
+                class="persona-note__tool focus-ring"
+                aria-label="Open in Comments"
+                title="Open in Comments — ask an editor, see every note"
+                onClick$={() => {
+                  openFullThread({ kind: "comment", id: comment.id });
+                  props.onClose$();
+                }}
+              >
+                <ExpandIcon />
+              </button>
+              <button
+                type="button"
+                onClick$={props.onClose$}
+                class="persona-note__tool focus-ring"
+                aria-label="Close margin note"
+                title="Close"
+              >
+                <CloseIcon />
+              </button>
             </div>
           </div>
-        ) : (
-          <>
+
+          <div class="persona-note__scroll">
             <div
               data-speech-id={`user-comment-${comment.id}`}
-              class="comment-markdown text-[0.95rem] leading-6 text-[var(--color-ink)]"
-              style="font-family: var(--font-serif);"
+              class="comment-markdown persona-note__text"
             >
               <CommentBody text={comment.text} />
             </div>
 
-            {comment.replies.length > 0 && (
-              <div
-                class="pt-2 mt-2 border-t border-dashed space-y-2"
-                style={{ "border-color": "var(--color-paper-3)" }}
-              >
-                {comment.replies.map((reply) => (
-                  <div key={reply.id} class="text-[0.85rem]">
-                    {reply.authorKind === "persona" ? (
-                      <PersonaMasthead
-                        personaId={reply.personaId}
-                        name={reply.author}
-                        label={timeAgo(reply.createdAt)}
-                        size={56}
-                        class="mb-1.5"
-                      />
-                    ) : (
-                      <p
-                        class="text-[0.6rem] tracking-[0.16em] uppercase text-[var(--color-ink-muted)]"
-                        style="font-family: var(--font-typewriter);"
-                      >
-                        {reply.author} · {timeAgo(reply.createdAt)}
-                      </p>
-                    )}
-                    <div
-                      class="comment-markdown mt-0.5 text-[var(--color-ink-light)] leading-5"
-                      style={{
-                        fontFamily: "var(--font-serif)",
-                        fontStyle:
-                          reply.authorKind === "persona" ? "italic" : "normal",
-                      }}
-                      dangerouslySetInnerHTML={renderMarkdown(reply.text)}
-                    />
-                  </div>
-                ))}
-              </div>
+            {comment.replies.map((reply) =>
+              reply.authorKind === "persona" ? (
+                <PersonaCommentReply
+                  key={reply.id}
+                  personaId={reply.personaId}
+                  author={reply.author}
+                  text={reply.text}
+                />
+              ) : (
+                <div
+                  key={reply.id}
+                  class="persona-note__reply persona-note__reply--writer comment-markdown"
+                  data-author-kind="user"
+                  dangerouslySetInnerHTML={renderMarkdown(reply.text)}
+                />
+              ),
             )}
 
-            <div class="manuscript-comment-card__composer">
-              <textarea
-                value={comment.draft}
-                data-thread-draft-kind="comment"
-                data-thread-draft-id={comment.id}
-                onKeyDown$={(event) => {
-                  if (
-                    (event.metaKey || event.ctrlKey) &&
-                    event.key === "Enter"
-                  ) {
-                    onSubmit$(comment.id);
-                  }
-                }}
-                placeholder="Reply as the writer…"
-                aria-label="Reply as the writer"
-                class="manuscript-comment-card__textarea"
-                rows={3}
+            {speechError.value && (
+              <CardNotice
+                tone="warning"
+                icon="voice"
+                message="Couldn’t read this aloud."
+                detail={speechError.value}
+                actionLabel="Voice settings"
+                actionHref="/settings/"
+                onDismiss$={() => stopSpeech()}
               />
-              <div class="manuscript-comment-card__actions">
-                <span>⌘↩ to reply</span>
-                <div class="flex gap-2">
-                  <button
-                    onClick$={() => onToggleResolved$(comment.id)}
-                    class="btn-paper text-[11px]"
-                  >
-                    {comment.resolved ? "Reopen" : "Resolve"}
-                  </button>
-                  <button
-                    onClick$={() => onDelete$(comment.id)}
-                    class="btn-paper text-[11px] text-[var(--color-vermilion)]"
-                  >
-                    Erase
-                  </button>
-                  <button
-                    onClick$={() => onSubmit$(comment.id)}
-                    disabled={!comment.draft.trim()}
-                    class="btn-press text-[11px] disabled:opacity-30 disabled:cursor-not-allowed"
-                  >
-                    Reply
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
+            )}
+          </div>
+        </section>
+      )}
+
+      <form
+        class="persona-note__compose"
+        preventdefault:submit
+        onSubmit$={() =>
+          composing ? onCreate$() : onSubmit$(comment.id)
+        }
+      >
+        {composing && (
+          <span class="user-comment-card__face" title={writer}>
+            <PersonaPortrait
+              personaId="writer"
+              name={writer}
+              imageUrl={avatar}
+              color="var(--color-writer-note)"
+              size={26}
+            />
+          </span>
         )}
-      </div>
+        <textarea
+          autoFocus={composing}
+          value={comment.draft}
+          data-thread-draft-kind="comment"
+          data-thread-draft-id={comment.id}
+          onKeyDown$={[
+            holdEnter,
+            $((event: KeyboardEvent) => {
+              if (event.key === "Escape" && composing) onDiscard$();
+              if (event.key !== "Enter" || event.shiftKey || event.isComposing)
+                return;
+              if (!comment.draft.trim()) return;
+              if (composing) onCreate$();
+              else onSubmit$(comment.id);
+            }),
+          ]}
+          placeholder={
+            composing ? "What belongs in the margin here?" : "Write back…"
+          }
+          aria-label={composing ? "Margin note" : "Reply as the writer"}
+          class="persona-note__input"
+          rows={composing ? 2 : 1}
+        />
+        {composing && (
+          <button
+            type="button"
+            onClick$={onDiscard$}
+            class="persona-note__tool focus-ring"
+            aria-label="Discard"
+            title="Discard (Esc)"
+          >
+            <CloseIcon />
+          </button>
+        )}
+        <button
+          type="submit"
+          class="persona-note__send focus-ring"
+          disabled={!comment.draft.trim()}
+          aria-label={composing ? "Place note" : "Reply"}
+          title={composing ? "Place note (Enter)" : "Reply (Enter)"}
+        >
+          <SendIcon />
+        </button>
+      </form>
+    </div>
+  );
+});
+
+/** Rule and face in the persona's own colour, since the card is the writer's. */
+const PersonaCommentReply = component$<{
+  personaId?: string;
+  author: string;
+  text: string;
+}>(({ personaId, author, text }) => {
+  const color = resolvePersonaPortrait({ personaId, name: author }).color;
+  return (
+    <div
+      class="persona-note__reply"
+      data-author-kind="persona"
+      style={{ "--comment-color": color }}
+    >
+      <span class="persona-note__guest" title={author}>
+        <PersonaPortrait personaId={personaId} name={author} size={22} />
+      </span>
+      <div
+        class="comment-markdown"
+        dangerouslySetInnerHTML={renderMarkdown(text)}
+      />
     </div>
   );
 });

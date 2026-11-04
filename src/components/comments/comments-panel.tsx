@@ -1,5 +1,10 @@
 import { currentModelLocale } from "../../i18n/model-language";
 import {
+  OPEN_FULL_THREAD_EVENT,
+  takeFullThread,
+  type OpenFullThreadDetail,
+} from "../editor/card-parts";
+import {
   component$,
   useSignal,
   useStore,
@@ -233,11 +238,44 @@ export const CommentsPanel = component$((props: CommentsPanelProps) => {
       const el = document.querySelector(`[data-comment-id="${id}"]`);
       el?.scrollIntoView({ behavior: "smooth", block: "center" });
     };
+    // A margin card's expand button: find the comment and mark it once, so
+    // the eye lands on the thread it just left the margin for.
+    const onOpenFullThread = (e?: Event) => {
+      const request = takeFullThread(
+        "comment",
+        (e as CustomEvent<OpenFullThreadDetail> | undefined)?.detail,
+        () => true,
+      );
+      if (!request) return;
+      const { id } = request;
+      // The board shows this panel on the same event, so wait (briefly) for
+      // it to be laid out; the manuscript's own mark shares the attribute.
+      let tries = 0;
+      const land = () => {
+        const el = document.querySelector<HTMLElement>(
+          `[data-comment-id="${id}"]:not(.twyne-comment-mark)`,
+        );
+        if (!el?.offsetParent) {
+          if (tries++ < 20) requestAnimationFrame(land);
+          return;
+        }
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        // An attribute Qwik does not render, so a re-render cannot wipe it.
+        el.removeAttribute("data-arriving");
+        void el.offsetWidth;
+        el.setAttribute("data-arriving", "");
+        setTimeout(() => el.removeAttribute("data-arriving"), 1600);
+      };
+      requestAnimationFrame(land);
+    };
+    window.addEventListener(OPEN_FULL_THREAD_EVENT, onOpenFullThread);
+    onOpenFullThread();
     window.addEventListener("twyne:user-comments-changed", refresh);
     window.addEventListener("twyne:scroll-to-comment", onScroll);
     return () => {
       window.removeEventListener("twyne:user-comments-changed", refresh);
       window.removeEventListener("twyne:scroll-to-comment", onScroll);
+      window.removeEventListener(OPEN_FULL_THREAD_EVENT, onOpenFullThread);
     };
   });
 
