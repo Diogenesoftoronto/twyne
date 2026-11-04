@@ -1,7 +1,20 @@
 import { PREFERENCES_APPLIED } from "../../utils/preference-outbox";
 import {
+  CardBust,
+  CheckIcon,
+  CloseIcon,
+  DownIcon,
+  ExpandIcon,
+  FileIcon,
+  FixIcon,
+  LaterIcon,
+  MicIcon,
   OPEN_FULL_THREAD_EVENT,
+  ReplyIcon,
+  SendIcon,
+  SpeakerFace,
   takeFullThread,
+  UpIcon,
   type OpenFullThreadDetail,
 } from "../editor/card-parts";
 import { GroundedNote } from "./grounded-note";
@@ -19,6 +32,7 @@ import {
   useVisibleTask$,
   noSerialize,
   type NoSerialize,
+  sync$,
 } from "@qwik.dev/core";
 import { Link } from "@qwik.dev/router";
 import { useConvexClient } from "../../utils/convex-context";
@@ -433,7 +447,7 @@ export const PersonasPanel = component$(
       const el = noteSheet.value;
       if (!replying || !el?.open) return;
       requestAnimationFrame(() =>
-        el.querySelector<HTMLTextAreaElement>(".reply-input")?.focus(),
+        el.querySelector<HTMLTextAreaElement>(".board-compose__input")?.focus(),
       );
     });
     // Escape closes the sheet and stops there. Marked handled before Qwik's
@@ -636,97 +650,6 @@ export const PersonasPanel = component$(
     .provider-pill[data-provider="rivet"],
     .provider-pill[data-provider="portkey"] { color: var(--color-accent-green); border-color: var(--color-accent-green); }
 
-    .reply-thread {
-      margin-top: 0.6rem;
-      padding-left: 0.75rem;
-      border-left: 2px dashed var(--color-paper-3);
-      display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
-    }
-    .reply-bubble {
-      padding: 0.5rem 0.6rem;
-      border-radius: 2px;
-      background: var(--color-paper-soft);
-      border: 1px solid var(--color-paper-3);
-      font-family: var(--font-serif);
-      font-size: 0.78rem;
-      line-height: 1.45;
-      color: var(--color-ink-light);
-    }
-    .reply-bubble.is-persona {
-      background: color-mix(in srgb, var(--reply-color, var(--color-vermilion)) 12%, var(--color-paper));
-    }
-    .reply-meta {
-      display: flex;
-      gap: 0.4rem;
-      align-items: baseline;
-      font-family: var(--font-typewriter);
-      font-size: 0.6rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--color-ink-muted);
-    }
-    .reply-meta strong {
-      color: var(--reply-color, var(--color-ink));
-      font-family: var(--font-display);
-      font-weight: 600;
-    }
-    .reply-box {
-      margin-top: 0.6rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-    .reply-input {
-      width: 100%;
-      border: 1px solid var(--color-paper-3);
-      background: var(--color-paper-soft);
-      padding: 0.45rem 0.55rem;
-      font-family: var(--font-serif);
-      font-size: 0.8rem;
-      color: var(--color-ink);
-      resize: vertical;
-      min-height: 3.2rem;
-      border-radius: 2px;
-    }
-    /* Same focus treatment as .composer, so the two places a writer types a
-       message to the room do not read as two different applications. */
-    .reply-input:focus {
-      outline: none;
-      border-color: var(--color-vermilion);
-      box-shadow:
-        0 0 0 3px rgba(193, 39, 45, 0.12),
-        0 2px 10px -6px rgba(31, 27, 22, 0.35);
-    }
-    .reply-actions {
-      display: flex;
-      gap: 0.4rem;
-      align-items: center;
-    }
-    .reply-actions .ask-again {
-      background: var(--color-ink);
-      color: var(--color-paper);
-      border: 1px solid var(--color-ink);
-      padding: 0.3rem 0.55rem;
-      font-family: var(--font-typewriter);
-      font-size: 0.62rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      border-radius: 2px;
-      cursor: pointer;
-    }
-    .reply-actions .ask-again:disabled { opacity: 0.5; cursor: not-allowed; }
-    .reply-actions button.ghost {
-      background: transparent;
-      color: var(--color-ink-muted);
-      border: none;
-      font-family: var(--font-typewriter);
-      font-size: 0.62rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      cursor: pointer;
-    }
   `);
 
     /* ── Convene the room ──────────────────────────────────────── */
@@ -1430,6 +1353,12 @@ export const PersonasPanel = component$(
     });
 
     /* ── Reply flow ────────────────────────────────────────────── */
+
+    // Enter sends and Shift+Enter breaks the line, as on the margin cards.
+    const holdEnter = sync$((event: KeyboardEvent) => {
+      if (event.key === "Enter" && !event.shiftKey && !event.isComposing)
+        event.preventDefault();
+    });
 
     const openReply = $((noteId: string) => {
       store.replyNoteId = noteId;
@@ -2638,145 +2567,164 @@ export const PersonasPanel = component$(
                   ? (store.repliesByNote[feedback.noteId] ?? [])
                   : [];
                 const personaColor = feedback.personaColor;
-                const persona = store.personas.find(
-                  (p) => p.id === feedback.personaId,
-                );
                 if (replies.length === 0) return null;
+                const streaming =
+                  feedback.noteId &&
+                  store.isReplying &&
+                  store.streamingReplies[feedback.noteId] !== undefined
+                    ? (store.streamingReplies[feedback.noteId]?.text ?? "")
+                    : null;
                 return (
-                  <div class="reply-thread">
-                    {replies.map((r) => (
-                      <div
-                        key={r.id}
-                        class={`reply-bubble ${r.authorKind === "persona" ? "is-persona" : ""}`}
-                        style={{ ["--reply-color" as never]: personaColor }}
-                      >
-                        {r.authorKind === "persona" ? (
-                          <PersonaMasthead
-                            personaId={r.personaId}
-                            name={r.author}
-                            role={
-                              store.personas.find((p) => p.id === r.personaId)
-                                ?.role
-                            }
-                            label={timeAgo(r.timestamp)}
-                            size={56}
-                            class="mb-1.5"
-                          />
-                        ) : (
-                          <div class="reply-meta">
-                            <strong style={{ color: personaColor }}>
-                              {r.author}
-                            </strong>
-                            <span>· {timeAgo(r.timestamp)}</span>
-                          </div>
-                        )}
-                        <GroundedNote
-                          class="comment-markdown mt-0.5"
-                          onClick$={(event: Event) =>
-                            revealQuoteFromEvent(event)
-                          }
-                          text={r.text}
-                          manuscript={store.manuscript}
-                        />
-                      </div>
-                    ))}
-                    {feedback.noteId &&
-                      store.isReplying &&
-                      store.streamingReplies[feedback.noteId] !== undefined && (
+                  <div
+                    class="board-thread"
+                    style={{ ["--comment-color" as never]: personaColor }}
+                  >
+                    {replies.map((r) =>
+                      r.authorKind === "persona" ? (
                         <div
-                          class="reply-bubble is-persona"
-                          style={{
-                            ["--reply-color" as never]: personaColor,
-                          }}
+                          key={r.id}
+                          class="persona-note__reply"
+                          data-author-kind="persona"
                         >
-                          <PersonaMasthead
-                            personaId={feedback.personaId}
-                            name={feedback.personaName}
-                            role={persona?.role}
-                            label="writing…"
-                            size={56}
-                            class="mb-1.5"
+                          {r.personaId &&
+                            r.personaId !== feedback.personaId && (
+                              <span class="persona-note__guest">
+                                <SpeakerFace
+                                  personaId={r.personaId}
+                                  name={r.author}
+                                  size={22}
+                                />
+                              </span>
+                            )}
+                          <GroundedNote
+                            class="comment-markdown"
+                            onClick$={(event: Event) =>
+                              revealQuoteFromEvent(event)
+                            }
+                            text={r.text}
+                            manuscript={store.manuscript}
                           />
-                          {/* The reply as it is written. The pulse is only
-                              for the gap before the first words arrive. */}
-                          {(
-                            store.streamingReplies[feedback.noteId]?.text ?? ""
-                          ).trim() ? (
-                            <div
-                              class="comment-markdown mt-0.5"
-                              dangerouslySetInnerHTML={renderMarkdown(
-                                store.streamingReplies[feedback.noteId].text,
-                              )}
-                            />
-                          ) : (
-                            <p class="mt-0.5">
-                              <span class="inline-block animate-pulse">…</span>
-                            </p>
-                          )}
+                          <span class="board-thread__when">
+                            {timeAgo(r.timestamp)}
+                          </span>
                         </div>
-                      )}
+                      ) : (
+                        <div
+                          key={r.id}
+                          class="persona-note__reply persona-note__reply--writer"
+                          data-author-kind="user"
+                        >
+                          <GroundedNote
+                            class="comment-markdown"
+                            onClick$={(event: Event) =>
+                              revealQuoteFromEvent(event)
+                            }
+                            text={r.text}
+                            manuscript={store.manuscript}
+                          />
+                          <span class="board-thread__when">
+                            {timeAgo(r.timestamp)}
+                          </span>
+                        </div>
+                      ),
+                    )}
+                    {streaming !== null &&
+                      (streaming.trim() ? (
+                        <div
+                          class="persona-note__reply is-streaming"
+                          data-author-kind="persona"
+                        >
+                          <div
+                            class="comment-markdown"
+                            dangerouslySetInnerHTML={renderMarkdown(streaming)}
+                          />
+                        </div>
+                      ) : (
+                        <div class="persona-note__thinking" role="status">
+                          <span aria-hidden="true" />
+                          <span aria-hidden="true" />
+                          <span aria-hidden="true" />
+                          <span class="sr-only">{`${feedback.personaName} is replying`}</span>
+                        </div>
+                      ))}
                   </div>
                 );
               };
 
               const renderReplyBox = (feedback: PersonaFeedback) => (
-                <div class="reply-box">
+                <form
+                  class="persona-note__compose board-compose"
+                  style={{
+                    ["--comment-color" as never]: feedback.personaColor,
+                  }}
+                  preventdefault:submit
+                  onSubmit$={() => {
+                    if (feedback.noteId) submitReply(feedback.noteId, true);
+                  }}
+                >
                   <textarea
-                    class="reply-input"
+                    class="board-compose__input persona-note__input"
                     autoFocus
+                    rows={1}
                     aria-label={`Reply to ${feedback.personaName}`}
-                    placeholder={`Reply to ${feedback.personaName}…`}
+                    placeholder="Write back…"
                     value={store.replyDraft}
                     onInput$={(e) => {
                       store.replyDraft = (
                         e.target as HTMLTextAreaElement
                       ).value;
                     }}
-                    onKeyDown$={(e) => {
-                      if (
-                        (e.metaKey || e.ctrlKey) &&
-                        e.key === "Enter" &&
-                        feedback.noteId
-                      ) {
+                    onKeyDown$={[
+                      holdEnter,
+                      $((e: KeyboardEvent) => {
+                        if (e.key === "Escape") {
+                          cancelReply();
+                          return;
+                        }
+                        if (
+                          e.key !== "Enter" ||
+                          e.shiftKey ||
+                          e.isComposing ||
+                          !feedback.noteId
+                        )
+                          return;
                         submitReply(feedback.noteId, true);
-                      }
-                    }}
+                      }),
+                    ]}
                   />
-                  <div class="reply-actions">
-                    <button
-                      class="ask-again"
-                      disabled={!store.replyDraft.trim() || store.isReplying}
-                      onClick$={() => {
-                        if (feedback.noteId) submitReply(feedback.noteId, true);
-                      }}
-                    >
-                      {store.isReplying ? "…" : "Ask the editor ↺"}
-                    </button>
-                    <button
-                      class="ghost"
-                      onClick$={() => {
-                        if (feedback.noteId)
-                          submitReply(feedback.noteId, false);
-                      }}
-                      disabled={!store.replyDraft.trim() || store.isReplying}
-                    >
-                      File only
-                    </button>
-                    <button
-                      class="ghost"
-                      onClick$={cancelReply}
-                      disabled={store.isReplying}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                  <p
-                    class="text-[10px] text-[var(--color-ink-muted)]"
-                    style="font-family: var(--font-typewriter); letter-spacing: 0.12em;"
+                  <button
+                    type="button"
+                    class="persona-note__tool focus-ring"
+                    aria-label="File without asking for an answer"
+                    title="File only — no answer"
+                    disabled={!store.replyDraft.trim() || store.isReplying}
+                    onClick$={() => {
+                      if (feedback.noteId) submitReply(feedback.noteId, false);
+                    }}
                   >
-                    ⌘+Enter to ask the editor to come back
-                  </p>
-                </div>
+                    <FileIcon />
+                  </button>
+                  <button
+                    type="button"
+                    class="persona-note__tool focus-ring"
+                    aria-label="Cancel reply"
+                    title="Cancel (Esc)"
+                    disabled={store.isReplying}
+                    onClick$={cancelReply}
+                  >
+                    <CloseIcon />
+                  </button>
+                  <button
+                    type="submit"
+                    class="persona-note__send focus-ring"
+                    aria-label={`Ask ${feedback.personaName}`}
+                    title="Send and ask the editor to answer (Enter)"
+                    disabled={!store.replyDraft.trim() || store.isReplying}
+                    aria-busy={store.isReplying}
+                  >
+                    <SendIcon />
+                  </button>
+                </form>
               );
 
               /* What the writer does with a note: reply, settle it, ask for
@@ -2788,40 +2736,54 @@ export const PersonasPanel = component$(
                 return (
                   <>
                     <button
-                      class="card-key"
+                      type="button"
+                      class="board-key"
                       onClick$={() => {
                         if (feedback.noteId) openReply(feedback.noteId);
                       }}
                       title="Reply to this editor, or ask them to come back"
                     >
-                      ↩ reply
+                      <ReplyIcon />
+                      <span>Reply</span>
                     </button>
                     {feedback.noteId &&
                       (decision ? (
                         <button
-                          class="card-key card-key--on"
+                          type="button"
+                          class="board-key is-on"
                           onClick$={() => decideNote(feedback, null)}
                           title="Undo. The editors may raise this passage again."
                         >
-                          {decision.kind === "intentional"
-                            ? "✓ meant as written"
-                            : "◷ for later"}
+                          {decision.kind === "intentional" ? (
+                            <CheckIcon />
+                          ) : (
+                            <LaterIcon />
+                          )}
+                          <span>
+                            {decision.kind === "intentional"
+                              ? "Meant as written"
+                              : "For later"}
+                          </span>
                         </button>
                       ) : (
                         <>
                           <button
-                            class="card-key"
+                            type="button"
+                            class="board-key board-key--icon board-key--keep"
+                            aria-label="Intentional"
                             onClick$={() => decideNote(feedback, "intentional")}
-                            title="This is deliberate. The editors won't raise it again unless the passage changes."
+                            title="Intentional — the editors won't raise it again unless the passage changes"
                           >
-                            intentional
+                            <CheckIcon />
                           </button>
                           <button
-                            class="card-key"
+                            type="button"
+                            class="board-key board-key--icon"
+                            aria-label="Later"
                             onClick$={() => decideNote(feedback, "later")}
-                            title="Come back to this after the draft. The editors won't repeat it meanwhile."
+                            title="Later — come back after the draft; the editors won't repeat it meanwhile"
                           >
-                            later
+                            <LaterIcon />
                           </button>
                         </>
                       ))}
@@ -2829,14 +2791,19 @@ export const PersonasPanel = component$(
                       effectiveLevel(store.roomSettings, feedback.personaId) !==
                         "comments" && (
                         <button
-                          class="card-key"
+                          type="button"
+                          class="board-key board-key--icon"
+                          aria-label={
+                            store.fixingNoteId === feedback.noteId
+                              ? "Drafting a fix"
+                              : "Ask for a fix"
+                          }
+                          aria-busy={store.fixingNoteId === feedback.noteId}
                           disabled={store.fixingNoteId === feedback.noteId}
                           onClick$={() => askForFix(feedback)}
-                          title="Ask this editor to propose an edit to the anchored passage"
+                          title="Ask this editor to propose an edit to the passage"
                         >
-                          {store.fixingNoteId === feedback.noteId
-                            ? "drafting…"
-                            : "✎ ask for a fix"}
+                          <FixIcon />
                         </button>
                       )}
                   </>
@@ -2847,30 +2814,36 @@ export const PersonasPanel = component$(
                 feedback.traceId ? (
                   <>
                     <button
-                      class={`card-key card-key--go${
-                        store.aiFeedback[feedback.traceId]?.sentiment ===
-                        "positive"
-                          ? " card-key--on"
-                          : ""
-                      }`}
+                      type="button"
+                      class={[
+                        "board-key board-key--icon board-key--good",
+                        {
+                          "is-on":
+                            store.aiFeedback[feedback.traceId]?.sentiment ===
+                            "positive",
+                        },
+                      ]}
                       aria-label="Mark this note helpful"
                       title="This note was useful"
                       onClick$={() => submitAiFeedback(feedback, "positive")}
                     >
-                      ↑
+                      <UpIcon />
                     </button>
                     <button
-                      class={`card-key${
-                        store.aiFeedback[feedback.traceId]?.sentiment ===
-                        "negative"
-                          ? " card-key--on"
-                          : ""
-                      }`}
+                      type="button"
+                      class={[
+                        "board-key board-key--icon board-key--bad",
+                        {
+                          "is-on":
+                            store.aiFeedback[feedback.traceId]?.sentiment ===
+                            "negative",
+                        },
+                      ]}
                       aria-label="Mark this note as needing work"
                       title="This note needs work"
                       onClick$={() => submitAiFeedback(feedback, "negative")}
                     >
-                      ↓
+                      <DownIcon />
                     </button>
                   </>
                 ) : null;
@@ -2910,44 +2883,48 @@ export const PersonasPanel = component$(
                     key={noteKey}
                     aria-label={`${kind}, from ${feedback.personaName}`}
                     class={[
-                      "desk-card note-card feedback-enter",
+                      "desk-card note-card board-card feedback-enter",
                       isPassing ? "note-card--passing" : "note-card--filed",
                       { "is-settled": !!decision },
                     ]}
                     style={{
                       ["--clip-color" as never]: personaColor,
                       ["--card-accent" as never]: personaColor,
+                      ["--comment-color" as never]: personaColor,
                     }}
                   >
-                    {/* Masthead: portrait in the gutter; the name wraps to
-                      two lines at most and owns the middle; the kind of note
-                      and the card's tools hold the right margin. Every row
-                      is intrinsic, so a long name grows the head instead of
-                      running under the body. */}
-                    <header class="note-card__head">
-                      <PersonaPortrait
+                    {/* The face names its speaker on hover; the card keeps
+                      its line for what kind of note this is and when. */}
+                    <header class="note-card__head board-card__head">
+                      <SpeakerFace
                         personaId={feedback.personaId}
                         name={feedback.personaName}
-                        size={isPassing ? 36 : 44}
+                        size={isPassing ? 30 : 34}
                       />
-                      <div class="note-card__who">
-                        <p class="note-card__name" title={feedback.personaName}>
-                          {feedback.personaName}
-                        </p>
-                        <p class="note-card__meta">
-                          {persona?.role && (
-                            <span class="note-card__role">{persona.role}</span>
-                          )}
-                          <span class="note-card__when">
-                            {timeAgo(feedback.timestamp)}
-                          </span>
-                        </p>
-                      </div>
-                      <span class="note-card__kind">{kind}</span>
-                      <div class="note-card__tools">
-                        <span class="desk-card__reveal">
+                      <p class="board-card__kind">
+                        <span class="board-card__kind-label">{kind}</span>
+                        <span class="note-card__when">
+                          {timeAgo(feedback.timestamp)}
+                        </span>
+                      </p>
+                      <div class="note-card__tools board-card__tools">
+                        <button
+                          type="button"
+                          class="persona-note__tool persona-note__tool--talk focus-ring"
+                          aria-label={`Talk with ${feedback.personaName} about this note`}
+                          title={`Talk with ${feedback.personaName}`}
+                          onClick$={() =>
+                            openLiveVoice(
+                              feedback.personaName,
+                              feedback.feedback,
+                            )
+                          }
+                        >
+                          <MicIcon />
+                        </button>
+                        <span class="persona-note__tool">
                           <SpeakButton
-                            compact
+                            inheritColor
                             id={noteKey}
                             text={feedback.feedback}
                             voice={persona?.speechVoice}
@@ -2958,7 +2935,7 @@ export const PersonasPanel = component$(
                         </span>
                         <button
                           type="button"
-                          class="note-card__open"
+                          class="persona-note__tool note-card__open focus-ring"
                           data-note-open={noteKey}
                           aria-haspopup="dialog"
                           aria-label={`Open the full note from ${feedback.personaName}`}
@@ -2967,19 +2944,7 @@ export const PersonasPanel = component$(
                             store.openNoteKey = noteKey;
                           }}
                         >
-                          <svg
-                            viewBox="0 0 16 16"
-                            width="14"
-                            height="14"
-                            aria-hidden="true"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.4"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          >
-                            <path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9" />
-                          </svg>
+                          <ExpandIcon />
                         </button>
                       </div>
                     </header>
@@ -3081,7 +3046,8 @@ export const PersonasPanel = component$(
                           {renderNoteKeys(feedback)}
                           {store.groupByPersona && groupCount > 1 && (
                             <button
-                              class={`card-key${isExpanded ? " card-key--on" : ""}`}
+                              type="button"
+                              class={["board-key", { "is-on": isExpanded }]}
                               onClick$={() => {
                                 const cur = new Set(store.expandedPersonas);
                                 if (cur.has(feedback.personaId))
@@ -3091,9 +3057,11 @@ export const PersonasPanel = component$(
                               }}
                               title={`Earlier notes from ${feedback.personaName}`}
                             >
-                              {isExpanded
-                                ? "▾ hide older"
-                                : `▸ ${groupCount - 1} older`}
+                              <span>
+                                {isExpanded
+                                  ? "Hide older"
+                                  : `${groupCount - 1} older`}
+                              </span>
                             </button>
                           )}
                         </div>
@@ -3122,13 +3090,16 @@ export const PersonasPanel = component$(
                   key="note-sheet"
                   ref={noteSheet}
                   class={[
-                    "note-sheet",
+                    "note-sheet twyne-sheet",
                     sheetPassing ? "note-sheet--passing" : "note-sheet--filed",
                   ]}
                   aria-labelledby="note-sheet-title"
                   style={
                     sheetNote
-                      ? { ["--card-accent" as never]: sheetNote.personaColor }
+                      ? {
+                          ["--card-accent" as never]: sheetNote.personaColor,
+                          ["--comment-color" as never]: sheetNote.personaColor,
+                        }
                       : undefined
                   }
                   onClose$={() => {
@@ -3154,46 +3125,57 @@ export const PersonasPanel = component$(
                   {sheetNote && (
                     <div class="note-sheet__page">
                       <header class="note-sheet__head">
-                        <PersonaPortrait
+                        <CardBust
                           personaId={sheetNote.personaId}
                           name={sheetNote.personaName}
-                          size={56}
                         />
-                        <div class="note-sheet__who">
-                          <p class="note-sheet__kind">
-                            {sheetPassing
-                              ? "In passing · left while you wrote"
-                              : `Requested · ${typeLabel(sheetNote.type)}`}
-                          </p>
-                          <h2 id="note-sheet-title" class="note-sheet__name">
-                            {sheetNote.personaName}
-                          </h2>
-                          <p class="note-sheet__meta">
-                            {sheetPersona?.role && (
-                              <span>{sheetPersona.role}</span>
-                            )}
-                            <span>{timeAgo(sheetNote.timestamp)}</span>
-                          </p>
-                        </div>
-                        <div class="note-sheet__tools">
-                          <SpeakButton
-                            compact
-                            id={`${sheetKey}-sheet`}
-                            text={sheetNote.feedback}
-                            voice={sheetPersona?.speechVoice}
-                            voices={sheetPersona?.speechVoices}
-                            instructions={sheetPersona?.voice}
-                            label={sheetNote.personaName}
-                          />
+                        <p id="note-sheet-title" class="note-sheet__kind">
+                          <span class="sr-only">
+                            {`${sheetNote.personaName}: `}
+                          </span>
+                          {sheetPassing
+                            ? "In passing · left while you wrote"
+                            : typeLabel(sheetNote.type)}
+                          <span class="note-sheet__when">
+                            {timeAgo(sheetNote.timestamp)}
+                          </span>
+                        </p>
+                        <div class="note-sheet__tools persona-note__tools">
                           <button
                             type="button"
-                            class="icon-btn note-sheet__close"
+                            class="persona-note__tool persona-note__tool--talk focus-ring"
+                            aria-label={`Talk with ${sheetNote.personaName} about this note`}
+                            title={`Talk with ${sheetNote.personaName}`}
+                            onClick$={() => {
+                              noteSheet.value?.close();
+                              openLiveVoice(
+                                sheetNote.personaName,
+                                sheetNote.feedback,
+                              );
+                            }}
+                          >
+                            <MicIcon />
+                          </button>
+                          <span class="persona-note__tool">
+                            <SpeakButton
+                              inheritColor
+                              id={`${sheetKey}-sheet`}
+                              text={sheetNote.feedback}
+                              voice={sheetPersona?.speechVoice}
+                              voices={sheetPersona?.speechVoices}
+                              instructions={sheetPersona?.voice}
+                              label={sheetNote.personaName}
+                            />
+                          </span>
+                          <button
+                            type="button"
+                            class="persona-note__tool note-sheet__close focus-ring"
                             autoFocus
                             aria-label="Close the note"
                             title="Close (Esc)"
                             onClick$={() => noteSheet.value?.close()}
                           >
-                            ✕
+                            <CloseIcon />
                           </button>
                         </div>
                       </header>

@@ -105,6 +105,53 @@ export const CardBust = component$<{
   );
 });
 
+/**
+ * A speaker's face where there is no room for them to stand, such as a
+ * board card. The same hover layer as the bust names them.
+ */
+export const SpeakerFace = component$<{
+  name: string;
+  personaId?: string;
+  imageUrl?: string;
+  color?: string;
+  size?: number;
+  speaking?: "tts" | "live";
+}>((props) => {
+  const identity = resolvePersonaPortrait({
+    personaId: props.personaId,
+    name: props.name,
+  });
+  const cast = PERSONAS.find((p) =>
+    props.personaId ? p.id === props.personaId : p.name === props.name,
+  );
+  return (
+    <span
+      class="speaker-face"
+      tabIndex={0}
+      role="img"
+      aria-label={cast ? `${identity.name}, ${cast.role}` : identity.name}
+    >
+      <PersonaPortrait
+        personaId={props.personaId}
+        name={props.name}
+        imageUrl={props.imageUrl}
+        color={props.color}
+        size={props.size ?? 36}
+        speaking={props.speaking}
+      />
+      <span class="persona-note__who persona-note__who--below" aria-hidden="true">
+        <span class="persona-note__who-name">{identity.name}</span>
+        {cast?.role && (
+          <span class="persona-note__who-role">{cast.role}</span>
+        )}
+        {cast?.focus && (
+          <span class="persona-note__who-detail">{cast.focus}</span>
+        )}
+      </span>
+    </span>
+  );
+});
+
 /** A ⋯ button whose menu closes on Escape, on choice and on leaving it. */
 export const CardMenu = component$<{ label?: string }>((props) => {
   const open = useSignal(false);
@@ -411,3 +458,27 @@ export function ExpandIcon() {
     </svg>
   );
 }
+
+const glyph = (paths: string, width = 1.8) =>
+  function Glyph() {
+    return (
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width={width}
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        dangerouslySetInnerHTML={paths}
+      />
+    );
+  };
+export const ReplyIcon = glyph('<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>');
+export const LaterIcon = glyph('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>');
+export const FixIcon = glyph('<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>');
+export const UpIcon = glyph('<path d="M7 10v10H4V10h3Z"/><path d="M7 10l4-7a2 2 0 0 1 3 1.7V9h5a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7"/>');
+export const DownIcon = glyph('<path d="M17 14V4h3v10h-3Z"/><path d="M17 14l-4 7a2 2 0 0 1-3-1.7V15H5a2 2 0 0 1-2-2.3l1.2-7A2 2 0 0 1 6.2 4H17"/>');
+export const FileIcon = glyph('<path d="M6 3h12v18l-6-4-6 4V3Z"/>');
