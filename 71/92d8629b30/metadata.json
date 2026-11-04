@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "7192d8629b30",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/components/editor/card-parts.tsx",
+    "src/components/personas/personas-panel.tsx",
+    "src/global.css"
+  ],
+  "sessions": [
+    {
+      "metadata": "/71/92d8629b30/0/metadata.json",
+      "transcript": "/71/92d8629b30/0/full.jsonl",
+      "compact_transcript": "/71/92d8629b30/0/transcript.jsonl",
+      "content_hash": "/71/92d8629b30/0/content_hash.txt",
+      "prompt": "/71/92d8629b30/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 53967,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 322816,
+    "output_tokens": 1749,
+    "api_call_count": 8,
+    "subagent_tokens_complete": true
+  }
+}
