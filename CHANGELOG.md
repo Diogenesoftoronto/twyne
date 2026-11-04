@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.26.1
+
+<sub>2026-11-04</sub>
+
+- Give proposed edits and your own margin notes the same card as a persona's
+  note: a proposed edit reads as one passage with the cut words struck and the
+  new ones inked in, accepted with a tick or struck to keep your wording.
+- Open any margin card in full: a persona's note opens on the Cast board, your
+  own note in Comments, scrolled to and lit up.
+- Hover an editor's face to see who they are and what they read for, and feel
+  each control answer on hover: talk fills, strike reddens, send lifts.
+- Bring the Cast board's note cards and the full note view into the same
+  family: a face for a header, icon controls, replies as coloured rules.
+- Let the launch film stand alone in the room intro, over a paper grain.
+- Draw the hero headline's strike across both lines when the struck words wrap
+  on a phone.
+- Fix the release build.
+
 ## 0.26.0
 
 <sub>2026-11-04</sub>
