@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.26.0
+
+<sub>2026-11-04</sub>
+
+- See who left a note at a glance: each anchor in the manuscript shows the
+  persona's face, or your own profile photo, in their colour.
+- Read a persona's note on a compact card with the editor standing on it:
+  talk and listen as icons, Strike in a menu, full-width replies that arrive
+  with motion, and one-line warnings that retry or point to voice settings.
+- Talk to the editors offline with local Live over WebGPU, offered once your
+  device's benchmark shows it can keep up.
+- Keep the Organization & Flow disclosures open while you hover their passages.
+- Give account settings their own page, with export everything and
+  achievements.
+- Forecast today's pace, the draft's finish and hosted credit runway, and
+  estimate writing rhythm with calibrated intervals.
+- Let persona research check sources against the manuscript, show linked
+  passages, near-miss quotations and supporting facts, and never present a
+  paraphrase as an exact quote.
+- Keep several open tabs light while one is typed in, and fix cross-device
+  writing and account preference sync.
+- Render Markdown in compact and gathered notes, and carry a passage
+  connection's reason into the gathered sheet.
+- Write idiomatic Typst source with Universe packages.
+
 ## 0.25.0
 
 <sub>2026-10-20</sub>
