@@ -68,6 +68,30 @@ export const BROWSER_TTS_BUNDLE_BYTES = BROWSER_TTS_MANIFEST_FILES.reduce(
 
 export type BrowserTtsDevice = "webgpu" | "wasm" | null;
 
+export interface LocalLiveAdapter {
+  features: { has(name: string): boolean };
+  info?: {
+    vendor: string;
+    architecture: string;
+    device: string;
+    description: string;
+  };
+}
+
+export async function localLiveAdapter(): Promise<LocalLiveAdapter | null> {
+  if (typeof navigator === "undefined") return null;
+  const gpu = (
+    navigator as Navigator & {
+      gpu?: { requestAdapter(): Promise<LocalLiveAdapter | null> };
+    }
+  ).gpu;
+  try {
+    return (await gpu?.requestAdapter()) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export type ClientUsageSource = "byok" | "local";
 
 const LOCAL_INFERENCE_PROVIDER_TYPES = new Set<AiProviderConfig["type"]>([
