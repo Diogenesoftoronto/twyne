@@ -235,6 +235,26 @@ test("preview, revise, undo and keep an intentional choice without a model", asy
   expect(errors).toEqual([]);
 });
 
+test("a context disclosure stays open while its rows are hovered", async ({
+  page,
+}) => {
+  await seed(page);
+  await page.goto("/editor/");
+  await editorReady(page);
+  const presence = page.locator('[data-ld-card^="presence:"]').first();
+  await presence.locator(".ld-card__head").click();
+  const disclosure = presence.locator(".ld-context-disclosure").first();
+  await disclosure.locator("summary").click();
+  await expect(disclosure).toHaveAttribute("open", "");
+  const rows = disclosure.locator(".ld-occrow");
+  await rows.first().hover();
+  await rows.last().hover();
+  await presence.locator(".ld-card__head").hover();
+  await rows.first().hover();
+  await expect(disclosure).toHaveAttribute("open", "");
+  await expect(rows.first()).toBeVisible();
+});
+
 for (const theme of ["editorial", "broadsheet", "foolscap", "nightpress"]) {
   test(`desk stays beside the manuscript in ${theme}`, async ({
     page,

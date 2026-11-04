@@ -799,6 +799,7 @@ export const LivingDeskPanel = component$<{
               !ui.stale.includes(o.id),
           );
           const canFix = ui.ready && !props.readOnly;
+          const flagged = finding.occurrences.filter((o) => o.flagged);
           const context = finding.occurrences.filter((o) => !o.flagged);
           const singular = context.filter(
             (o) =>
@@ -899,9 +900,11 @@ export const LivingDeskPanel = component$<{
                       {finding.lens === "presence" && (
                         <PresenceGrid snap={snap} />
                       )}
-                      {finding.occurrences
-                        .filter((o) => o.flagged)
-                        .map((occ) => (
+                      {/* Never an empty list: Qwik re-creates whatever follows
+                          one on each render, and a row preview re-renders the
+                          card, so an open disclosure below would snap shut. */}
+                      {flagged.length > 0 &&
+                        flagged.map((occ) => (
                           <OccurrenceRow
                             key={occ.id}
                             finding={finding}
