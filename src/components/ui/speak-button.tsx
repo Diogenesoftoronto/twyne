@@ -30,6 +30,8 @@ interface SpeakButtonProps {
   author?: string;
   /** Slightly smaller styling for dense lists. */
   compact?: boolean;
+  /** Take the idle colour from the parent, so a host's hover can tint it. */
+  inheritColor?: boolean;
 }
 
 /**
@@ -109,7 +111,9 @@ export const SpeakButton = component$<SpeakButtonProps>((props) => {
             ? "var(--color-accent-red)"
             : status.value === "playing" || status.value === "paused"
               ? "var(--color-vermilion)"
-              : "var(--color-ink-muted)",
+              : props.inheritColor
+                ? "inherit"
+                : "var(--color-ink-muted)",
         borderRadius: "2px",
       }}
       title={title}

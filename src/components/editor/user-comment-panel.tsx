@@ -96,6 +96,8 @@ export const UserCommentPanel = component$<UserCommentPanelProps>((props) => {
               name={writer}
               imageUrl={avatar}
               color="var(--color-writer-note)"
+              role="Your margin note"
+              detail={comment.resolved ? "Resolved" : "Open"}
             />
             <span class="user-comment-card__when">
               {timeAgo(comment.createdAt)}
@@ -103,6 +105,7 @@ export const UserCommentPanel = component$<UserCommentPanelProps>((props) => {
             <div class="persona-note__tools">
               <span class="persona-note__tool">
                 <SpeakButton
+                  inheritColor
                   id={`user-comment-${comment.id}`}
                   text={comment.text}
                 />

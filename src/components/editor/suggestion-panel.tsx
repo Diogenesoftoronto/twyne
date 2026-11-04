@@ -101,6 +101,7 @@ export const SuggestionPanel = component$<SuggestionPanelProps>((props) => {
                 </button>
                 <span class="persona-note__tool">
                   <SpeakButton
+                  inheritColor
                     id={`suggestion-${suggestion.id}`}
                     text={suggestion.replacement}
                     author={suggestion.author}
