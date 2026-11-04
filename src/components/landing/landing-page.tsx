@@ -448,8 +448,7 @@ export const LandingPage = component$<LandingPageProps>(
                       </div>
                     </figure>
                     <div data-reveal style="--reveal-delay: 120ms;">
-                      <p class="landing-plate__label">Plate {step.numeral}</p>
-                      <div class="mt-3 flex items-baseline gap-3">
+                      <div class="flex items-baseline gap-3">
                         <span class="landing-step-num">{step.numeral}</span>
                         <h3
                           class="text-xl text-[var(--color-ink)] sm:text-2xl"
