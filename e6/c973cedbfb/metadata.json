@@ -3,7 +3,7 @@
   "checkpoint_id": "e6c973cedbfb",
   "strategy": "manual-commit",
   "branch": "feat/clairic-extraction",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
     "src/components/ui/speak-button.tsx"
   ],
@@ -14,6 +14,20 @@
       "compact_transcript": "/e6/c973cedbfb/0/transcript.jsonl",
       "content_hash": "/e6/c973cedbfb/0/content_hash.txt",
       "prompt": "/e6/c973cedbfb/0/prompt.txt"
+    },
+    {
+      "metadata": "/e6/c973cedbfb/1/metadata.json",
+      "transcript": "/e6/c973cedbfb/1/full.jsonl",
+      "compact_transcript": "/e6/c973cedbfb/1/transcript.jsonl",
+      "content_hash": "/e6/c973cedbfb/1/content_hash.txt",
+      "prompt": "/e6/c973cedbfb/1/prompt.txt"
     }
-  ]
+  ],
+  "token_usage": {
+    "input_tokens": 38,
+    "cache_creation_tokens": 2269741,
+    "cache_read_tokens": 3531342,
+    "output_tokens": 17657,
+    "api_call_count": 17
+  }
 }
