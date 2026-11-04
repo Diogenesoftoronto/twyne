@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "6780a48c9004",
+  "session_id": "f05ccee4-84f4-46de-846a-0bccd9ff3fa2",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-04T10:36:03.442110748Z",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "be995cf90d1d",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 4,
+    "cache_creation_tokens": 1907,
+    "cache_read_tokens": 168239,
+    "output_tokens": 700,
+    "api_call_count": 2
+  },
+  "session_metrics": {
+    "turn_count": 13
+  }
+}
