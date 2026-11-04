@@ -3752,17 +3752,6 @@ body {
   opacity: 0.26;
 }
 
-.landing-plate__label {
-  display: inline-block;
-  font-family: var(--font-typewriter);
-  font-size: 0.68rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--color-vermilion);
-  transform: rotate(-1.1deg);
-  transform-origin: left center;
-}
-
 /* ── Scroll reveal ── */
 [data-reveal-ready] [data-reveal] {
   opacity: 0;
