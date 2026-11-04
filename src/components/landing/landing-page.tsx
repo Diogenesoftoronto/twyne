@@ -402,13 +402,7 @@ export const LandingPage = component$<LandingPageProps>(
                 loading="lazy"
                 decoding="async"
               />
-              <LaunchFilm />
-              <a
-                class="landing-room-intro__desk-link"
-                href="#workspace-preview"
-              >
-                Explore the writing desk ↓
-              </a>
+              <LaunchFilm minimal />
             </div>
             <div id="workspace-preview" class="scroll-mt-8">
               <WorkspaceTour />

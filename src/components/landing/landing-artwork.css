@@ -56,70 +56,30 @@
   background: radial-gradient(ellipse at center, #0c0a08cc, #0c0a0833);
 }
 
+.landing-page .landing-room-intro::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.22;
+  background-image: url("/assets/landing/room-grain.png");
+  background-size: 192px 192px;
+  mix-blend-mode: soft-light;
+}
+
 .landing-page .landing-room-intro .launch-film {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-  column-gap: clamp(24px, 4vw, 64px);
-  align-items: center;
-  width: 100%;
+  width: min(100%, 960px);
 }
 
-.landing-page .landing-room-intro .launch-film__caption {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1.5rem;
-  margin: 0;
-}
-
-.landing-page .landing-room-intro .launch-film__title {
-  color: #f7f0dd;
-  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-  line-height: 1.2;
-}
-
-.landing-page .landing-room-intro .launch-film__description {
-  color: #f7f0dd;
-  margin-top: 1.25rem;
-  font-size: 1.0625rem;
-  line-height: 1.65;
-}
-
-.landing-page .landing-room-intro .launch-film__duration,
 .landing-page .landing-room-intro .launch-film__footnote {
   color: #e3d6bd;
-}
-
-.landing-page .landing-room-intro .launch-film__footnote {
-  grid-column: 2;
-}
-
-.landing-page .landing-room-intro__desk-link {
-  justify-self: end;
-  padding-block: 0.5rem;
-  color: #f7f0dd;
-  text-decoration: underline;
-  text-underline-offset: 0.3em;
 }
 
 .landing-page .landing-room-intro a:focus-visible,
 .landing-page .landing-room-intro .launch-film__player:focus-visible {
   outline: 2px solid #f7f0dd;
   outline-offset: 5px;
-}
-
-@media (max-width: 800px) {
-  .landing-page .landing-room-intro .launch-film {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .landing-page .landing-room-intro .launch-film__caption {
-    margin-bottom: 1.5rem;
-  }
-
-  .landing-page .landing-room-intro .launch-film__footnote {
-    grid-column: 1;
-  }
 }
 
 .landing-page .landing-closing-artwork::after {
