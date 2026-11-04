@@ -38,7 +38,7 @@ export const TOUR_STOPS: TourStop[] = [
   {
     id: "dossier",
     tag: "The Dossier",
-    note: "The brief every tool in the room reads — audience, purpose, and what good looks like — pinned beside the manuscript so no draft starts cold.",
+    note: "The brief every tool in the room reads, including audience, purpose, and what good looks like, is pinned beside the manuscript so no draft starts cold.",
     accent: "var(--color-cobalt)",
     tab: "personas",
     folioId: "folio-1",
@@ -50,7 +50,7 @@ export const TOUR_STOPS: TourStop[] = [
   {
     id: "folios",
     tag: "The Folios",
-    note: "Draft, notes, outlines: every piece keeps its own folios in the drawer. Open one and watch the manuscript follow — this stop opens the research notes.",
+    note: "Draft, notes, outlines: every piece keeps its own folios in the drawer. Open one and watch the manuscript follow. This stop opens the research notes.",
     accent: "var(--color-vermilion)",
     tab: "personas",
     folioId: "folio-2",
@@ -86,7 +86,7 @@ export const TOUR_STOPS: TourStop[] = [
   {
     id: "rubric",
     tag: "The Rubric",
-    note: "Thesis, structure, style, evidence — each scored out of ten, and capped whenever a draft drifts off its subject.",
+    note: "Thesis, structure, style, and evidence are each scored out of ten, and capped whenever a draft drifts off its subject.",
     accent: "var(--color-cobalt)",
     tab: "rubric",
     folioId: "folio-1",
@@ -134,7 +134,7 @@ export const TOUR_STOPS: TourStop[] = [
   {
     id: "versions",
     tag: "The Versions",
-    note: "Every revision kept with its word count and its reason — the draft's memory, filed like everything else.",
+    note: "Every revision is kept with its word count and reason, the draft's memory filed like everything else.",
     accent: "var(--color-sage)",
     tab: "history",
     folioId: "folio-1",
