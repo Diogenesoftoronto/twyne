@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "e6c973cedbfb",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/components/ui/speak-button.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e6/c973cedbfb/0/metadata.json",
+      "transcript": "/e6/c973cedbfb/0/full.jsonl",
+      "compact_transcript": "/e6/c973cedbfb/0/transcript.jsonl",
+      "content_hash": "/e6/c973cedbfb/0/content_hash.txt",
+      "prompt": "/e6/c973cedbfb/0/prompt.txt"
+    }
+  ]
+}
