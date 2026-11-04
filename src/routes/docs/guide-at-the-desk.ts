@@ -23,7 +23,7 @@ export const AT_THE_DESK_GUIDES = {
       {
         title: "Read a note where it was written",
         instruction:
-          "A coloured dot and a soft underline mean an editor has something to say about those exact words. Select either to open the note: it quotes the passage and gives the editor's reasoning. Type a Reply if you want to argue, or Strike once you've dealt with it. The manuscript never moves while you read.",
+          "A coloured dot and a soft underline mean an editor has something to say about those exact words. Select either to open the note beside the passage, with the editor standing on it. Press the microphone to argue it out loud, the speaker to hear it read, or write back in the box underneath. Strike it from the ⋯ menu once you've dealt with it. The manuscript never moves while you read.",
         image: "/assets/manual/desk/desk-note.webp",
         alt: "Marguerite’s staged Pacing note beside the marked passage, with her editorial role, the quoted passage, a reply field, Strike and Reply controls.",
         width: 1100,

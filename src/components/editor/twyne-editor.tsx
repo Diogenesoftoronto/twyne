@@ -1,4 +1,8 @@
 import {
+  accountDisplayName,
+  accountAvatarUrl,
+} from "../../utils/account-display";
+import {
   component$,
   useStore,
   useSignal,
@@ -908,6 +912,17 @@ export const TwyneEditor = component$(
     );
 
     // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ track }) => {
+      track(() => auth.value.user?.image);
+      track(() => auth.value.user?.name);
+      const editor = track(() => store.editor);
+      if (editor)
+        editor.view.dispatch(
+          editor.state.tr.setMeta("twyneAnchorIdentity", true),
+        );
+    });
+
+    // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(({ cleanup }) => {
       import("@tiptap/core").then(async ({ Editor }) => {
         const el = document.getElementById("twyne-editor-mount");
@@ -915,6 +930,8 @@ export const TwyneEditor = component$(
           console.warn("[twyne:editor] #twyne-editor-mount not found in DOM");
           return;
         }
+        const { loadPersonasFromIdb } = await import("../../utils/idb");
+        const anchorCast = (await loadPersonasFromIdb()) ?? [];
         const offlineImageAdapter = createImageUploadAdapter({
           mode: "offline",
         });
@@ -1285,7 +1302,22 @@ export const TwyneEditor = component$(
             MermaidDiagram,
             InlineNoteNode,
             RemoteCursors.configure({ cursors: [] }),
-            MarkAnchorWidgets,
+            MarkAnchorWidgets.configure({
+              writer: () => ({
+                personaId: "writer",
+                name: auth.value.user
+                  ? accountDisplayName(auth.value.user)
+                  : "You",
+                imageUrl: accountAvatarUrl(auth.value.user?.image),
+              }),
+              personas: () =>
+                anchorCast.map((persona) => ({
+                  personaId: persona.id,
+                  name: persona.name,
+                  color: persona.color,
+                  imageUrl: persona.imageUrl,
+                })),
+            }),
             QuickReview,
             InFlowAnchor,
             LivingDeskDecorations,
@@ -4458,6 +4490,12 @@ export const TwyneEditor = component$(
             dismissNote(noteId);
             if (store.notePopover?.id === noteId) {
               store.notePopover = null;
+            }
+          }}
+          onDismissError$={(noteId) => {
+            const note = store.notePopover;
+            if (note?.id === noteId) {
+              store.notePopover = { ...note, error: null };
             }
           }}
         />

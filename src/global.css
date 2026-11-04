@@ -2966,40 +2966,81 @@ body {
 }
 
 /* ── Mark anchor chip ──
-   A small dot rendered at the end of every contiguous run of three
+   An identity medallion rendered at the end of every contiguous run of three
    "comment-like" marks by the `MarkAnchorWidgets` ProseMirror plugin.
    Click it to open the matching popover without disturbing the caret
    in the marked text. The chip is the only hit target for these marks
    — hovering the marked text triggers the hover preview, not a chip
    click. */
 .twyne-mark-anchor {
-  display: inline-block;
+  display: inline-flex;
+  position: relative;
   vertical-align: middle;
-  width: 0.5em;
-  height: 0.5em;
-  margin: 0 0.15em 0 0.25em;
-  padding: 0;
-  border: none;
-  background: var(--note-color, var(--color-vermilion));
-  color: inherit;
-  border-radius: 999px;
+  width: 24px;
+  height: 24px;
+  margin: -3px 3px -3px 5px;
+  padding: 2px;
+  border: 1.5px solid var(--anchor-color, var(--color-vermilion));
+  background: var(--color-paper);
+  color: var(--color-ink);
+  border-radius: 50%;
   cursor: pointer;
-  transform: scale(1);
-  transition:
-    transform 0.15s ease,
-    opacity 0.15s ease;
-  opacity: 0.55;
+  transition: transform 150ms ease-out;
 }
-.twyne-mark-anchor:hover,
-.twyne-mark-anchor:focus-visible {
-  transform: scale(1.6);
-  opacity: 1;
-  outline: none;
+.twyne-mark-anchor__face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--anchor-color) 22%, var(--color-paper));
+  font: 600 9px/1 var(--font-sans);
+  pointer-events: none;
+}
+.twyne-mark-anchor__face::before {
+  content: attr(data-initials);
+}
+.twyne-mark-anchor__face:has(img)::before {
+  visibility: hidden;
+}
+.twyne-mark-anchor__face img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  object-fit: cover;
+}
+/* Inside the manuscript the anchor is a widget, not a figure: keep the
+   editor's image frame and width cap off its face, so an engraving's inline
+   crop (wider than the ring) shows the face rather than a squeezed strip. */
+.twyne-editor .ProseMirror .twyne-mark-anchor__face img {
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  outline: 0;
+}
+.twyne-mark-anchor__face img[style*="left"] {
+  right: auto;
+  bottom: auto;
+  object-fit: fill;
+}
+.twyne-mark-anchor:hover {
+  transform: translateY(-1px);
 }
 .twyne-mark-anchor:focus-visible {
-  box-shadow:
-    0 0 0 2px var(--color-paper),
-    0 0 0 4px var(--note-color, var(--color-vermilion));
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .twyne-mark-anchor {
+    transition: none;
+  }
 }
 /* Hide the chip in zen mode — the marks themselves stay in place
    (the .zen-mode rule earlier already quiets them) but the chip is a
@@ -8919,6 +8960,462 @@ a {
   padding: 0;
   background: var(--color-paper);
   border-color: var(--comment-color);
+}
+
+/* Persona note: two stacked boxes, the editor's engraving standing on the
+   first. Face and --comment-color name the editor, so no text does. */
+.persona-note-card.manuscript-comment-card,
+.persona-note-card.manuscript-comment-card.is-in-margin {
+  --persona-note-rise: 1.75rem;
+  gap: 0.375rem;
+  overflow: visible;
+  padding-top: var(--persona-note-rise);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.persona-note__note,
+.persona-note__compose {
+  border: 1.5px solid var(--comment-color);
+  border-radius: 6px;
+  background: var(--color-paper);
+  box-shadow: 0 14px 28px -18px rgb(32 25 16 / 0.45);
+}
+.persona-note__note {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 0 1 auto;
+  flex-direction: column;
+}
+.persona-note__head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 2.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.25rem 0.25rem 0 5rem;
+}
+.persona-note__bust {
+  --pp-figure-width: 8.5rem;
+  position: absolute;
+  bottom: 0;
+  left: 0.4rem;
+  width: 4.5rem;
+  height: calc(2.5rem + var(--persona-note-rise) + 1.5px);
+  overflow: hidden;
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 68%, transparent 100%),
+    linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, #000 68%, transparent 100%),
+    linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
+  mask-composite: intersect;
+}
+.persona-note__bust .persona-portrait[data-framing="figure"] {
+  position: absolute;
+  top: calc(56% - var(--pp-figure-width) * 1.25 * var(--fy, 0.3));
+  left: calc(50% - var(--pp-figure-width) * var(--fx, 0.5));
+}
+.persona-note__bust .persona-portrait[data-framing="face"] {
+  position: absolute;
+  bottom: 0.25rem;
+  left: 0.5rem;
+}
+.persona-note__tools {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+.persona-note__tool {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  color: var(--color-ink-muted);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.persona-note__tool > button {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+.persona-note__tool:hover,
+.persona-note__tool[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--comment-color) 14%, transparent);
+  color: var(--color-ink);
+}
+.persona-note__tool--talk {
+  color: var(--comment-color);
+}
+.persona-note__menu {
+  position: relative;
+  display: inline-flex;
+}
+.persona-note__menu-list {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  min-width: max-content;
+  padding: 0.25rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 6px;
+  background: var(--color-paper);
+  box-shadow: 0 12px 24px -14px rgb(32 25 16 / 0.5);
+  animation: persona-note-menu 0.14s ease-out;
+}
+.persona-note__menu-list > button {
+  display: block;
+  width: 100%;
+  padding: 0.4rem 0.65rem;
+  border-radius: 4px;
+  color: var(--color-ink);
+  font-size: 0.8125rem;
+  text-align: left;
+}
+.persona-note__menu-list > button:hover {
+  background: color-mix(in srgb, var(--color-vermilion) 10%, transparent);
+  color: var(--color-vermilion);
+}
+@keyframes persona-note-menu {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+.persona-note__scroll {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.35rem 1rem 0.9rem;
+}
+.persona-note__scroll > * + * {
+  margin-top: 0.75rem;
+}
+.persona-note__text {
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Replies run the card's full width; a rule, not a bubble, says whose. */
+.persona-note__reply {
+  position: relative;
+  padding-left: 0.75rem;
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+.persona-note__reply::before {
+  position: absolute;
+  top: 0.2em;
+  bottom: 0.2em;
+  left: 0;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--comment-color);
+  content: "";
+  transform-origin: top;
+}
+.persona-note__reply--writer {
+  margin-left: 1.5rem;
+  color: var(--color-ink-light);
+}
+.persona-note__reply--writer::before {
+  background: var(--color-paper-3);
+}
+.persona-note__guest {
+  float: left;
+  margin: 0.15rem 0.4rem 0 0;
+}
+.persona-note__reply.is-streaming {
+  animation: persona-reply-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.persona-note__reply.is-streaming::before {
+  animation: persona-reply-rule 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.persona-note__reply.is-streaming .comment-markdown > :last-child::after {
+  display: inline-block;
+  width: 0.4em;
+  height: 1em;
+  margin-left: 0.15em;
+  border-radius: 1px;
+  background: var(--comment-color);
+  content: "";
+  vertical-align: -0.15em;
+  animation: persona-reply-caret 0.9s steps(2, jump-none) infinite;
+}
+.persona-note__reply.is-fresh::before {
+  animation: persona-reply-settle 0.9s ease-out;
+}
+@keyframes persona-reply-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes persona-reply-rule {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes persona-reply-caret {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes persona-reply-settle {
+  from {
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--comment-color) 35%, transparent);
+  }
+}
+.persona-note__thinking {
+  display: flex;
+  height: 1.25rem;
+  align-items: center;
+  gap: 0.3rem;
+  padding-left: 0.75rem;
+}
+.persona-note__thinking > span[aria-hidden] {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background: var(--comment-color);
+  animation: persona-reply-dot 1.1s ease-in-out infinite;
+}
+.persona-note__thinking > span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.persona-note__thinking > span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes persona-reply-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: none;
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+/* While the editor considers a reply, the bust leans in to think. */
+.persona-note__note:has(.persona-note__thinking)
+  .persona-note__bust
+  .persona-portrait {
+  animation: persona-bust-ponder 2.6s ease-in-out infinite;
+  transform-origin: 50% 70%;
+}
+@keyframes persona-bust-ponder {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  50% {
+    rotate: -3deg;
+    translate: 0 1px;
+  }
+}
+/* Notices: a tinted glyph, a line or two, one action. The tone colours the
+   glyph and a hairline only; the card's own colour stays the persona's. */
+.persona-note__notice {
+  --notice-tone: var(--color-vermilion);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding: 0.4rem 0.3rem 0.4rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--notice-tone) 30%, transparent);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--notice-tone) 6%, var(--color-paper));
+  color: var(--color-ink-light);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  animation: persona-notice-enter 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.persona-note__notice[data-tone="warning"] {
+  --notice-tone: var(--color-mustard);
+}
+.persona-note__notice-icon {
+  display: inline-flex;
+  height: 1.35em;
+  flex-shrink: 0;
+  align-items: center;
+  color: var(--notice-tone);
+}
+.persona-note__notice-text {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  padding-top: 0.05rem;
+}
+.persona-note__notice-action {
+  border-radius: 3px;
+  color: color-mix(in srgb, var(--notice-tone) 80%, var(--color-ink));
+  font-weight: 600;
+  white-space: nowrap;
+}
+.persona-note__notice-action:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+.persona-note__notice-retry {
+  display: inline-flex;
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  color: color-mix(in srgb, var(--notice-tone) 80%, var(--color-ink));
+  transition: transform 0.3s ease;
+}
+.persona-note__notice-retry:hover {
+  background: color-mix(in srgb, var(--notice-tone) 14%, transparent);
+  transform: rotate(-90deg);
+}
+.persona-note__notice-dismiss {
+  display: inline-flex;
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  color: var(--color-ink-muted);
+}
+.persona-note__notice-dismiss svg {
+  width: 10px;
+  height: 10px;
+}
+.persona-note__notice-dismiss:hover {
+  background: color-mix(in srgb, var(--notice-tone) 12%, transparent);
+  color: var(--color-ink);
+}
+@keyframes persona-notice-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+/* A quotation the draft does not hold keeps its words and gains a small
+   mark; the reason is on hover, where the dotted rule already invites it. */
+.persona-note-card .quote-unresolved {
+  text-decoration-color: color-mix(in srgb, var(--color-mustard) 70%, transparent);
+}
+.persona-note-card .quote-unresolved::after {
+  display: inline-grid;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin-left: 0.2em;
+  place-items: center;
+  border-radius: 9999px;
+  background: var(--color-mustard);
+  color: var(--color-paper);
+  content: "?";
+  font: 700 0.6rem/1 var(--font-sans);
+  vertical-align: 0.15em;
+}
+
+/* Evidence under the note: one quiet line of chips, not a second article. */
+.persona-note-card .note-evidence__label {
+  font-size: 0.625rem;
+}
+.persona-note-card .note-evidence__near {
+  padding: 0 0.4rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-mustard) 16%, transparent);
+  color: color-mix(in srgb, var(--color-mustard) 60%, var(--color-ink));
+  font-variant: normal;
+  letter-spacing: 0;
+}
+.persona-note-card .note-evidence__near::before {
+  content: "≈ ";
+}
+
+/* The second box is the reply itself: focus shows on its border alone. */
+.persona-note__compose {
+  display: flex;
+  flex-shrink: 0;
+  align-items: flex-end;
+  gap: 0.25rem;
+  padding: 0.25rem 0.25rem 0.25rem 1rem;
+  border-color: var(--color-paper-3);
+  transition: border-color 0.15s ease;
+}
+.persona-note__compose:focus-within {
+  border-color: var(--comment-color);
+}
+.persona-note__input {
+  min-width: 0;
+  max-height: 9rem;
+  flex: 1;
+  field-sizing: content;
+  resize: none;
+  padding: 0.4rem 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.persona-note__input::placeholder {
+  color: var(--color-ink-muted);
+}
+.persona-note__send {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--comment-color);
+  color: var(--color-paper);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.persona-note__send:disabled {
+  background: transparent;
+  color: var(--color-ink-muted);
+  cursor: default;
+}
+@media (prefers-reduced-motion: reduce) {
+  .persona-note__menu-list,
+  .persona-note__notice,
+  .persona-note__reply.is-streaming,
+  .persona-note__reply.is-streaming::before,
+  .persona-note__reply.is-fresh::before,
+  .persona-note__thinking > span,
+  .persona-note__note:has(.persona-note__thinking)
+    .persona-note__bust
+    .persona-portrait {
+    animation: none;
+  }
+  .persona-note__reply.is-streaming .comment-markdown > :last-child::after {
+    animation: none;
+  }
+  .persona-note__notice-retry,
+  .persona-note__notice-retry:hover {
+    transition: none;
+    transform: none;
+  }
 }
 
 /* A conversation opened in the margin takes its card's place: the card
