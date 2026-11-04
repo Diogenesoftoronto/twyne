@@ -3536,27 +3536,27 @@ body {
 }
 
 /* The struck words stay legible under the rule — a correction shows its
-   working, it doesn't hide it — but drop back so the replacement leads. */
+   working, it doesn't hide it — but drop back so the replacement leads.
+
+   The rule is the span's own background, not a positioned pseudo-element:
+   on a phone the struck words wrap, and an absolute child of a broken
+   inline collapses to a dot. A background is laid across the fragments as
+   one strip, so the rule draws along the first line and carries on into
+   the next. */
 .landing-title .landing-rotator__struck {
-  position: relative;
   color: var(--mark-dim, var(--color-ink-muted));
-}
-.landing-title .landing-rotator__struck::after {
-  content: "";
-  position: absolute;
-  left: -0.03em;
-  right: -0.03em;
-  top: 0.52em;
-  height: 0.07em;
-  border-radius: 0.04em;
-  background: var(--mark, var(--color-vermilion));
-  transform: scaleX(0);
-  transform-origin: left;
+  background-image: linear-gradient(
+    var(--mark, var(--color-vermilion)),
+    var(--mark, var(--color-vermilion))
+  );
+  background-repeat: no-repeat;
+  background-position: 0 0.52em;
+  background-size: 0% 0.07em;
   animation: landing-strike 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 @keyframes landing-strike {
   to {
-    transform: scaleX(1);
+    background-size: 100% 0.07em;
   }
 }
 
@@ -3633,9 +3633,9 @@ body {
   .landing-rotator-deck {
     animation: none;
   }
-  .landing-title .landing-rotator__struck::after {
+  .landing-title .landing-rotator__struck {
     animation: none;
-    transform: scaleX(1);
+    background-size: 100% 0.07em;
   }
   /* A caret that cannot blink is just a stray mark. */
   .landing-title .landing-rotator__caret {
