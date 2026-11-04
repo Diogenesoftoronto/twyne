@@ -120,6 +120,7 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
             </button>
             <span class="persona-note__tool">
               <SpeakButton
+                  inheritColor
                 id={speechId}
                 text={note.note}
                 author={note.author}

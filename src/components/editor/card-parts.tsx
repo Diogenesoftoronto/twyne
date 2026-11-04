@@ -9,6 +9,7 @@ import {
 import { PersonaPortrait } from "../personas/persona-portrait";
 import { resolvePersonaPortrait } from "../../utils/persona-portrait";
 import { speechState } from "../../utils/speech";
+import { PERSONAS } from "../../utils/personas";
 
 /** Open a margin card's full thread on the board, where it has room. */
 export const OPEN_FULL_THREAD_EVENT = "twyne:open-full-thread";
@@ -49,6 +50,10 @@ export function takeFullThread(
 /**
  * The speaker standing on the card's first box. A cast engraving stands as a
  * figure; anyone without one (a custom persona, the writer) gets a face.
+ *
+ * The card itself never names its speaker. Hovering or focusing the bust
+ * lifts a second layer: who they are, what they read for, and the line of
+ * method that explains the note.
  */
 export const CardBust = component$<{
   name: string;
@@ -56,25 +61,46 @@ export const CardBust = component$<{
   imageUrl?: string;
   color?: string;
   speaking?: "tts" | "live";
+  /** Replaces the cast role, e.g. for the writer's own notes. */
+  role?: string;
+  /** Replaces the cast focus line. */
+  detail?: string;
 }>((props) => {
-  const figure = !!resolvePersonaPortrait({
+  const identity = resolvePersonaPortrait({
     personaId: props.personaId,
     name: props.name,
-  }).portraitId;
+  });
+  const figure = !!identity.portraitId;
+  const cast = PERSONAS.find((p) =>
+    props.personaId ? p.id === props.personaId : p.name === props.name,
+  );
+  const role = props.role ?? cast?.role;
+  const detail = props.detail ?? cast?.focus;
+  const id = `bust-${(props.personaId ?? props.name).replace(/\W+/g, "-")}`;
   return (
     <span
       class={["persona-note__bust", { "is-face": !figure }]}
-      title={props.name}
+      tabIndex={0}
+      role="img"
+      aria-label={role ? `${identity.name}, ${role}` : identity.name}
+      aria-describedby={detail ? id : undefined}
     >
-      <PersonaPortrait
-        personaId={props.personaId}
-        name={props.name}
-        imageUrl={props.imageUrl}
-        color={props.color}
-        framing={figure ? "figure" : "face"}
-        size={figure ? 96 : 40}
-        speaking={props.speaking}
-      />
+      <span class="persona-note__bust-frame">
+        <PersonaPortrait
+          personaId={props.personaId}
+          name={props.name}
+          imageUrl={props.imageUrl}
+          color={props.color}
+          framing={figure ? "figure" : "face"}
+          size={figure ? 96 : 40}
+          speaking={props.speaking}
+        />
+      </span>
+      <span class="persona-note__who" id={id} aria-hidden="true">
+        <span class="persona-note__who-name">{identity.name}</span>
+        {role && <span class="persona-note__who-role">{role}</span>}
+        {detail && <span class="persona-note__who-detail">{detail}</span>}
+      </span>
     </span>
   );
 });
