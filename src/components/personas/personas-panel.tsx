@@ -1,3 +1,4 @@
+import { runRoomAnalysis } from "../../utils/room-analysis";
 import { PREFERENCES_APPLIED } from "../../utils/preference-outbox";
 import {
   CardBust,
@@ -63,7 +64,6 @@ import type {
   AssistanceLevel,
   SuggestionKind,
   RoomAnalysis,
-  PersonaMemo,
 } from "../../types";
 import { DEFAULT_ROOM_SETTINGS } from "../../types";
 import { loadDraftText } from "../../utils/anti-tabula-rasa";
@@ -89,7 +89,6 @@ import {
 import {
   runClientAgent,
   runClientRewrite,
-  runClientRoomSynthesis,
   normalizeAiSettings,
   hasConfiguredAiProvider,
 } from "../../utils/ai-client";
@@ -119,6 +118,7 @@ import { ANALYSIS_READING_ID, speakQueue } from "../../utils/speech";
 import type { AppError } from "../../types/application-errors";
 import {
   createAppError,
+  isAppError,
   normalizeApplicationError,
 } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
@@ -1093,177 +1093,38 @@ export const PersonasPanel = component$(
         // have switched BYOK off since this panel was hydrated.
         const settings = normalizeAiSettings(await loadAiSettingsFromIdb());
         store.aiSettings = settings;
-        const hasByok = hasConfiguredAiProvider(settings);
-        const briefTitle = brief?.answers.workingTitle;
-
-        let memos: PersonaMemo[] = [];
-        let synthesis = "";
-        let synthesisProvider = "";
-
-        if (hasByok && settings) {
-          // Each editor writes a full memo on the BYOK path, honoring their
-          // own model/temperature; then synthesise the five.
-          const clientMemos = await Promise.all(
-            store.personas.map(async (p) => {
-              const reviewer = client
-                ? createEditorialNoteReviewer(
-                    (request) =>
-                      askJudgement(client, {
-                        ...request,
-                        state: Object.fromEntries(
-                          Object.entries(request.state).map(([key, value]) => [
-                            key,
-                            typeof value === "string"
-                              ? value
-                              : JSON.stringify(value),
-                          ]),
-                        ),
-                      }),
-                    {
-                      draft: draftText,
-                      brief: brief ?? null,
-                      persona: p,
-                      profile: store.writerProfile,
-                      operation: "analyze",
-                    },
-                  )
-                : undefined;
-              const res = await runClientAgent(
-                "persona-analysis",
-                {
-                  persona: toAgentPersona(p),
-                  brief: brief ?? null,
-                  draftText,
-                  writerProfile: store.writerProfile,
-                  instruction: "analyze",
-                },
-                settings,
-                // The analysis is the longest wait in the app. The modal only
-                // opens when all five memos are in, so the progress belongs
-                // here, in the panel the writer is already looking at.
-                (snapshot) => {
-                  store.streamingNotes = {
-                    ...store.streamingNotes,
-                    [p.id]: snapshot,
-                  };
-                },
-                reviewer
-                  ? {
-                      review: reviewer,
-                    }
-                  : undefined,
-                client,
-              );
-              if (!res || !res.text.trim() || res.provider === "local") {
-                return null;
-              }
-              return {
-                personaId: p.id,
-                personaName: p.name,
-                personaColor: p.color,
-                text: res.text,
-                anchor: res.anchor,
-                provider: `client-${res.provider}`,
-              } as PersonaMemo;
-            }),
-          );
-          if (clientMemos.some((memo) => memo === null)) {
-            store.conveneError = providerUnavailableError("full-analysis");
-            return;
-          }
-          memos = clientMemos as PersonaMemo[];
-          const synth = await runClientRoomSynthesis(
-            memos.map((m) => {
-              const persona = store.personas.find((p) => p.id === m.personaId);
-              return {
-                personaName: m.personaName,
-                role: persona?.role ?? "",
-                text: m.text,
-              };
-            }),
-            brief ?? null,
-            settings,
-            store.writerProfile,
-            (snapshot) => {
-              store.streamingSynthesis = snapshot.text;
-            },
-          );
-          if (!synth || !synth.text.trim()) {
-            store.conveneError = providerUnavailableError("full-analysis");
-            return;
-          }
-          synthesis = synth.text;
-          synthesisProvider = `client-${synth.provider}`;
-        } else if (client) {
-          const result = (await client.action(api.agents.analyzeRoom, {
-            responseLocale: currentModelLocale(),
-            personas: store.personas.map(toAgentPersona),
-            brief: brief ?? null,
-            draftText,
-            writerProfile: store.writerProfile,
-          })) as {
-            memos: Array<{
-              personaId: string;
-              text: string;
-              anchor?: string;
-              provider: string;
-            }>;
-            synthesis: string;
-            synthesisProvider: string;
-          };
-          memos = result.memos.map((m) => {
-            const persona = store.personas.find((p) => p.id === m.personaId);
-            return {
-              personaId: m.personaId,
-              personaName: persona?.name ?? m.personaId,
-              personaColor: persona?.color ?? "var(--color-ink)",
-              text: m.text,
-              anchor: m.anchor,
-              provider: m.provider,
+        const analysis = await runRoomAnalysis({
+          activeFolioId,
+          draftText,
+          brief: brief ?? null,
+          personas: store.personas,
+          writerProfile: store.writerProfile,
+          settings,
+          client: client ?? null,
+          onMemo: (personaId, snapshot) => {
+            store.streamingNotes = {
+              ...store.streamingNotes,
+              [personaId]: snapshot,
             };
-          });
-          synthesis = result.synthesis;
-          synthesisProvider = result.synthesisProvider;
-        } else {
-          store.conveneError = providerConfigurationError("full-analysis");
-          return;
-        }
-
-        if (
-          memos.length !== store.personas.length ||
-          memos.some((memo) => !memo.text.trim()) ||
-          memos.some((memo) => memo.provider === "local") ||
-          synthesisProvider === "local" ||
-          !synthesis.trim()
-        ) {
-          store.conveneError =
-            memos.some((memo) => memo.provider === "local") ||
-            synthesisProvider === "local"
-              ? providerUnavailableError("full-analysis")
-              : malformedProviderResponseError("full-analysis");
-          return;
-        }
-
-        const analysis: RoomAnalysis = {
-          folioId: activeFolioId,
-          memos,
-          synthesis,
-          synthesisProvider,
-          briefTitle,
-          timestamp: Date.now(),
-        };
+          },
+          onSynthesis: (text) => {
+            store.streamingSynthesis = text;
+          },
+        });
         store.analysis = analysis;
         store.analysisOpen = true;
         store.analysisCollapsed = {};
         store.analysisCopiedId = null;
         void saveRoomAnalysisToIdb(analysis, activeFolioId);
       } catch (err) {
-        store.conveneError = normalizePersonaError(
-          "twyne:personas:full-analysis",
-          err,
-          hasConfiguredAiProvider(store.aiSettings) ? "provider" : "convex",
-          "full-analysis",
-        );
+        store.conveneError = isAppError(err)
+          ? err
+          : normalizePersonaError(
+              "twyne:personas:full-analysis",
+              err,
+              hasConfiguredAiProvider(store.aiSettings) ? "provider" : "convex",
+              "full-analysis",
+            );
       } finally {
         store.isAnalyzing = false;
         store.streamingNotes = {};
