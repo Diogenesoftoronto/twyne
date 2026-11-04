@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "662892f1e76d",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "src/components/editor/document-sections.stories.tsx",
+    "src/components/editor/extensions/quick-review.test.ts",
+    "src/components/editor/extensions/quick-review.ts",
+    "src/components/editor/insert-panels.stories.tsx",
+    "src/components/editor/modal-card.fixtures.tsx",
+    "src/components/editor/page-ruler.stories.tsx",
+    "src/components/editor/persona-note-panel.stories.tsx",
+    "src/components/editor/quick-review.stories.tsx",
+    "src/components/editor/selection-actions.stories.tsx",
+    "src/components/editor/suggestion-panel.stories.tsx",
+    "src/components/editor/user-comment-panel.stories.tsx",
+    "src/components/rubric/rubric-panel.stories.tsx",
+    "src/components/rubric/rubric-panel.tsx",
+    "src/components/writing-tools/live-review-status.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/66/2892f1e76d/0/metadata.json",
+      "transcript": "/66/2892f1e76d/0/full.jsonl",
+      "compact_transcript": "/66/2892f1e76d/0/transcript.jsonl",
+      "content_hash": "/66/2892f1e76d/0/content_hash.txt",
+      "prompt": "/66/2892f1e76d/0/prompt.txt"
+    }
+  ]
+}
