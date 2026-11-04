@@ -3,7 +3,7 @@
   "checkpoint_id": "662892f1e76d",
   "strategy": "manual-commit",
   "branch": "feat/clairic-extraction",
-  "checkpoints_count": 4,
+  "checkpoints_count": 12,
   "files_touched": [
     "src/components/editor/document-sections.stories.tsx",
     "src/components/editor/extensions/quick-review.test.ts",
@@ -34,6 +34,20 @@
       "compact_transcript": "/66/2892f1e76d/1/transcript.jsonl",
       "content_hash": "/66/2892f1e76d/1/content_hash.txt",
       "prompt": "/66/2892f1e76d/1/prompt.txt"
+    },
+    {
+      "metadata": "/66/2892f1e76d/2/metadata.json",
+      "transcript": "/66/2892f1e76d/2/full.jsonl",
+      "compact_transcript": "/66/2892f1e76d/2/transcript.jsonl",
+      "content_hash": "/66/2892f1e76d/2/content_hash.txt",
+      "prompt": "/66/2892f1e76d/2/prompt.txt"
     }
-  ]
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
 }
