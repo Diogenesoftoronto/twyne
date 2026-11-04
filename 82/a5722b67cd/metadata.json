@@ -1,0 +1,24 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "82a5722b67cd",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/82/a5722b67cd/0/metadata.json",
+      "transcript": "/82/a5722b67cd/0/full.jsonl",
+      "compact_transcript": "/82/a5722b67cd/0/transcript.jsonl",
+      "content_hash": "/82/a5722b67cd/0/content_hash.txt",
+      "prompt": "/82/a5722b67cd/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 160,
+    "cache_creation_tokens": 1959602,
+    "cache_read_tokens": 20158349,
+    "output_tokens": 51840,
+    "api_call_count": 76
+  }
+}
