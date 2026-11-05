@@ -183,6 +183,7 @@ import { InlineNoteNode } from "./extensions/inline-note-popover";
 import { FindReplace } from "./extensions/find-replace";
 import { MathExtensions } from "./extensions/math";
 import { SectionReorder } from "./extensions/section-reorder";
+import { WetInk } from "./extensions/wet-ink";
 import { FindReplacePanel } from "./find-replace-panel";
 import { GrammarPanel } from "./grammar-panel";
 import { ShortcutDialog } from "./shortcut-dialog";
@@ -1327,6 +1328,7 @@ export const TwyneEditor = component$(
             SlashCommand,
             ...MathExtensions,
             SectionReorder,
+            WetInk,
             ParagraphFormat,
             PageBreakNode,
             ...EditorialRoles,

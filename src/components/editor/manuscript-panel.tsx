@@ -8,6 +8,9 @@ import type { LayoutSettings } from "../../types";
 import { resolveColumns, resolveColumnGap } from "../../types";
 import { hasOrnateBorder } from "../../utils/page-ornaments";
 import { isFileDrag } from "../../utils/file-drag";
+import { hasAuthenticatedConvexIdentity, useAuth } from "../../utils/auth-context";
+import { DestinationTag } from "../ui/destination-tag";
+import { mountDeskLamp } from "./desk-lamp";
 import type { EditorStore } from "./editor-state";
 import { MarginRails } from "../in-flow/margin-rail";
 import { FlowSurface } from "../in-flow/flow-surface";
@@ -54,8 +57,12 @@ interface ManuscriptPanelProps {
 export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
   const { store } = props;
   const onJumpToNote$ = props.onJumpToNote$;
+  const onDragOver$ = props.onDragOver$;
   const scrollerRef = useSignal<HTMLDivElement>();
   const deskOpen = useSignal(false);
+  const auth = useAuth();
+  // Read when a file is dragged in, so the docket says where it would land.
+  const online = useSignal(true);
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(
     ({ cleanup }) => {
@@ -68,6 +75,14 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
     },
     { strategy: "document-ready" },
   );
+
+  // The desk lamp lights the paper around the sheet (see desk-lamp.ts).
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    const el = scrollerRef.value;
+    if (!el) return;
+    cleanup(mountDeskLamp(el));
+  });
 
   /**
    * Stop the browser navigating away from a file dropped on the manuscript.
@@ -109,14 +124,44 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
         data-living-desk-open={
           deskOpen.value && !store.zenMode ? "" : undefined
         }
-        style="background: var(--color-editor-bg);"
-        onDragOver$={props.onDragOver$}
+        // Colour only: the desk lamp paints the background image.
+        style="background-color: var(--color-editor-bg);"
+        onDragOver$={(event) => {
+          online.value = navigator.onLine;
+          return onDragOver$(event);
+        }}
         onDragLeave$={props.onDragLeave$}
         onDrop$={props.onDrop$}
       >
         {store.isDragOver && (
           <div class="drag-overlay">
-            <span>Drop plate or tabular here</span>
+            {/* The docket says where the image will live before it is let go:
+                inline in the manuscript offline, in account storage online.
+                Signed out and online, the upload has nowhere to go. */}
+            <div class="drag-overlay__docket">
+              <span class="drag-overlay__title">Drop a plate</span>
+              {!online.value ? (
+                <span class="drag-overlay__route">
+                  <DestinationTag
+                    to="local"
+                    description="Kept in the manuscript on this device"
+                  />
+                  Kept in the manuscript on this device
+                </span>
+              ) : hasAuthenticatedConvexIdentity(auth.value) ? (
+                <span class="drag-overlay__route">
+                  <DestinationTag
+                    to="synced"
+                    description="Uploaded to your account's image storage"
+                  />
+                  Uploaded to your account's image storage
+                </span>
+              ) : (
+                <span class="drag-overlay__route drag-overlay__route--blocked">
+                  Sign in to store images while online
+                </span>
+              )}
+            </div>
           </div>
         )}
 

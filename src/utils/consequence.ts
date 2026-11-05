@@ -1,5 +1,5 @@
 import { hasConfiguredAiProvider } from "./ai-client";
-import type { AiSettings } from "../types";
+import type { AiSettings, ApparatusSettings } from "../types";
 
 /**
  * Where an action's words or data end up. Shared by every control that can
@@ -55,5 +55,38 @@ export async function loadAiConsequence(): Promise<
     return aiConsequenceFor(await loadAiSettingsFromIdb());
   } catch {
     return "credit";
+  }
+}
+
+/**
+ * Where "Find sources" sends a passage: the writer's own search provider when
+ * one is chosen in the Apparatus settings, otherwise the hosted service.
+ */
+export function researchConsequenceFor(
+  settings: Pick<ApparatusSettings, "researchProvider"> | null | undefined,
+): Extract<Consequence, "provider" | "credit"> {
+  return settings && settings.researchProvider !== "hosted"
+    ? "provider"
+    : "credit";
+}
+
+/** Both AI routes the selection toolbar offers, read once from storage. */
+export async function loadSelectionConsequences(): Promise<{
+  ai: Extract<Consequence, "provider" | "credit">;
+  research: Extract<Consequence, "provider" | "credit">;
+}> {
+  try {
+    const { loadAiSettingsFromIdb, loadApparatusSettingsFromIdb } =
+      await import("./idb");
+    const [ai, apparatus] = await Promise.all([
+      loadAiSettingsFromIdb(),
+      loadApparatusSettingsFromIdb(),
+    ]);
+    return {
+      ai: aiConsequenceFor(ai),
+      research: researchConsequenceFor(apparatus),
+    };
+  } catch {
+    return { ai: "credit", research: "credit" };
   }
 }

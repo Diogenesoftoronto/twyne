@@ -1,8 +1,343 @@
 /* ─────────────────────────────────────────────────────────────
- * Lane A — the manuscript surface: wet ink, caret, selection, the selection popover, section drag, the file-drop overlay, the desk lamp.
+ * Lane A — the manuscript surface: wet ink, caret, selection, the selection
+ * popover, section drag, the file-drop overlay, the desk lamp.
  *
  * Build only from the tokens in ./motion.css (--ease-*, --dur-*, --lift-*,
  * --ink-*). Follow docs/design/living-press.md: the manuscript never moves,
  * frequency sets the budget, consequence has one ink per destination,
  * ambient motion carries data-ambient, and data-motion="still" stops it all.
  * ───────────────────────────────────────────────────────────── */
+
+/* ── Wet ink ──────────────────────────────────────────────────
+ * Words set since the last save sit in a wetter, bluer ink; once the draft is
+ * on this device they pass through a drying tone and become ink. Painted by
+ * the Custom Highlight API (extensions/wet-ink.ts): colour only, no layout.
+ * Still motion never registers the highlight, so nothing here needs a gate. */
+::highlight(twyne-ink-wet) {
+  color: var(--ink-wet);
+}
+::highlight(twyne-ink-drying) {
+  color: color-mix(in srgb, var(--ink-wet) 40%, var(--color-ink));
+}
+
+/* ── Caret and selection ──────────────────────────────────────
+ * The caret is the editor's pencil: vermilion, and never animated. A gliding
+ * caret makes typing feel late (Word's is the cautionary tale). The selection
+ * is a copy editor's non-photo blue, so a marked passage reads as marked for
+ * a decision, not as the operating system's highlight. */
+.twyne-editor .ProseMirror {
+  caret-color: var(--color-vermilion);
+}
+.twyne-editor .ProseMirror ::selection,
+.twyne-editor .ProseMirror::selection {
+  background-color: var(--ink-selection);
+  color: var(--ink-selection-text);
+}
+/* The drop cap keeps its own vermilion wash. */
+.twyne-editor .ProseMirror .twyne-illuminated-initial::selection {
+  background-color: color-mix(in srgb, var(--color-vermilion) 19%, transparent);
+}
+
+/* ── Selection popover: where each action sends the passage ─── */
+.selection-actions__row > button[data-consequence] {
+  position: relative;
+}
+/* A small docket mark after the label in the destination's ink: hollow for
+ * the device, filled for a model or credit. The word is in the tooltip and,
+ * for screen readers, in the label itself. */
+.selection-actions__route {
+  display: inline-block;
+  inline-size: 0.42rem;
+  block-size: 0.42rem;
+  margin-inline-start: 0.32rem;
+  border: 1px solid var(--consequence-ink);
+  border-radius: 50%;
+  background: var(--consequence-ink);
+  vertical-align: 0.06em;
+}
+.selection-actions__row > button[data-consequence]:hover:not(:disabled) {
+  box-shadow: inset 0 -2px 0
+    color-mix(in srgb, var(--consequence-ink) 70%, transparent);
+}
+/* Menus attached to the toolbar unfold from it instead of appearing. */
+.selection-actions__personas {
+  animation: press-slip-in var(--dur-arrive) var(--ease-slip) both;
+  transform-origin: top right;
+}
+.selection-actions__menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+/* Presses go down a hair and come back up on the platen curve. */
+.selection-actions__row > button:active:not(:disabled) {
+  translate: 0 var(--lift-1);
+  transition: translate var(--dur-instant);
+}
+.selection-actions__row > button {
+  transition:
+    translate var(--dur-release) var(--ease-platen),
+    background-color var(--dur-release) ease,
+    color var(--dur-release) ease,
+    box-shadow var(--dur-release) ease;
+}
+
+/* ── Section drag: moving set type ────────────────────────────
+ * The handle is a type slug in the left margin. It warms on hover, lifts on
+ * grab (the browser's drag image is the labelled slug below), and the drop
+ * target is a composing rule. Nothing in the prose moves until the drop. */
+.twyne-section-drag-handle {
+  position: absolute;
+  translate: -1.6rem 0.18rem;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.05rem;
+  block-size: 1.3rem;
+  border-radius: 2px;
+  color: var(--color-ink-muted);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: -0.12em;
+  line-height: 1;
+  cursor: grab;
+  user-select: none;
+  opacity: 0.4;
+  transition:
+    opacity var(--dur-release) ease,
+    background-color var(--dur-release) ease,
+    color var(--dur-release) ease,
+    box-shadow var(--dur-release) ease;
+}
+/* The handle is a widget placed just before its heading, so it lights up
+ * when the heading after it is hovered. */
+.twyne-section-drag-handle:has(+ :is(h1, h2, h3, h4, h5, h6):hover),
+.twyne-section-drag-handle:hover,
+.twyne-section-drag-handle:focus-visible {
+  opacity: 1;
+  color: var(--color-ink);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-ink) 7%, var(--color-paper-2)),
+    var(--color-paper-3)
+  );
+  box-shadow:
+    inset 0 -1px 0 color-mix(in srgb, var(--shade) 30%, transparent),
+    0 1px 0 color-mix(in srgb, var(--emboss) 70%, transparent);
+}
+.twyne-section-drag-handle:active {
+  cursor: grabbing;
+}
+/* Zen hides the slugs with the rest of the page furniture. */
+.twyne-editor.zen-mode .twyne-section-drag-handle {
+  opacity: 0;
+}
+.twyne-editor.zen-mode
+  .twyne-section-drag-handle:has(+ :is(h1, h2, h3, h4, h5, h6):hover) {
+  opacity: 0.6;
+}
+
+/* The drag image: the section's heading on a slug of type metal. Rendered
+ * off-screen for one frame while the browser snapshots it. */
+.twyne-section-slug {
+  position: fixed;
+  top: -200px;
+  left: -200px;
+  max-inline-size: 22rem;
+  padding: 0.38rem 0.7rem 0.38rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+  border-left: 3px solid var(--color-vermilion);
+  border-radius: 2px;
+  background: var(--color-paper-soft);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--shade) 55%, transparent);
+  rotate: -1deg;
+}
+
+/* The drop target: a vermilion composing rule with the slug's name on it. */
+.twyne-section-drop-rule {
+  display: block;
+  position: relative;
+  block-size: 0;
+  border-top: 2px solid var(--color-vermilion);
+  margin-block: 0.15rem;
+  pointer-events: none;
+  animation: press-drop-rule var(--dur-arrive) var(--ease-set) both;
+  transform-origin: left center;
+}
+.twyne-section-drop-rule::before {
+  /* The rule's ends are cut square like a composing rule, not rounded. */
+  content: "";
+  position: absolute;
+  inset-inline-start: -0.35rem;
+  inset-block-start: -0.32rem;
+  inline-size: 0;
+  block-size: 0;
+  border-block: 0.3rem solid transparent;
+  border-inline-start: 0.35rem solid var(--color-vermilion);
+}
+.twyne-section-drop-rule[data-section-drop-label]::after {
+  content: "set " attr(data-section-drop-label) " here";
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: 0.2rem;
+  max-inline-size: 60%;
+  padding: 0.05rem 0.35rem;
+  background: var(--color-paper-soft);
+  color: var(--color-vermilion);
+  font-family: var(--font-typewriter);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@keyframes press-drop-rule {
+  from {
+    opacity: 0;
+    scale: 0.4 1;
+  }
+}
+
+/* ── File drop: say where the plate will live ─────────────────
+ * A docket instead of a banner: the title in type, and below it the
+ * destination in its ink. The wash is the same vermilion as before but the
+ * frame comes in from the page edge instead of appearing. */
+.drag-overlay {
+  animation: press-fade-in var(--dur-arrive) var(--ease-set) both;
+}
+.drag-overlay__docket {
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  padding: 1rem 1.4rem 0.9rem;
+  border: 1px solid var(--color-vermilion);
+  border-radius: 2px;
+  background: var(--color-paper-soft);
+  box-shadow: 0 14px 30px -18px color-mix(in srgb, var(--shade) 60%, transparent);
+  rotate: -0.6deg;
+  animation: press-slip-in var(--dur-settle) var(--ease-slip) both;
+}
+/* The docket's spans are its own: undo the old banner chip that
+ * `.drag-overlay span` paints on every span inside the overlay. */
+.drag-overlay .drag-overlay__docket span {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: none;
+}
+.drag-overlay .drag-overlay__docket .drag-overlay__title {
+  padding: 0.25rem 0.75rem;
+  border-radius: 2px;
+  background: var(--color-vermilion);
+  color: var(--color-paper);
+  font-family: var(--font-typewriter);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.drag-overlay .drag-overlay__docket .drag-overlay__route {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-ink-light);
+  font-family: var(--font-serif);
+  font-size: 0.88rem;
+  font-style: italic;
+}
+.drag-overlay .drag-overlay__docket .drag-overlay__route--blocked {
+  color: var(--color-vermilion-2);
+}
+/* The destination tag keeps its own typewriter docket inside the route. */
+.drag-overlay .drag-overlay__docket .destination-tag {
+  font-family: var(--font-typewriter);
+  font-size: 0.56rem;
+  font-style: normal;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--consequence-ink) 82%, var(--color-ink));
+}
+.drag-overlay .drag-overlay__docket .destination-tag__mark {
+  border: 1px solid var(--consequence-ink);
+  border-radius: 50%;
+  background: var(--consequence-ink);
+}
+.drag-overlay
+  .drag-overlay__docket
+  .destination-tag[data-consequence="local"]
+  .destination-tag__mark {
+  background: transparent;
+}
+
+/* ── The desk lamp ────────────────────────────────────────────
+ * A pool of warm light on the paper around the sheet. It is painted on the
+ * scroller's own background, behind the page, so the prose's contrast never
+ * changes. Position and warmth come from desk-lamp.ts; the registered
+ * properties let the light glide rather than jump. At calm and still the
+ * lamp holds where the hour put it (desk-lamp.ts stops leaning), and
+ * `data-ambient` stops the glide while typing. */
+.manuscript-scroller.desk-lamp {
+  --lamp-warmth: 0.6;
+  --lamp-glow: color-mix(
+    in srgb,
+    color-mix(in srgb, #ffd9a0 calc(var(--lamp-warmth) * 100%), #fff6dd)
+      38%,
+    transparent
+  );
+  background-image:
+    radial-gradient(
+      ellipse 58% 46% at var(--lamp-x) var(--lamp-y),
+      var(--lamp-glow),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 90% 70% at var(--lamp-x) var(--lamp-y),
+      color-mix(in srgb, var(--lamp-glow) 40%, transparent),
+      transparent
+    );
+  background-attachment: local, local;
+  transition:
+    --lamp-x 1.4s var(--ease-set),
+    --lamp-y 1.4s var(--ease-set);
+}
+/* On Nightpress the lamp is the only warm thing in the room: dimmer, and a
+ * touch more amber so it reads as lamplight rather than a glow. */
+:root[data-theme="nightpress"] .manuscript-scroller.desk-lamp {
+  --lamp-glow: color-mix(in srgb, #ffb867 10%, transparent);
+}
+/* Broadsheet is deliberately flat; the lamp stays off. */
+:root[data-theme="broadsheet"] .manuscript-scroller.desk-lamp {
+  background-image: none;
+}
+:root:not([data-motion="full"]) .manuscript-scroller.desk-lamp,
+:root[data-typing] .manuscript-scroller.desk-lamp {
+  transition: none;
+}
+@media (forced-colors: active) {
+  .manuscript-scroller.desk-lamp {
+    background-image: none;
+  }
+}
+
+/* The lamp lights the desk, not the sheet. A continuous manuscript has no
+ * sheet of its own, so give the text column the editor paper while the lamp
+ * is on; the light then pools around it, and the prose keeps its exact
+ * contrast. Paginated sheets already carry their paper. */
+.manuscript-scroller.desk-lamp .page-canvas:not(.is-paginated) {
+  background-color: var(--color-editor-bg);
+}
+.manuscript-scroller.desk-lamp .page-canvas.zen-mode:not(.is-paginated) {
+  /* In zen the column is wide and borderless; feather its edge into the
+     light so the page reads as paper lying on the lit desk. */
+  box-shadow: 0 0 3rem 1.5rem var(--color-editor-bg);
+}

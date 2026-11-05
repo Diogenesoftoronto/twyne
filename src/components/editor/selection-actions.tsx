@@ -9,6 +9,13 @@ import {
 import type { Persona } from "../../types";
 import { loadPersonasFromIdb } from "../../utils/idb";
 import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
+import {
+  CONSEQUENCE_LABELS,
+  loadSelectionConsequences,
+  type Consequence,
+} from "../../utils/consequence";
+import { DestinationTag } from "../ui/destination-tag";
+import { allowsMotion } from "../../utils/motion";
 import type { SelectionActionState } from "./editor-state";
 
 /** Move keyboard focus from the manuscript into the actions (Alt+F10). */
@@ -34,6 +41,9 @@ interface SelectionActionsProps {
 
 interface SelectionActionsStore {
   personas: Persona[];
+  /** Where an editor's reading and a source search go with saved settings. */
+  ai: Extract<Consequence, "provider" | "credit">;
+  research: Extract<Consequence, "provider" | "credit">;
   menu: Menu | null;
   /** A menu opened from the keyboard takes focus at this end. */
   menuFocus: "first" | "last" | null;
@@ -46,6 +56,8 @@ export const SelectionActions = component$<SelectionActionsProps>((props) => {
   const root = useSignal<HTMLDivElement>();
   const store = useStore<SelectionActionsStore>({
     personas: DEFAULT_PERSONAS,
+    ai: "credit",
+    research: "credit",
     menu: null,
     menuFocus: null,
     menuFor: "",
@@ -53,8 +65,39 @@ export const SelectionActions = component$<SelectionActionsProps>((props) => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    const custom = await loadPersonasFromIdb();
+    const [custom, routes] = await Promise.all([
+      loadPersonasFromIdb(),
+      loadSelectionConsequences(),
+    ]);
     if (custom?.length) store.personas = custom;
+    store.ai = routes.ai;
+    store.research = routes.research;
+  });
+
+  // A new passage slides the card up off its line, like a slip pushed across
+  // the desk. Played as a Web Animation so the toolbar is never re-mounted
+  // (keyboard focus lives in it), and only when the passage itself changes.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    const passage = track(() =>
+      props.selection ? `${props.selection.from}:${props.selection.to}` : "",
+    );
+    const placement = track(() => props.selection?.placement);
+    const el = root.value;
+    if (!passage || !el || !allowsMotion("feedback")) return;
+    const styles = getComputedStyle(el);
+    const lift = placement === "above" ? "6px" : "-6px";
+    el.animate(
+      [
+        { opacity: 0, translate: `0 ${lift}` },
+        { opacity: 1, translate: "0 0" },
+      ],
+      {
+        duration:
+          Number.parseFloat(styles.getPropertyValue("--dur-arrive")) || 240,
+        easing: styles.getPropertyValue("--ease-slip").trim() || "ease-out",
+      },
+    );
   });
 
   // A menu belongs to the selection it was opened for. The selection state is
@@ -197,6 +240,9 @@ export const SelectionActions = component$<SelectionActionsProps>((props) => {
     <div
       ref={root}
       class={["selection-actions", `selection-actions--${selection.placement}`]}
+      // Changes only when the passage does, so a new selection slides in
+      // again while a background update to the same one leaves it be.
+      data-passage={`${selection.from}:${selection.to}`}
       style={{ left: `${selection.x}px`, top: `${selection.y}px` }}
       role="toolbar"
       aria-label={`Actions for “${selection.text.slice(0, 70)}”`}
@@ -221,13 +267,20 @@ export const SelectionActions = component$<SelectionActionsProps>((props) => {
           type="button"
           onClick$={props.onGetSources$}
           disabled={props.disabled}
+          data-consequence={store.research}
+          title={`Find sources: ${CONSEQUENCE_LABELS[store.research].long.toLowerCase()}`}
         >
           Find sources
+          <span class="selection-actions__route" aria-hidden="true" />
+          <span class="sr-only">
+            {` (${CONSEQUENCE_LABELS[store.research].long})`}
+          </span>
         </button>
         <button
           type="button"
           onClick$={props.onAddMargin$}
           disabled={props.disabled}
+          data-consequence="local"
         >
           Comment
         </button>
@@ -236,6 +289,8 @@ export const SelectionActions = component$<SelectionActionsProps>((props) => {
           aria-haspopup="menu"
           aria-expanded={store.menu === "persona"}
           data-menu-trigger="persona"
+          data-consequence={store.ai}
+          title={`Ask an editor: ${CONSEQUENCE_LABELS[store.ai].long.toLowerCase()}`}
           onClick$={(event) => {
             store.menu = store.menu === "persona" ? null : "persona";
             // A click with no pointer behind it came from Enter or Space.
@@ -243,7 +298,12 @@ export const SelectionActions = component$<SelectionActionsProps>((props) => {
           }}
           disabled={props.disabled}
         >
-          Ask an editor ▾
+          Ask an editor
+          <span class="selection-actions__route" aria-hidden="true" />
+          <span class="sr-only">
+            {` (${CONSEQUENCE_LABELS[store.ai].long})`}
+          </span>
+          {" ▾"}
         </button>
         {moreItems.length > 0 && (
           <button
@@ -280,7 +340,10 @@ export const SelectionActions = component$<SelectionActionsProps>((props) => {
           role="menu"
           aria-label="Ask an editor"
         >
-          <p>Request a reading from</p>
+          <p class="selection-actions__menu-head">
+            Request a reading from
+            <DestinationTag to={store.ai} quiet />
+          </p>
           {store.personas.map((persona) => (
             <button
               key={persona.id}
