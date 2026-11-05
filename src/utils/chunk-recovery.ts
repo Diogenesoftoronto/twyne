@@ -21,6 +21,9 @@ export function installChunkRecovery(
   host: Window & { console: Console },
 ): void {
   let checking = false;
+  // Each check asks the server for a page, so at most one every 30 seconds
+  // however many failures arrive.
+  let lastCheck = 0;
   const describe = (reason: unknown): string => {
     if (typeof reason === "string") return reason;
     const error = reason as { message?: unknown } | null;
@@ -28,9 +31,10 @@ export function installChunkRecovery(
   };
   const recover = async (reason: unknown, importError: boolean) => {
     if (checking || host.navigator.onLine === false) return;
+    if (Date.now() - lastCheck < 30_000) return;
     if (
       !importError &&
-      !/dynamically imported module|importing a module script failed|failed to fetch dynamically|qrl .* failed to load/i.test(
+      !/dynamically imported module|importing a module script failed|failed to fetch dynamically|^qrl \S+ failed to load$/i.test(
         describe(reason),
       )
     )
@@ -49,6 +53,7 @@ export function installChunkRecovery(
       return;
     }
     checking = true;
+    lastCheck = Date.now();
     try {
       // A lost connection, an aborted request or a bug in a handler is not a
       // deploy. Reload only when the server now serves a different build.
@@ -92,7 +97,7 @@ export function installChunkRecovery(
   const consoleError = host.console.error.bind(host.console);
   host.console.error = (...args: unknown[]) => {
     consoleError(...args);
-    if (typeof args[0] === "string" && / failed to load$/.test(args[0]))
+    if (typeof args[0] === "string" && /^qrl \S+ failed to load$/.test(args[0]))
       void recover(args[0], false);
   };
 }

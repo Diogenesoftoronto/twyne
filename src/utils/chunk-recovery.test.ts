@@ -123,8 +123,20 @@ describe("stale build recovery", () => {
     h.reject("Cannot read properties of undefined");
     h.qerror({ error: new Error("a handler threw") });
     h.host.console.error("Something else went wrong");
+    h.host.console.error("Image failed to load");
     await settle();
     expect(h.probes).toHaveLength(0);
+    expect(h.reloads()).toBe(0);
+  });
+
+  test("checks the server at most once in 30 seconds", async () => {
+    const h = harness("build-a");
+    h.reject(failure);
+    await settle();
+    h.reject(failure);
+    h.host.console.error("qrl s_abc failed to load", {});
+    await settle();
+    expect(h.probes).toHaveLength(1);
     expect(h.reloads()).toBe(0);
   });
 
