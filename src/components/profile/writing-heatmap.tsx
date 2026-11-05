@@ -101,18 +101,13 @@ export const WritingHeatmap = component$<WritingHeatmapProps>((props) => {
                 }
                 aria-pressed={props.selectedDay === cell.day}
                 onClick$={() => props.onSelectDay$?.(cell.day)}
-                class="h-[10px] w-[10px] rounded-[1px] p-0 enabled:cursor-pointer enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2 enabled:focus-visible:outline-[var(--color-cobalt)]"
+                data-partial={partialDays.has(cell.day) ? "" : undefined}
+                class="desk-heat-cell h-[10px] w-[10px] rounded-[1px] p-0 enabled:cursor-pointer enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2 enabled:focus-visible:outline-[var(--color-cobalt)]"
                 style={{
                   background:
                     cell.count < 0
                       ? "transparent"
                       : LEVEL_COLORS[levelFor(cell.count)],
-                  boxShadow:
-                    props.selectedDay === cell.day
-                      ? "0 0 0 1px var(--color-ink)"
-                      : partialDays.has(cell.day)
-                        ? "inset 0 0 0 1px var(--color-ink-muted)"
-                        : undefined,
                 }}
               />
             ))}
@@ -129,7 +124,7 @@ export const WritingHeatmap = component$<WritingHeatmapProps>((props) => {
           {LEVEL_COLORS.map((c) => (
             <span
               key={c}
-              class="h-[10px] w-[10px] rounded-[2px]"
+              class="h-[10px] w-[10px] rounded-[1px]"
               style={{ background: c }}
             />
           ))}

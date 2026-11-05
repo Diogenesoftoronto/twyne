@@ -44,8 +44,12 @@ describe("My Desk accessible dossier contract", () => {
     expect(cost).toContain("grid grid-cols-4");
     expect(cost).toContain("min-w-0");
     expect(cost).toContain("aria-selected={active.value === tab}");
-    expect(cost).toContain('active.value === "cost"');
-    expect(cost).toContain('active.value === "tokens"');
+    expect(cost).toContain('hidden={active.value !== "cost"}');
+    expect(cost).toContain('hidden={active.value !== "tokens"}');
+    expect(cost).toContain("aria-controls={`desk-panel-${tab}`}");
+    expect(cost).toContain("tabIndex={active.value === tab ? 0 : -1}");
+    for (const key of ["ArrowLeft", "ArrowRight", "Home", "End"])
+      expect(cost).toContain(key);
   });
 
   test("keeps content and credentials outside export claims", () => {
