@@ -500,12 +500,18 @@ export const ShareDialog = component$(
                       </select>
                       <button
                         onClick$={handleInvite}
-                        data-consequence="public"
+                        data-consequence="synced"
                         disabled={store.inviting}
                         class="btn-press text-xs flex-1"
                       >
                         {store.inviting ? "Inviting…" : "Invite"}{" "}
-                        <DestinationTag to="public" />
+                        {/* One named reader, not anyone with a link: the
+                            account ink, with the word saying who. */}
+                        <DestinationTag
+                          to="synced"
+                          label="invitee"
+                          description="Shared with the person you invite"
+                        />
                       </button>
                     </div>
                     {store.inviteMsg && (
@@ -554,7 +560,11 @@ export const ShareDialog = component$(
                           <HoldToConfirm
                             onConfirm$={() => handleRemoveCollab(c.userId)}
                             class="text-[0.6rem] text-[var(--color-ink-muted)]"
-                            label={`Remove ${c.userId}`}
+                            label={`Remove ${
+                              c.userId.includes("@")
+                                ? c.userId
+                                : "this collaborator"
+                            } from the folio`}
                             hint="hold to remove"
                             consequence="erase"
                           >

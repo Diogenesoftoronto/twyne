@@ -1,13 +1,13 @@
 /**
- * Sync indicator — a small dot in the editor toolbar plus a
- * "last saved Xs ago" line in the colophon. Both are wired to
- * the `twyne:sync-status` event that `convex-sync` fires when
- * the underlying state changes. The component is pure with
- * respect to the event stream: it doesn't import convex-sync
+ * Sync indicator — the status bar's "Saved Xs ago · filed" line.
+ * It is wired to the `twyne:sync-status` event that `convex-sync`
+ * fires when the underlying state changes. The helpers are pure
+ * with respect to the event stream: they don't import convex-sync
  * or know how the status is derived.
  */
 
 import type { SyncStatus } from "../../utils/convex-sync";
+import type { Consequence } from "../../utils/consequence";
 
 /**
  * Map a sync status to the colour the indicator dot should
@@ -88,4 +88,30 @@ export function lastSavedLabel(
 ): string {
   if (savedAt == null) return "Not saved yet";
   return `Saved ${formatAge(savedAt, now)}`;
+}
+
+/**
+ * Where the latest saved words are, as one word in its consequence ink:
+ * "filed" once the account holds them, "on the wire" while they travel,
+ * "held here" when they only live on this device. Nothing before the
+ * first save, so the line never claims a route for words that do not exist.
+ */
+export function saveRouteLabel(
+  status: SyncStatus,
+  savedAt: number | null,
+): { word: string; consequence: Extract<Consequence, "local" | "synced"> } | null {
+  if (savedAt == null) return null;
+  switch (status.kind) {
+    case "synced":
+      return status.lastSyncedAt >= savedAt
+        ? { word: "filed", consequence: "synced" }
+        : { word: "on the wire", consequence: "synced" };
+    case "pending":
+    case "syncing":
+      return { word: "on the wire", consequence: "synced" };
+    case "offline":
+    case "error":
+    case "local-only":
+      return { word: "held here", consequence: "local" };
+  }
 }

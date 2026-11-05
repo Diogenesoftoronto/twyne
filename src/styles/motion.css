@@ -266,7 +266,6 @@
 .hold-to-confirm {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
@@ -287,13 +286,60 @@
   transform: scaleX(1);
   background: color-mix(in srgb, var(--consequence-ink) 40%, transparent);
 }
+/* The instruction is a slip that hangs under the key: it takes no room in
+ * the row, and shows only when useful (hover, focus, while held, once armed
+ * from the keyboard, or after a too-quick click, when it lands with a little
+ * weight so the click is answered). */
 .hold-to-confirm__hint {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 3px);
+  padding: 0.18rem 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--consequence-ink) 55%, transparent);
+  border-radius: 2px;
+  background: var(--color-paper-soft);
+  color: color-mix(in srgb, var(--consequence-ink) 80%, var(--color-ink));
   font-family: var(--font-typewriter);
   font-size: 0.56rem;
+  font-weight: 400;
+  line-height: 1;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  opacity: 0.72;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  translate: 0 -2px;
+  transition:
+    opacity var(--dur-release) ease,
+    translate var(--dur-release) var(--ease-set);
 }
+.hold-to-confirm:is(
+    :hover,
+    :focus-visible,
+    [data-holding],
+    [data-armed],
+    [data-nudged]
+  ) {
+  z-index: 2;
+}
+.hold-to-confirm:is(:hover, :focus-visible, [data-holding], [data-armed])
+  .hold-to-confirm__hint {
+  opacity: 1;
+  translate: 0 0;
+}
+.hold-to-confirm[data-nudged] .hold-to-confirm__hint {
+  opacity: 1;
+  translate: 0 0;
+  animation: press-impress var(--dur-settle) var(--ease-platen);
+}
+/* Touch has no hover: a tap's nudge is what reveals the slip. */
+@media (hover: none) {
+  .hold-to-confirm:hover:not([data-holding], [data-armed], [data-nudged])
+    .hold-to-confirm__hint {
+    opacity: 0;
+  }
+}
+
 /* Released early, the ink drains back; while held it tracks the press. */
 .hold-to-confirm:not([data-holding]) .hold-to-confirm__ink {
   transition: transform var(--dur-settle) var(--ease-set);
@@ -359,4 +405,17 @@
 }
 .press-fade {
   animation: press-fade-in var(--dur-arrive) var(--ease-set) both;
+}
+
+/* On an inked button (`.btn-press`, the room's convene key) the docket is
+ * printed in reverse: the destination's ink lifted toward the paper so it
+ * reads on black, with the mark keeping its shape. */
+:is(.btn-press, .convene-btn) .destination-tag {
+  color: color-mix(in srgb, var(--consequence-ink) 45%, var(--color-paper));
+}
+:is(.btn-press, .convene-btn) .destination-tag__mark {
+  border-color: color-mix(in srgb, var(--consequence-ink) 55%, var(--color-paper));
+}
+:is(.btn-press, .convene-btn) .destination-tag:not([data-consequence="local"]) .destination-tag__mark {
+  background: color-mix(in srgb, var(--consequence-ink) 55%, var(--color-paper));
 }

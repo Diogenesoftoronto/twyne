@@ -739,7 +739,9 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
           >
             Dossier &amp; House context
           </Link>
-          <p class="dept-label px-3 py-1.5">
+          {/* One docket for the whole group: every export is a file
+              written to this device; nothing is sent anywhere. */}
+          <p class="dept-label flex items-center justify-between px-3 py-1.5">
             Export <DestinationTag to="local" />
           </p>
           <label class="mx-3 mb-1 flex cursor-pointer items-start gap-2 border-b border-dashed border-[var(--color-paper-3)] pb-2 text-[12px] text-[var(--color-ink)]">
@@ -771,18 +773,15 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
           <MenuItem
             icon="file-pdf"
             label="PDF…"
-            destination="local"
             onClick$={doExportPdf}
           />
           <MenuItem
-            destination="local"
             icon="file-pdf"
             label={typstBusy.value ? "Preparing Typst export…" : "PDF (Typst)…"}
             disabled={typstBusy.value}
             onClick$={() => doExportTypst("pdf")}
           />
           <MenuItem
-            destination="local"
             icon="code-file"
             label="Typst source (.typ)"
             disabled={typstBusy.value}
@@ -796,31 +795,26 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
             />
           )}
           <MenuItem
-            destination="local"
             icon="document-text"
             label="Markdown (.md)"
             onClick$={() => doExport("markdown")}
           />
           <MenuItem
-            destination="local"
             icon="code-file"
             label="Standalone HTML"
             onClick$={() => doExport("html")}
           />
           <MenuItem
-            destination="local"
             icon="document-text"
             label="Microsoft Word (.docx)"
             onClick$={() => doExport("docx")}
           />
           <MenuItem
-            destination="local"
             icon="file"
             label="Plain text"
             onClick$={() => doExport("txt")}
           />
           <MenuItem
-            destination="local"
             icon="save"
             label="Twyne backup (.json)"
             onClick$={() => doExport("twyne-backup")}
@@ -1387,7 +1381,6 @@ interface MenuItemProps {
   icon: TwyneIconName;
   label: string;
   disabled?: boolean;
-  destination?: "local";
   onClick$: import("@qwik.dev/core").PropFunction<() => void>;
 }
 
@@ -1398,12 +1391,10 @@ const MenuItem = component$<MenuItemProps>((props) => {
       style="font-family: var(--font-serif); border-radius: 0;"
       onClick$={props.onClick$}
       disabled={props.disabled}
-      data-consequence={props.destination}
       role="menuitem"
     >
       <Icon name={props.icon} size={16} />
       {props.label}
-      {props.destination && <DestinationTag to={props.destination} />}
     </button>
   );
 });

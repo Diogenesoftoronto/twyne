@@ -20,21 +20,26 @@
 .desk-loader {
   animation: press-fade-in var(--dur-arrive) var(--ease-set) 150ms both;
 }
+/* Numerals roll up into the stick one after another, left to right. The
+ * clip box is a little taller than the digit so descending figures in old
+ * style numerals are never cut off. */
 .desk-figure {
   white-space: pre-wrap;
 }
 .desk-digit {
   display: inline-block;
-  overflow: hidden;
+  overflow: clip;
+  overflow-clip-margin: 0.12em;
   vertical-align: bottom;
 }
-.desk-figure-animate .desk-digit > span {
+.desk-digit > span {
   display: inline-block;
-  animation: desk-set-digit var(--dur-settle) var(--ease-set) both;
+  animation: desk-set-digit var(--dur-settle) var(--ease-slip) both;
+  animation-delay: calc(min(var(--desk-digit, 0), 8) * 22ms);
 }
 @keyframes desk-set-digit {
   from {
-    transform: translateY(100%);
+    transform: translateY(105%);
   }
   to {
     transform: translateY(0);
