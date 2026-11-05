@@ -1,132 +1,97 @@
 import { component$, useSignal, useVisibleTask$ } from "@qwik.dev/core";
+import { allowsMotion, onMotionLevelChange } from "../../utils/motion";
 
-/** A brief GPU-rendered solar corona; the ink impression remains after it fades. */
-export const StampShader = component$<{ strength: number }>((props) => {
+/** A single, bounded impression; the context is surrendered when ink dries. */
+export const StampShader = component$(() => {
   const canvas = useSignal<HTMLCanvasElement>();
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track, cleanup }) => {
-    const strength = track(() => props.strength);
+  useVisibleTask$(({ cleanup }) => {
     const el = canvas.value;
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (!el || motion.matches) return;
-    const gl = el.getContext("webgl", {
-      alpha: true,
-      premultipliedAlpha: false,
-      antialias: false,
+    if (!el || !allowsMotion("ceremony")) return;
+    const gl = el.getContext("webgl", { alpha: true, antialias: false });
+    if (!gl) return;
+    let frame = 0;
+    let stopped = false;
+    let timeout: ReturnType<typeof setTimeout> | undefined = undefined;
+    const stop = () => {
+      if (stopped) return;
+      stopped = true;
+      cancelAnimationFrame(frame);
+      if (timeout !== undefined) clearTimeout(timeout);
+      gl.getExtension("WEBGL_lose_context")?.loseContext();
+    };
+    cleanup(stop);
+    const unsubscribe = onMotionLevelChange(() => {
+      if (!allowsMotion("ceremony")) stop();
     });
-    if (!gl) return; // The CSS impact ring also works without WebGL.
+    cleanup(unsubscribe);
     const compile = (type: number, source: string) => {
       const shader = gl.createShader(type);
       if (!shader) return null;
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        gl.deleteShader(shader);
-        return null;
-      }
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return null;
       return shader;
     };
-    const vertex = compile(
-      gl.VERTEX_SHADER,
-      "attribute vec2 p; varying vec2 uv; void main(){uv=p;gl_Position=vec4(p,0.,1.);}",
-    );
-    const fragment = compile(
-      gl.FRAGMENT_SHADER,
-      `
+    const vertex = compile(gl.VERTEX_SHADER, "attribute vec2 p; varying vec2 uv; void main(){uv=p;gl_Position=vec4(p,0.,1.);}");
+    const fragment = compile(gl.FRAGMENT_SHADER, `
       precision mediump float;
       varying vec2 uv;
       uniform float t;
-      uniform float power;
-      void main(){
-        float r=length(uv), a=atan(uv.y,uv.x);
-        float fade=smoothstep(0.,.12,t)*(1.-smoothstep(.65,1.,t));
-        float wave=.24+t*.55;
-        float ring=exp(-abs(r-wave)*60.);
-        float rays=pow(max(0.,sin(a*(18.+power*8.)+t*2.)),12.);
-        float corona=exp(-abs(r-.36)*14.)*(.18+rays*.8);
-        float flecks=pow(max(0.,sin(a*47.-t*3.)),32.)*exp(-abs(r-wave-.12)*45.);
-        float filament=pow(max(0.,sin(a*13.+r*24.-t*9.)),8.);
-        float silk=filament*exp(-abs(r-.46-.06*sin(a*5.+t*7.))*18.);
-        float echo=exp(-abs(r-wave*.7)*75.)*step(2.5,power);
-        float core=(1.-smoothstep(.12,.42,r))*.22;
-        float alpha=(ring*.5+corona+flecks*power*.25+core+silk*power*.13+echo*.35)*fade;
-        alpha*=1.-smoothstep(.8,.98,r);
-        vec3 teal=vec3(.12,.75,.68), gold=vec3(1.,.64,.16);
-        vec3 color=mix(teal,gold,step(1.5,power));
-        vec3 prism=.55+.45*cos(vec3(0.,2.1,4.2)+a*2.+r*12.-t*5.);
-        color=mix(color,prism,step(2.5,power)*silk*.6);
-        color=mix(color,vec3(1.,.94,.72),ring*.65);
-        gl_FragColor=vec4(color,min(.8,alpha));
-      }`,
-    );
+      uniform vec3 redInk, blueInk;
+      void main() {
+        float radius = length(uv);
+        float spread = smoothstep(.1,.8,t);
+        float edge = (1. - smoothstep(.22 + spread*.38, .32 + spread*.38, radius));
+        float hole = smoothstep(.25,.45,radius);
+        vec2 grid = fract((uv + 1.) * 33.) - .5;
+        float dots = 1. - smoothstep(.18,.32,length(grid));
+        float red = edge * hole * dots;
+        vec2 shifted = uv + vec2(.025,-.015);
+        vec2 blueGrid = fract((shifted + 1.) * 33.) - .5;
+        float blue = (1. - smoothstep(.22 + spread*.38,.32 + spread*.38,length(shifted))) * hole * (1. - smoothstep(.18,.32,length(blueGrid)));
+        float fade = (1. - smoothstep(.45,1.,t)) * smoothstep(0.,.08,t);
+        float alpha = max(red,blue) * fade * .5;
+        gl_FragColor = vec4(mix(redInk, blueInk, blue/(red+blue+.001)), alpha);
+      }`);
     const program = gl.createProgram();
-    if (!program || !vertex || !fragment) {
-      if (vertex) gl.deleteShader(vertex);
-      if (fragment) gl.deleteShader(fragment);
-      if (program) gl.deleteProgram(program);
-      return;
-    }
+    if (!vertex || !fragment || !program) { stop(); return; }
     gl.attachShader(program, vertex);
     gl.attachShader(program, fragment);
     gl.linkProgram(program);
     const buffer = gl.createBuffer();
-    const dispose = () => {
-      gl.deleteBuffer(buffer);
-      gl.deleteProgram(program);
-      gl.deleteShader(vertex);
-      gl.deleteShader(fragment);
-    };
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS) || !buffer) {
-      dispose();
-      return;
-    }
+    if (!buffer || !gl.getProgramParameter(program, gl.LINK_STATUS)) { stop(); return; }
     gl.useProgram(program);
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
-      gl.STATIC_DRAW,
-    );
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
     const position = gl.getAttribLocation(program, "p");
     gl.enableVertexAttribArray(position);
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-    const time = gl.getUniformLocation(program, "t");
-    gl.uniform1f(gl.getUniformLocation(program, "power"), strength);
-    const size = Math.min(
-      640,
-      Math.round(320 * Math.min(window.devicePixelRatio || 1, 2)),
-    );
-    el.width = size;
-    el.height = size;
-    gl.viewport(0, 0, size, size);
-    const duration = strength >= 3 ? 2200 : strength >= 2 ? 1700 : 1250;
-    const start = performance.now();
-    let frame = 0,
-      disposed = false;
-    const stop = () => {
-      cancelAnimationFrame(frame);
-      if (!disposed) {
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        dispose();
-        disposed = true;
-      }
+    // Resolve theme variables through CSS, including non-hex colour formats.
+    const probe = document.createElement("span");
+    el.parentElement?.appendChild(probe);
+    const ink = (name: string): [number, number, number] => {
+      probe.style.color = `var(${name})`;
+      const channels = getComputedStyle(probe).color.match(/[\d.]+/g)?.slice(0, 3).map(Number) ?? [0, 0, 0];
+      return [channels[0] / 255, channels[1] / 255, channels[2] / 255];
     };
+    gl.uniform3fv(gl.getUniformLocation(program, "redInk"), ink("--color-vermilion"));
+    gl.uniform3fv(gl.getUniformLocation(program, "blueInk"), ink("--color-cobalt"));
+    probe.remove();
+    const size = Math.max(1, Math.round(256 * (window.devicePixelRatio || 1) / 2));
+    el.width = size; el.height = size;
+    gl.viewport(0, 0, size, size);
+    const rawDuration = getComputedStyle(document.documentElement).getPropertyValue("--dur-ceremony").trim();
+    const duration = Math.min(900, Math.max(1, parseFloat(rawDuration) * (rawDuration.endsWith("ms") ? 1 : 1000)) || 900);
+    timeout = setTimeout(stop, duration);
+    const start = performance.now();
     const render = (now: number) => {
-      const progress = (now - start) / duration;
-      if (progress >= 1 || motion.matches || gl.isContextLost()) {
-        stop();
-        return;
-      }
-      gl.uniform1f(time, progress);
+      if (stopped || gl.isContextLost() || now - start >= duration) { stop(); return; }
+      gl.uniform1f(gl.getUniformLocation(program, "t"), (now - start) / duration);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       frame = requestAnimationFrame(render);
     };
     frame = requestAnimationFrame(render);
-    motion.addEventListener("change", stop);
-    cleanup(() => {
-      motion.removeEventListener("change", stop);
-      stop();
-    });
   });
-  return <canvas ref={canvas} class="stamp-solar-shader" aria-hidden="true" />;
+  return <canvas ref={canvas} class="room-stamp-shader" aria-hidden="true" />;
 });

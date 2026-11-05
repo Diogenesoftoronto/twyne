@@ -6,3 +6,38 @@
  * frequency sets the budget, consequence has one ink per destination,
  * ambient motion carries data-ambient, and data-motion="still" stops it all.
  * ───────────────────────────────────────────────────────────── */
+
+/* The room's pencil tracks stream progress without changing layout. */
+.room-reading-face { position: relative; }
+.room-reading-ring { position: absolute; width: 38px; height: 38px; inset: -4px; overflow: visible; pointer-events: none; transform: rotate(-90deg); }
+.room-reading-ring circle { fill: none; stroke: var(--color-cobalt); stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: var(--reading-progress, 0) 1; transition: stroke-dasharray var(--dur-settle) var(--ease-set); }
+.room-reading-ambient { position: absolute; inset: -3px; border: 1px dashed var(--color-cobalt); border-radius: 50%; opacity: .35; animation: room-reading-breathe var(--dur-breath) ease-in-out infinite; }
+@keyframes room-reading-breathe { 50% { opacity: .7; } }
+.room-stream-head { position: relative; }
+.room-stream-head .room-reading-ring { inset: 0 auto auto 0; width: 58px; height: 58px; }
+.feedback-enter { animation: press-slip-in var(--dur-settle) var(--ease-slip) both; animation-delay: var(--slip-delay, 0ms); }
+.room-filed-impression { animation: press-ink-flash var(--dur-settle) var(--ease-set) both; animation-delay: var(--slip-delay, 0ms); }
+.room-stamp-shader { position: absolute; width: min(256px, 100%); aspect-ratio: 1; inset: 50% auto auto 50%; transform: translate(-50%, -50%); pointer-events: none; }
+.rubric-grade-stamp { position: relative; }
+.ink-stamp--pressing .ink-stamp__tool { animation-timing-function: var(--ease-platen); }
+.room-comment-struck { position: relative; }
+.room-comment-struck::after { content: ""; position: absolute; inset: 50% .5rem auto; height: 1px; background: var(--color-ink-muted); pointer-events: none; transform-origin: left; animation: room-strike var(--dur-settle) var(--ease-set) both; }
+@keyframes room-strike { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.room-trace-reading { animation: room-reading-breathe var(--dur-breath) ease-in-out infinite; }
+.room-trace-found { --flash-ink: var(--color-mustard); animation: press-ink-flash var(--dur-settle) var(--ease-set); }
+.room-type-line { display: flex; align-items: center; gap: 3px; height: 2.5rem; }
+.room-type-line span { width: 5px; height: 12px; background: var(--color-cobalt); opacity: .25; animation: room-type-set var(--dur-breath) var(--ease-set) infinite; }
+.room-type-line span:nth-child(2) { animation-delay: calc(var(--dur-breath) / -6); }
+.room-type-line span:nth-child(3) { animation-delay: calc(var(--dur-breath) / -3); }
+.room-type-line span:nth-child(4) { animation-delay: calc(var(--dur-breath) / -2); }
+.room-type-line span:nth-child(5) { animation-delay: calc(var(--dur-breath) / -1.5); }
+.room-type-line span:nth-child(6) { animation-delay: calc(var(--dur-breath) / -1.2); }
+@keyframes room-type-set { 0%, 100% { opacity: .25; } 35%, 65% { opacity: .85; } }
+/* The animated children, too, carry the ambient gate. */
+:root:not([data-motion="full"]) .room-type-line span, :root[data-typing] .room-type-line span, :root:is([data-flow="flow"], [data-flow="settling"]) .room-type-line span { animation-play-state: paused; }
+.editorial-board-contexts { position: relative; }
+.editorial-board-context--active { border-bottom-color: transparent; }
+.room-tab-indicator { position: absolute; bottom: 0; left: 0; height: 2px; width: calc(100% / var(--room-tab-count)); background: var(--board-accent); transform: translateX(calc(var(--room-tab-index) * 100%)); transition: transform var(--dur-settle) var(--ease-set), background-color var(--dur-settle) var(--ease-set); pointer-events: none; }
+.editorial-board-context > small { color: var(--color-paper); }
+
+.room-unread-impress { animation: press-impress var(--dur-settle) var(--ease-platen); }
