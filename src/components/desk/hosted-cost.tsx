@@ -1,3 +1,5 @@
+import { DestinationTag } from "../ui/destination-tag";
+import { DeskFigure } from "./desk-figure";
 import { component$, type QRL } from "@qwik.dev/core";
 import { Link } from "@qwik.dev/router";
 import type { HostedUsageSummary } from "../../utils/hosted-usage";
@@ -20,10 +22,11 @@ export const CreditRunway = component$<{ forecast: CreditForecast }>(
       class="mt-4 border-t border-dotted border-[var(--color-ink-muted)] pt-3"
       data-testid="credit-runway"
     >
-      <p class="text-xs font-semibold tracking-[0.1em] uppercase text-[var(--color-ink-muted)]">
-        This month
-      </p>
-      <p class="mt-1 text-sm tabular-nums">
+      <p class="dept-label">This month</p>
+      <p
+        class="desk-credit mt-1 text-sm tabular-nums"
+        data-consequence="credit"
+      >
         Heading for ~{formatUsd(f.month.median)}{" "}
         <span class="text-[var(--color-ink-light)]">
           ({formatUsd(f.month.p10)}–{formatUsd(f.month.p90)})
@@ -58,24 +61,34 @@ export const HostedCost = component$<{
   runway?: CreditForecast | null;
   onRefresh$?: QRL<() => void>;
 }>((props) => (
-  <div class="mb-6 border-y border-[var(--color-ink)] py-4" aria-live="polite">
+  <div
+    class="mb-6 border-y border-[var(--color-ink)] py-4"
+    aria-live="polite"
+    aria-busy={props.state === "loading"}
+    data-consequence="credit"
+  >
     <h3 class="font-display text-lg">Hosted wallet charges</h3>
+    <DestinationTag to="credit" />
     {props.state === "signed-out" ? (
       <p class="mt-2 text-sm">Sign in to see your hosted AI charges.</p>
-    ) : props.state === "loading" ? (
+    ) : props.state === "loading" && !props.summary ? (
       <p class="mt-2 text-sm" role="status">
         Checking hosted charges…
       </p>
-    ) : props.state === "error" || !props.summary ? (
+    ) : (props.state === "error" && !props.summary) || !props.summary ? (
       <p class="mt-2 text-sm" role="status">
         Hosted charges are unavailable. Your local ledger is shown below.
       </p>
     ) : (
       <>
-        <p class="mt-2 font-display text-2xl tabular-nums">
-          {props.summary.settledRequests > 0
-            ? `$${(props.summary.billedMicrousd / 1_000_000).toFixed(4)}`
-            : "No confirmed charges"}
+        <p class="desk-credit mt-2 font-display text-2xl tabular-nums">
+          {props.summary.settledRequests > 0 ? (
+            <DeskFigure
+              value={`$${(props.summary.billedMicrousd / 1_000_000).toFixed(4)}`}
+            />
+          ) : (
+            "No confirmed charges"
+          )}
         </p>
         <p class="mt-1 text-sm">
           {props.summary.settledRequests} settled Twyne requests in this range.
@@ -98,6 +111,11 @@ export const HostedCost = component$<{
         )}
         {props.runway && <CreditRunway forecast={props.runway} />}
       </>
+    )}
+    {props.state === "error" && props.summary && (
+      <p role="status" class="mt-2 text-sm">
+        Could not refresh hosted charges. Showing the last figures.
+      </p>
     )}
     <div class="mt-3 flex flex-wrap items-center gap-4 text-sm">
       {props.state === "signed-out" ? (

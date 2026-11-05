@@ -24,10 +24,11 @@ export const DailyActivityChart = component$<{ points: DailyUsagePoint[] }>(
           role="img"
           aria-label="Daily writing and editorial actions"
         >
-          {props.points.map((point) => (
+          {props.points.map((point, index) => (
             <div
-              key={point.day}
-              class="group flex min-w-2 flex-1 items-end gap-px"
+              key={`${point.day}:${point.writingCount}:${point.logicalActions}:${maximum}`}
+              style={{ "--desk-delay": `${Math.min(index * 2, 80)}ms` }}
+              class="desk-bar group flex h-full min-w-2 flex-1 items-end gap-px"
               title={`${point.day}: ${point.writingCount} writing marks, ${point.logicalActions} AI actions`}
             >
               <span

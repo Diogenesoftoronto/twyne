@@ -1,3 +1,4 @@
+import { DeskFigure } from "./desk-figure";
 import { component$ } from "@qwik.dev/core";
 import { Link } from "@qwik.dev/router";
 import type { UsageMetrics } from "../../utils/usage-summary";
@@ -63,7 +64,9 @@ export const DeskSummary = component$<{
         ].map(([label, value]) => (
           <div key={label} class="py-2">
             <dt class="text-[var(--color-ink-muted)]">{label}</dt>
-            <dd class="font-display text-lg tabular-nums">{value}</dd>
+            <dd class="font-display text-lg tabular-nums">
+              <DeskFigure value={value} />
+            </dd>
           </div>
         ))}
         <div class="py-2">
@@ -72,7 +75,10 @@ export const DeskSummary = component$<{
               ? "Hosted wallet charges"
               : "Recorded actual cost"}
           </dt>
-          <dd class="font-display text-lg tabular-nums">
+          <dd
+            class="font-display text-lg tabular-nums desk-credit"
+            data-consequence="credit"
+          >
             {props.hostedState === "signed-out" ? (
               <Link
                 href="/signin/?returnTo=%2Fdesk%2F"
@@ -80,9 +86,13 @@ export const DeskSummary = component$<{
               >
                 Sign in to view charges
               </Link>
-            ) : props.hostedState === "ready" && props.hostedSummary ? (
+            ) : props.hostedSummary &&
+              (props.hostedState === "ready" ||
+                props.hostedState === "loading") ? (
               props.hostedSummary.settledRequests > 0 ? (
-                `$${(props.hostedSummary.billedMicrousd / 1_000_000).toFixed(4)}${props.hostedSummary.truncated || props.hostedSummary.unresolvedRequests > 0 ? " (partial)" : ""}`
+                <DeskFigure
+                  value={`$${(props.hostedSummary.billedMicrousd / 1_000_000).toFixed(4)}${props.hostedSummary.truncated || props.hostedSummary.unresolvedRequests > 0 ? " (partial)" : ""}`}
+                />
               ) : (
                 "No confirmed charges"
               )

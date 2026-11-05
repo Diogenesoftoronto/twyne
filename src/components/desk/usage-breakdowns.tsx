@@ -47,7 +47,8 @@ export const UsageBreakdowns = component$<{
             <span class="truncate text-sm font-medium">{row.label}</span>
             <span class="h-2 bg-[var(--color-paper-3)]">
               <i
-                class="block h-full bg-[var(--color-cobalt)]"
+                key={`${row.generations}:${maximum}`}
+                class="desk-fill block h-full bg-[var(--color-cobalt)]"
                 style={{ width: `${(row.generations / maximum) * 100}%` }}
               />
             </span>

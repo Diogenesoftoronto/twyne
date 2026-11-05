@@ -1,4 +1,5 @@
-import { component$ } from "@qwik.dev/core";
+import { component$, useSignal, useVisibleTask$ } from "@qwik.dev/core";
+import { DeskFigure } from "./desk-figure";
 import type {
   EvidencePattern,
   WriterPatterns as WriterPatternEvidence,
@@ -17,6 +18,38 @@ export const WriterPatterns = component$<{
   patterns: WriterPatternEvidence;
   folioTitles: Record<string, string>;
 }>((props) => {
+  const newlyFiled = useSignal<string[]>([]);
+  const patternKeys = [
+    "currentStreak",
+    "longestStreak",
+    "mostActiveWeekday",
+    "mostUsedTool",
+    "mostRevisedFolio",
+  ];
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    const keys = track(() =>
+      Object.entries(props.patterns)
+        .filter(([, pattern]) => pattern.status === "available")
+        .map(([key]) => key)
+        .join(","),
+    );
+    try {
+      const seen = JSON.parse(
+        localStorage.getItem("twyne.desk.patterns-seen") ?? "[]",
+      ) as string[];
+      const fresh = keys
+        ? keys.split(",").filter((key) => !seen.includes(key))
+        : [];
+      newlyFiled.value = fresh;
+      localStorage.setItem(
+        "twyne.desk.patterns-seen",
+        JSON.stringify([...new Set([...seen, ...fresh])]),
+      );
+    } catch {
+      newlyFiled.value = [];
+    }
+  });
   const rows = [
     [
       "Current streak",
@@ -50,7 +83,10 @@ export const WriterPatterns = component$<{
     ],
   ];
   return (
-    <section aria-labelledby="patterns-heading" class="py-7">
+    <section
+      aria-labelledby="patterns-heading"
+      class="border-b-2 border-[var(--color-ink)] py-7"
+    >
       <p class="dept-label">03 / Evidence</p>
       <h2 id="patterns-heading" class="mt-1 font-display text-2xl">
         Writer patterns
@@ -60,12 +96,17 @@ export const WriterPatterns = component$<{
         retained instead of broken arbitrarily.
       </p>
       <dl class="mt-5 divide-y divide-dotted divide-[var(--color-ink-muted)] border-y border-[var(--color-ink)]">
-        {rows.map(([label, value]) => (
+        {rows.map(([label, value], index) => (
           <div key={label} class="grid gap-1 py-3 sm:grid-cols-[13rem_1fr]">
             <dt class="text-xs font-semibold tracking-[0.08em] uppercase text-[var(--color-ink-muted)]">
               {label}
             </dt>
-            <dd class="text-sm">{value}</dd>
+            <dd class="text-sm">
+              <DeskFigure value={value} />{" "}
+              {newlyFiled.value.includes(patternKeys[index]) && (
+                <span class="desk-filed">Filed</span>
+              )}
+            </dd>
           </div>
         ))}
       </dl>
