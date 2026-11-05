@@ -67,6 +67,8 @@ interface CitationsStore {
     savedThisSession: number;
     lastTickAt: number;
     error?: string;
+    /** Who is doing the searching. */
+    route?: { kind: string; label: string };
     /** Claims being researched right now (or the last pass). */
     progress: ResearchProgressItem[];
     /** Recently-settled claims, newest first. */
@@ -341,6 +343,7 @@ export const CitationsPanel = component$(
           savedThisSession: s.savedThisSession,
           lastTickAt: s.lastTickAt,
           error: s.error,
+          route: s.route,
           progress: s.progress,
           activity: s.activity,
         };
@@ -555,6 +558,15 @@ export const CitationsPanel = component$(
                       ? `${backgroundCount} source${backgroundCount === 1 ? "" : "s"} on file`
                       : RESEARCH_IDLE_LABEL[store.research.idleReason])}
                 </p>
+                {store.research.route && (
+                  <p
+                    class="panel-meta truncate"
+                    data-research-route={store.research.route.kind}
+                    title={store.research.route.label}
+                  >
+                    {store.research.route.label}
+                  </p>
+                )}
               </div>
             </div>
             <div class="flex items-center gap-1.5">
@@ -629,9 +641,11 @@ export const CitationsPanel = component$(
                         }
                       : item.status === "found"
                         ? { background: "var(--color-accent-green)" }
-                        : item.status === "missed"
-                          ? { background: "var(--color-ink-muted)" }
-                          : { background: "var(--color-paper-3)" };
+                        : item.status === "contradicted"
+                          ? { background: "var(--color-vermilion)" }
+                          : item.status === "missed"
+                            ? { background: "var(--color-ink-muted)" }
+                            : { background: "var(--color-paper-3)" };
                   return (
                     <TraceItem key={item.key} status={item.status}>
                       <details
@@ -655,26 +669,30 @@ export const CitationsPanel = component$(
                             class={`apparatus-trace-list__state apparatus-trace-list__state--${item.status}`}
                           >
                             {item.status === "searching"
-                              ? "searching"
+                              ? (item.step ?? "searching")
                               : item.status === "found"
-                                ? `${item.count ?? 0} found`
-                                : item.status === "missed"
-                                  ? "no match"
-                                  : item.status === "error"
-                                    ? "failed"
-                                    : "queued"}
+                                ? `${item.count ?? 0} support${item.count === 1 ? "s" : ""}`
+                                : item.status === "contradicted"
+                                  ? "contradicted"
+                                  : item.status === "missed"
+                                    ? "unsourced"
+                                    : item.status === "error"
+                                      ? "failed"
+                                      : "queued"}
                           </span>
                         </summary>
                         <div class="apparatus-trace-list__detail">
                           <p>
                             <span>What this means</span>
                             {item.status === "found"
-                              ? `${item.count ?? 0} source${item.count === 1 ? "" : "s"} on file for this claim. Check that they support your wording before you cite them.`
-                              : item.status === "missed"
-                                ? "The search ran and found nothing usable. The claim may need softer wording, or a source you add yourself."
-                                : item.status === "error"
-                                  ? "The search did not run to the end. This is a failure, not an empty result. Retry it."
-                                  : "Not settled yet."}
+                              ? `${item.count ?? 0} source${item.count === 1 ? " says" : "s say"} what this claim says, in the passage shown on the source.${item.contradicted ? ` ${item.contradicted} other${item.contradicted === 1 ? " says" : "s say"} otherwise.` : ""}`
+                              : item.status === "contradicted"
+                                ? `No source backed this claim, and ${item.contradicted ?? 1} says otherwise. Read it before you keep this wording.`
+                                : item.status === "missed"
+                                  ? `Searched ${item.searches ?? 1} way${item.searches === 1 ? "" : "s"}${item.read ? ` and read ${item.read} page${item.read === 1 ? "" : "s"}` : ""}; nothing said what this claim says. It may need softer wording, or a source you add yourself.`
+                                  : item.status === "error"
+                                    ? "The search did not run to the end. This is a failure, not an empty result. Retry it."
+                                    : "Not settled yet."}
                           </p>
                           <button
                             type="button"
@@ -820,8 +838,21 @@ export const CitationsPanel = component$(
                     {entry.title}
                   </p>
                   {(isCited || isBackground) && (
-                    <span class="desk-card__stamp">
-                      {isCited ? "cited" : "agent"}
+                    <span
+                      class="desk-card__stamp"
+                      style={
+                        !isCited && entry.support === "contradicts"
+                          ? { color: "var(--color-vermilion)" }
+                          : undefined
+                      }
+                    >
+                      {isCited
+                        ? "cited"
+                        : entry.support === "supports"
+                          ? "supports"
+                          : entry.support === "contradicts"
+                            ? "contradicts"
+                            : "agent"}
                     </span>
                   )}
                   <p class="desk-card__aside desk-card__detail">{entry.url}</p>
@@ -845,11 +876,21 @@ export const CitationsPanel = component$(
                         </span>
                       </p>
                     )}
-                    {entry.backgroundQuery && (
+                    {entry.evidence ? (
                       <p>
-                        why: {entry.backgroundQuery.slice(0, 100)}
-                        {entry.backgroundQuery.length > 100 ? "…" : ""}
+                        {entry.support === "contradicts"
+                          ? "says otherwise"
+                          : "says"}
+                        : “{entry.evidence.slice(0, 220)}
+                        {entry.evidence.length > 220 ? "…" : ""}”
                       </p>
+                    ) : (
+                      entry.backgroundQuery && (
+                        <p>
+                          why: {entry.backgroundQuery.slice(0, 100)}
+                          {entry.backgroundQuery.length > 100 ? "…" : ""}
+                        </p>
+                      )
                     )}
                   </div>
                 )}

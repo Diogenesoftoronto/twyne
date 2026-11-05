@@ -72,6 +72,8 @@ interface ApparatusStore {
     savedThisSession: number;
     lastTickAt: number;
     provider?: string;
+    /** Who is doing the searching. */
+    route?: { kind: string; label: string };
     error?: string;
     progress: ResearchProgressItem[];
     activity: ResearchActivityEntry[];
@@ -214,6 +216,7 @@ export default component$(() => {
         savedThisSession: s.savedThisSession,
         lastTickAt: s.lastTickAt,
         provider: s.provider,
+        route: s.route,
         error: s.error,
         progress: s.progress,
         activity: s.activity,
@@ -590,12 +593,14 @@ export default component$(() => {
                   claims inside it.
                 </p>
               )}
-              {store.research.provider && (
+              {(store.research.route || store.research.provider) && (
                 <p
                   class="text-[0.65rem] text-[var(--color-ink-muted)] mt-0.5"
                   style={{ fontFamily: "var(--font-typewriter)" }}
+                  data-research-route={store.research.route?.kind}
                 >
-                  provider: {store.research.provider}
+                  {store.research.route?.label ??
+                    `provider: ${store.research.provider}`}
                 </p>
               )}
             </div>
@@ -657,9 +662,11 @@ export default component$(() => {
                             }
                           : item.status === "found"
                             ? { background: "var(--color-accent-green)" }
-                            : item.status === "missed"
-                              ? { background: "var(--color-ink-muted)" }
-                              : { background: "var(--color-paper-3)" };
+                            : item.status === "contradicted"
+                              ? { background: "var(--color-vermilion)" }
+                              : item.status === "missed"
+                                ? { background: "var(--color-ink-muted)" }
+                                : { background: "var(--color-paper-3)" };
                       return (
                         <li
                           key={item.key}
@@ -688,14 +695,16 @@ export default component$(() => {
                               }
                             >
                               {item.status === "searching"
-                                ? "searching…"
+                                ? `${item.step ?? "searching"}…`
                                 : item.status === "found"
-                                  ? `${item.count ?? 0} source${(item.count ?? 1) === 1 ? "" : "s"} found`
-                                  : item.status === "missed"
-                                    ? "no sources matched"
-                                    : item.status === "error"
-                                      ? `⚠ ${item.error ?? "failed to research"}`
-                                      : "queued"}
+                                  ? `${item.count ?? 0} source${(item.count ?? 1) === 1 ? " supports" : "s support"} it`
+                                  : item.status === "contradicted"
+                                    ? `contradicted by ${item.contradicted ?? 1} source${item.contradicted === 1 ? "" : "s"}`
+                                    : item.status === "missed"
+                                      ? `nothing backed it after ${item.searches ?? 1} search${item.searches === 1 ? "" : "es"}`
+                                      : item.status === "error"
+                                        ? `⚠ ${item.error ?? "failed to research"}`
+                                        : "queued"}
                             </p>
                           </div>
                           {item.status === "error" && (
@@ -732,7 +741,8 @@ export default component$(() => {
                           class={
                             a.outcome === "found"
                               ? "text-[var(--color-accent-green)] flex-shrink-0"
-                              : a.outcome === "error"
+                              : a.outcome === "error" ||
+                                  a.outcome === "contradicted"
                                 ? "text-[var(--color-vermilion)] flex-shrink-0"
                                 : "text-[var(--color-ink-muted)] flex-shrink-0"
                           }
@@ -740,9 +750,11 @@ export default component$(() => {
                         >
                           {a.outcome === "found"
                             ? `✦ +${a.count}`
-                            : a.outcome === "error"
-                              ? "⚠"
-                              : "✗"}
+                            : a.outcome === "contradicted"
+                              ? "≠"
+                              : a.outcome === "error"
+                                ? "⚠"
+                                : "✗"}
                         </span>
                         <span class="truncate text-[var(--color-ink-muted)]">
                           “{a.anchor.slice(0, 60)}

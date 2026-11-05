@@ -48,6 +48,11 @@ export interface BibEntry {
   accepted?: boolean;
   /** The claim/quote/work this source was found for (auto-research). */
   target?: ResearchTargetRef;
+  /** What the source does to that claim, as judged from `evidence`. */
+  support?: "supports" | "contradicts";
+  supportConfidence?: number;
+  /** The passage the verdict was read from. */
+  evidence?: string;
   /** Free-form creation timestamp (used by AI-generated entries). */
   createdAt?: number;
   /** Set after the editor confirms this source was placed as a footnote. */

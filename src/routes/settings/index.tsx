@@ -3602,7 +3602,7 @@ export default component$(() => {
                       options={[
                         {
                           value: "hosted",
-                          label: "Hosted Twyne search",
+                          label: "Automatic",
                         },
                         {
                           value: "search-api",
@@ -3626,8 +3626,9 @@ export default component$(() => {
                       class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
                       style={{ fontFamily: "var(--font-typewriter)" }}
                     >
-                      Browser-side providers fall back to hosted search if they
-                      cannot return sources.
+                      Automatic searches through your Twyne account when you are
+                      signed in. Signed out, it uses your search key, then web
+                      search from an OpenAI, Anthropic or Google model.
                     </p>
                   </div>
 
@@ -3802,8 +3803,10 @@ export default component$(() => {
                       style={{ fontFamily: "var(--font-typewriter)" }}
                     >
                       Uses the Apparatus Web Search feature routing above.
-                      Choose a provider/model whose endpoint has web search
-                      enabled.
+                      OpenAI, Anthropic and Google models search the web
+                      themselves, and only pages the search returned are kept.
+                      Other providers are asked for sources without a live
+                      search.
                     </p>
                   )}
                 </div>

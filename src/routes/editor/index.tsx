@@ -79,6 +79,7 @@ import {
   stopBackgroundResearch,
   kickBackgroundResearch,
   onDraftChanged,
+  setResearchSignedIn,
 } from "../../utils/background-research";
 import {
   roomReadKey,
@@ -219,6 +220,14 @@ export default component$(() => {
             : null,
         auth.value.user!.id,
       ),
+    );
+  });
+  // Research searches through the account when there is one, and through
+  // the writer's own keys when there is not.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    setResearchSignedIn(
+      hasAuthenticatedConvexIdentity(track(() => auth.value)),
     );
   });
   // Controls the shared AccountMenu (Editor's Office); external triggers such

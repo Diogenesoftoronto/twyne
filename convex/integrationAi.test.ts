@@ -76,6 +76,7 @@ const searches: Array<{
   headers: Record<string, unknown>;
 }> = [];
 const assertions: Array<Record<string, unknown>> = [];
+const fetches: Array<{ url: string; headers: Record<string, unknown> }> = [];
 const SEARCH_HITS = [
   {
     title: "An unsourced mention",
@@ -270,6 +271,18 @@ async function startStub(): Promise<string> {
       res.setHeader("content-type", "application/json");
       if (req.url === "/v1/wallet") {
         res.end(JSON.stringify({ subscriptions: [] }));
+        return;
+      }
+      if (req.url === "/v1/web/fetch") {
+        const body = JSON.parse(raw) as { url: string };
+        fetches.push({ url: body.url, headers: req.headers });
+        res.end(
+          JSON.stringify({
+            url: body.url,
+            title: "Fleet survey",
+            markdown: "The fleet survey counted 412 ships in 1911.",
+          }),
+        );
         return;
       }
       if (req.url === "/search" || req.url === "/v1/web/search") {
@@ -467,6 +480,7 @@ afterEach(() => {
   researchReply = undefined;
   searchHits = SEARCH_HITS;
   searches.length = 0;
+  fetches.length = 0;
   assertions.length = 0;
 });
 
@@ -1428,6 +1442,98 @@ describeConvex("auto-research on the token path", () => {
     expect(body).toMatchObject({ ok: false, code: "provider_unavailable" });
     expect(JSON.stringify(body)).not.toContain("private upstream detail");
     expect(searches).toHaveLength(2);
+  });
+
+  test("with no RESEARCH_PROVIDER, an enabled Not Organic is the search", async () => {
+    const { t, call } = await harness();
+    vi.stubEnv("RESEARCH_PROVIDER", undefined);
+    vi.stubEnv("NOTORGANIC_ENABLED", "true");
+    vi.stubEnv("NOTORGANIC_ISSUER", stubEndpoint);
+    vi.stubEnv(
+      "NOTORGANIC_ASSERTION_PRIVATE_KEY",
+      generateKeyPairSync("ed25519")
+        .privateKey.export({ format: "pem", type: "pkcs8" })
+        .toString(),
+    );
+    await t.run(async (ctx) => {
+      await ctx.db.insert("providerIdentities", {
+        productSubject: SUBJECT,
+        did: "did:plc:research-writer",
+        sessionVersion: 3,
+        verificationMethod: "notorganic_pkce",
+        verifiedAt: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      });
+    });
+    const data = await ok<{ provider: string }>(
+      await call({ operation: "research.sources", target }),
+    );
+    expect(data.provider).toBe("notorganic");
+    expect(searches[0].headers.authorization).toBe("DPoP search-stub-token");
+  });
+
+  test("Not Organic reads a page as the linked DID with web:fetch", async () => {
+    const { t } = await harness();
+    vi.stubEnv("RESEARCH_PROVIDER", "notorganic");
+    vi.stubEnv("NOTORGANIC_ENABLED", "true");
+    vi.stubEnv("NOTORGANIC_ISSUER", stubEndpoint);
+    vi.stubEnv(
+      "NOTORGANIC_ASSERTION_PRIVATE_KEY",
+      generateKeyPairSync("ed25519")
+        .privateKey.export({ format: "pem", type: "pkcs8" })
+        .toString(),
+    );
+    await t.run(async (ctx) => {
+      await ctx.db.insert("providerIdentities", {
+        productSubject: SUBJECT,
+        did: "did:plc:research-writer",
+        sessionVersion: 3,
+        verificationMethod: "notorganic_pkce",
+        verifiedAt: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      });
+    });
+    const page = await t
+      .withIdentity({
+        tokenIdentifier: OWNER,
+        subject: SUBJECT,
+        issuer: ISSUER,
+      })
+      .action(api.research.fetchSource, {
+        url: "https://www.archive.test/fleet",
+      });
+    expect(page).toMatchObject({
+      provider: "notorganic",
+      title: "Fleet survey",
+      markdown: "The fleet survey counted 412 ships in 1911.",
+    });
+    expect(
+      assertions.find((a) =>
+        (a.capabilities as string[]).includes("web:fetch"),
+      ),
+    ).toMatchObject({ sub: "did:plc:research-writer" });
+    expect(fetches[0]).toMatchObject({
+      url: "https://www.archive.test/fleet",
+      headers: { authorization: "DPoP search-stub-token" },
+    });
+  });
+
+  test("keenable searches with its own key in pro mode", async () => {
+    const { call } = await harness();
+    vi.stubEnv("RESEARCH_PROVIDER", "keenable");
+    vi.stubEnv("RESEARCH_API_KEY", "keenable-test-key");
+    const data = await ok<{ provider: string; results: Source[] }>(
+      await call({ operation: "research.sources", target, maxResults: 2 }),
+    );
+    expect(data.provider).toBe("keenable");
+    expect(searches[0]).toMatchObject({
+      query: target.query,
+      max_results: 2,
+      mode: "pro",
+      headers: { "x-api-key": "keenable-test-key" },
+    });
   });
 
   test("research fields are validated before any provider call", async () => {

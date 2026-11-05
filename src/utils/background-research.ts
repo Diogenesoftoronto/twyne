@@ -11,23 +11,28 @@ import { cancelAccountResearchReview } from "./account-knowledge";
  *      its own precise search query.
  *   3. Skip targets whose passage already has a saved source or was
  *      researched recently (dedupe), cap the pass at a few targets.
- *   4. Resolve each target through the configured research provider, one
- *      query at a time, and merge the best hit into the bibliography with
- *      `provenance: "background"` so the panel can tell who found them.
+ *   4. Research each target as a loop (`resolveClaim`): search, read the
+ *      best pages, judge each passage against the claim, and try another
+ *      query when nothing supports it. Supporting sources are saved with the
+ *      passage that backs them; contradicting ones are saved and flagged.
+ *      Both carry `provenance: "background"` so the panel can tell who
+ *      found them.
  *   5. Stream the pass live: every state change (extract → per-claim search
  *      → save → outcome) updates an in-memory ledger that `snapshot()` hands
  *      to the UI, and each saved claim fires its own `twyne:background-sources`
  *      event so the panel can show sources as they land, not in a lump.
  *
- * The Convex client, a research provider, and an AI model are all required.
- * Missing any of those, the watcher stays a no-op — the writer still sees
- * their manually-saved sources.
+ * Reading the draft needs the writer's model or a signed-in account (Jev).
+ * Searching needs a route (`research-route.ts`): the account when signed in,
+ * otherwise the writer's own search or AI key. Missing either, the watcher
+ * goes idle and says which — the writer still sees their saved sources.
  */
 
 import type { ConvexClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
 import type { Source } from "../../convex/research";
 import type {
+  AiSettings,
   ApparatusSettings,
   ProjectBrief,
   ResearchTarget,
@@ -36,9 +41,18 @@ import type {
 } from "../types";
 import {
   hasConfiguredAiProvider,
+  nativeWebSearchKind,
+  resolveFeatureConfig,
   runClientResearchExtract,
   runClientResearchWebSearch,
+  runClientSourceSupport,
 } from "./ai-client";
+import {
+  NO_ROUTE_MESSAGE,
+  describeResearchRoute,
+  resolveResearchRoute,
+  type ResearchRoute,
+} from "./research-route";
 import { searchMcpServers, setMcpConvexClient } from "./mcp-research";
 import { askJudgement } from "./judgement-client";
 import {
@@ -46,7 +60,22 @@ import {
   claimCandidates,
   confirmedTargets,
 } from "./research-candidates";
-import { runSearchBackend, searchBackend } from "./research-backends";
+import {
+  fetchPageWithBackend,
+  runSearchBackend,
+  searchBackend,
+} from "./research-backends";
+import {
+  CANDIDATES_PER_QUERY,
+  evidencePassage,
+  isRateLimited,
+  researchQueries,
+  settledVerdict,
+  supportReadings,
+  supportRequest,
+  type SupportCandidate,
+  type SupportReading,
+} from "./research-verify";
 import { loadAiSettingsFromIdb, loadApparatusSettingsFromIdb } from "./idb";
 import {
   type BibEntry,
@@ -70,7 +99,6 @@ import {
 const DEBOUNCE_MS = 45_000;
 const PASS_TTL_MS = 5 * 60_000; // don't chase the same set of claims every pass
 const MAX_BACKGROUND_PER_FOLIO = 25; // soft cap so the bib doesn't grow forever
-const SNIPPET_MIN_CHARS = 40; // skip throwaway stubs
 const MIN_DRAFT_CHARS = 120; // too thin to bother an AI
 // The signed-in free hosted tier permits five searches per minute. Extraction
 // can queue more targets, but one immediate pass must not make the sixth fail.
@@ -90,6 +118,8 @@ interface ResearchState {
   idleReason: ResearchIdleReason;
   /** When a failed pass will try again on its own. */
   nextRetryAt?: number;
+  /** Where searches go right now. */
+  route?: ResearchRoute;
 }
 
 /**
@@ -100,6 +130,7 @@ export type ResearchIdleReason =
   | "waiting"
   | "too-short"
   | "no-provider"
+  | "no-search"
   | "no-claims"
   | "covered"
   | "pass-done";
@@ -109,6 +140,7 @@ export const RESEARCH_IDLE_LABEL: Record<ResearchIdleReason, string> = {
   waiting: "Waiting for a pause",
   "too-short": "Draft too short",
   "no-provider": "Sign in to research",
+  "no-search": "Nothing to search with",
   "no-claims": "No claims to source",
   covered: "Claims covered",
   "pass-done": "Pass finished",
@@ -118,7 +150,9 @@ export const RESEARCH_IDLE_COPY: Record<ResearchIdleReason, string> = {
   waiting: "Waiting for you to pause. Research runs after a quiet moment.",
   "too-short": "The draft is too short to check for claims yet.",
   "no-provider":
-    "Automatic research starts when you sign in or choose an AI provider in Settings.",
+    "Automatic research starts when you sign in or add an AI key in Settings.",
+  "no-search":
+    "Your AI key can read the draft but cannot search the web. Sign in, add a search key, or choose an OpenAI, Anthropic or Google model for web search in Settings.",
   "no-claims":
     "Read the draft and found no claims that need a source right now.",
   covered: "Every claim it found already has a source or was just checked.",
@@ -129,6 +163,7 @@ export type ResearchTargetStatus =
   | "queued"
   | "searching"
   | "found"
+  | "contradicted"
   | "missed"
   | "error";
 
@@ -139,8 +174,15 @@ export interface ResearchProgressItem {
   anchor: string;
   query: string;
   status: ResearchTargetStatus;
-  /** How many sources were saved when status is "found". */
+  /** How many supporting sources were saved when status is "found". */
   count?: number;
+  /** How many sources were saved because they contradict the claim. */
+  contradicted?: number;
+  /** What the loop is doing for this claim right now. */
+  step?: string;
+  /** Searches run and pages read, once the claim settles. */
+  searches?: number;
+  read?: number;
   /** Human-readable reason when the claim hit an error. */
   error?: string;
   at?: number;
@@ -153,10 +195,12 @@ export interface ResearchActivityEntry {
   kind: string;
   anchor: string;
   query: string;
-  outcome: "found" | "missed" | "error";
+  outcome: ResearchOutcome;
   count: number;
   error?: string;
 }
+
+export type ResearchOutcome = "found" | "contradicted" | "missed" | "error";
 
 interface ResearchSnapshot {
   lastQuery: string;
@@ -175,6 +219,8 @@ interface ResearchSnapshot {
   idleReason: ResearchIdleReason;
   /** When a failed pass retries on its own, if one is scheduled. */
   nextRetryAt?: number;
+  /** Who is doing the searching, for the status line. */
+  route?: { kind: ResearchRoute["kind"]; label: string };
   passActive: boolean;
   progress: ResearchProgressItem[];
   activity: ResearchActivityEntry[];
@@ -192,6 +238,8 @@ const state: ResearchState = {
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let activeClient: ConvexClient | null = null;
+/** A Convex client exists signed out too; only a signed-in one can search. */
+let signedIn = false;
 let activeBrief: ProjectBrief | null = null;
 let activeFolioId: string | null = null;
 /** Targets researched already this session, by stable key. */
@@ -284,6 +332,10 @@ export function snapshot(): ResearchSnapshot {
     phase: state.phase,
     idleReason: state.idleReason,
     nextRetryAt: state.nextRetryAt,
+    route: state.route && {
+      kind: state.route.kind,
+      label: describeResearchRoute(state.route),
+    },
     passActive: passInFlight,
     progress: [...progressItems],
     activity: [...activityLog],
@@ -305,7 +357,7 @@ function logActivity(
   kind: string,
   anchor: string,
   query: string,
-  outcome: "found" | "missed" | "error",
+  outcome: ResearchOutcome,
   count: number,
   error?: string,
 ): void {
@@ -500,8 +552,54 @@ export async function steerBackgroundResearch(
     : { ok: true };
 }
 
-/** Take one claim through search → rank → save, updating its live row and
- *  the activity feed as it goes. Shared by the pass loop and single retries. */
+/** Wait out a rate limit instead of failing the claim. */
+function retryAfter(message: string): number {
+  const seconds = Number(message.match(/try again in (\d+)\s*s/i)?.[1]);
+  return Number.isFinite(seconds) && seconds > 0
+    ? Math.min(90, seconds + 1) * 1000
+    : 30_000;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Run a hosted call, pausing once if the account's per-minute budget is
+ * spent. A background pass has time; a rate limit is a reason to wait.
+ */
+async function paced<T>(
+  row: ResearchProgressItem,
+  generation: number,
+  call: () => Promise<T>,
+  failed: (value: T) => string | null,
+): Promise<T> {
+  const first = await call();
+  const message = failed(first);
+  if (!message || !isRateLimited(message)) return first;
+  if (generation !== researchGeneration) return first;
+  const wait = retryAfter(message);
+  row.step = `waiting ${Math.round(wait / 1000)}s for the search budget`;
+  notify();
+  await sleep(wait);
+  if (generation !== researchGeneration) return first;
+  return call();
+}
+
+interface CheckedSource {
+  source: Source;
+  passage: string;
+  verdict: "supports" | "contradicts";
+  confidence: number;
+}
+
+/**
+ * Take one claim through the research loop and settle its live row:
+ *
+ *   search → read the best pages → judge each passage → save what supports
+ *
+ * A query that turns up nothing supporting is followed by the next way of
+ * asking (`researchQueries`). Contradicting sources are kept and flagged.
+ * Shared by the pass loop, directed research and single retries.
+ */
 async function resolveClaim(
   row: ResearchProgressItem,
   target: ResearchTarget,
@@ -509,60 +607,214 @@ async function resolveClaim(
 ): Promise<void> {
   if (run.generation !== researchGeneration) return;
   const settings = await loadApparatusSettingsFromIdb();
+  const aiSettings = await loadAiSettingsFromIdb();
   row.status = "searching";
   row.error = undefined;
+  row.contradicted = undefined;
   notify();
 
-  let outcome: SearchOutcome;
-  try {
-    outcome = await searchForTarget(target, settings);
-  } catch (err) {
-    outcome = { ok: false, message: errorMessage(err, "Search failed.") };
-  }
-  if (run.generation !== researchGeneration) return;
-  if (outcome.ok) state.lastProvider = outcome.provider;
-
-  let found = 0;
+  const queries = researchQueries(target);
+  const onFile = new Set(
+    (await loadBibliography())
+      .filter((e) => e.folioId === run.folioId)
+      .map((e) => normalizeUrl(e.url)),
+  );
+  const judged = new Set<string>();
+  const kept: CheckedSource[] = [];
+  let searches = 0;
+  let read = 0;
   let failMsg: string | undefined;
-  if (outcome.ok) {
-    const ranked = rankSourcesForTarget(outcome.results);
+
+  for (const [i, query] of queries.entries()) {
+    row.query = query;
+    row.step = `search ${i + 1} of ${queries.length}`;
+    state.lastQuery = query;
+    notify();
+    let outcome: SearchOutcome;
+    try {
+      outcome = await paced(
+        row,
+        run.generation,
+        () => searchForTarget(target, settings, query),
+        (o) => (o.ok ? null : o.message),
+      );
+    } catch (err) {
+      outcome = { ok: false, message: errorMessage(err, "Search failed.") };
+    }
+    if (run.generation !== researchGeneration) return;
+    searches += 1;
+    if (!outcome.ok) {
+      // A later query may still get through; the claim fails only if none do.
+      failMsg = outcome.message;
+      continue;
+    }
+    failMsg = undefined;
+    state.lastProvider = outcome.provider;
+
+    const candidates = rankSourcesForTarget(outcome.results)
+      .filter((src) => {
+        const key = src.url && normalizeUrl(src.url);
+        return key && !judged.has(key) && !onFile.has(key);
+      })
+      .slice(0, CANDIDATES_PER_QUERY);
+    if (!candidates.length) continue;
+    for (const src of candidates) judged.add(normalizeUrl(src.url));
+
+    const passages: SupportCandidate[] = [];
+    for (const src of candidates) {
+      row.step = `reading ${hostOf(src.url)}`;
+      notify();
+      const page = await readPage(src.url, settings, row, run.generation);
+      if (run.generation !== researchGeneration) return;
+      if (page) read += 1;
+      passages.push({
+        url: src.url,
+        title: src.title || src.url,
+        passage: evidencePassage(
+          target.anchor,
+          [src.snippet, page].filter(Boolean).join("\n\n"),
+        ),
+      });
+    }
+
+    row.step = `checking ${passages.length} source${passages.length === 1 ? "" : "s"}`;
+    notify();
+    const readings = await judgeSupport(target.anchor, passages, aiSettings);
+    if (run.generation !== researchGeneration) return;
+    if (!readings) {
+      failMsg = "The sources could not be checked against the claim.";
+      continue;
+    }
+    readings.forEach((reading, j) => {
+      const verdict = settledVerdict(reading);
+      if (verdict)
+        kept.push({
+          source: candidates[j],
+          passage: passages[j].passage,
+          verdict,
+          confidence: reading.confidence,
+        });
+    });
+    if (kept.some((k) => k.verdict === "supports")) break;
+  }
+
+  let supported = 0;
+  let contradicted = 0;
+  if (kept.length) {
     try {
       setStatus("running", "saving");
-      found = await persistTarget(target, ranked, run.folioId);
+      ({ supported, contradicted } = await persistTarget(
+        target,
+        kept,
+        run.folioId,
+      ));
       setStatus("running", "searching");
+      failMsg = undefined;
     } catch (err) {
-      found = 0;
       failMsg = errorMessage(err, "Could not save the found sources.");
     }
-  } else {
-    failMsg = outcome.message;
   }
 
   row.at = Date.now();
-  if (found > 0) {
-    row.status = "found";
-    row.count = found;
-    recentTargetKeys.add(targetKey(target));
-    state.savedThisSession += found;
+  row.step = undefined;
+  row.searches = searches;
+  row.read = read;
+  row.contradicted = contradicted || undefined;
+  let outcome: ResearchOutcome;
+  if (supported > 0) {
+    outcome = "found";
+    row.count = supported;
+    state.savedThisSession += supported;
+  } else if (contradicted > 0) {
+    outcome = "contradicted";
   } else if (failMsg) {
-    row.status = "error";
+    outcome = "error";
     row.error = failMsg;
   } else {
-    row.status = "missed";
-    // A miss remains available for explicit retry in Deep Trace, but should
-    // not monopolize every automatic pass and starve later dossier targets.
-    recentTargetKeys.add(targetKey(target));
+    outcome = "missed";
   }
+  row.status = outcome;
+  // A settled claim, sourced or not, stays settled for this session; Deep
+  // Trace still offers an explicit retry. Errors are retried on their own.
+  if (outcome !== "error") recentTargetKeys.add(targetKey(target));
   logActivity(
     target.kind,
     target.anchor,
-    target.query,
-    failMsg ? "error" : found > 0 ? "found" : "missed",
-    found,
-    failMsg,
+    row.query,
+    outcome,
+    supported || contradicted,
+    row.error,
   );
   notify();
-  emitSaved(target, found, run.folioId);
+  emitSaved(target, supported + contradicted, run.folioId);
+}
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "the page";
+  }
+}
+
+/** Read a page through the route that searched for it, when it can read. */
+async function readPage(
+  url: string,
+  settings: ApparatusSettings,
+  row: ResearchProgressItem,
+  generation: number,
+): Promise<string | null> {
+  const route = state.route;
+  if (route?.kind === "search-api")
+    return fetchPageWithBackend(url, settings.searchBackend);
+  if (route?.kind !== "account" || !activeClient) return null;
+  const client = activeClient;
+  try {
+    const res = await paced(
+      row,
+      generation,
+      async () => {
+        try {
+          return (await client.action(api.research.fetchSource, { url })) as {
+            markdown?: string;
+            provider?: string;
+          };
+        } catch (err) {
+          return { error: errorMessage(err, "fetch failed") };
+        }
+      },
+      (r) => ("error" in r ? (r.error as string) : null),
+    );
+    if ("error" in res || res.provider === "local") return null;
+    return res.markdown?.trim() ? res.markdown : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Jev for a signed-in writer (or their own judgement endpoint), else their model. */
+async function judgeSupport(
+  claim: string,
+  candidates: SupportCandidate[],
+  aiSettings: AiSettings | null,
+): Promise<SupportReading[] | null> {
+  if (!candidates.length) return [];
+  const ownJudge = aiSettings?.judgement?.source;
+  if ((signedIn && activeClient) || (ownJudge && ownJudge !== "twyne")) {
+    const result = await askJudgement(
+      activeClient,
+      supportRequest(claim, candidates),
+    );
+    if (result.ok) return supportReadings(candidates.length, result);
+  }
+  if (aiSettings && hasConfiguredAiProvider(aiSettings)) {
+    try {
+      return await runClientSourceSupport(claim, candidates, aiSettings);
+    } catch {
+      return null;
+    }
+  }
+  return null;
 }
 
 /** Fingerprint of a set of targets — stable identity for the TTL cache. */
@@ -625,6 +877,35 @@ export function startBackgroundResearch(args: {
   settle("waiting");
 }
 
+/** Signing in or out changes who searches, so the draft is read again. */
+export function setResearchSignedIn(value: boolean): void {
+  if (signedIn === value) return;
+  signedIn = value;
+  if (activeFolioId && lastDraftText) schedule(lastDraftText, 0, true);
+}
+
+/** The route for these settings and the current sign-in. */
+function routeFor(
+  settings: ApparatusSettings,
+  aiSettings: AiSettings | null,
+): ResearchRoute {
+  const resolved =
+    aiSettings && hasConfiguredAiProvider(aiSettings)
+      ? resolveFeatureConfig(aiSettings, "research-web-search")
+      : null;
+  return resolveResearchRoute({
+    provider: settings.researchProvider,
+    searchBackend: settings.searchBackend,
+    signedIn: signedIn && !!activeClient,
+    searchModel: resolved
+      ? {
+          name: resolved.provider.name || resolved.provider.type,
+          live: !!nativeWebSearchKind(resolved.provider),
+        }
+      : null,
+  });
+}
+
 function schedule(draftText: string, delay: number, force = false): void {
   if (debounceTimer) clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
@@ -650,10 +931,20 @@ async function runOnce(
   // The watcher decides "what needs a source" with the writer's model when
   // they have one, and otherwise with the text itself and Jev on Twyne's
   // service. Only a signed-out writer with no model has no automatic path.
-  const aiSettings = await loadAiSettingsFromIdb();
+  const [aiSettings, apparatus] = await Promise.all([
+    loadAiSettingsFromIdb(),
+    loadApparatusSettingsFromIdb(),
+  ]);
   const ownModel = !!aiSettings && hasConfiguredAiProvider(aiSettings);
-  if (!ownModel && !activeClient) {
+  if (!ownModel && !(signedIn && activeClient)) {
+    state.route = undefined;
     settle("no-provider");
+    return;
+  }
+  // Nothing is read until something can search for what it finds.
+  state.route = routeFor(apparatus, aiSettings);
+  if (state.route.kind === "none") {
+    settle("no-search");
     return;
   }
 
@@ -788,25 +1079,32 @@ async function extractOnService(
 async function searchForTarget(
   target: ResearchTarget,
   settings: ApparatusSettings,
+  query = target.query,
 ): Promise<SearchOutcome> {
-  const query = target.query;
   const context = buildResearchSearchContext(target);
   const instructions = buildResearchSearchInstructions(target);
-  const configured = await searchWithConfiguredProvider(
-    query,
-    context,
-    settings,
-    instructions,
-  );
-  if (configured) return configured;
-  // Hosted fallback: a locally-configured provider wasn't usable or chosen.
-  if (!activeClient) {
-    return {
-      ok: false,
-      message:
-        "No research provider is configured — add one in Settings, or sign in for the built-in research service.",
-    };
+  const route = routeFor(settings, await loadAiSettingsFromIdb());
+  state.route = route;
+  switch (route.kind) {
+    case "search-api":
+      return searchViaBackend(query, context, settings);
+    case "model-web-search":
+      return searchModelEndpoint(query, context, settings, instructions);
+    case "mcp":
+      return searchViaMcp(query, context, settings);
+    case "none":
+      return { ok: false, message: NO_ROUTE_MESSAGE };
+    case "account":
+      return searchViaAccount(query, context);
   }
+}
+
+/** Twyne's own search, through the signed-in writer's account. */
+async function searchViaAccount(
+  query: string,
+  context: string,
+): Promise<SearchOutcome> {
+  if (!activeClient) return { ok: false, message: NO_ROUTE_MESSAGE };
   try {
     const res = (await activeClient.action(api.research.searchSources, {
       query,
@@ -832,30 +1130,11 @@ async function searchForTarget(
   }
 }
 
-async function searchWithConfiguredProvider(
-  query: string,
-  context: string,
-  settings: ApparatusSettings,
-  instructions: string,
-): Promise<SearchOutcome | null> {
-  switch (settings.researchProvider) {
-    case "search-api":
-      return searchViaBackend(query, context, settings);
-    case "model-web-search":
-      return searchModelEndpoint(query, context, settings, instructions);
-    case "web-mcp":
-      return searchViaMcp(query, context, settings);
-    case "hosted":
-    default:
-      return null;
-  }
-}
-
 async function searchViaBackend(
   query: string,
   context: string,
   settings: ApparatusSettings,
-): Promise<SearchOutcome | null> {
+): Promise<SearchOutcome> {
   const adapter = searchBackend(settings.searchBackend.id);
   try {
     const res = await runSearchBackend(
@@ -877,7 +1156,7 @@ async function searchModelEndpoint(
   context: string,
   settings: ApparatusSettings,
   instructions: string,
-): Promise<SearchOutcome | null> {
+): Promise<SearchOutcome> {
   const aiSettings = await loadAiSettingsFromIdb();
   if (!aiSettings) {
     return {
@@ -912,7 +1191,7 @@ async function searchViaMcp(
   query: string,
   context: string,
   settings: ApparatusSettings,
-): Promise<SearchOutcome | null> {
+): Promise<SearchOutcome> {
   try {
     const { searchAccountKnowledge, accountKnowledgeGeneration } = await import(
       "./account-knowledge"
@@ -955,11 +1234,12 @@ async function searchViaMcp(
   }
 }
 
+/** Save the checked sources for one claim; returns how many of each landed. */
 async function persistTarget(
   target: ResearchTarget,
-  results: Source[],
+  checked: CheckedSource[],
   folioId: string,
-): Promise<number> {
+): Promise<{ supported: number; contradicted: number }> {
   const all = await loadBibliography();
   const seen = new Set(
     all.filter((e) => e.folioId === folioId).map((e) => normalizeUrl(e.url)),
@@ -974,13 +1254,18 @@ async function persistTarget(
     query: target.query,
     reason: target.reason,
   };
-  let saved = 0;
+  let supported = 0;
+  let contradicted = 0;
 
-  for (const src of results) {
+  // Support first, so a full folio still keeps the sources that back a claim.
+  const ordered = [...checked].sort(
+    (a, b) =>
+      Number(b.verdict === "supports") - Number(a.verdict === "supports") ||
+      b.confidence - a.confidence,
+  );
+  for (const { source: src, passage, verdict, confidence } of ordered) {
     if (budget <= 0) break;
-    if (!src.url) continue;
-    if (seen.has(normalizeUrl(src.url))) continue;
-    if ((src.snippet?.length ?? 0) < SNIPPET_MIN_CHARS) continue;
+    if (!src.url || seen.has(normalizeUrl(src.url))) continue;
     const entry: BibEntry = {
       id: crypto.randomUUID(),
       folioId,
@@ -995,13 +1280,17 @@ async function persistTarget(
       provenance: "background",
       backgroundQuery: target.query,
       target: ref,
+      support: verdict,
+      supportConfidence: confidence,
+      evidence: passage,
       accepted: false,
     };
     all.push(entry);
     seen.add(normalizeUrl(src.url));
-    saved += 1;
+    if (verdict === "supports") supported += 1;
+    else contradicted += 1;
     budget -= 1;
   }
-  if (saved > 0) await saveBibliography(all);
-  return saved;
+  if (supported + contradicted > 0) await saveBibliography(all);
+  return { supported, contradicted };
 }

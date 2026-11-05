@@ -14,6 +14,7 @@ describe("search backend adapters", () => {
       const { init } = SEARCH_BACKENDS[id].buildRequest(req, config({ id }));
       return init.headers as Record<string, string>;
     };
+    expect(auth("keenable")["x-api-key"]).toBe("k");
     expect(auth("tinyfish").authorization).toBe("Bearer k");
     expect(auth("exa")["x-api-key"]).toBe("k");
     expect(auth("tavily").authorization).toBe("Bearer k");
