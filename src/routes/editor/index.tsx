@@ -1110,7 +1110,7 @@ export default component$(() => {
   if (!store.hydrated) {
     return (
       <div class="flex h-screen items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">
-        <div class="folio px-6 py-5 text-center">
+        <div class="folio px-6 py-5 text-center press-hydration">
           <p class="dept-label">Press Room</p>
           <p
             class="mt-2 font-display text-lg italic text-[var(--color-ink-light)]"
@@ -1118,6 +1118,12 @@ export default component$(() => {
           >
             Setting the type…
           </p>
+          <div class="press-type-slugs" data-ambient aria-hidden="true">
+            <i />
+            <i />
+            <i />
+            <i />
+          </div>
         </div>
       </div>
     );
@@ -1131,8 +1137,7 @@ export default component$(() => {
         !auth.value.user && (
           <div
             role="status"
-            class="fixed bottom-4 left-1/2 z-[60] w-[min(92vw,30rem)] -translate-x-1/2 border-2 border-[var(--color-ink)] bg-[var(--color-paper)] px-4 py-3 shadow-[0_14px_36px_rgba(0,0,0,0.28)]"
-            style="border-radius: 4px;"
+            class="fixed bottom-4 left-1/2 z-[60] w-[min(92vw,30rem)] -translate-x-1/2 border-2 border-[var(--color-ink)] bg-[var(--color-paper)] px-4 py-3 press-signin-toast"
           >
             <div class="flex items-start gap-3">
               <span
@@ -1179,11 +1184,12 @@ export default component$(() => {
       <div class="editor-workspace-shell flex h-screen bg-[var(--color-paper)] overflow-hidden">
         {/* ── The Drawer (left sidebar) ──────────────────────── */}
         <aside
-          class={`sidebar-transition flex-shrink-0 border-r-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper-2)] ${
+          data-open={store.leftSidebarOpen ? "true" : "false"}
+          class={`press-drawer sidebar-transition flex-shrink-0 border-r-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper-2)] ${
             store.leftSidebarOpen ? "w-72" : "w-0"
           } overflow-hidden`}
         >
-          <div class="w-72 h-full flex flex-col">
+          <div class="press-drawer-content w-72 h-full flex flex-col">
             <div class="px-5 py-4 border-b border-[var(--color-paper-3)]">
               <p class="dept-label flex items-center gap-2">
                 <Icon name="folder" />
@@ -1238,11 +1244,13 @@ export default component$(() => {
                   return (
                     <button
                       key={folio.id}
-                      class={`w-full text-left px-3 py-2.5 text-sm focus-ring ${
+                      class={`press-folio-row w-full text-left px-3 py-2.5 text-sm focus-ring ${
                         active
                           ? "border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] font-medium text-[var(--color-ink)]"
                           : "border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)]"
                       }`}
+                      data-active={active ? "true" : "false"}
+                      aria-current={active ? "true" : undefined}
                       style="font-family: var(--font-serif); border-radius: 2px;"
                       onClick$={$(async () => {
                         if (active) return;
@@ -1521,7 +1529,7 @@ export default component$(() => {
           {/* Masthead */}
           <header
             hidden={store.zenActive}
-            class={`border-b-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper)]${store.zenActive ? " zen-masthead" : ""}`}
+            class="press-masthead border-b-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper)]"
           >
             <div class="flex items-center px-5 pt-3 pb-1.5 gap-4">
               <button
@@ -1530,8 +1538,10 @@ export default component$(() => {
                   const max = maxRightPanelWidth(store.leftSidebarOpen);
                   if (store.rightPanelWidth > max) store.rightPanelWidth = max;
                 }}
-                class="icon-btn p-1.5 text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
-                title="Open the drawer"
+                class="press-drawer-toggle icon-btn p-1.5 text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
+                title={
+                  store.leftSidebarOpen ? "Close the drawer" : "Open the drawer"
+                }
                 aria-label="Toggle the drawer sidebar"
                 aria-expanded={store.leftSidebarOpen}
               >
@@ -1557,6 +1567,7 @@ export default component$(() => {
                 <a
                   href="/"
                   class="masthead-wordmark press leading-none mt-0.5 ink-bleed"
+                  data-ambient
                   style="font-family: var(--font-display); font-weight: 700; letter-spacing: 0.06em; color: var(--color-ink); text-decoration: none;"
                 >
                   TWYNE

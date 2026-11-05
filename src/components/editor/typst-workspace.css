@@ -568,3 +568,8 @@ a.editor-forecast__credit:focus-visible {
     min-height: 2rem;
   }
 }
+
+.typst-apply:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

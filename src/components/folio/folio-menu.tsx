@@ -52,6 +52,8 @@ import { reportApplicationDiagnostic } from "../../utils/application-diagnostics
 import { captureProductEvent } from "../../utils/product-analytics";
 import { publishViaMicropub } from "../../utils/micropub";
 import { Icon } from "../ui/icon";
+import { DestinationTag } from "../ui/destination-tag";
+import { HoldToConfirm } from "../ui/hold-to-confirm";
 import type { TwyneIconName } from "../../utils/icon-system";
 
 /**
@@ -110,6 +112,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   const auth = useAuth();
   const clientSig = useConvexClient();
   const menuOpen = useSignal(false);
+  const menuTrigger = useSignal<HTMLButtonElement>();
   const includePersonaComments = useSignal(false);
   const dialog = useSignal<"import" | "share" | null>(null);
   const fileError = useSignal<AppError | null>(null);
@@ -124,6 +127,8 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   const shareSlug = useSignal<string | null>(null);
   const shareUrl = useSignal<string | null>(null);
   const copyState = useSignal<"idle" | "copied">("idle");
+  const publishedNow = useSignal(false);
+  const pdsPublishedNow = useSignal(false);
 
   // ATProto / Bluesky PDS publishing.
   const pdsBusy = useSignal(false);
@@ -159,7 +164,10 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       }
     };
     const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") menuOpen.value = false;
+      if (e.key === "Escape") {
+        menuOpen.value = false;
+        menuTrigger.value?.focus();
+      }
     };
     document.addEventListener("click", onDoc);
     document.addEventListener("keydown", onEsc);
@@ -169,11 +177,36 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
     });
   });
 
+  // Return keyboard focus to File when a modal closes.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track, cleanup }) => {
+    const current = track(() => dialog.value);
+    if (!current) return;
+    const frame = requestAnimationFrame(() => {
+      document
+        .querySelector<HTMLElement>(
+          "[data-folio-modal] button, [data-folio-modal] input",
+        )
+        ?.focus();
+    });
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") dialog.value = null;
+    };
+    document.addEventListener("keydown", onEscape);
+    cleanup(() => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", onEscape);
+      menuTrigger.value?.focus();
+    });
+  });
+
   // Load any existing share slug for this folio.
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async ({ track }) => {
     track(() => auth.value.user?.id);
     track(() => props.activeFolioId);
+    publishedNow.value = false;
+    pdsPublishedNow.value = false;
     if (!auth.value.user || !props.activeFolioId) {
       shareSlug.value = null;
       shareUrl.value = null;
@@ -389,6 +422,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   });
 
   const doPublish = $(async () => {
+    publishedNow.value = false;
     shareBusy.value = true;
     shareError.value = null;
     shareNotice.value = null;
@@ -440,6 +474,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         requestedBlog: boolean;
       };
       shareSlug.value = result.slug;
+      publishedNow.value = true;
       // Admin publishes land on the blog feed; everyone else gets a
       // share URL using their claimed handle. A writer without a
       // claimed handle is prompted to claim one in Settings — the
@@ -492,6 +527,8 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       });
       shareSlug.value = null;
       shareUrl.value = null;
+      publishedNow.value = false;
+      menuTrigger.value?.focus();
     } catch (err) {
       reportApplicationDiagnostic("twyne:folio:unpublish", err, {
         operation: "unpublish",
@@ -523,6 +560,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   });
 
   const doPublishPds = $(async () => {
+    pdsPublishedNow.value = false;
     pdsBusy.value = true;
     pdsError.value = null;
     try {
@@ -560,6 +598,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         brief: props.brief,
         publication,
       });
+      pdsPublishedNow.value = true;
       void captureProductEvent("draft_published", {
         destination: "standard_site",
       });
@@ -600,6 +639,8 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       const agent = await getAgent();
       await unpublishDocument(agent, props.activeFolioId);
       pdsResult.value = null;
+      pdsPublishedNow.value = false;
+      menuTrigger.value?.focus();
     } catch (err) {
       reportApplicationDiagnostic("twyne:folio:unpublish-pds", err, {
         operation: "unpublish-pds",
@@ -668,6 +709,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   return (
     <div class="relative" data-folio-menu>
       <button
+        ref={menuTrigger}
         class="btn-paper inline-flex items-center gap-1.5 text-xs"
         onClick$={() => {
           menuOpen.value = !menuOpen.value;
@@ -681,7 +723,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       </button>
       {menuOpen.value && (
         <div
-          class="absolute right-0 top-full mt-1 w-56 folio z-50"
+          class="press-popover absolute right-0 top-full mt-1 w-56 folio z-50"
           role="menu"
           style={{ padding: "0.4rem 0" }}
         >
@@ -697,7 +739,9 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
           >
             Dossier &amp; House context
           </Link>
-          <p class="dept-label px-3 py-1.5">Export</p>
+          <p class="dept-label px-3 py-1.5">
+            Export <DestinationTag to="local" />
+          </p>
           <label class="mx-3 mb-1 flex cursor-pointer items-start gap-2 border-b border-dashed border-[var(--color-paper-3)] pb-2 text-[12px] text-[var(--color-ink)]">
             <input
               type="checkbox"
@@ -724,14 +768,21 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               </span>
             </span>
           </label>
-          <MenuItem icon="file-pdf" label="PDF…" onClick$={doExportPdf} />
           <MenuItem
+            icon="file-pdf"
+            label="PDF…"
+            destination="local"
+            onClick$={doExportPdf}
+          />
+          <MenuItem
+            destination="local"
             icon="file-pdf"
             label={typstBusy.value ? "Preparing Typst export…" : "PDF (Typst)…"}
             disabled={typstBusy.value}
             onClick$={() => doExportTypst("pdf")}
           />
           <MenuItem
+            destination="local"
             icon="code-file"
             label="Typst source (.typ)"
             disabled={typstBusy.value}
@@ -745,26 +796,31 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
             />
           )}
           <MenuItem
+            destination="local"
             icon="document-text"
             label="Markdown (.md)"
             onClick$={() => doExport("markdown")}
           />
           <MenuItem
+            destination="local"
             icon="code-file"
             label="Standalone HTML"
             onClick$={() => doExport("html")}
           />
           <MenuItem
+            destination="local"
             icon="document-text"
             label="Microsoft Word (.docx)"
             onClick$={() => doExport("docx")}
           />
           <MenuItem
+            destination="local"
             icon="file"
             label="Plain text"
             onClick$={() => doExport("txt")}
           />
           <MenuItem
+            destination="local"
             icon="save"
             label="Twyne backup (.json)"
             onClick$={() => doExport("twyne-backup")}
@@ -805,7 +861,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       )}
 
       {typstStatus.value && !menuOpen.value && (
-        <div class="absolute right-0 top-full mt-1 w-72 max-w-[90vw] folio z-50 p-3 text-xs">
+        <div class="press-popover absolute right-0 top-full mt-1 w-72 max-w-[90vw] folio z-50 p-3 text-xs">
           <p
             role={typstFailed.value ? "alert" : "status"}
             class="leading-5 text-[var(--color-ink)]"
@@ -826,15 +882,15 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
 
       {dialog.value === "import" && (
         <div
-          class="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: "rgba(15, 12, 8, 0.55)" }}
+          class="press-scrim fixed inset-0 z-50 flex items-center justify-center"
           onClick$={(e) => {
             if (e.target === e.currentTarget) dialog.value = null;
           }}
         >
           <div
-            class="folio p-5 w-[28rem] max-w-[92vw]"
+            class="press-popover folio p-5 w-[28rem] max-w-[92vw]"
             role="dialog"
+            data-folio-modal
             aria-modal="true"
             aria-label="Import a document"
           >
@@ -904,15 +960,15 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
 
       {dialog.value === "share" && (
         <div
-          class="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: "rgba(15, 12, 8, 0.55)" }}
+          class="press-scrim fixed inset-0 z-50 flex items-center justify-center"
           onClick$={(e) => {
             if (e.target === e.currentTarget) dialog.value = null;
           }}
         >
           <div
-            class="folio max-h-[90vh] w-[30rem] max-w-[92vw] overflow-y-auto p-5"
+            class="press-popover folio max-h-[90vh] w-[30rem] max-w-[92vw] overflow-y-auto p-5"
             role="dialog"
+            data-folio-modal
             aria-modal="true"
             aria-label="Share this piece"
             style="white-space: normal; overflow-wrap: anywhere;"
@@ -942,6 +998,15 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               </p>
             ) : shareUrl.value ? (
               <div class="mt-4 space-y-3">
+                {publishedNow.value && (
+                  <button
+                    class="btn-press press-published w-full"
+                    data-consequence="public"
+                    disabled
+                  >
+                    Published <DestinationTag to="public" />
+                  </button>
+                )}
                 <p class="dept-label">Live at</p>
                 <div class="flex gap-2">
                   <input
@@ -964,13 +1029,16 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
                   >
                     Open the public view ↗
                   </a>
-                  <button
+                  <HoldToConfirm
                     class="btn-paper text-xs"
-                    onClick$={doUnpublish}
+                    onConfirm$={doUnpublish}
                     disabled={shareBusy.value}
+                    label="Unpublish this reading view"
+                    hint="hold to unpublish"
+                    consequence="erase"
                   >
-                    {shareBusy.value ? "…" : "Unpublish"}
-                  </button>
+                    Unpublish
+                  </HoldToConfirm>
                 </div>
               </div>
             ) : (
@@ -983,11 +1051,20 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
                   {props.activeFolioName || "Untitled"}
                 </p>
                 <button
-                  class="btn-press w-full"
+                  class={[
+                    "btn-press w-full",
+                    publishedNow.value && "press-published",
+                  ]}
+                  data-consequence="public"
                   onClick$={doPublish}
-                  disabled={shareBusy.value}
+                  disabled={shareBusy.value || publishedNow.value}
                 >
-                  {shareBusy.value ? "Publishing…" : "Publish now"}
+                  {shareBusy.value
+                    ? "Publishing…"
+                    : publishedNow.value
+                      ? "Published"
+                      : "Publish now"}{" "}
+                  <DestinationTag to="public" />
                 </button>
               </div>
             )}
@@ -1102,29 +1179,43 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
                         </a>
                       </div>
                       <button
-                        class="btn-paper text-xs w-full"
+                        class={[
+                          "btn-paper text-xs w-full",
+                          pdsPublishedNow.value && "press-published",
+                        ]}
+                        data-consequence="public"
                         onClick$={doPublishPds}
                         disabled={pdsBusy.value}
                       >
-                        {pdsBusy.value ? "Updating…" : "Re-publish (update)"}
+                        {pdsBusy.value
+                          ? "Updating…"
+                          : pdsPublishedNow.value
+                            ? "Published"
+                            : "Re-publish (update)"}{" "}
+                        <DestinationTag to="public" />
                       </button>
-                      <button
+                      <HoldToConfirm
                         class="btn-paper text-xs w-full"
-                        onClick$={doUnpublishPds}
+                        onConfirm$={doUnpublishPds}
                         disabled={pdsBusy.value}
+                        label="Unpublish from PDS"
+                        hint="hold to unpublish"
+                        consequence="erase"
                       >
-                        {pdsBusy.value ? "Removing…" : "Unpublish from PDS"}
-                      </button>
+                        Unpublish from PDS
+                      </HoldToConfirm>
                     </div>
                   ) : (
                     <button
                       class="btn-press w-full"
+                      data-consequence="public"
                       onClick$={doPublishPds}
                       disabled={pdsBusy.value}
                     >
                       {pdsBusy.value
                         ? "Filing to your repo…"
-                        : "Publish to your PDS"}
+                        : "Publish to your PDS"}{" "}
+                      <DestinationTag to="public" />
                     </button>
                   )}
                   {pdsError.value && (
@@ -1224,14 +1315,23 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               />
               <button
                 type="submit"
-                class="btn-press mt-3 w-full"
+                class={[
+                  "btn-press mt-3 w-full",
+                  micropubResult.value && "press-published",
+                ]}
+                data-consequence="public"
                 disabled={
                   micropubBusy.value ||
                   !micropubEndpoint.value.trim() ||
                   !micropubToken.value.trim()
                 }
               >
-                {micropubBusy.value ? "Publishing…" : "Publish via Micropub"}
+                {micropubBusy.value
+                  ? "Publishing…"
+                  : micropubResult.value
+                    ? "Published"
+                    : "Publish via Micropub"}{" "}
+                <DestinationTag to="public" />
               </button>
               {micropubResult.value && (
                 <p
@@ -1287,6 +1387,7 @@ interface MenuItemProps {
   icon: TwyneIconName;
   label: string;
   disabled?: boolean;
+  destination?: "local";
   onClick$: import("@qwik.dev/core").PropFunction<() => void>;
 }
 
@@ -1297,10 +1398,12 @@ const MenuItem = component$<MenuItemProps>((props) => {
       style="font-family: var(--font-serif); border-radius: 0;"
       onClick$={props.onClick$}
       disabled={props.disabled}
+      data-consequence={props.destination}
       role="menuitem"
     >
       <Icon name={props.icon} size={16} />
       {props.label}
+      {props.destination && <DestinationTag to={props.destination} />}
     </button>
   );
 });

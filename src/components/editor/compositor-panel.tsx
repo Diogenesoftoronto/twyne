@@ -34,7 +34,6 @@ import { SpeechTransport } from "../ui/speech-transport";
 import type { EditorPanelState } from "./editor-state";
 import { KITS, KIT_IDS, type KitId } from "../../utils/typst/kits";
 import { MANUSCRIPT_READING_ID } from "./manuscript-panel";
-import { SyncDot } from "./sync-indicator";
 import { openLiveVoice } from "../../utils/live-voice-workspace";
 import { openInstrumentDock } from "../../utils/instrument-dock";
 import {
@@ -181,7 +180,7 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
               aria-label="Undo"
               disabled={!store.canUndo}
               onClick$={() => runCommand("undo")}
-              class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
+              class="tool-btn disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Icon name={COMPOSITOR_ICONS.undo} size={17} />
             </button>
@@ -190,11 +189,10 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
               aria-label="Redo"
               disabled={!store.canRedo}
               onClick$={() => runCommand("redo")}
-              class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
+              class="tool-btn disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Icon name={COMPOSITOR_ICONS.redo} size={17} />
             </button>
-            {!props.compact && <SyncDot />}
           </div>
         </div>
 
@@ -430,7 +428,7 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
             {store.openPicker === "type" && (
               <div
                 data-type-popover
-                class="absolute left-0 top-full mt-1 p-3 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg w-60"
+                class="press-popover absolute left-0 top-full mt-1 p-3 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg w-60"
                 style={{
                   zIndex: "var(--z-dropdown)",
                   borderRadius: "2px",
@@ -1024,7 +1022,7 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
             {store.showLayout && (
               <div
                 data-layout-popover
-                class="compositor-layout-panel absolute right-0 top-full mt-1 z-50 w-[23rem] max-w-[calc(100vw-1.5rem)] overflow-y-auto p-4 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg"
+                class="press-popover compositor-layout-panel absolute right-0 top-full mt-1 z-50 w-[23rem] max-w-[calc(100vw-1.5rem)] overflow-y-auto p-4 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg"
                 style={{
                   borderRadius: "2px",
                   fontFamily: "var(--font-typewriter)",

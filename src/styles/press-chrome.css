@@ -6,3 +6,177 @@
  * frequency sets the budget, consequence has one ink per destination,
  * ambient motion carries data-ambient, and data-motion="still" stops it all.
  * ───────────────────────────────────────────────────────────── */
+
+:root {
+  --scrim: color-mix(in srgb, var(--color-ink) 55%, transparent);
+}
+.press-popover {
+  animation: press-slip-in var(--dur-arrive) var(--ease-slip) both;
+}
+.press-scrim {
+  background: var(--scrim);
+  animation: press-fade-in var(--dur-arrive) var(--ease-set) both;
+}
+.press-drawer {
+  transition: width var(--dur-settle) var(--ease-set);
+}
+.press-drawer-content {
+  transition:
+    opacity var(--dur-settle) var(--ease-set),
+    transform var(--dur-settle) var(--ease-set);
+}
+.press-drawer[data-open="false"] .press-drawer-content {
+  opacity: 0;
+  transform: translateX(calc(-1 * var(--lift-2)));
+  pointer-events: none;
+  visibility: hidden;
+}
+.press-folio-row {
+  position: relative;
+}
+.press-folio-row[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.45rem;
+  bottom: 0.45rem;
+  width: 3px;
+  background: var(--ink-public);
+  animation: press-slip-in var(--dur-arrive) var(--ease-slip) both;
+}
+.press-drawer-toggle svg {
+  transition: transform var(--dur-release) var(--ease-set);
+}
+.press-drawer-toggle[aria-expanded="true"] {
+  color: var(--color-vermilion);
+}
+.press-drawer-toggle[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+.press-sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  color: var(--consequence-ink);
+}
+.press-sync-mark {
+  width: 0.55em;
+  height: 0.55em;
+  border: 1px solid var(--consequence-ink);
+  border-radius: 50%;
+}
+.press-sync-status[data-consequence="synced"] .press-sync-mark {
+  background: var(--consequence-ink);
+}
+.press-sync-filed {
+  --flash-ink: var(--ink-synced);
+  animation: press-ink-flash var(--dur-settle) var(--ease-set);
+}
+.press-published {
+  --press-progress: 1;
+  color: var(--ink-public);
+  position: relative;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--ink-public) 25%, transparent)
+      calc(var(--press-progress) * 100%),
+    transparent 0
+  );
+  animation: press-publish var(--dur-ceremony) var(--ease-platen) both;
+}
+@keyframes press-publish {
+  from {
+    --press-progress: 0;
+  }
+  to {
+    --press-progress: 1;
+  }
+}
+.press-hydration {
+  opacity: 0;
+  animation: press-fade-in var(--dur-arrive) var(--ease-set) 150ms both;
+}
+.press-type-slugs {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin-top: 0.75rem;
+  animation: press-type-breathe var(--dur-breath) var(--ease-set) infinite;
+}
+.press-type-slugs i {
+  width: 0.5rem;
+  height: 0.2rem;
+  background: var(--color-ink-muted);
+}
+@keyframes press-type-breathe {
+  50% {
+    opacity: 0.35;
+  }
+}
+.press-signin-toast {
+  border-radius: 2px;
+  box-shadow: 0 14px 36px color-mix(in srgb, var(--shade) 28%, transparent);
+  animation: press-toast-in var(--dur-arrive) var(--ease-slip) both;
+}
+@keyframes press-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, var(--lift-2));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+.press-masthead,
+.editor-compositor {
+  transition:
+    opacity var(--dur-settle) var(--ease-set),
+    transform var(--dur-settle) var(--ease-set),
+    display var(--dur-settle) allow-discrete;
+}
+.press-masthead[hidden],
+.editor-compositor[hidden] {
+  opacity: 0;
+  transform: translateY(calc(-1 * var(--lift-2)));
+}
+@starting-style {
+  .press-masthead:not([hidden]),
+  .editor-compositor:not([hidden]) {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--lift-2)));
+  }
+}
+.compositor-tab::after {
+  transition:
+    transform var(--dur-release) var(--ease-set),
+    opacity var(--dur-release) var(--ease-set);
+}
+.hold-to-confirm__hint {
+  margin-inline-start: 0.5em;
+}
+
+.press-shortcut {
+  animation: press-fade-in var(--dur-arrive) var(--ease-set) both;
+}
+.editor-desk-controls {
+  transition:
+    opacity var(--dur-settle) var(--ease-set),
+    transform var(--dur-settle) var(--ease-set);
+}
+[data-flow="settling"] .press-masthead,
+[data-flow="flow"] .press-masthead,
+[data-flow="settling"] .editor-desk-controls,
+[data-flow="flow"] .editor-desk-controls {
+  transition:
+    opacity var(--dur-settle) var(--ease-set),
+    transform var(--dur-settle) var(--ease-set),
+    visibility var(--dur-settle) allow-discrete;
+}
+[data-flow="settling"] .editor-desk-controls {
+  opacity: 0.4;
+}
+[data-flow="flow"] .press-masthead,
+[data-flow="flow"] .editor-desk-controls {
+  transform: translateY(calc(-1 * var(--lift-2)));
+}
