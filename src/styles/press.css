@@ -1,0 +1,10 @@
+/* ─────────────────────────────────────────────────────────────
+ * The living press. Loaded after global.css (see root.tsx and the Storybook
+ * preview), so a surface sheet may refine a global rule at equal specificity.
+ * See docs/design/living-press.md.
+ * ───────────────────────────────────────────────────────────── */
+@import "./motion.css";
+@import "./press-editor.css";
+@import "./press-chrome.css";
+@import "./press-room.css";
+@import "./press-desk.css";

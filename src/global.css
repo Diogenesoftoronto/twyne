@@ -1,11 +1,7 @@
 @import "tailwindcss";
-/* The living press: motion tokens and consequence inks, then one sheet per
- * surface. See docs/design/living-press.md. */
-@import "./styles/motion.css";
-@import "./styles/press-editor.css";
-@import "./styles/press-chrome.css";
-@import "./styles/press-room.css";
-@import "./styles/press-desk.css";
+/* The living press (motion tokens, consequence inks and one sheet per
+ * surface) loads after this file, from src/styles/press.css, so a surface can
+ * refine a rule here without out-specifying it. */
 
 /* Diagnostic log labels are text, not arbitrary CSS-property utilities. */
 @source not inline("[twyne:{account,agents,apparatus,arize,editor,eval,extract,interview,judge,litert,posthog,rateLimit,robustness,rubric,suggestion,usage}]");
