@@ -23,7 +23,8 @@ import type { AppError } from "../../types/application-errors";
 import { normalizeApplicationError } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 import { ApplicationNotice } from "../ui/application-notice";
-import { ThemedDialog } from "../ui/themed-dialog";
+import { DestinationTag } from "../ui/destination-tag";
+import { HoldToConfirm } from "../ui/hold-to-confirm";
 
 interface ShareState {
   open: boolean;
@@ -45,7 +46,6 @@ interface ShareState {
     invitedAt: number;
     acceptedAt?: number;
   }>;
-  confirmingUnshare: boolean;
 }
 
 interface PresenceUser {
@@ -81,10 +81,10 @@ export const ShareDialog = component$(
       inviteMsg: null,
       inviteError: null,
       collaborators: [],
-      confirmingUnshare: false,
     });
 
     const presenceSig = useSignal<PresenceUser[]>([]);
+    const shareTrigger = useSignal<HTMLButtonElement>();
 
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(async ({ track, cleanup }) => {
@@ -118,6 +118,7 @@ export const ShareDialog = component$(
           store.lixId = match.lixId;
         } else {
           // The active folio changed and the new one is not shared.
+          shareTrigger.value?.focus();
           store.shared = false;
           store.lixId = null;
           await props.onUnshared$?.(folioId);
@@ -279,6 +280,7 @@ export const ShareDialog = component$(
         store.collaborators = store.collaborators.filter(
           (c) => c.userId !== targetUserId,
         );
+        shareTrigger.value?.focus();
       } catch (error) {
         reportApplicationDiagnostic(
           "twyne:collaboration:remove-collaborator",
@@ -309,7 +311,6 @@ export const ShareDialog = component$(
         if (props.folioId !== folioId || store.lixId !== lixId) return;
         stopPresence();
         stopWatchingRemote();
-        store.confirmingUnshare = false;
         store.shared = false;
         store.lixId = null;
         store.collaborators = [];
@@ -340,6 +341,7 @@ export const ShareDialog = component$(
     return (
       <div class="relative">
         <button
+          ref={shareTrigger}
           onClick$={() => {
             store.open = !store.open;
           }}
@@ -406,8 +408,14 @@ export const ShareDialog = component$(
               }}
             />
             <div
-              class="absolute right-0 top-full mt-2 w-80 max-w-[92vw] folio p-4 space-y-3 whitespace-normal [overflow-wrap:anywhere]"
+              class="press-popover absolute right-0 top-full mt-2 w-80 max-w-[92vw] folio p-4 space-y-3 whitespace-normal [overflow-wrap:anywhere]"
               style="z-index: calc(var(--z-dropdown) + 1);"
+              onKeyDown$={(event) => {
+                if (event.key === "Escape") {
+                  store.open = false;
+                  shareTrigger.value?.focus();
+                }
+              }}
             >
               <div class="flex items-center justify-between">
                 <p
@@ -419,7 +427,9 @@ export const ShareDialog = component$(
                 <button
                   onClick$={() => {
                     store.open = false;
+                    shareTrigger.value?.focus();
                   }}
+                  aria-label="Close sharing"
                   class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
                 >
                   ✕
@@ -445,10 +455,12 @@ export const ShareDialog = component$(
                   </p>
                   <button
                     onClick$={handleShare}
+                    data-consequence="synced"
                     disabled={store.sharing}
                     class="btn-press w-full text-xs"
                   >
-                    {store.sharing ? "Promoting…" : "Share this folio"}
+                    {store.sharing ? "Promoting…" : "Share this folio"}{" "}
+                    <DestinationTag to="synced" />
                   </button>
                 </div>
               ) : (
@@ -488,10 +500,12 @@ export const ShareDialog = component$(
                       </select>
                       <button
                         onClick$={handleInvite}
+                        data-consequence="public"
                         disabled={store.inviting}
                         class="btn-press text-xs flex-1"
                       >
-                        {store.inviting ? "Inviting…" : "Invite"}
+                        {store.inviting ? "Inviting…" : "Invite"}{" "}
+                        <DestinationTag to="public" />
                       </button>
                     </div>
                     {store.inviteMsg && (
@@ -537,15 +551,15 @@ export const ShareDialog = component$(
                           </p>
                         </div>
                         {c.role !== "owner" && (
-                          <button
-                            onClick$={() => void handleRemoveCollab(c.userId)}
-                            class="text-[0.6rem] text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                            style={{
-                              fontFamily: "var(--font-typewriter)",
-                            }}
+                          <HoldToConfirm
+                            onConfirm$={() => handleRemoveCollab(c.userId)}
+                            class="text-[0.6rem] text-[var(--color-ink-muted)]"
+                            label={`Remove ${c.userId}`}
+                            hint="hold to remove"
+                            consequence="erase"
                           >
                             remove
-                          </button>
+                          </HoldToConfirm>
                         )}
                       </div>
                     ))}
@@ -571,36 +585,21 @@ export const ShareDialog = component$(
                     >
                       Copy invite link
                     </button>
-                    <button
-                      onClick$={() => {
-                        store.confirmingUnshare = true;
-                        store.error = null;
-                      }}
-                      class="text-xs text-[var(--color-vermilion)] hover:underline"
-                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    <HoldToConfirm
+                      onConfirm$={handleUnshare}
+                      class="text-xs text-[var(--color-vermilion)]"
+                      label="Stop sharing this folio; collaborators lose access and the invite link stops working"
+                      hint="hold to stop"
+                      consequence="erase"
                     >
                       Stop sharing
-                    </button>
+                    </HoldToConfirm>
                   </div>
                 </div>
               )}
             </div>
           </>
         )}
-
-        <ThemedDialog
-          open={store.confirmingUnshare}
-          title="Stop sharing this folio?"
-          message="Collaborators will lose access immediately, and the live invite link will stop working."
-          confirmLabel="Stop sharing"
-          tone="danger"
-          error={store.error?.message}
-          onCancel$={() => {
-            store.confirmingUnshare = false;
-            store.error = null;
-          }}
-          onConfirm$={handleUnshare}
-        />
       </div>
     );
   },
