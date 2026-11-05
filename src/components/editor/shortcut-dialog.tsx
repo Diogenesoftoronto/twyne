@@ -59,17 +59,17 @@ export const ShortcutDialog = component$<ShortcutDialogProps>((props) => {
 
   return (
     <div
-      class="fixed inset-0 flex items-center justify-center p-4"
+      class="press-scrim fixed inset-0 flex items-center justify-center p-4"
       style={{
         zIndex: "var(--z-modal)",
-        background: "rgba(20, 16, 10, 0.58)",
+        background: "var(--scrim)",
       }}
       onClick$={(event) => {
         if (event.target === event.currentTarget) void close();
       }}
     >
       <div
-        class="folio flex max-h-[min(44rem,calc(100vh-2rem))] w-full max-w-2xl flex-col p-5"
+        class="press-shortcut folio flex max-h-[min(44rem,calc(100vh-2rem))] w-full max-w-2xl flex-col p-5"
         role="dialog"
         aria-modal="true"
         aria-labelledby="shortcut-dialog-title"

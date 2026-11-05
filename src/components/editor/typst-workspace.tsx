@@ -19,7 +19,7 @@ import { buildFolioExportPayload } from "../../utils/folio-export";
 import { stripTypstAnnotationMetadata } from "../../utils/typst/document";
 import { Icon } from "../ui/icon";
 import { formatWordCount } from "../../utils/document";
-import { LastSavedLine, SyncDot } from "./sync-indicator";
+import { LastSavedLine } from "./sync-indicator";
 import { FlowRibbon } from "../in-flow/flow-ribbon";
 import { ForecastLine } from "./forecast-line";
 import { saveEditorViewPreferences } from "../../utils/editor-view-preferences";
@@ -591,7 +591,6 @@ export const TypstWorkspace = component$<{
         <span class="editor-last-saved">
           <LastSavedLine savedAt={props.store.lastSavedAt} />
         </span>
-        <SyncDot />
         <button
           type="button"
           class="tool-btn editor-zen-toggle"
