@@ -6,3 +6,168 @@
  * frequency sets the budget, consequence has one ink per destination,
  * ambient motion carries data-ambient, and data-motion="still" stops it all.
  * ───────────────────────────────────────────────────────────── */
+
+.desk-range .btn-paper[aria-pressed="true"] {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+.desk-content[aria-busy="true"] {
+  opacity: 0.68;
+}
+.desk-content {
+  transition: opacity var(--dur-release) var(--ease-set);
+}
+.desk-loader {
+  animation: press-fade-in var(--dur-arrive) var(--ease-set) 150ms both;
+}
+.desk-figure {
+  white-space: pre-wrap;
+}
+.desk-digit {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.desk-figure-animate .desk-digit > span {
+  display: inline-block;
+  animation: desk-set-digit var(--dur-settle) var(--ease-set) both;
+}
+@keyframes desk-set-digit {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.desk-heat-cell {
+  transition:
+    box-shadow var(--dur-release) var(--ease-platen),
+    filter var(--dur-release) var(--ease-set),
+    transform var(--dur-release) var(--ease-platen);
+}
+.desk-heat-cell[data-partial] {
+  box-shadow: inset 0 0 0 1px var(--color-ink-muted);
+}
+.desk-heat-cell[aria-pressed="true"] {
+  box-shadow:
+    inset 0 0 0 1px var(--color-ink),
+    0 0 0 1px var(--color-ink);
+  transform: translateY(var(--lift-1));
+}
+.desk-heat-cell:enabled:hover {
+  filter: brightness(0.85);
+}
+.desk-heat-cell:active {
+  transition-duration: var(--dur-press);
+  transform: translateY(var(--lift-1));
+}
+.desk-day {
+  animation: press-slip-in-from-right var(--dur-arrive) var(--ease-set) both;
+}
+.desk-bar {
+  transform-origin: bottom;
+  animation: desk-bar-rise var(--dur-settle) var(--ease-set)
+    var(--desk-delay, 0ms) both;
+}
+.desk-fill {
+  transform-origin: left;
+  animation: desk-fill-grow var(--dur-settle) var(--ease-set) both;
+}
+@keyframes desk-bar-rise {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes desk-fill-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.desk-filed {
+  display: inline-block;
+  border: 1px solid var(--color-vermilion);
+  color: var(--color-vermilion);
+  padding: 0.1em 0.35em;
+  font-family: var(--font-typewriter);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  rotate: -4deg;
+  animation: press-impress var(--dur-ceremony) var(--ease-platen) both;
+}
+.desk-credit {
+  color: var(--consequence-ink);
+}
+.desk-tabs {
+  position: relative;
+  isolation: isolate;
+}
+.desk-tabs::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 auto 0 0;
+  width: 25%;
+  background: var(--color-ink);
+  transform: translateX(calc(var(--desk-tab) * 100%));
+  transition: transform var(--dur-settle) var(--ease-set);
+}
+.desk-tab-active {
+  color: var(--color-paper);
+}
+.desk-panel {
+  animation: press-fade-in var(--dur-arrive) var(--ease-set) both;
+}
+.desk-table summary {
+  list-style: none;
+}
+.desk-table summary::-webkit-details-marker {
+  display: none;
+}
+.desk-table-marker {
+  display: inline-block;
+  transition: transform var(--dur-settle) var(--ease-set);
+}
+.desk-table[open] .desk-table-marker {
+  transform: rotate(90deg);
+}
+.desk-table[open] .desk-table-content {
+  animation: press-fade-in var(--dur-settle) var(--ease-set);
+}
+@supports (interpolate-size: allow-keywords) {
+  .desk-table {
+    interpolate-size: allow-keywords;
+  }
+  .desk-table::details-content {
+    height: 0;
+    overflow: clip;
+    transition:
+      height var(--dur-settle) var(--ease-set),
+      content-visibility var(--dur-settle) allow-discrete;
+  }
+  .desk-table[open]::details-content {
+    height: auto;
+  }
+}
+.desk-work-row {
+  transition: background-color var(--dur-release) var(--ease-set);
+}
+.desk-work-row:hover {
+  background: var(--color-paper-2);
+}
+.desk-work-row .btn-paper {
+  transition: transform var(--dur-release) var(--ease-set);
+}
+.desk-work-row:hover .btn-paper {
+  transform: translateY(calc(-1 * var(--lift-1)));
+}
+.desk-work-row .btn-paper:active {
+  transition-duration: var(--dur-press);
+  transform: translateY(var(--lift-1));
+}

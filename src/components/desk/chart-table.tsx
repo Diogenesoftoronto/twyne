@@ -18,13 +18,16 @@ export const ChartTable = component$<{
 }>((props) => {
   return (
     <details
-      class="mt-4 border-t border-dotted border-[var(--color-ink-muted)] pt-3"
+      class="desk-table mt-4 border-t border-dotted border-[var(--color-ink-muted)] pt-3"
       open={props.open}
     >
       <summary class="cursor-pointer text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-ink-muted)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-cobalt)]">
+        <span class="desk-table-marker" aria-hidden="true">
+          ▸
+        </span>{" "}
         View data table
       </summary>
-      <div class="mt-3 overflow-x-auto">
+      <div class="desk-table-content mt-3 overflow-x-auto">
         <table class="w-full border-collapse text-left text-sm">
           <caption class="sr-only">{props.caption}</caption>
           <thead>

@@ -22,6 +22,7 @@ import {
 import { RecentWork } from "../../components/desk/recent-work";
 import { UsageCost } from "../../components/desk/usage-cost";
 import { WriterPatterns } from "../../components/desk/writer-patterns";
+import { USAGE_SYNC_STATE_EVENT } from "../../components/desk/usage-sync-controller";
 import { WritingActivity } from "../../components/desk/writing-activity";
 import {
   hasAuthenticatedConvexIdentity,
@@ -70,6 +71,8 @@ interface DeskStore {
   folioCount: number;
   writingDays: number;
   loaded: boolean;
+  loading: boolean;
+  error: boolean;
   detailsTruncated: boolean;
   combinedPartial: boolean;
   remoteState: "idle" | "loading" | "ready" | "offline" | "error";
@@ -142,6 +145,7 @@ export default component$(() => {
   const clientSignal = useConvexClient();
   const preset = useSignal<UsageRangePreset>("30d");
   const hostedRevision = useSignal(0);
+  const syncRevision = useSignal(0);
   const hostedSummary = useSignal<HostedUsageSummary>();
   const hostedState = useSignal<HostedCostState>("loading");
   const hostedRunway = useSignal<CreditForecast | null>(null);
@@ -158,6 +162,8 @@ export default component$(() => {
     folioCount: 0,
     writingDays: 0,
     loaded: false,
+    loading: false,
+    error: false,
     detailsTruncated: false,
     combinedPartial: false,
     remoteState: "idle",
@@ -174,8 +180,8 @@ export default component$(() => {
     cleanup(() => {
       cancelled = true;
     });
-    hostedSummary.value = undefined;
     if (!authState.user && !authState.loading) {
+      hostedSummary.value = undefined;
       hostedState.value = "signed-out";
       return;
     }
@@ -252,45 +258,66 @@ export default component$(() => {
       history.replaceState(history.state, "", "/desk/?range=30d");
   });
 
+  // Re-read both local and account evidence after a sync changes the ledger.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    const refresh = () => {
+      syncRevision.value += 1;
+    };
+    window.addEventListener(USAGE_SYNC_STATE_EVENT, refresh);
+    cleanup(() => window.removeEventListener(USAGE_SYNC_STATE_EVENT, refresh));
+  });
+
   // Local-first paint: this never waits for auth, network, or Convex.
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async ({ cleanup, track }) => {
     const selectedPreset = track(() => preset.value);
+    track(() => syncRevision.value);
     let cancelled = false;
     cleanup(() => {
       cancelled = true;
     });
-    store.loaded = false;
-    const loadedAt = Date.now();
-    const range = createUsageRange(selectedPreset, loadedAt);
-    const [{ events, truncated }, localFolios, activities] = await Promise.all([
-      listLocalEvents(range),
-      folioMetadata(),
-      usageLedger.listWritingActivity({
-        from: range.from ?? 0,
-        to: range.to,
-        limit: 2_000,
-      }),
-    ]);
-    if (cancelled) return;
-    store.titles = Object.fromEntries(
-      localFolios.folios.map((folio) => [folio.id, folio.name]),
-    );
-    store.folioCount = localFolios.folios.length;
-    store.detailsTruncated = truncated || activities.length === 2_000;
-    store.combinedPartial = false;
-    const summary = buildUsageSummary({
-      events,
-      activities,
-      folios: localFolios.metadata,
-      range,
-      now: loadedAt,
-    });
-    store.summary = summary;
-    store.writingDays = summary.writingHeatmap.filter(
-      (day) => day.count > 0,
-    ).length;
-    store.loaded = true;
+    store.loading = true;
+    store.error = false;
+    try {
+      const loadedAt = Date.now();
+      const range = createUsageRange(selectedPreset, loadedAt);
+      const [{ events, truncated }, localFolios, activities] =
+        await Promise.all([
+          listLocalEvents(range),
+          folioMetadata(),
+          usageLedger.listWritingActivity({
+            from: range.from ?? 0,
+            to: range.to,
+            limit: 2_000,
+          }),
+        ]);
+      if (cancelled) return;
+      store.titles = Object.fromEntries(
+        localFolios.folios.map((folio) => [folio.id, folio.name]),
+      );
+      store.folioCount = localFolios.folios.length;
+      store.detailsTruncated = truncated || activities.length === 2_000;
+      store.combinedPartial = false;
+      const summary = buildUsageSummary({
+        events,
+        activities,
+        folios: localFolios.metadata,
+        range,
+        now: loadedAt,
+      });
+      store.summary = summary;
+      store.writingDays = summary.writingHeatmap.filter(
+        (day) => day.count > 0,
+      ).length;
+      store.loaded = true;
+      store.loading = false;
+    } catch {
+      if (!cancelled) {
+        store.error = true;
+        store.loading = false;
+      }
+    }
   });
 
   // Signed-in rebase: server aggregates are authoritative; only pending local
@@ -303,11 +330,21 @@ export default component$(() => {
     const loading = track(() => auth.value.loading);
     const selectedPreset = track(() => preset.value);
     const localLoaded = track(() => store.loaded);
+    const localLoading = track(() => store.loading);
+    const localError = track(() => store.error);
     let cancelled = false;
     cleanup(() => {
       cancelled = true;
     });
-    if (loading || provider !== "convex" || !user || !client || !localLoaded) {
+    if (
+      loading ||
+      provider !== "convex" ||
+      !user ||
+      !client ||
+      !localLoaded ||
+      localLoading ||
+      localError
+    ) {
       store.remoteState =
         typeof navigator !== "undefined" && !navigator.onLine
           ? "offline"
@@ -456,17 +493,19 @@ export default component$(() => {
     void captureProductEvent("usage_range_changed", { range });
   });
 
-  const sourceState = !store.loaded
-    ? "loading"
-    : store.detailsTruncated ||
-        store.combinedPartial ||
-        store.remoteState === "error"
-      ? "partial"
-      : store.remoteState === "offline"
-        ? "offline"
-        : store.remoteState === "ready"
-          ? "combined"
-          : "local";
+  const sourceState = store.error
+    ? "error"
+    : !store.loaded
+      ? "loading"
+      : store.detailsTruncated ||
+          store.combinedPartial ||
+          store.remoteState === "error"
+        ? "partial"
+        : store.remoteState === "offline"
+          ? "offline"
+          : store.remoteState === "ready"
+            ? "combined"
+            : "local";
   // Subscribe the route render so nested billing views receive each transition.
   const hostedBilling = {
     state: hostedState.value,
@@ -474,7 +513,7 @@ export default component$(() => {
   };
 
   return (
-    <main class="min-h-screen bg-[var(--color-paper)] px-4 py-8 text-[var(--color-ink)] sm:px-8">
+    <main class="desk min-h-screen bg-[var(--color-paper)] px-4 py-8 text-[var(--color-ink)] sm:px-8">
       <div class="mx-auto max-w-6xl">
         <nav
           aria-label="Desk navigation"
@@ -513,7 +552,7 @@ export default component$(() => {
           synchronized={store.synchronized}
         />
         <nav
-          class="flex flex-wrap items-center gap-2 border-b border-dotted border-[var(--color-ink-muted)] py-4"
+          class="desk-range flex flex-wrap items-center gap-2 border-b border-dotted border-[var(--color-ink-muted)] py-4"
           aria-label="Usage range"
         >
           <span class="mr-2 text-xs font-semibold tracking-[0.1em] uppercase text-[var(--color-ink-muted)]">
@@ -524,11 +563,7 @@ export default component$(() => {
               key={range}
               type="button"
               aria-pressed={preset.value === range}
-              class={{
-                "btn-paper": true,
-                "bg-[var(--color-ink)] text-[var(--color-paper)]":
-                  preset.value === range,
-              }}
+              class="btn-paper"
               onClick$={() => selectRange(range)}
             >
               {range === "all" ? "All" : range.slice(0, -1)}
@@ -536,12 +571,30 @@ export default component$(() => {
           ))}
         </nav>
         {!store.loaded ? (
-          <div class="py-20" role="status">
-            <p class="dept-label">Reading the ledger</p>
-            <div class="mt-4 h-px w-full animate-pulse bg-[var(--color-ink-muted)]" />
+          <div class="desk-loader py-20" role="status">
+            <p class="dept-label">
+              {store.error
+                ? "The ledger could not be read. Please try again."
+                : "Reading the ledger"}
+            </p>
+            {store.error && (
+              <button
+                class="btn-paper mt-4"
+                onClick$={() => {
+                  syncRevision.value += 1;
+                }}
+              >
+                Try again
+              </button>
+            )}
           </div>
         ) : (
-          <>
+          <div class="desk-content" aria-busy={store.loading}>
+            {store.error && (
+              <p role="status">
+                The ledger could not be read. Showing the last figures.
+              </p>
+            )}
             <WritingActivity
               days={store.summary.writingHeatmap}
               daily={store.summary.daily}
@@ -571,14 +624,14 @@ export default component$(() => {
               entries={store.summary.recentWork}
               folioTitles={store.titles}
             />
-            <p class="border-t-2 border-[var(--color-ink)] py-7 text-sm text-[var(--color-ink-muted)]">
+            <p class="py-7 text-sm text-[var(--color-ink-muted)]">
               Export, sync across devices, or delete this history from{" "}
               <Link href="/account/#data" class="underline">
                 Account → Your data
               </Link>
               .
             </p>
-          </>
+          </div>
         )}
       </div>
     </main>
