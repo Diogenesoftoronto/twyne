@@ -76,59 +76,66 @@ Shared keyframes: `press-slip-in`, `press-slip-in-from-right`, `press-fade-in`, 
 
 ## The joy ledger
 
-Each surface gets one idea that belongs to a press room and nowhere else. The table lists what it is, what it says, and why it suits that surface.
+Each surface has one idea that belongs to a press room: what it is, and what it tells the writer. Everything listed here has shipped. Where a row was checked only through its CSS and component code, not live end to end (because it needs a signed-in account or a streaming model), the row says so.
 
-### The manuscript (lane A)
+### The manuscript
 
 | Surface | The idea | What it communicates |
 |---|---|---|
-| Typing | **Wet ink.** New words are set in a slightly bluer, wetter ink until they are stored on the device, then dry to black over `--dur-dry`. Uses the CSS Custom Highlight API, so no DOM, layout or transform is touched. | Your words are safe the moment they dry. If ink stays wet, the save hasn't landed. |
-| Caret | A vermilion caret, the editor's pencil. Never smoothed or animated, because Word's gliding caret is the cautionary tale. | Where the hand is. Instant. |
+| Typing | **Wet ink.** Words set by hand sit in a bluer, wetter ink until IndexedDB has the draft, pass through a drying tone, then are just ink ([`extensions/wet-ink.ts`](../../src/components/editor/extensions/wet-ink.ts)). Painted with the CSS Custom Highlight API, so there is no DOM, layout or transform. Pastes, undo, drops and collaborators' edits arrive dry. | Your words are safe once they dry. Ink that stays wet means the save has not landed. |
+| Caret | A vermilion caret, the editor's pencil. It never glides: Word's smoothed caret is the cautionary tale. | Where the hand is, instantly. |
 | Selection | Non-photo blue, the copy editor's proof pencil, instead of the system highlight. | A marked passage, ready for a decision. |
-| Selection popover | Slides up off the line like a slip pushed across the desk. Every AI action carries its destination tag. | Which actions stay here and which send the passage to a model, before you press. |
-| Section drag | The ⋮⋮ handle becomes a type slug that lifts on grab, and the drop is a vermilion composing rule. | Moving a section is moving set type: the whole block goes. |
-| File drop | "Drop a plate" with the destination written on the docket: kept in the manuscript on this device, or uploaded to your account's storage. | Where the image will live before you let go. |
-| The desk lamp | A soft light pools on the paper's grain behind the page. It drifts with the hour and leans toward the pointer only when you are not typing. | The room is lit and inhabited, and quiet while you write. |
+| Selection toolbar | It slides up off the line once per new passage (a Web Animation on `translate`, so the toolbar is never re-mounted). Find sources and Ask an editor carry a docket mark in their destination ink, read from the writer's saved AI and Apparatus settings. | Before you press: what stays here and what is read by a model, and whose. |
+| Section drag | The ⋮⋮ handle is a type slug that lights when its heading is hovered. The drag image is the section's heading on a slug. The drop target is a vermilion composing rule reading "set *Section* here". | Moving a section is moving set type: the whole block goes. |
+| File drop | A docket that says where the plate will live: inline on this device when offline, your account's image storage when signed in, or that sign-in is needed. | Where the image goes, before you let go. |
+| Moving the mouse | **The desk lamp.** A pool of light on the desk around the sheet ([`desk-lamp.ts`](../../src/components/editor/desk-lamp.ts)). It sits where the hour puts it (morning light from the left, evening from the right, warm at the day's ends) and leans toward the pointer when you are not typing. It is painted behind the page, so prose contrast never changes. | The room is lit and inhabited, and quiet while you write. |
+| Scrolling | The lamp is fixed to the desk, so the paper slides under it. **The running foot**: the status bar names the section being read, set again from below as you cross into the next one ([`running-foot.ts`](../../src/components/editor/running-foot.ts)). Pressing it returns to that heading. | Where you are in a long manuscript, without a single line of prose moving. |
 
-### The editor chrome (lane B)
-
-| Surface | The idea | What it communicates |
-|---|---|---|
-| Drawer | Folios slide out like a drawer of filed sheets. The active folio wears a tab, and switching moves the tab. | Which manuscript is on the desk. |
-| Masthead | The wordmark's ink sits still while you type. The infinite wobble now plays only at rest, as ambient life. | A press at rest and a press at work. |
-| Save and sync | One status line instead of two dots. It reads *set* on save, *on the wire* while syncing, and *filed* when the account has it. | Exactly where the latest words are. |
-| Menus and popovers | One arrival everywhere: `--dur-arrive` with `--ease-slip` from the trigger side. One scrim value. | Menus belong to what opened them. |
-| Publish and share | Publish is a ceremony: the button inks in vermilion as the page goes out. Unpublish and stop-sharing are held, not clicked. | Public actions look public, and permanent ones resist a slip. |
-| Zen and flow | Chrome eases out as one sheet, not piece by piece, and returns the same way. | The room steps back as a whole when you write. |
-
-### The writers' room (lane C)
+### The editor chrome
 
 | Surface | The idea | What it communicates |
 |---|---|---|
-| An editor reading | The portrait of an editor who is reading wears a slow pencil-mark ring, its progress tied to the real stream (reasoning → writing → filed). There is no spinner. | Who is reading your draft right now, and how far they have got. |
-| A note arriving | The note is set like a slip pushed onto the board. On filing it takes a small ink impression in the editor's colour. | Something new is on the board, and from whom. |
-| Asking the room | Each AI button carries its destination tag (model or credit). | Before pressing: whose model reads this, and whether it costs. |
-| The rubric verdict | The grade stamp presses with an ink-impression shader: a halftone corona with mis-registered vermilion and cobalt. Ceremony class, played once per new verdict. | The judgement is in, and it is weighty. |
-| Marginalia | Strike draws a line through the card. Erase is held. | Settled versus gone. |
-| Apparatus | Sources being searched carry a reading tick in cobalt. When found they file with a mustard flash. | Research is happening and something was found. |
+| Drawer | The active folio wears a vermilion tab that slips in on switch. The drawer's contents slide with it instead of being clipped. The toggle takes the editorial ink while the drawer is out. | Which manuscript is on the desk. |
+| Masthead | The wordmark's hand-set wobble is ambient: it rests while you type, in flow, and below the full level. | A press at rest versus a press at work. |
+| Save and sync | One line: "Saved 4s ago · held here / on the wire / filed", the route word in its consequence ink. "Filed" flashes once when the account has the words. | Exactly where the latest words are. |
+| Menus and popovers | One arrival everywhere (File, account, sharing, compositor pickers, Typst status, shortcuts), and one scrim. | A menu belongs to what opened it. |
+| Export | One "device" docket for the whole Export group. | Exports are files written here; nothing is sent. |
+| Publish and share | Publish, PDS and Micropub carry the public docket and ink across when they succeed. Invite carries "invitee" (one named reader, not the public). Unpublish, Unpublish from PDS, removing a collaborator and Stop sharing are holds. *Checked by CSS and component only: needs a signed-in account.* | Public actions look public; permanent ones resist a slip. |
+| Opening the editor | The "Setting the type…" gate waits 150 ms before it shows, so fast loads never flash it, and sets a line of slugs while it waits. | Work is happening, without a spinner. |
+| Zen and flow | Zen eases the masthead and compositor out together. Flow keeps the global 1.2 s fade, because leaving for flow is ambient, not feedback. | The room steps back as a whole when you write. |
 
-### My Desk (lane D)
+### The writers' room
 
 | Surface | The idea | What it communicates |
 |---|---|---|
-| Opening the ledger | Figures are set like a composing stick: numerals roll into place once on arrival and never again while the page is open. | A dossier being prepared for you. |
-| Range | Switching range keeps the old figures in place and re-sets only what changed. No flash of the loader. | The same desk, a different window of time. |
-| Heatmap | Selecting a day presses its cell, and the selected-day aside slides in like a ledger page. | Which day you are reading. |
-| Charts | Bars rise from the baseline once, on arrival. | Activity accumulating, not decoration. |
-| Patterns | When a pattern unlocks it gets a small *filed* stamp. | Evidence has accumulated. |
-| Hosted charges | Money figures use the credit ink, and refreshing re-sets only the changed numerals. | This is the part that costs. |
+| An editor reading | A pencil ring on the editor's portrait, tied to the real stream: reasoning traces a third of the ring, writing advances it with the characters received, and filing closes it. A faint shared mark shows while the background room is reading. *Checked by CSS and component only: needs a streaming model.* | Who is reading your draft now, and how far they have got. No spinner. |
+| A note arriving | Filed notes slip onto the board, staggered at most 50 ms (capped at six). A note that has just been filed takes one ink impression in its editor's colour. A finished reply settles once. *Component only.* | Something new is on the board, and from whom. |
+| Asking the room | One "The draft goes to · model / credit" docket under Get notes, Propose edits and Full analysis. Smaller dockets on reply, Ask for a fix, Send to editor, steering, the rubric's grade keys and Apparatus retry. | Whose model reads this, and whether it spends credit. |
+| The verdict | **Ink squeezed from under the die.** At the moment the walnut die lands, a halftone in the grade's own ink is pushed out past the sunburst's rays, with a vermilion second plate a hair out of register. It spreads, holds and dries away within `--dur-ceremony`, and then the WebGL context is surrendered ([`stamp-shader.tsx`](../../src/components/rubric/stamp-shader.tsx)). It never plays on restore and never at still. The die itself now lands on the platen curve. | The judgement is in, and it is weighty. |
+| Marginalia | Striking a comment rules a line through it. Erasing a comment, striking the room and removing a source are holds. | Settled versus gone. |
+| Apparatus | A source being searched carries a cobalt reading tick (ambient). A found source files with one mustard flash. | Research is happening, and something was found. |
+| Waiting | The editorial loader sets a line of slugs instead of spinning a ring. Its rotating wait lines stay. | A long wait, in the room's own terms. |
+| Board tabs | The active underline slides between tabs. Unread badges press in once, only when the count rises. | Where you are, and what is new. |
+
+### My Desk
+
+| Surface | The idea | What it communicates |
+|---|---|---|
+| Opening the ledger | Figures are set like a composing stick: numerals roll into place once and re-set only when that figure changes. Readers get the whole value, never the digits. | A dossier being prepared for you. |
+| Range | Switching keeps the old figures on the page, dimmed and `aria-busy`, and re-sets only what changed. The selected range is visibly inked (it showed only in `aria-pressed` before). | The same desk, through a different window of time. |
+| Heatmap | Cells have a hover state and press when chosen. The selected-day aside slides in like a ledger page. | Which day you are reading. |
+| Charts | Bars rise from the baseline once, on arrival or when their values change, and fills grow from the left. | Activity accumulating, not decoration. |
+| Patterns | A pattern that crosses its evidence threshold gets a small *filed* stamp, once per device. | Evidence has accumulated. |
+| Hosted charges | Money is printed in the credit ink under a credit docket. | This is the part that costs. |
+| Tables and tabs | Data tables open with a turning marker. Usage tabs slide their indicator, crossfade their panel, and are a full keyboard tablist. | Ordinary controls, set in the house manner. |
 
 ## Performance contract
 
-- Nothing new runs per keystroke beyond `markTyping()` (a timer reset) and, for wet ink, one range append per transaction.
-- The derived save path (`twyne:draft-saved`) drives drying, so drying costs nothing while the writer is typing.
-- Shaders render on a small canvas, at most 256 CSS px on a side and at half resolution. They run for a ceremony and then free the context. They never run behind the manuscript on a loop.
-- The desk lamp is a CSS gradient on a registered property. It is set on pointer idle and once a minute for the hour, never per frame.
+- Nothing new runs per keystroke beyond `markTyping()` (a timer reset) and, for wet ink, one range append per transaction, painted at most once a frame.
+- The save path (`twyne:draft-saved`) drives drying, so drying costs nothing while the writer is typing.
+- The running foot measures headings after the debounced `twyne:content` event. A scroll frame reads `scrollTop` and walks a cached list.
+- The only shader is the verdict's. It runs on a canvas about 1.6× the stamp (never over 256 CSS px) for one ceremony, then loses its context. Nothing renders behind the manuscript on a loop.
+- The desk lamp is a CSS gradient on two registered properties. They are written at most once a frame while the pointer moves, and once a minute for the hour.
 - `bun run test:typing` is the arbiter. A change that moves its numbers is a regression, whatever it looks like.
 
 ## Adding to it
