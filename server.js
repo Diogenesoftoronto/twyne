@@ -5,6 +5,7 @@ import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { installLiveVoiceRelay } from "./scripts/live-voice-relay.mjs";
 import { redirectCanonicalHost } from "./scripts/canonical-host.mjs";
+import { rejectMissingBuildAsset } from "./scripts/static-miss.mjs";
 
 // Railway terminates TLS at its edge. Let Qwik validate browser origins using
 // the edge's protocol rather than the container's internal HTTP connection.
@@ -130,6 +131,7 @@ async function main() {
 
         if (staticFile) {
           staticFile(req, res, () => {
+            if (rejectMissingBuildAsset(req, res)) return;
             router(req, res, () => {
               notFound(req, res, () => {
                 res.writeHead(404, { "Content-Type": "text/plain" });
@@ -138,6 +140,7 @@ async function main() {
             });
           });
         } else {
+          if (rejectMissingBuildAsset(req, res)) return;
           router(req, res, () => {
             notFound(req, res, () => {
               res.writeHead(404, { "Content-Type": "text/plain" });
