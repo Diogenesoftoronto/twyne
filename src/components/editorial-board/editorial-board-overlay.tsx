@@ -1,8 +1,13 @@
+import { DestinationTag } from "../ui/destination-tag";
+import { loadAiConsequence } from "../../utils/consequence";
 import {
   $,
   Slot,
   component$,
   useStore,
+  useSignal,
+  useVisibleTask$,
+  useTask$,
   type PropFunction,
 } from "@qwik.dev/core";
 import { steerBackgroundResearch } from "../../utils/background-research";
@@ -48,6 +53,10 @@ export const EditorialBoardOverlay = component$<EditorialBoardOverlayProps>(
       steeringNotice: null,
       steeringError: null,
     });
+
+    const destination = useSignal<"provider" | "credit">("credit");
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(async () => { destination.value = await loadAiConsequence(); });
 
     const submitSteering = $(async () => {
       const direction = store.steeringDraft.trim();
@@ -118,7 +127,8 @@ export const EditorialBoardOverlay = component$<EditorialBoardOverlayProps>(
           style={{ "--board-accent": activeTab.accent }}
         >
           <header class="editorial-board-card__head">
-            <nav class="editorial-board-contexts" aria-label="Board context">
+            <nav class="editorial-board-contexts" aria-label="Board context" style={{ "--room-tab-index": Math.max(0, props.tabs.findIndex((tab) => tab.id === props.activeContext)), "--room-tab-count": props.tabs.length }}>
+              <span class="room-tab-indicator" aria-hidden="true" />
               {props.tabs.map((tab) => {
                 const active = tab.id === props.activeContext;
                 const unread = props.activity[tab.id] ?? 0;
@@ -139,11 +149,7 @@ export const EditorialBoardOverlay = component$<EditorialBoardOverlayProps>(
                   >
                     <span aria-hidden="true">{tab.numeral}</span>
                     <strong>{tab.label}</strong>
-                    {unread > 0 && !active && (
-                      <small aria-hidden="true">
-                        {unread > 9 ? "9+" : unread}
-                      </small>
-                    )}
+                    <UnreadBadge count={unread} active={active} />
                   </button>
                 );
               })}
@@ -170,7 +176,8 @@ export const EditorialBoardOverlay = component$<EditorialBoardOverlayProps>(
                 </button>
               </header>
               {!store.steeringCollapsed && (
-                <div class="editorial-steering-card__body">
+                <div class="editorial-steering-card__body" data-consequence={destination.value}>
+                  <DestinationTag to={destination.value} />
                   {/* The same composer the rest of the room writes into: the
                       Steer key sits under the box instead of beside it, and a
                       direction can be spoken as readily as typed. */}
@@ -211,3 +218,19 @@ export const EditorialBoardOverlay = component$<EditorialBoardOverlayProps>(
     );
   },
 );
+
+const UnreadBadge = component$<{ count: number; active: boolean }>((props) => {
+  const previous = useSignal(props.count);
+  const impression = useSignal(0);
+  const animating = useSignal(false);
+  useTask$(({ track }) => {
+    const count = track(() => props.count);
+    if (count > previous.value && !props.active) { impression.value++; animating.value = true; }
+    previous.value = count;
+  });
+  return props.count > 0 && !props.active ? (
+    <small key={impression.value} class={animating.value ? "room-unread-impress" : undefined} onAnimationEnd$={() => { animating.value = false; }} aria-hidden="true">
+      {props.count > 9 ? "9+" : props.count}
+    </small>
+  ) : null;
+});

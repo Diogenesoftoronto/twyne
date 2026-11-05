@@ -1,4 +1,5 @@
 import { component$ } from "@qwik.dev/core";
+import { StampShader } from "./stamp-shader";
 import { StampPress } from "../ui/stamp-press";
 import {
   rubricGradeStampAsset,
@@ -36,6 +37,7 @@ export const GradeStamp = component$<GradeStampProps>((props) => {
       role="img"
       aria-label={`Overall grade ${props.grade}, ${props.score} of 100`}
     >
+      {props.animated && <StampShader key={props.impressionKey ?? `${props.grade}:${props.score}`} />}
       <StampPress
         key={props.impressionKey ?? `${props.grade}:${props.score}`}
         animated={props.animated}
