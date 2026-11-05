@@ -6,6 +6,7 @@ import { ConvexProvider } from "./utils/convex-context";
 import { AuthProvider } from "./utils/auth-context";
 import { PostHogProvider } from "./utils/posthog-context";
 import { installLixAuthInterceptor } from "./utils/lix-auth";
+import { CHUNK_RECOVERY_SCRIPT } from "./utils/chunk-recovery";
 import { GlobalApplicationToasts } from "./components/ui/global-application-toasts";
 import { GlobalSpeechPlayer } from "./components/ui/global-speech-player";
 import { LiveVoiceDesk } from "./components/ui/live-voice-desk";
@@ -84,6 +85,7 @@ export default component$<{
     <>
       <head>
         <meta charset="utf-8" />
+        {!isDev && <script data-chunk-recovery dangerouslySetInnerHTML={CHUNK_RECOVERY_SCRIPT} />}
         {/*
           Stamps the writer's palette onto <html> before the first paint.
           It has to be an inline script rather than a component: Qwik
