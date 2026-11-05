@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "475e4e0501d2",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "e2e/margin-expand.e2e.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/47/5e4e0501d2/0/metadata.json",
+      "transcript": "/47/5e4e0501d2/0/full.jsonl",
+      "compact_transcript": "/47/5e4e0501d2/0/transcript.jsonl",
+      "content_hash": "/47/5e4e0501d2/0/content_hash.txt",
+      "prompt": "/47/5e4e0501d2/0/prompt.txt"
+    }
+  ]
+}
