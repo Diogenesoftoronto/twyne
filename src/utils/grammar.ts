@@ -2,8 +2,8 @@
  * Browser-only grammar checking through Harper's WebAssembly worker.
  *
  * Both imports stay behind the async boundary so SSR never instantiates a
- * Worker and the 16 MB dictionary is fetched only when the writer opens the
- * grammar desk for the first time.
+ * Worker. The dictionary is fetched on the first grammar request; sentence
+ * tools can warm it after the editor opens, and the grammar desk reuses it.
  */
 
 export interface GrammarIssue {
@@ -91,10 +91,14 @@ async function getLinter(): Promise<HarperLinter> {
       // which Vite does not copy in development. Resolve the WASM as a Vite
       // asset, then give both the main thread and worker the stable URL.
       const wasmUrl = new URL(
-        "../../node_modules/harper.js/dist/harper_wasm_bg.wasm",
+        "../../node_modules/harper.js/dist/harper_wasm_slim_bg.wasm",
         import.meta.url,
       ).href;
-      const binary = harper.createBinaryModuleFromUrl(wasmUrl, "full");
+      // The full flavor first loads a sibling slim binary that Vite never
+      // emits, so every grammar check fetched a missing file (a 404) before
+      // falling back to the full 15.8 MB one. The slim binary implements the
+      // linting API used here, so emit and load just that.
+      const binary = harper.createBinaryModuleFromUrl(wasmUrl, "slim");
       const linter = new harper.WorkerLinter({ binary });
       await linter.setup();
       return linter;
