@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   CONSEQUENCE_LABELS,
   aiConsequenceFor,
+  researchConsequenceFor,
   type Consequence,
 } from "./consequence";
 import { DEFAULT_AI_SETTINGS } from "../types";
@@ -64,5 +65,15 @@ describe("consequence", () => {
         ],
       } as never),
     ).toBe("credit");
+  });
+
+  test("research goes to the hosted service unless the writer chose a provider", () => {
+    expect(researchConsequenceFor(null)).toBe("credit");
+    expect(researchConsequenceFor({ researchProvider: "hosted" })).toBe(
+      "credit",
+    );
+    expect(researchConsequenceFor({ researchProvider: "search-api" })).toBe(
+      "provider",
+    );
   });
 });

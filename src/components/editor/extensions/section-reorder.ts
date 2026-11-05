@@ -42,14 +42,31 @@ function dragHandle(id: string, label: string): HTMLElement {
   handle.dataset.sectionDragHandle = id;
   handle.draggable = true;
   handle.contentEditable = "false";
+  // A type slug: the block of set type the whole section hangs from.
+  // Styled in src/styles/press-editor.css.
   handle.className = "twyne-section-drag-handle";
   handle.setAttribute("role", "button");
   handle.setAttribute("aria-label", `Move section: ${label}`);
   handle.setAttribute("title", `Drag to move ${label}`);
   handle.textContent = "⋮⋮";
-  handle.style.cssText =
-    "position:absolute;transform:translate(-1.5rem,.2rem);cursor:grab;user-select:none;opacity:.55;";
   return handle;
+}
+
+/**
+ * The drag image: the section lifted off the page as a slug of set type,
+ * labelled with its heading, rather than the browser's ghost of two dots.
+ * It has to be in the document when `setDragImage` is called; it is removed
+ * on the next frame, once the browser has taken its snapshot.
+ */
+function liftSlug(event: DragEvent, label: string): void {
+  if (!event.dataTransfer || typeof event.dataTransfer.setDragImage !== "function")
+    return;
+  const slug = document.createElement("div");
+  slug.className = "twyne-section-slug";
+  slug.textContent = label;
+  document.body.appendChild(slug);
+  event.dataTransfer.setDragImage(slug, 12, 14);
+  requestAnimationFrame(() => slug.remove());
 }
 
 function sectionDecorations(
@@ -78,11 +95,17 @@ function sectionDecorations(
         Decoration.widget(
           position,
           () => {
+            // A composing rule where the section will be set, labelled with
+            // what is moving. Styled in src/styles/press-editor.css.
             const indicator = document.createElement("span");
             indicator.contentEditable = "false";
+            indicator.className = "twyne-section-drop-rule";
             indicator.dataset.sectionDropIndicator = target.placement;
-            indicator.style.cssText =
-              "display:block;border-top:2px solid var(--accent-color,#6d5dfc);pointer-events:none;";
+            const source = pluginState?.draggingId
+              ? outline.byId[pluginState.draggingId]
+              : undefined;
+            if (source) indicator.dataset.sectionDropLabel = source.label;
+            indicator.setAttribute("aria-hidden", "true");
             return indicator;
           },
           { side: target.placement === "before" ? -2 : 2 },
@@ -234,6 +257,8 @@ export const SectionReorder = Extension.create({
               if (!sourceId) return false;
               event.dataTransfer?.setData(SECTION_DRAG_MIME, sourceId);
               if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+              const source = buildDocumentOutline(view.state.doc).byId[sourceId];
+              if (source) liftSlug(event, source.label);
               view.dispatch(
                 view.state.tr
                   .setMeta(sectionReorderPluginKey, {
