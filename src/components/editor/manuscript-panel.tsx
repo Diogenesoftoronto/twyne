@@ -11,6 +11,7 @@ import { isFileDrag } from "../../utils/file-drag";
 import { hasAuthenticatedConvexIdentity, useAuth } from "../../utils/auth-context";
 import { DestinationTag } from "../ui/destination-tag";
 import { mountDeskLamp } from "./desk-lamp";
+import { mountRunningFoot } from "./running-foot";
 import type { EditorStore } from "./editor-state";
 import { MarginRails } from "../in-flow/margin-rail";
 import { FlowSurface } from "../in-flow/flow-surface";
@@ -76,12 +77,14 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
     { strategy: "document-ready" },
   );
 
-  // The desk lamp lights the paper around the sheet (see desk-lamp.ts).
+  // The desk lamp lights the paper around the sheet (see desk-lamp.ts), and
+  // the running foot follows which section is being read (running-foot.ts).
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup }) => {
     const el = scrollerRef.value;
     if (!el) return;
     cleanup(mountDeskLamp(el));
+    cleanup(mountRunningFoot(el));
   });
 
   /**
