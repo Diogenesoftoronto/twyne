@@ -3,6 +3,7 @@ import {
   component$,
   noSerialize,
   Slot,
+  useOnWindow,
   useSignal,
   useStore,
   useStyles$,
@@ -20,6 +21,11 @@ import { stripTypstAnnotationMetadata } from "../../utils/typst/document";
 import { Icon } from "../ui/icon";
 import { formatWordCount } from "../../utils/document";
 import { LastSavedLine } from "./sync-indicator";
+import {
+  RUNNING_SECTION_EVENT,
+  jumpToSection,
+  type RunningSection,
+} from "./running-foot";
 import { FlowRibbon } from "../in-flow/flow-ribbon";
 import { ForecastLine } from "./forecast-line";
 import { saveEditorViewPreferences } from "../../utils/editor-view-preferences";
@@ -93,6 +99,14 @@ export const TypstWorkspace = component$<{
   const sourceMount = useSignal<HTMLElement>();
   const workspaceRef = useSignal<HTMLElement>();
   const pageTo = useSignal(0);
+  // The running foot's section, announced by the manuscript's scroller.
+  const runningSection = useSignal<RunningSection | null>(null);
+  useOnWindow(
+    RUNNING_SECTION_EVENT,
+    $((event: Event) => {
+      runningSection.value = (event as CustomEvent<RunningSection | null>).detail;
+    }),
+  );
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track, cleanup }) => {
@@ -590,6 +604,28 @@ export const TypstWorkspace = component$<{
         {!props.readOnly && <FlowRibbon />}
         <span class="editor-last-saved">
           <LastSavedLine savedAt={props.store.lastSavedAt} />
+        </span>
+        {/* The running foot: the section being read, set again as the
+            writer scrolls into the next one. Pressing it returns there. */}
+        <span class="press-running-foot">
+          {runningSection.value && (
+            <button
+              key={`${runningSection.value.index}:${runningSection.value.text}`}
+              type="button"
+              class="press-running-foot__slip"
+              title="Back to this section's heading"
+              aria-label={`Reading ${runningSection.value.text}. Back to its heading.`}
+              onClick$={() => {
+                const section = runningSection.value;
+                if (section) jumpToSection(section.index);
+              }}
+            >
+              <span aria-hidden="true">§</span>
+              <span class="press-running-foot__text">
+                {runningSection.value.text}
+              </span>
+            </button>
+          )}
         </span>
         <button
           type="button"

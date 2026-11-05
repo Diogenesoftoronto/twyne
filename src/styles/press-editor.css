@@ -305,7 +305,9 @@
       color-mix(in srgb, var(--lamp-glow) 40%, transparent),
       transparent
     );
-  background-attachment: local, local;
+  /* Fixed to the desk, not the text: scrolling slides the paper under a
+   * lamp that stays where it is. */
+  background-attachment: scroll, scroll;
   transition:
     --lamp-x 1.4s var(--ease-set),
     --lamp-y 1.4s var(--ease-set);
@@ -341,3 +343,62 @@
      light so the page reads as paper lying on the lit desk. */
   box-shadow: 0 0 3rem 1.5rem var(--color-editor-bg);
 }
+
+/* ── The running foot ─────────────────────────────────────────
+ * The section being read, in the status bar beside the Zen key, like a
+ * chapter title at the foot of a page. When the reader scrolls into the next
+ * section the new name is set from below, as a slug dropped into the stick.
+ * Nothing moves while typing: it only changes on a scroll or a new heading. */
+.press-running-foot {
+  margin-inline-start: auto;
+  display: inline-flex;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+.press-running-foot + .editor-zen-toggle {
+  margin-inline-start: 0.5rem;
+}
+.press-running-foot__slip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  max-inline-size: 22rem;
+  padding: 0.1rem 0.4rem;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--color-ink-light);
+  font-family: var(--font-typewriter);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  animation: press-running-set var(--dur-arrive) var(--ease-slip) both;
+  transition:
+    background-color var(--dur-release) ease,
+    color var(--dur-release) ease;
+}
+.press-running-foot__slip > [aria-hidden] {
+  color: var(--color-vermilion);
+}
+.press-running-foot__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.press-running-foot__slip:hover,
+.press-running-foot__slip:focus-visible {
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+}
+@keyframes press-running-set {
+  from {
+    opacity: 0;
+    translate: 0 70%;
+  }
+}
+@media (max-width: 639px) {
+  .press-running-foot {
+    display: none;
+  }
+}
+
