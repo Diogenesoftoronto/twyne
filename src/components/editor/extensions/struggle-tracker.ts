@@ -86,6 +86,7 @@ import {
   mapSentenceLedger,
   reconcileSentenceLedger,
   settleSentenceWording,
+  seedOpeningWordings,
   SENTENCE_SETTLE_MS,
   type LedgerSpan,
 } from "../../../utils/sentence-ledger";
@@ -265,7 +266,10 @@ export function startInFlowTools(
     });
     return spans.slice(0, 2000);
   };
-  ledger = reconcileSentenceLedger(ledger, spansForDoc(), Date.now());
+  ledger = seedOpeningWordings(
+    reconcileSentenceLedger(ledger, spansForDoc(), Date.now()),
+    Date.now(),
+  );
 
   const settleLedger = async () => {
     if (stopped || editor.isDestroyed || editor.view.composing) return;

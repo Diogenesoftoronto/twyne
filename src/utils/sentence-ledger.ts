@@ -228,6 +228,32 @@ export function reconcileSentenceLedger(
 }
 
 /** Called only after Harper has checked the complete wording's spelling. */
+/**
+ * The page as it was opened: each complete sentence's text is its first
+ * wording. Those words were already the writer's before this session, so they
+ * are recorded as they stand rather than spell-checked one by one, which on a
+ * long manuscript kept Harper busy for tens of seconds in every open tab.
+ * Only sentences written or rewritten during the session are checked.
+ */
+export function seedOpeningWordings(
+  ledger: SentenceLedger,
+  now: number,
+): SentenceLedger {
+  return {
+    ...ledger,
+    entries: ledger.entries.map((entry) =>
+      entry.retired ||
+      entry.wordings.length > 0 ||
+      !completeSentence(entry.text)
+        ? entry
+        : {
+            ...entry,
+            wordings: [{ text: entry.text, at: now, source: "yours" as const }],
+          },
+    ),
+  };
+}
+
 export function settleSentenceWording(
   entry: SentenceEntry,
   now: number,
