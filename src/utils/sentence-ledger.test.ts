@@ -4,6 +4,7 @@ import {
   emptySentenceLedger,
   mapSentenceLedger,
   reconcileSentenceLedger,
+  seedOpeningWordings,
   settleSentenceWording,
   sentenceSimilarity,
   type LedgerSpan,
@@ -182,3 +183,39 @@ describe("sentence identity and lineage", () => {
     expect(sentenceSimilarity("A cold river.", "A cold river.")).toBe(1);
   });
 });
+
+describe("opening wordings", () => {
+  test("every complete sentence on the opened page starts with its own wording", () => {
+    const ledger = seedOpeningWordings(
+      reconcileSentenceLedger(
+        emptySentenceLedger(),
+        [
+          { text: "The ledger kept its counsel.", from: 1, to: 29, blockFrom: 0 },
+          { text: "and then the", from: 30, to: 42, blockFrom: 0 },
+        ],
+        1000,
+      ),
+      1000,
+    );
+    const [complete, fragment] = ledger.entries;
+    expect(complete.wordings.map((w) => w.text)).toEqual([
+      "The ledger kept its counsel.",
+    ]);
+    // A fragment is not a wording yet; it is checked once it is finished.
+    expect(fragment.wordings).toEqual([]);
+  });
+
+  test("an opened sentence needs no spelling check to settle", () => {
+    const [entry] = seedOpeningWordings(
+      reconcileSentenceLedger(
+        emptySentenceLedger(),
+        [{ text: "Salt bought silence.", from: 1, to: 21, blockFrom: 0 }],
+        1000,
+      ),
+      1000,
+    ).entries;
+    // settleLedger skips entries whose current text is already a wording.
+    expect(entry.wordings.some((w) => w.text === entry.text)).toBe(true);
+  });
+});
+
