@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "673b493e3dd3",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/components/ui/chat-composer.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/67/3b493e3dd3/0/metadata.json",
+      "transcript": "/67/3b493e3dd3/0/full.jsonl",
+      "compact_transcript": "/67/3b493e3dd3/0/transcript.jsonl",
+      "content_hash": "/67/3b493e3dd3/0/content_hash.txt",
+      "prompt": "/67/3b493e3dd3/0/prompt.txt"
+    }
+  ]
+}
