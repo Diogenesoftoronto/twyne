@@ -41,6 +41,7 @@ import {
   resolveOpeningInitial,
 } from "../../types";
 import { computePageGeometry } from "./pagination-geometry";
+import { markTyping } from "../../utils/motion";
 import { pxToRem, rootFontSize } from "../../utils/css-units";
 import { downloadBlob } from "../../utils/exchange";
 import { isFileDrag } from "../../utils/file-drag";
@@ -2183,6 +2184,8 @@ export const TwyneEditor = component$(
           }
           hoverArmed = false;
           clearHoverTimer();
+          // Ambient life (the desk lamp, idle wobble) rests for the burst.
+          markTyping();
           // An unpinned preview (no thread, not replying) closes — but a
           // pinned card or one that's mid-thread stays open so the
           // conversation can continue.

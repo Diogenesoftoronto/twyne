@@ -1,4 +1,11 @@
 @import "tailwindcss";
+/* The living press: motion tokens and consequence inks, then one sheet per
+ * surface. See docs/design/living-press.md. */
+@import "./styles/motion.css";
+@import "./styles/press-editor.css";
+@import "./styles/press-chrome.css";
+@import "./styles/press-room.css";
+@import "./styles/press-desk.css";
 
 /* Diagnostic log labels are text, not arbitrary CSS-property utilities. */
 @source not inline("[twyne:{account,agents,apparatus,arize,editor,eval,extract,interview,judge,litert,posthog,rateLimit,robustness,rubric,suggestion,usage}]");
@@ -2123,6 +2130,15 @@ body {
   transform: translateY(1px);
   box-shadow: none;
 }
+.btn-paper:disabled,
+.btn-paper[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+  background: var(--color-paper-soft);
+  border-color: var(--color-paper-3);
+  transform: none;
+}
 
 .dossier-action-pending {
   position: relative;
@@ -2170,9 +2186,9 @@ body {
   border-radius: 2px;
   color: var(--color-ink-muted);
   transition:
-    color 0.15s ease,
-    background 0.15s ease,
-    transform 0.1s ease;
+    color var(--dur-release) ease,
+    background var(--dur-release) ease,
+    transform var(--dur-press) var(--ease-set);
   cursor: pointer;
 }
 .icon-btn:hover {
@@ -2180,7 +2196,8 @@ body {
   background: var(--color-paper-2);
 }
 .icon-btn:active {
-  transform: scale(0.9);
+  transform: scale(0.92);
+  transition-duration: var(--dur-instant);
 }
 .icon-btn:focus-visible {
   outline: 2px solid var(--color-vermilion);
@@ -4482,24 +4499,6 @@ body {
 }
 .ink-bleed:hover {
   animation: ink-bleed 0.3s ease forwards;
-}
-
-/* Department label — subtle underline grow on hover */
-.dept-label {
-  transition: letter-spacing 0.2s ease;
-}
-.dept-label:hover {
-  letter-spacing: 0.22em;
-}
-
-/* Icon button — press-down feedback */
-.icon-btn {
-  transition:
-    transform 0.1s ease,
-    color 0.15s ease;
-}
-.icon-btn:active {
-  transform: scale(0.92);
 }
 
 /* Smooth color transitions on interactive text */

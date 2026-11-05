@@ -1,0 +1,8 @@
+/* ─────────────────────────────────────────────────────────────
+ * Lane B — the editor chrome: drawer, masthead, compositor, status bar, sync, menus, dialogs, zen and flow transitions.
+ *
+ * Build only from the tokens in ./motion.css (--ease-*, --dur-*, --lift-*,
+ * --ink-*). Follow docs/design/living-press.md: the manuscript never moves,
+ * frequency sets the budget, consequence has one ink per destination,
+ * ambient motion carries data-ambient, and data-motion="still" stops it all.
+ * ───────────────────────────────────────────────────────────── */
