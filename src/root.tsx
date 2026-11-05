@@ -17,6 +17,12 @@ import {
   applyTheme,
   readThemePreference,
 } from "./utils/theme";
+import {
+  MOTION_BOOTSTRAP_SCRIPT,
+  REDUCED_MOTION_QUERY,
+  applyMotion,
+  readMotionPreference,
+} from "./utils/motion";
 
 import "./global.css";
 
@@ -54,7 +60,20 @@ export default component$<{
         applyTheme(preference, document.documentElement, query.matches);
       };
       query.addEventListener("change", sync);
-      return () => query.removeEventListener("change", sync);
+
+      // Likewise for motion: "System" keeps tracking the OS reduced-motion
+      // switch after load, and an explicit level is left alone.
+      const motionQuery = window.matchMedia(REDUCED_MOTION_QUERY);
+      const syncMotion = () => {
+        const preference = readMotionPreference();
+        if (preference !== "system") return;
+        applyMotion(preference, document.documentElement, motionQuery.matches);
+      };
+      motionQuery.addEventListener("change", syncMotion);
+      return () => {
+        query.removeEventListener("change", sync);
+        motionQuery.removeEventListener("change", syncMotion);
+      };
     },
     { strategy: "document-ready" },
   );
@@ -74,6 +93,12 @@ export default component$<{
         <script
           data-theme-bootstrap
           dangerouslySetInnerHTML={THEME_BOOTSTRAP_SCRIPT}
+        />
+        {/* The writer's motion level, stamped for the same reason: CSS must
+            not animate a single frame someone asked not to see. */}
+        <script
+          data-motion-bootstrap
+          dangerouslySetInnerHTML={MOTION_BOOTSTRAP_SCRIPT}
         />
         {!isDev && (
           <link

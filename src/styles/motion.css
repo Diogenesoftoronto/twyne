@@ -1,0 +1,362 @@
+/* ─────────────────────────────────────────────────────────────
+ * The living press — motion tokens and the consequence grammar.
+ *
+ * One vocabulary for every animated surface. Read
+ * docs/design/living-press.md before adding to it; the short version:
+ *
+ *   1. The manuscript never moves. Nothing translates, scales or reflows
+ *      prose. Ink may change colour on it; that is all.
+ *   2. Frequency sets the budget. Keystrokes get colour only, at most once
+ *      per burst. Presses get ≤140 ms. Arrivals get ≤320 ms. Ceremonies,
+ *      which happen a few times a session, get up to a second.
+ *   3. Motion carries consequence. What leaves the device looks like it is
+ *      leaving: the ink of each destination below is the same on every
+ *      button, slip and badge that sends something there.
+ *   4. Ambient life rests while the writer types (`html[data-typing]`) or
+ *      is in flow, and only plays at the `full` level.
+ *   5. `data-motion="still"` stops all movement. Colour and copy still
+ *      carry state, which is why every state below has a non-motion cue.
+ * ───────────────────────────────────────────────────────────── */
+
+/* Registered so ink fills and the lamp can interpolate smoothly. */
+@property --press-progress {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+@property --lamp-x {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+@property --lamp-y {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 0%;
+}
+
+:root {
+  /* ── Easing ───────────────────────────────────────────── */
+  /* The house curve: a quick departure that settles like set type. */
+  --ease-set: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Leaving the page: accelerate away, never linger. */
+  --ease-lift: cubic-bezier(0.55, 0, 1, 0.45);
+  /* Paper in hand: a light slip that overshoots ~3% and settles. */
+  --ease-slip: linear(
+    0,
+    0.0757 5%,
+    0.242 10%,
+    0.4332 15%,
+    0.6114 20%,
+    0.7582 25%,
+    0.8686 30%,
+    0.9446 35%,
+    0.9922 40%,
+    1.0183 45%,
+    1.0295 50%,
+    1.0314 55%,
+    1.0281 60%,
+    1.0225 65%,
+    1.0165 70%,
+    1.0111 75%,
+    1.0067 80%,
+    1.0035 85%,
+    1.0013 90%,
+    1
+  );
+  /* The platen: heavy, almost no overshoot. For stamps and presses. */
+  --ease-platen: linear(
+    0,
+    0.0752 5%,
+    0.2341 10%,
+    0.411 15%,
+    0.5727 20%,
+    0.7057 25%,
+    0.8074 30%,
+    0.8809 35%,
+    0.9312 40%,
+    0.9641 45%,
+    0.9843 50%,
+    0.9959 55%,
+    1.0018 60%,
+    1.0044 65%,
+    1.005 70%,
+    1.0046 75%,
+    1.0038 80%,
+    1.0029 85%,
+    1.0021 90%,
+    1
+  );
+
+  /* ── Durations, by how often the thing happens ────────── */
+  --dur-instant: 0ms; /* keystrokes, caret, anything per-key */
+  --dur-press: 120ms; /* a button going down */
+  --dur-release: 160ms; /* coming back up; hovers */
+  --dur-arrive: 240ms; /* menus, popovers, a slip landing */
+  --dur-settle: 320ms; /* panels, cards finding their place */
+  --dur-ceremony: 900ms; /* a stamp, a publish: a few times a session */
+  --dur-dry: 1600ms; /* fresh ink drying once it is safely stored */
+  --dur-breath: 9s; /* ambient cycles; slower than 0.2 Hz on purpose */
+
+  /* ── Distances ────────────────────────────────────────── */
+  --lift-1: 1px; /* a key going down */
+  --lift-2: 0.25rem; /* a slip settling */
+  --lift-3: 0.6rem; /* a panel arriving */
+
+  /* ── Consequence inks ─────────────────────────────────────
+   * Where an action's words or data end up. Each ink is the same
+   * colour on every control that sends something there.
+   *   local     stays on this device
+   *   synced    copied to the writer's own account
+   *   provider  read by an AI model (BYOK or hosted)
+   *   credit    spends hosted credit (implies provider)
+   *   public    readable by anyone with the link, or a PDS
+   *   erase     removed, and cannot be brought back here
+   * ───────────────────────────────────────────────────────── */
+  --ink-local: var(--color-ink-muted);
+  --ink-synced: var(--color-accent-green);
+  --ink-provider: var(--color-cobalt);
+  --ink-credit: var(--color-mustard);
+  --ink-public: var(--color-vermilion);
+  --ink-erase: var(--color-vermilion-2);
+
+  /* Fresh, not-yet-stored ink on the manuscript, and the non-photo blue a
+   * copy editor marks proofs with (for selections). */
+  --ink-wet: color-mix(in srgb, var(--color-cobalt) 72%, var(--color-ink));
+  --ink-selection: color-mix(in srgb, #7fb2e5 34%, transparent);
+  --ink-selection-text: var(--color-ink);
+}
+
+/* Calm keeps every answer but shortens ceremonies and drops ambience. */
+:root[data-motion="calm"] {
+  --dur-ceremony: 360ms;
+  --dur-dry: 900ms;
+  --lift-3: 0.3rem;
+}
+
+/* Still: durations collapse; the rules below stop what remains. */
+:root[data-motion="still"] {
+  --dur-press: 0ms;
+  --dur-release: 0ms;
+  --dur-arrive: 0ms;
+  --dur-settle: 0ms;
+  --dur-ceremony: 0ms;
+  --dur-dry: 0ms;
+  --lift-1: 0px;
+  --lift-2: 0px;
+  --lift-3: 0px;
+}
+
+:root[data-theme="nightpress"] {
+  --ink-wet: color-mix(in srgb, var(--color-cobalt) 70%, var(--color-ink));
+  --ink-selection: color-mix(in srgb, #7fb2e5 26%, transparent);
+}
+
+/* Still means still, whatever a component forgot. Colour and opacity
+ * changes are left alone (WCAG 2.3.3 counts movement, not colour), so a
+ * state still reads; it simply arrives without travelling. */
+:root[data-motion="still"] *,
+:root[data-motion="still"] *::before,
+:root[data-motion="still"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  animation-delay: 0ms !important;
+  transition-duration: 0.001ms !important;
+  transition-delay: 0ms !important;
+  scroll-behavior: auto !important;
+}
+:root[data-motion="still"]::view-transition-old(root),
+:root[data-motion="still"]::view-transition-new(root) {
+  animation: none;
+}
+
+/* Ambient life (breathing, the lamp, idle drift) rests while typing, in
+ * flow, and at any level below full. Components mark such motion with
+ * `data-ambient` or `.is-ambient` rather than each repeating these gates. */
+:root:not([data-motion="full"]) :is([data-ambient], .is-ambient),
+:root[data-typing] :is([data-ambient], .is-ambient),
+:root:is([data-flow="flow"], [data-flow="settling"])
+  :is([data-ambient], .is-ambient) {
+  animation-play-state: paused !important;
+}
+:root:not([data-motion="full"]) :is([data-ambient], .is-ambient)[data-ambient-hide],
+:root[data-typing] :is([data-ambient], .is-ambient)[data-ambient-hide] {
+  opacity: 0 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Consequence grammar, shared by every lane.
+ *
+ * `data-consequence` on a control or slip sets its ink; components then use
+ * `var(--consequence-ink)` for the bits that speak about destination (a dot,
+ * a rule, a hover underline). Never colour alone: each destination also has
+ * a word, via <DestinationTag>.
+ * ───────────────────────────────────────────────────────────── */
+[data-consequence] {
+  --consequence-ink: var(--ink-local);
+}
+[data-consequence="synced"] {
+  --consequence-ink: var(--ink-synced);
+}
+[data-consequence="provider"] {
+  --consequence-ink: var(--ink-provider);
+}
+[data-consequence="credit"] {
+  --consequence-ink: var(--ink-credit);
+}
+[data-consequence="public"] {
+  --consequence-ink: var(--ink-public);
+}
+[data-consequence="erase"] {
+  --consequence-ink: var(--ink-erase);
+}
+
+/* The destination slip: a typewritten docket that says where words go. */
+.destination-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32em;
+  font-family: var(--font-typewriter);
+  font-size: 0.56rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--consequence-ink) 82%, var(--color-ink));
+  white-space: nowrap;
+}
+.destination-tag__mark {
+  flex: none;
+  inline-size: 0.5em;
+  block-size: 0.5em;
+  border: 1px solid var(--consequence-ink);
+  border-radius: 50%;
+  background: var(--consequence-ink);
+}
+/* Local is hollow: nothing leaves, so nothing is filled. */
+.destination-tag[data-consequence="local"] .destination-tag__mark {
+  background: transparent;
+}
+/* Erase is struck through, so it never relies on its red alone. */
+.destination-tag[data-consequence="erase"] .destination-tag__mark {
+  border-radius: 1px;
+  background: linear-gradient(
+    to bottom right,
+    transparent calc(50% - 0.5px),
+    var(--consequence-ink) calc(50% - 0.5px),
+    var(--consequence-ink) calc(50% + 0.5px),
+    transparent calc(50% + 0.5px)
+  );
+}
+/* Public is a ring with a dot: it can be seen from outside. */
+.destination-tag[data-consequence="public"] .destination-tag__mark {
+  background: radial-gradient(
+    circle,
+    var(--consequence-ink) 0 32%,
+    transparent 36%
+  );
+}
+.destination-tag--quiet {
+  opacity: 0.78;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Hold to confirm: the platen comes down while the control is held,
+ * and the action only happens when it reaches the bed.
+ * ───────────────────────────────────────────────────────────── */
+.hold-to-confirm {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.hold-to-confirm__ink {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--consequence-ink) 22%, transparent);
+  transform-origin: left center;
+  transform: scaleX(var(--press-progress, 0));
+}
+.hold-to-confirm[data-holding] .hold-to-confirm__ink {
+  background: color-mix(in srgb, var(--consequence-ink) 30%, transparent);
+}
+.hold-to-confirm[data-committed] .hold-to-confirm__ink {
+  transform: scaleX(1);
+  background: color-mix(in srgb, var(--consequence-ink) 40%, transparent);
+}
+.hold-to-confirm__hint {
+  font-family: var(--font-typewriter);
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+/* Released early, the ink drains back; while held it tracks the press. */
+.hold-to-confirm:not([data-holding]) .hold-to-confirm__ink {
+  transition: transform var(--dur-settle) var(--ease-set);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Shared arrivals. Components opt in with a class; these never
+ * gate interaction (content is clickable from the first frame).
+ * ───────────────────────────────────────────────────────────── */
+@keyframes press-slip-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--lift-2)) rotate(-0.4deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes press-slip-in-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(var(--lift-3));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes press-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes press-ink-flash {
+  0% {
+    background-color: color-mix(in srgb, var(--flash-ink, var(--color-mustard)) 34%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+/* A brief impression: the element lands with a little weight. */
+@keyframes press-impress {
+  0% {
+    transform: scale(1.04);
+    filter: blur(0.4px);
+  }
+  55% {
+    transform: scale(0.992);
+    filter: none;
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.press-arrive {
+  animation: press-slip-in var(--dur-arrive) var(--ease-slip) both;
+}
+.press-arrive-right {
+  animation: press-slip-in-from-right var(--dur-settle) var(--ease-set) both;
+}
+.press-fade {
+  animation: press-fade-in var(--dur-arrive) var(--ease-set) both;
+}
