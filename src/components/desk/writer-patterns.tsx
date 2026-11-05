@@ -41,13 +41,17 @@ export const WriterPatterns = component$<{
       const fresh = keys
         ? keys.split(",").filter((key) => !seen.includes(key))
         : [];
-      newlyFiled.value = fresh;
+      // Grow-only for this visit: a later re-read of the ledger must not
+      // take back a stamp the writer has just watched land.
+      if (fresh.length) {
+        newlyFiled.value = [...new Set([...newlyFiled.value, ...fresh])];
+      }
       localStorage.setItem(
         "twyne.desk.patterns-seen",
         JSON.stringify([...new Set([...seen, ...fresh])]),
       );
     } catch {
-      newlyFiled.value = [];
+      // Storage refused: no stamp is better than one that replays forever.
     }
   });
   const rows = [

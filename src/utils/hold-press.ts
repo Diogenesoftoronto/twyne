@@ -37,6 +37,13 @@ export function beginHold(element: HTMLElement, options: HoldOptions): void {
       element.removeAttribute("data-holding");
       element.setAttribute("data-committed", "");
       options.onCommit();
+      // Most confirmed controls leave with what they removed; one that
+      // stays drains back to rest once the impression has been seen.
+      setTimeout(() => {
+        if (holds.has(element)) return;
+        element.removeAttribute("data-committed");
+        element.style.setProperty("--press-progress", "0");
+      }, 700);
       return;
     }
     hold.frame = requestAnimationFrame(tick);
@@ -44,7 +51,13 @@ export function beginHold(element: HTMLElement, options: HoldOptions): void {
   hold.frame = requestAnimationFrame(tick);
 }
 
-/** Release early: nothing happens, and the ink drains back. */
+const nudges = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>();
+
+/**
+ * Release early: nothing happens, and the ink drains back. A release that
+ * barely started (a click, really) also nudges the hint into view for a
+ * moment, so someone who clicked learns the control wants a hold.
+ */
 export function cancelHold(element: HTMLElement): void {
   const hold = holds.get(element);
   if (!hold) return;
@@ -52,6 +65,18 @@ export function cancelHold(element: HTMLElement): void {
   holds.delete(element);
   element.removeAttribute("data-holding");
   element.style.setProperty("--press-progress", "0");
+  if (performance.now() - hold.started < 350) {
+    element.setAttribute("data-nudged", "");
+    const previous = nudges.get(element);
+    if (previous !== undefined) clearTimeout(previous);
+    nudges.set(
+      element,
+      setTimeout(() => {
+        nudges.delete(element);
+        element.removeAttribute("data-nudged");
+      }, 1800),
+    );
+  }
 }
 
 export function isHolding(element: HTMLElement): boolean {

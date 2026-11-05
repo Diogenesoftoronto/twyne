@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   formatAge,
   lastSavedLabel,
+  saveRouteLabel,
   statusColor,
   statusLabel,
 } from "./sync-indicator-helpers";
@@ -123,3 +124,34 @@ describe("lastSavedLabel", () => {
     expect(lastSavedLabel(NOW - 12_000, NOW)).toBe("Saved 12s ago");
   });
 });
+
+describe("saveRouteLabel", () => {
+  test("says nothing before the first save", () => {
+    expect(saveRouteLabel({ kind: "synced", lastSyncedAt: NOW }, null)).toBe(
+      null,
+    );
+  });
+
+  test("filed only once the account has the latest save", () => {
+    expect(
+      saveRouteLabel({ kind: "synced", lastSyncedAt: NOW }, NOW - 1_000),
+    ).toEqual({ word: "filed", consequence: "synced" });
+    expect(
+      saveRouteLabel({ kind: "synced", lastSyncedAt: NOW - 5_000 }, NOW),
+    ).toEqual({ word: "on the wire", consequence: "synced" });
+  });
+
+  test("device-only states are held here, never filed", () => {
+    for (const status of [
+      { kind: "local-only" },
+      { kind: "offline" },
+      { kind: "error", lastErrorAt: NOW, message: "boom" },
+    ] as SyncStatus[]) {
+      expect(saveRouteLabel(status, NOW)).toEqual({
+        word: "held here",
+        consequence: "local",
+      });
+    }
+  });
+});
+

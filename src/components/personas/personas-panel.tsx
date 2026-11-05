@@ -1995,7 +1995,6 @@ export const PersonasPanel = component$(
                 )}
               </div>
 
-              <DestinationTag to={aiConsequenceFor(store.aiSettings)} />
               <div class="mt-1" data-consequence={aiConsequenceFor(store.aiSettings)}>
                 <button
                   onClick$={() => {
@@ -2021,6 +2020,12 @@ export const PersonasPanel = component$(
                 >
                   Notes: a short remark each. Edits: sentence rewrites to
                   accept. Analysis: a full memo each.
+                </p>
+                {/* One docket for the three actions above: they all send
+                    the draft the same way. */}
+                <p class="room-route mt-1">
+                  <span>The draft goes to</span>
+                  <DestinationTag to={aiConsequenceFor(store.aiSettings)} />
                 </p>
               </div>
 

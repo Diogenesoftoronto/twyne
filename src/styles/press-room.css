@@ -41,3 +41,20 @@
 .editorial-board-context > small { color: var(--color-paper); }
 
 .room-unread-impress { animation: press-impress var(--dur-settle) var(--ease-platen); }
+
+/* The room's one docket for its three asks. */
+.room-route {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-ink-muted);
+  font-family: var(--font-serif);
+  font-size: 0.68rem;
+  font-style: italic;
+}
+/* A destination tag inside a button sits after the label, never wraps it. */
+button .destination-tag {
+  margin-inline-start: 0.4em;
+  vertical-align: 0.08em;
+}
+
