@@ -2033,7 +2033,9 @@ body {
   animation: rubric-fill 0.6s ease-out forwards;
 }
 
-/* A subtle hand-set wobble for the masthead — French Dispatch nod */
+/* A subtle hand-set wobble for the masthead — French Dispatch nod. It sets
+   twice when the page opens and again while the wordmark is hovered, then
+   rests: a loop that never ends kept every open tab repainting at 60 fps. */
 @keyframes presswobble {
   0%,
   100% {
@@ -2047,8 +2049,11 @@ body {
   }
 }
 .press {
-  animation: presswobble 4s ease-in-out infinite;
+  animation: presswobble 4s ease-in-out 2;
   display: inline-block;
+}
+.press:hover {
+  animation-iteration-count: infinite;
 }
 
 /* The editor masthead's wordmark gives way to the Board: smaller, then gone,
@@ -2149,7 +2154,9 @@ body {
     border: 1px solid var(--color-vermilion);
     border-radius: 4px;
     pointer-events: none;
-    animation: dossier-action-pulse 2.8s ease-in-out infinite;
+    /* Three pulses to draw the eye, then the vermilion border alone says it
+       is still waiting; a ring pulsing forever cost every open tab frames. */
+    animation: dossier-action-pulse 2.8s ease-in-out 3;
   }
 }
 
