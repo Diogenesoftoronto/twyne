@@ -56,6 +56,16 @@ export default defineConfig((): UserConfig => {
       // scanner otherwise follows its platform switch and tries to parse both
       // native Linux `.node` bindings as JavaScript during dev startup.
       exclude: ["@resvg/resvg-js"],
+      // Imported only from the linked gt-qwik package, a lazy dev overlay and
+      // the Typst compiler worker, so the startup scan misses them. Found later
+      // at runtime, each one made Vite re-bundle and reload every open tab
+      // (the three-tab sync test failed in CI on exactly that reload).
+      include: [
+        "@generaltranslation/format",
+        "gt-i18n/internal",
+        "@popmelt.com/core/browser",
+        "@myriaddreamin/typst.ts/options.init",
+      ],
     },
 
     /**
@@ -77,7 +87,21 @@ export default defineConfig((): UserConfig => {
 
     server: {
       // Freeze file watching for recordings, but retain dependency reloads on cold start.
-      ...(process.env.TWYNE_VISUAL_RUN === "1" ? { watch: null } : {}),
+      // Otherwise ignore folders that tools write into (captures, reports, the
+      // dev shell's profile): each write there reloaded every open dev tab.
+      ...(process.env.TWYNE_VISUAL_RUN === "1"
+        ? { watch: null }
+        : {
+            watch: {
+              ignored: [
+                "**/artifacts/**",
+                "**/test-results/**",
+                "**/playwright-report/**",
+                "**/.devenv/**",
+                "**/.direnv/**",
+              ],
+            },
+          }),
       headers: {
         // Don't cache the server response in dev mode
         "Cache-Control": "public, max-age=0",
