@@ -1,3 +1,4 @@
+import { DeskFigure } from "./desk-figure";
 import { component$ } from "@qwik.dev/core";
 import { Link } from "@qwik.dev/router";
 import type { RecentWorkEntry } from "../../utils/usage-summary";
@@ -9,7 +10,7 @@ export const RecentWork = component$<{
 }>((props) => (
   <section
     aria-labelledby="recent-work-heading"
-    class="border-t-2 border-[var(--color-ink)] py-7"
+    class="border-b-2 border-[var(--color-ink)] py-7"
   >
     <p class="dept-label">04 / Return</p>
     <h2 id="recent-work-heading" class="mt-1 font-display text-2xl">
@@ -24,15 +25,16 @@ export const RecentWork = component$<{
         {props.entries.map((entry) => (
           <li
             key={entry.folioId}
-            class="grid items-center gap-2 py-3 sm:grid-cols-[1fr_auto_auto]"
+            class="desk-work-row grid items-center gap-2 py-3 sm:grid-cols-[1fr_auto_auto]"
           >
             <div>
               <p class="font-display text-lg">
                 {props.folioTitles[entry.folioId] ?? "Untitled local folio"}
               </p>
               <p class="text-xs text-[var(--color-ink-muted)]">
-                {entry.currentWords.toLocaleString()} words · {entry.activeDays}{" "}
-                active days · {entry.editorialActions} actions
+                <DeskFigure value={entry.currentWords.toLocaleString()} /> words
+                · <DeskFigure value={entry.activeDays} /> active days ·{" "}
+                <DeskFigure value={entry.editorialActions} /> actions
               </p>
             </div>
             <time

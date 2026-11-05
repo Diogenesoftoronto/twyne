@@ -37,7 +37,8 @@ export const TokenDimensions = component$<{ tokens: TokenDimensionTotals }>(
               <span class="text-sm">{label}</span>
               <span class="h-2 bg-[var(--color-paper-3)]">
                 <i
-                  class="block h-full bg-[var(--color-mustard)]"
+                  key={`${props.tokens[key]}:${maximum}`}
+                  class="desk-fill block h-full bg-[var(--color-mustard)]"
                   style={{ width: `${(props.tokens[key] / maximum) * 100}%` }}
                 />
               </span>

@@ -57,12 +57,11 @@ export const WritingActivity = component$<{
           <DailyActivityChart points={props.daily} />
         </div>
         <aside
-          class="border-l border-[var(--color-ink)] pl-5"
+          key={selected.value}
+          class="desk-day border-l border-[var(--color-ink)] pl-5"
           aria-live="polite"
         >
-          <p class="text-xs font-semibold tracking-[0.12em] uppercase text-[var(--color-ink-muted)]">
-            Selected UTC day
-          </p>
+          <p class="dept-label">Selected UTC day</p>
           <h3 class="mt-1 font-display text-xl">
             {selected.value || "Choose a day"}
           </h3>
