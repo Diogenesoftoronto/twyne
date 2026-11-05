@@ -93,6 +93,20 @@ function findResultArray(body: unknown): unknown {
 }
 
 export const SEARCH_BACKENDS: Record<SearchBackendId, SearchBackendAdapter> = {
+  keenable: {
+    id: "keenable",
+    label: "Keenable",
+    keyHint: "keenable.ai",
+    defaultUrl: "https://api.keenable.ai/v1/search",
+    buildRequest: (req, config) =>
+      jsonPost(
+        endpoint(config, "https://api.keenable.ai/v1/search"),
+        { "x-api-key": config.apiKey },
+        { query: req.query, max_results: req.maxResults, mode: "pro" },
+      ),
+    extract: (body) => (body as { results?: unknown })?.results,
+  },
+
   tinyfish: {
     id: "tinyfish",
     label: "TinyFish",
@@ -244,7 +258,13 @@ export function toSource(value: unknown): Source | null {
   };
   const author = str("author", "byline");
   const publisher = str("publisher", "source", "site", "siteName");
-  const date = str("date", "published", "publishedDate", "published_date");
+  const date = str(
+    "date",
+    "published",
+    "publishedDate",
+    "published_date",
+    "published_at",
+  );
   if (author) source.author = author;
   if (publisher) source.publisher = publisher;
   if (date) source.date = date;
@@ -296,4 +316,32 @@ export async function runSearchBackend(
     ok: true,
     results: toSources(adapter.extract(body, config), req.maxResults),
   };
+}
+
+/**
+ * Read one page with the writer's own key, for backends that can. Keenable
+ * can; the others only search, and their claims are judged on the snippet.
+ */
+export async function fetchPageWithBackend(
+  url: string,
+  config: SearchBackendConfig,
+): Promise<string | null> {
+  if (config.id !== "keenable" || !config.apiKey.trim()) return null;
+  const endpoint = new URL("https://api.keenable.ai/v1/fetch");
+  endpoint.searchParams.set("url", url);
+  endpoint.searchParams.set("max_chars", "40000");
+  endpoint.searchParams.set("live", "false");
+  try {
+    const res = await fetch(endpoint, {
+      headers: { "x-api-key": config.apiKey },
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { content?: unknown };
+    return typeof body.content === "string" && body.content.trim()
+      ? body.content
+      : null;
+  } catch {
+    return null;
+  }
 }

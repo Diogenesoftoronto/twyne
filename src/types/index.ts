@@ -1063,6 +1063,7 @@ export type ApparatusResearchProvider =
  * anything else that returns JSON: give it a URL and where the results live.
  */
 export type SearchBackendId =
+  | "keenable"
   | "tinyfish"
   | "exa"
   | "tavily"

@@ -5073,7 +5073,8 @@ a {
 .apparatus-trace-list__state--found {
   color: var(--color-accent-green);
 }
-.apparatus-trace-list__state--error {
+.apparatus-trace-list__state--error,
+.apparatus-trace-list__state--contradicted {
   color: var(--color-vermilion);
 }
 .apparatus-trace-list__detail {

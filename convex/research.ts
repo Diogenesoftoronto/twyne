@@ -68,15 +68,18 @@ export interface FetchedSource {
  * Which upstream the hosted path calls, chosen by env so the deployment can
  * change vendors without a code change:
  *
- *   RESEARCH_PROVIDER   notorganic | tinyfish | exa | tavily | brave | serper | custom
+ *   RESEARCH_PROVIDER   notorganic | keenable | tinyfish | exa | tavily | brave | serper | custom
  *   RESEARCH_API_KEY    the key for that provider
  *   RESEARCH_SEARCH_URL overrides the built-in endpoint (required for custom)
  *   RESEARCH_FETCH_URL  url→markdown endpoint, if the provider has one
  *
+ * Unset, a deployment with Not Organic enabled searches through it, since
+ * writers' sign-in already pays for their search; otherwise TinyFish.
  * TINYFISH_API_KEY is still honoured so existing deployments keep working.
  */
 
 type KeyProviderId =
+  | "keenable"
   | "tinyfish"
   | "exa"
   | "tavily"
@@ -100,6 +103,18 @@ interface ProviderSpec {
 }
 
 const PROVIDERS: Record<KeyProviderId, ProviderSpec> = {
+  // The engine behind Not Organic's own web search, called with our own key.
+  keenable: {
+    searchUrl: "https://api.keenable.ai/v1/search",
+    search: (key, query, _context, limit) => ({
+      url: providerSearchUrl("https://api.keenable.ai/v1/search"),
+      init: jsonPost(
+        { "x-api-key": key },
+        { query, max_results: limit, mode: "pro" },
+      ),
+    }),
+    path: (b) => (b as { results?: unknown })?.results,
+  },
   tinyfish: {
     searchUrl: "https://api.search.tinyfish.ai/v1/search",
     fetchUrl: "https://api.fetch.tinyfish.ai/v1/fetch",
@@ -208,9 +223,8 @@ function providerSearchUrl(fallback: string): string {
 }
 
 function providerId(): ProviderId {
-  const raw = (process.env.RESEARCH_PROVIDER ?? "tinyfish")
-    .trim()
-    .toLowerCase();
+  const raw = process.env.RESEARCH_PROVIDER?.trim().toLowerCase();
+  if (!raw) return notOrganicEnabled() ? "notorganic" : "tinyfish";
   return raw === "notorganic" || Object.hasOwn(PROVIDERS, raw)
     ? (raw as ProviderId)
     : "tinyfish";
@@ -247,7 +261,7 @@ function normalize(value: unknown, limit: number): Source[] {
         str("snippet", "description", "text", "content", "summary") ?? "",
       author: str("author", "byline"),
       publisher: str("publisher", "source", "site"),
-      date: str("date", "published", "publishedDate"),
+      date: str("date", "published", "publishedDate", "published_at"),
     });
     if (out.length >= limit) break;
   }
@@ -283,10 +297,48 @@ async function providerSearch(
   }
 }
 
+/** Keenable reads a page from its index; `live=false` avoids redirect chains. */
+async function keenableFetch(
+  key: string,
+  url: string,
+): Promise<FetchedSource | null> {
+  const endpoint = new URL(
+    process.env.RESEARCH_FETCH_URL?.trim() ||
+      "https://api.keenable.ai/v1/fetch",
+  );
+  endpoint.searchParams.set("url", url);
+  endpoint.searchParams.set("max_chars", String(FETCH_MAX_CHARS));
+  endpoint.searchParams.set("live", "false");
+  try {
+    const res = await fetch(endpoint, {
+      headers: { "x-api-key": key },
+      redirect: "error",
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!res.ok) {
+      await res.body?.cancel();
+      return null;
+    }
+    const data = (await res.json()) as { title?: unknown; content?: unknown };
+    if (typeof data.content !== "string" || !data.content.trim()) return null;
+    return {
+      title: typeof data.title === "string" && data.title ? data.title : url,
+      markdown: data.content,
+      embeddable: false,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Enough of a page to find the passage a claim turns on. */
+const FETCH_MAX_CHARS = 40_000;
+
 async function providerFetch(url: string): Promise<FetchedSource | null> {
   const key = researchApiKey();
   const id = providerId();
   if (id === "notorganic") return null;
+  if (id === "keenable") return key ? keenableFetch(key, url) : null;
   const spec = PROVIDERS[id];
   const endpoint = process.env.RESEARCH_FETCH_URL?.trim() || spec.fetchUrl;
   if (!key || !endpoint) return null;
@@ -377,10 +429,7 @@ function localFetch(url: string): FetchedSource {
 const NOTORGANIC_SEARCH_DEFAULT_MAX_COST_MICROUSD = 50_000;
 
 function notOrganicSearchSelected(): boolean {
-  return (
-    (process.env.RESEARCH_PROVIDER ?? "").trim().toLowerCase() ===
-      "notorganic" && notOrganicEnabled()
-  );
+  return providerId() === "notorganic" && notOrganicEnabled();
 }
 
 function notOrganicSearchCeiling(): number {
@@ -471,6 +520,57 @@ async function notOrganicSearch(
     throw applicationError("provider_unavailable", {
       message: "The search service could not answer. Try again shortly.",
     });
+  }
+}
+
+/** Read one page through Not Organic, as the writer's linked account. */
+async function notOrganicFetch(
+  ctx: ActionCtx,
+  caller: HostedCaller,
+  url: string,
+): Promise<FetchedSource | null> {
+  const link = await ctx.runQuery(
+    internal.providerIdentity.getLinkedDidBySubject,
+    { productSubject: caller.subject },
+  );
+  if (!link) return null;
+  try {
+    const token = await issueNotOrganicAccessToken({
+      did: link.did,
+      feature: "research",
+      capabilities: ["web:fetch"],
+      sessionVersion: link.sessionVersion,
+    });
+    const res = await createDpopFetch(token, fetch)(
+      `${notOrganicIssuer()}/v1/web/fetch`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-notorganic-product": NOTORGANIC_PRODUCT,
+          "x-notorganic-feature": "research",
+          "idempotency-key": `twyne_research_fetch_${crypto.randomUUID()}`,
+          "x-notorganic-max-cost-microusd": String(notOrganicSearchCeiling()),
+        },
+        body: JSON.stringify({ url }),
+        signal: AbortSignal.timeout(30_000),
+      },
+    );
+    if (!res.ok) {
+      await res.body?.cancel();
+      return null;
+    }
+    const body = (await res.json()) as { title?: unknown; markdown?: unknown };
+    if (typeof body.markdown !== "string" || !body.markdown.trim()) return null;
+    return {
+      title: typeof body.title === "string" && body.title ? body.title : url,
+      markdown: body.markdown.slice(0, FETCH_MAX_CHARS),
+      embeddable: false,
+    };
+  } catch {
+    // Upstream errors can echo the URL or credentials; a page that cannot be
+    // read leaves the claim to be judged on its search snippet.
+    return null;
   }
 }
 
@@ -575,8 +675,12 @@ export const fetchSource = action({
         ...(isPro ? RATE_LIMITS.research : RATE_LIMITS.researchFree),
       });
     }
-    if (identity && researchApiKey()) {
-      const r = await providerFetch(args.url);
+    if (identity) {
+      const r = notOrganicSearchSelected()
+        ? await notOrganicFetch(ctx, callerFromIdentity(identity), args.url)
+        : researchApiKey()
+          ? await providerFetch(args.url)
+          : null;
       if (r) return { ...r, provider: providerId() };
     }
     return { ...localFetch(args.url), provider: "local" };
