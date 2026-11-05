@@ -26,12 +26,14 @@
 }
 @property --lamp-x {
   syntax: "<percentage>";
-  inherits: true;
+  /* Only the scroller paints the lamp. Inheriting its animated position
+   * invalidates every manuscript descendant on every transition frame. */
+  inherits: false;
   initial-value: 50%;
 }
 @property --lamp-y {
   syntax: "<percentage>";
-  inherits: true;
+  inherits: false;
   initial-value: 0%;
 }
 
