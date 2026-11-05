@@ -1,4 +1,7 @@
-import { component$, useStore, $, useVisibleTask$ } from "@qwik.dev/core";
+import { HoldToConfirm } from "../ui/hold-to-confirm";
+import { DestinationTag } from "../ui/destination-tag";
+import { aiConsequenceFor } from "../../utils/consequence";
+import { component$, Slot, useSignal, useStore, useTask$, $, useVisibleTask$ } from "@qwik.dev/core";
 import { Link } from "@qwik.dev/router";
 import type {
   AiSettings,
@@ -562,7 +565,7 @@ export const CitationsPanel = component$(
                   class="apparatus-retry"
                   title="Re-run the research pass against the current draft."
                 >
-                  ↻ retry pass
+                  ↻ retry pass <DestinationTag to={aiConsequenceFor(store.aiSettings)} quiet />
                 </button>
               )}
               <button
@@ -622,8 +625,7 @@ export const CitationsPanel = component$(
                   const dot =
                     item.status === "searching"
                       ? {
-                          background: "var(--color-mustard)",
-                          animation: "pulse 1.4s ease-in-out infinite",
+                          background: "var(--color-cobalt)",
                         }
                       : item.status === "found"
                         ? { background: "var(--color-accent-green)" }
@@ -631,7 +633,7 @@ export const CitationsPanel = component$(
                           ? { background: "var(--color-ink-muted)" }
                           : { background: "var(--color-paper-3)" };
                   return (
-                    <li key={item.key}>
+                    <TraceItem key={item.key} status={item.status}>
                       <details
                         open={
                           item.status === "searching" || item.status === "error"
@@ -639,7 +641,8 @@ export const CitationsPanel = component$(
                       >
                         <summary>
                           <span
-                            class="apparatus-status-dot"
+                            class={["apparatus-status-dot", { "room-trace-reading": item.status === "searching" }]}
+                            data-ambient={item.status === "searching" ? "" : undefined}
                             style={dot}
                             aria-hidden="true"
                           />
@@ -704,12 +707,12 @@ export const CitationsPanel = component$(
                               class="apparatus-retry"
                               title="Retry this claim only."
                             >
-                              ↻ retry this search
+                              ↻ retry this search <DestinationTag to={aiConsequenceFor(store.aiSettings)} quiet />
                             </button>
                           )}
                         </div>
                       </details>
-                    </li>
+                    </TraceItem>
                   );
                 })}
               </ul>
@@ -872,14 +875,7 @@ export const CitationsPanel = component$(
                     </button>
                   </div>
                   <div class="desk-card__foot-end desk-card__reveal">
-                    <button
-                      onClick$={() => dropEntry(entry.id)}
-                      class="card-key"
-                      aria-label="Remove from the bibliography"
-                      title="Remove from the bibliography"
-                    >
-                      ✕
-                    </button>
+                    <HoldToConfirm onConfirm$={() => dropEntry(entry.id)} consequence="erase" label="Remove from the bibliography" hint="hold to erase" class="card-key">✕</HoldToConfirm>
                   </div>
                 </div>
               </div>
@@ -1101,4 +1097,16 @@ const LinkButton = component$<{ href: string; label: string }>((p) => {
       {p.label}
     </Link>
   );
+});
+
+/** A restored found item is already filed; only a status transition flashes. */
+const TraceItem = component$<{ status: ResearchProgressItem["status"] }>((props) => {
+  const previous = useSignal(props.status);
+  const fresh = useSignal(false);
+  useTask$(({ track }) => {
+    const status = track(() => props.status);
+    fresh.value = status === "found" && previous.value !== "found";
+    previous.value = status;
+  });
+  return <li class={{ "room-trace-found": fresh.value }}><Slot /></li>;
 });

@@ -1,3 +1,6 @@
+import { HoldToConfirm } from "../ui/hold-to-confirm";
+import { DestinationTag } from "../ui/destination-tag";
+import { aiConsequenceFor } from "../../utils/consequence";
 import { currentModelLocale } from "../../i18n/model-language";
 import {
   OPEN_FULL_THREAD_EVENT,
@@ -804,14 +807,7 @@ export const CommentsPanel = component$((props: CommentsPanelProps) => {
                   >
                     ✓
                   </button>
-                  <button
-                    onClick$={() => deleteComment(comment.id)}
-                    class="icon-btn text-sm hover:text-[var(--color-vermilion)]"
-                    aria-label="Erase"
-                    title="Erase"
-                  >
-                    ✕
-                  </button>
+                  <HoldToConfirm onConfirm$={() => deleteComment(comment.id)} consequence="erase" label="Erase this comment" hint="hold to erase" class="icon-btn text-sm">✕</HoldToConfirm>
                 </div>
               </div>
               {comment.replies.length > 0 && (
@@ -967,6 +963,7 @@ export const CommentsPanel = component$((props: CommentsPanelProps) => {
                       {store.isAskingEditor
                         ? "Editor is reading…"
                         : "Send to editor"}
+                      <DestinationTag to={aiConsequenceFor(store.aiSettings)} quiet />
                     </button>
                     <button
                       onClick$={() => {
@@ -1163,7 +1160,7 @@ export const CommentsPanel = component$((props: CommentsPanelProps) => {
           <div
             key={comment.id}
             data-comment-id={comment.id}
-            class="px-4 py-3 mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] opacity-55"
+            class="room-comment-struck px-4 py-3 mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] opacity-55"
             style="border-radius: 2px;"
           >
             <div class="flex items-start justify-between">
@@ -1206,14 +1203,7 @@ export const CommentsPanel = component$((props: CommentsPanelProps) => {
                 >
                   ↩
                 </button>
-                <button
-                  onClick$={() => deleteComment(comment.id)}
-                  class="icon-btn text-sm hover:text-[var(--color-vermilion)]"
-                  aria-label="Erase note"
-                  title="Erase"
-                >
-                  ✕
-                </button>
+                <HoldToConfirm onConfirm$={() => deleteComment(comment.id)} consequence="erase" label="Erase this comment" hint="hold to erase" class="icon-btn text-sm">✕</HoldToConfirm>
               </div>
             </div>
           </div>
