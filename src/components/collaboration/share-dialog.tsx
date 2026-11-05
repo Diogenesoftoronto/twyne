@@ -117,8 +117,9 @@ export const ShareDialog = component$(
           store.shared = true;
           store.lixId = match.lixId;
         } else {
-          // The active folio changed and the new one is not shared.
-          shareTrigger.value?.focus();
+          // The active folio changed and the new one is not shared. This runs
+          // in the background (on open, on a folio switch, on every auth
+          // refresh), so it must never move focus: the writer is typing.
           store.shared = false;
           store.lixId = null;
           await props.onUnshared$?.(folioId);
