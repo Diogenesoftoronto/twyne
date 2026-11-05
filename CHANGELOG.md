@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.27.1
+
+<sub>2026-11-05</sub>
+
+- Keep the caret in your manuscript: when signed in, it no longer jumps to
+  the Share button when the editor opens or you return to the tab.
+- Keep several Twyne tabs open without slowing the machine: an idle editor
+  now uses about a quarter of the CPU it did, so five tabs cost less than one
+  used to.
+- Move the pointer without stutter on long manuscripts; the desk lamp no
+  longer repaints the page as it follows the pointer.
+- Check grammar again: the grammar desk loads and lists suggestions instead
+  of staying on "Checking grammar".
+- Keep tabs working across an update: a tab left open while Twyne is updated
+  reloads once to pick up the new version, rather than buttons quietly
+  stopping.
+
 ## 0.27.0
 
 <sub>2026-11-05</sub>
