@@ -1,3 +1,5 @@
+import { DestinationTag } from "../ui/destination-tag";
+import { aiConsequenceFor } from "../../utils/consequence";
 import { currentModelLocale } from "../../i18n/model-language";
 import { askJudgement } from "../../utils/judgement-client";
 import {
@@ -1023,7 +1025,7 @@ export const RubricPanel = component$(
                 class="btn-press inline-flex items-center gap-2"
                 title="Read the saved draft and grade it against your criteria"
               >
-                <Icon name="file-check" /> Grade this draft
+                <Icon name="file-check" /> Grade this draft <DestinationTag to={aiConsequenceFor(store.aiSettings)} />
               </button>
             </div>
             <p class="mt-2 max-w-sm text-xs leading-5 text-[var(--color-ink-muted)]">
@@ -1266,6 +1268,7 @@ export const RubricPanel = component$(
                         {store.isAnalyzing || store.isReviewing
                           ? "Reading…"
                           : "Ask them now"}
+                        <DestinationTag to={aiConsequenceFor(store.aiSettings)} />
                       </button>
                     </div>
                   )}
@@ -1308,7 +1311,7 @@ export const RubricPanel = component$(
                 disabled={store.isReviewing}
                 class="btn-paper flex flex-1 items-center justify-center gap-2 text-xs"
               >
-                <Icon name="redo" /> Grade again
+                <Icon name="redo" /> Grade again <DestinationTag to={aiConsequenceFor(store.aiSettings)} />
               </button>
               <Link
                 href="/rubric"

@@ -1,3 +1,6 @@
+import { DestinationTag } from "../ui/destination-tag";
+import { HoldToConfirm } from "../ui/hold-to-confirm";
+import { aiConsequenceFor } from "../../utils/consequence";
 import { runRoomAnalysis } from "../../utils/room-analysis";
 import { PREFERENCES_APPLIED } from "../../utils/preference-outbox";
 import {
@@ -174,6 +177,7 @@ interface PersonasStore {
    * the real thing lands.
    */
   streamingNotes: Record<string, GenerationStreamSnapshot>;
+  freshNoteIds: string[];
   streamingReplies: Record<string, GenerationStreamSnapshot>;
   /** The room's verdict as it is being written, during a full analysis. */
   streamingSynthesis: string;
@@ -370,6 +374,7 @@ export const PersonasPanel = component$(
       conveneError: null,
       repliesByNote: {},
       streamingNotes: {},
+      freshNoteIds: [],
       streamingReplies: {},
       streamingSynthesis: "",
       groupByPersona: true,
@@ -509,17 +514,6 @@ export const PersonasPanel = component$(
     });
 
     useStylesScoped$(`
-    .feedback-enter {
-      animation: feedbackSlide 0.35s ease-out;
-    }
-    @keyframes feedbackSlide {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .feedback-enter { animation: none; }
-    }
-
     .portrait-icon {
       display: flex;
       align-items: center;
@@ -965,6 +959,7 @@ export const PersonasPanel = component$(
           await savePersonaNoteLocally(fb, brief, activeFolioId);
         }
 
+        store.freshNoteIds = feedbackList.flatMap((note) => note.noteId ? [note.noteId] : []);
         store.feedback = feedbackList;
 
         // The room has now read everything. Reset the background watcher's
@@ -1937,11 +1932,15 @@ export const PersonasPanel = component$(
                       <li key={persona.id}>
                         <button
                           type="button"
-                          class="cast-face"
+                          class="cast-face room-reading-face"
+                          data-reading={store.streamingNotes[persona.id] ? "" : undefined}
+                          style={{ "--reading-progress": readingProgress(store.streamingNotes[persona.id]) }}
                           aria-label={`Talk with ${persona.name}, ${persona.role}`}
                           title={`${persona.name} · ${persona.role} — talk it through`}
                           onClick$={() => openLiveVoice(persona.name)}
                         >
+                          {store.streamingNotes[persona.id] && <ReadingRing />}
+                          {!store.streamingNotes[persona.id] && store.backgroundRoom?.status === "reading" && <span class="room-reading-ambient" data-ambient aria-hidden="true" />}
                           <PersonaPortrait
                             personaId={persona.id}
                             name={persona.name}
@@ -1963,7 +1962,7 @@ export const PersonasPanel = component$(
                 </a>
               </div>
 
-              <div class="mt-2 grid grid-cols-2 gap-2">
+              <div class="mt-2 grid grid-cols-2 gap-2" data-consequence={aiConsequenceFor(store.aiSettings)}>
                 <button
                   onClick$={requestFeedback}
                   disabled={store.isGenerating}
@@ -1972,7 +1971,7 @@ export const PersonasPanel = component$(
                 >
                   {store.isGenerating ? (
                     <span class="flex items-center justify-center gap-2">
-                      <span class="inline-block animate-spin">✦</span>
+                      <span aria-hidden="true">✦</span>
                       The room is reading…
                     </span>
                   ) : (
@@ -1996,7 +1995,8 @@ export const PersonasPanel = component$(
                 )}
               </div>
 
-              <div class="mt-1">
+              <DestinationTag to={aiConsequenceFor(store.aiSettings)} />
+              <div class="mt-1" data-consequence={aiConsequenceFor(store.aiSettings)}>
                 <button
                   onClick$={() => {
                     if (store.analysis && !store.isAnalyzing) {
@@ -2259,14 +2259,7 @@ export const PersonasPanel = component$(
               >
                 {store.compactView ? "▸ compact" : "▾ full"}
               </button>
-              <button
-                onClick$={clearRoom}
-                class="panel-meta uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] focus-ring"
-                style="font-family: var(--font-typewriter);"
-                title="Strike the room — clears every note here and every pin in the manuscript"
-              >
-                clear ✕
-              </button>
+              <HoldToConfirm onConfirm$={clearRoom} consequence="erase" label="Strike the room — clears every note and pin" hint="hold to erase" class="panel-meta focus-ring">clear ✕</HoldToConfirm>
             </div>
           )}
 
@@ -2315,7 +2308,8 @@ export const PersonasPanel = component$(
                 >
                   {/* The same masthead the filed note will get, so the card
                     does not rearrange itself the moment it lands. */}
-                  <div class="desk-card__head persona-critique-head">
+                  <div class="desk-card__head persona-critique-head room-stream-head" style={{ "--reading-progress": readingProgress(store.streamingNotes[persona.id]) }}>
+                    <ReadingRing />
                     <PersonaMasthead
                       personaId={persona.id}
                       color={persona.color}
@@ -2584,6 +2578,7 @@ export const PersonasPanel = component$(
                     aria-busy={store.isReplying}
                   >
                     <SendIcon />
+                    <DestinationTag to={aiConsequenceFor(store.aiSettings)} quiet />
                   </button>
                 </form>
               );
@@ -2665,6 +2660,7 @@ export const PersonasPanel = component$(
                           title="Ask this editor to propose an edit to the passage"
                         >
                           <FixIcon />
+                          <DestinationTag to={aiConsequenceFor(store.aiSettings)} quiet />
                         </button>
                       )}
                   </>
@@ -2709,7 +2705,7 @@ export const PersonasPanel = component$(
                   </>
                 ) : null;
 
-              const cards = items.map((feedback) => {
+              const cards = items.map((feedback, cardIndex) => {
                 const persona = store.personas.find(
                   (p) => p.id === feedback.personaId,
                 );
@@ -2744,19 +2740,22 @@ export const PersonasPanel = component$(
                     key={noteKey}
                     aria-label={`${kind}, from ${feedback.personaName}`}
                     class={[
-                      "desk-card note-card board-card feedback-enter",
+                      "desk-card note-card board-card",
+                      { "feedback-enter": !!feedback.noteId && store.freshNoteIds.includes(feedback.noteId) },
                       isPassing ? "note-card--passing" : "note-card--filed",
                       { "is-settled": !!decision },
                     ]}
                     style={{
                       ["--clip-color" as never]: personaColor,
+                      ["--flash-ink" as never]: personaColor,
+                      ["--slip-delay" as never]: `${Math.min(cardIndex, 5) * 50}ms`,
                       ["--card-accent" as never]: personaColor,
                       ["--comment-color" as never]: personaColor,
                     }}
                   >
                     {/* The face names its speaker on hover; the card keeps
                       its line for what kind of note this is and when. */}
-                    <header class="note-card__head board-card__head">
+                    <header class={["note-card__head board-card__head", { "room-filed-impression": !!feedback.noteId && store.freshNoteIds.includes(feedback.noteId) }]}>
                       <SpeakerFace
                         personaId={feedback.personaId}
                         name={feedback.personaName}
@@ -3402,3 +3401,20 @@ function timeAgo(timestamp: number): string {
   if (hours < 24) return `${hours}h`;
   return `${Math.floor(hours / 24)}d`;
 }
+
+/** Progress is intentionally capped until the stream actually completes. */
+function readingProgress(stream: GenerationStreamSnapshot | undefined): number {
+  if (!stream) return 0;
+  if (stream.status === "complete") return 1;
+  if (stream.status === "error") return 0;
+  if (stream.activePart === "reasoning" || stream.reasoningStatus === "running")
+    return Math.min(0.35, 0.12 + stream.reasoning.length / 5000);
+  if (stream.activePart === "text" || stream.textStatus !== "pending")
+    return Math.min(0.92, 0.35 + stream.text.length / 5000);
+  return 0.1;
+}
+const ReadingRing = component$(() => (
+  <svg class="room-reading-ring" viewBox="0 0 40 40" aria-hidden="true">
+    <circle cx="20" cy="20" r="18" pathLength="1" />
+  </svg>
+));

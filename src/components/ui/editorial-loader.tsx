@@ -31,15 +31,8 @@ export const EditorialLoader = component$<EditorialLoaderProps>((props) => {
       role="status"
       aria-live="polite"
     >
-      <div class="relative h-10 w-10" aria-hidden="true">
-        <span class="absolute inset-0 rounded-full border border-[var(--color-paper-3)]" />
-        <span class="absolute inset-1 motion-safe:animate-spin rounded-full border border-transparent border-t-[var(--color-cobalt)]" />
-        <span
-          class="absolute inset-0 flex items-center justify-center text-lg text-[var(--color-cobalt)]"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          ✦
-        </span>
+      <div class="room-type-line" data-ambient aria-hidden="true">
+        <span data-ambient /><span data-ambient /><span data-ambient /><span data-ambient /><span data-ambient /><span data-ambient />
       </div>
       <p
         class="mt-3 text-[0.62rem] uppercase tracking-[0.15em] text-[var(--color-ink-muted)]"

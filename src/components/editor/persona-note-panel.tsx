@@ -1,8 +1,12 @@
+import { DestinationTag } from "../ui/destination-tag";
+import { loadAiConsequence } from "../../utils/consequence";
 import { GroundedNote } from "../personas/grounded-note";
 import { NoteEvidenceList } from "../personas/note-evidence-list";
 import {
   $,
   useComputed$,
+  useSignal,
+  useVisibleTask$,
   component$,
   sync$,
   type PropFunction,
@@ -49,6 +53,9 @@ const FRESH_REPLY_MS = 2500;
  * beside the card, so no name, role, label or quote repeats here.
  */
 export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
+  const destination = useSignal<"provider" | "credit">("credit");
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async () => { destination.value = await loadAiConsequence(); });
   const note = props.note;
   const onPin$ = props.onPin$;
   const onClose$ = props.onClose$;
@@ -264,6 +271,7 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
           title="Reply (Enter)"
         >
           <SendIcon />
+          <DestinationTag to={destination.value} quiet />
         </button>
       </form>
     </div>
