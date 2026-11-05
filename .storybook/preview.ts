@@ -1,5 +1,6 @@
 import type { Preview } from "storybook-framework-qwik";
 import "../src/global.css";
+import "../src/styles/press.css";
 import { THEME_PRESETS } from "../src/utils/theme";
 
 /**

@@ -6,7 +6,7 @@ Twyne's interface is a working press room, not a document viewer. Most editors a
 2. **Say where things go.** Every action that sends words somewhere looks like it is sending them there, in the same ink every time.
 3. **Show that the room is alive.** Editors read, ink dries and the light moves. None of it gets in the way of writing.
 
-This page is the contract for all of it. The tokens live in [`src/styles/motion.css`](../../src/styles/motion.css), the levels and typing signal in [`src/utils/motion.ts`](../../src/utils/motion.ts), and the destinations in [`src/utils/consequence.ts`](../../src/utils/consequence.ts).
+This page is the contract for all of it. The tokens live in [`src/styles/motion.css`](../../src/styles/motion.css) (loaded after `global.css` through [`src/styles/press.css`](../../src/styles/press.css), so a surface sheet can refine a global rule at equal specificity), the levels and typing signal in [`src/utils/motion.ts`](../../src/utils/motion.ts), and the destinations in [`src/utils/consequence.ts`](../../src/utils/consequence.ts).
 
 ## Five rules
 

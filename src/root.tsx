@@ -25,6 +25,8 @@ import {
 } from "./utils/motion";
 
 import "./global.css";
+// After global.css: the living press refines it (docs/design/living-press.md).
+import "./styles/press.css";
 
 const SERVICE_WORKER_REGISTER_SCRIPT = `
 if ("serviceWorker" in navigator) {
