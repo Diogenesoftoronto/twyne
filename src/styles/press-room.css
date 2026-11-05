@@ -17,7 +17,10 @@
 .room-stream-head .room-reading-ring { inset: 0 auto auto 0; width: 58px; height: 58px; }
 .feedback-enter { animation: press-slip-in var(--dur-settle) var(--ease-slip) both; animation-delay: var(--slip-delay, 0ms); }
 .room-filed-impression { animation: press-ink-flash var(--dur-settle) var(--ease-set) both; animation-delay: var(--slip-delay, 0ms); }
-.room-stamp-shader { position: absolute; width: min(256px, 100%); aspect-ratio: 1; inset: 50% auto auto 50%; transform: translate(-50%, -50%); pointer-events: none; }
+/* The verdict's squeezed ink reaches a little past the stamp's rays, so its
+ * canvas is larger than the stamp it sits under (stamp-shader.tsx reads both
+ * sizes). Below the imprint in paint order: the stamp stays on top. */
+.room-stamp-shader { position: absolute; width: min(160%, 256px); aspect-ratio: 1; inset: 50% auto auto 50%; transform: translate(-50%, -50%); pointer-events: none; }
 .rubric-grade-stamp { position: relative; }
 .ink-stamp--pressing .ink-stamp__tool { animation-timing-function: var(--ease-platen); }
 .room-comment-struck { position: relative; }
