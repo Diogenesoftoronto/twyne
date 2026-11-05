@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.27.0
+
+<sub>2026-11-05</sub>
+
+- Watch new words dry: what you type stays in a wetter blue-black ink until
+  it is saved on this device, then dries to black. Ink that stays wet means
+  the save has not landed.
+- See where an action sends your words before you press it. Each destination
+  has one ink, mark and word everywhere: this device, your account, your own
+  model, hosted credit, or public.
+- Hold to erase: deleting a comment, striking the room, removing a source,
+  stopping sharing, removing a collaborator and unpublishing now ask you to
+  hold the key, or press Enter twice, so a stray click cannot lose them.
+- Choose how much the room moves in Preferences → Appearance → Motion: Full,
+  Calm or Still, following your system by default. Your manuscript never
+  moves at any level.
+- Work under a desk lamp: a pool of light on the desk around the page, set by
+  the hour and leaning toward your hand while you are not typing. Scrolling
+  slides the paper under it.
+- Keep your place in a long manuscript: the status bar names the section you
+  are reading, and pressing it returns to that heading. It also says where
+  your latest words are: held here, on the wire, or filed in your account.
+- Watch an editor read: a pencil ring around their portrait follows the reply
+  as it streams, new notes slip onto the board, and a new grade squeezes a
+  little ink out from under the stamp.
+- Move a section by its type slug onto a composing rule that names it, and
+  see whether a dragged-in image will stay on this device or go to your
+  account's storage.
+- Open My Desk to figures set like type and bars that rise once. Patterns
+  that reach their evidence are filed with a stamp, the selected range is
+  marked again, and switching range no longer flashes the loader.
+- Run a full analysis from the analysis page.
+- Tidy the landing page's plates and guide.
+
 ## 0.26.1
 
 <sub>2026-11-04</sub>
