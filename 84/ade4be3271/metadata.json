@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "84ade4be3271",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "src/components/editor/persona-note-panel.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/84/ade4be3271/0/metadata.json",
+      "transcript": "/84/ade4be3271/0/full.jsonl",
+      "compact_transcript": "/84/ade4be3271/0/transcript.jsonl",
+      "content_hash": "/84/ade4be3271/0/content_hash.txt",
+      "prompt": "/84/ade4be3271/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 238333,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 20736256,
+    "output_tokens": 86942,
+    "api_call_count": 111,
+    "subagent_tokens_complete": true
+  }
+}
