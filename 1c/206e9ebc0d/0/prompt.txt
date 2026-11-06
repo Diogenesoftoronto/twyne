@@ -1,0 +1,96 @@
+replies in the editorial board unfocus when writing a comment
+
+---
+
+a reply sorry
+
+---
+
+also have this layout problem
+
+[Attached image "image.png" is saved at: /home/diogenes/.t3/userdata/attachments/0241c625-0cfc-4600-8ce8-92d0ed83facb-8548a475-a52b-465e-b82f-87ff958ddc40.png]
+
+---
+
+and there are still blocking issues that are occuring in firefox and i don't know why
+
+---
+
+What gets blocked in Firefox—loading Twyne, typing, opening panels, sending replies, or something else? Any error text or steps that trigger it would help.
+the browser itself had this issue i think  it was because  of some old problem i am going to test outside of firefox
+
+---
+
+Reference: err_35865f2d-e8ac-4bf1-9109-a67c3d4e5045
+
+also got this reference error for voice when not signed in and when i am actually signed in i get this 
+Read aloud
+1 of 2
+
+The selected provider could not complete the request. Please try again.
+
+Reference: e4477826-c1c6-4185-a850-0ca1bd0979e5 so i think that voice is just borked
+
+---
+
+Were these voice errors on twyne.love or your local development app?
+when there is an error i think we can also do better than what we have current send over sonnet on low to fix this by adding better errors components to voice here and  this is happen
+
+Attached image "image.png": "/home/diogenes/.t3/userdata/attachments/0241c625-0cfc-4600-8ce8-92d0ed83facb-9150180b-4ad1-4542-88fd-96a87d5be4e3.png"
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9632d6a9-8961-4283-b915-0046fb64302d%3Adelegate-task%3Avoice-error-ui-sonnet-low-0241c625-r1 [completed]:
+I've replaced the cramped error row in the speech player with a full-width error panel. Not run in a browser, so layout at narrow and desktop widths is unchecked. The 4 unit tests pass, and eslint and `tsc` show nothing for these files. I didn't run the full suite.
+
+**Files**
+- `src/components/ui/speech-error-model.ts` (new) maps an `AppError` to the title, message, whether to offer retry, retry-after seconds and a recovery link.
+- `src/components/ui/speech-error-model.test.ts` (new) has the 4 tests.
+- `src/components/ui/speech-error-panel.tsx` (new) is the panel itself.
+- `src/components/ui/global-speech-player.tsx` (edited) renders the panel when the status is `error`.
+
+I changed nothing else.
+
+**What the error state does**
+- **Panel:** it uses the `ApplicationNotice` styling and has `role="alert"`. It shows a readable title, the passage label with its queue position ("2 of 5"), and the full message with no truncation.
+- **Playback controls:** the frozen timeline, disabled previous/next/play buttons and the Talk button are gone in this state. The error branch is separate, so playing, paused and loading render as before. I only removed the old error-status branches.
+- **Retry:** "Try again" shows only when the error is retryable, and it uses the existing `retry$`. A "Try again in about N seconds" line shows when the error carries a retry-after.
+- **Recovery:** sign-in errors link to `/editor?auth=1`, configuration and provider-choice errors link to `/settings/`. These are the same links the existing toasts use.
+- **Other actions:** "Skip to next" shows only when the queue has a next item. The close button is always there. The voice selector stays below the panel, and the queue position is kept.
+- **Reference:** the id is shown in full, wrapped, with a Copy button.
+- **Title:** it follows the error code. `PROVIDER_ERROR` reads "The voice could not be prepared", for example.
+
+**Cases from your notes**
+- **`download-required`:** the title is "Browser voice not downloaded". The copy says to download it in Settings (a few hundred MB), or pick a different voice, and that nothing is downloaded automatically. The button is "Download in Settings". Nothing downloads on its own.
+- **Hosted provider failure (the Not Organic HTTP 500):** it is shown as an upstream failure. Retry appears and no recovery link does. There's no hint to change an API key, and no "try another voice" line.
+- The "try another voice" line shows only for `MALFORMED_RESPONSE`.
+
+**Limitations**
+- The panel renders `error.message` as given. The player shows the generic text until your normalizer stops replacing it with "The selected provider could not complete the request. Please try again." Once it passes "Hosted narration could not finish. Please try again later." through, that text will appear.
+- The copy button uses `navigator.clipboard`. If the browser blocks it, it fails silently.
+- I added no Storybook story.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9632d6a9-8961-4283-b915-0046fb64302d%3Athread-send%3Abed531ff-5aeb-453b-aa43-c1f71e52e5f5 (Implement better voice/read-aloud error UI in current shared Twyne ch...) [completed]:
+All four refinements are in `speech-error-model.ts`, `speech-error-panel.tsx` and the model tests. The helper tests pass (7 of 7), and eslint and `tsc` are clean for these files. I haven't browser-checked it.
+
+- **Permission denied:** the title is now "Read aloud is unavailable", with no plan cause implied.
+- **Download required:** Retry is hidden even if `canRetry` is true. "Download in Settings" now comes first and uses the primary button style.
+- **Copy feedback:** there's a polite live-region status line under the reference. It reads "Reference copied." on success and "Couldn't copy automatically. Select the reference and copy it." on failure. The reference text is `select-all`, so it can be selected, including after a failed copy.
+- **Short or narrow viewports:** the panel is capped at `max-h-[min(70vh,28rem)]` and scrolls inside that.
+- **New tests:** permission-denied title, download-required hiding Retry with the primary recovery flag set, and the copy status messages.
+
+I didn't touch `speech.ts` or the backend.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9632d6a9-8961-4283-b915-0046fb64302d%3Athread-send%3A929941fe-5e2e-44c2-a329-c11e1e57d754 (Implement better voice/read-aloud error UI in current shared Twyne ch...) [completed]:
+`describeSpeechError` now shows the reviewed copy "Hosted narration could not finish. Please try again later." for `PROVIDER_ERROR` with `source === "convex"`. The 9 helper tests pass, and eslint and `tsc` are clean for these files. I haven't browser-checked it.
+
+- **Where:** the change is in `src/components/ui/speech-error-model.ts`. The copy is exported as `HOSTED_NARRATION_FAILURE`.
+- **Unchanged behavior:** retry follows `canRetry` as before, and no recovery link appears. The reference ID still comes from the error.
+- **Other providers:** classified errors from other sources keep their own message. This applies only to a provider error whose source is `convex`.
+- **Tests:** one test feeds in a raw body with a fake `sk-secret-123` key and a stack trace. It checks that the output equals the reviewed copy and that the secret doesn't appear anywhere in the view. It also checks that retry is still offered and that no recovery link appears. A second test checks that a provider-sourced error keeps its own message.
+
+I didn't touch the normalizer, `speech.ts` or the backend.
