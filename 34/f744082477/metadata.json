@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "34f744082477",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "src/components/ui/global-speech-player.tsx",
+    "src/utils/application-errors.test.ts",
+    "src/utils/application-errors.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/34/f744082477/0/metadata.json",
+      "transcript": "/34/f744082477/0/full.jsonl",
+      "compact_transcript": "/34/f744082477/0/transcript.jsonl",
+      "content_hash": "/34/f744082477/0/content_hash.txt",
+      "prompt": "/34/f744082477/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 301636,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 29352960,
+    "output_tokens": 42912,
+    "api_call_count": 159,
+    "subagent_tokens_complete": true
+  }
+}
