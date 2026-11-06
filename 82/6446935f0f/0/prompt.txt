@@ -1,0 +1,17 @@
+alright lets get this implemented give me side by sides as well
+
+---
+
+so i am just going to have you getting thhis once the other thread is finished i think for the animations and stuff it would mamke sense too use sosmething like shaders for the ink not sure what you were considering but ink shaders sound like a great idea for this.
+
+---
+
+I think a nicer shader effect when typing would give an extra feel too. I am not sure if a singular overlay primitive makes sens though annd i love webgl but we could experiment wiith compute shaders and other great stuff from wglsl
+
+---
+
+alright get started
+
+---
+
+I think that wet ink for the stamp doesn't make that much sense, stamps have a different effect
