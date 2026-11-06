@@ -3,7 +3,7 @@
   "checkpoint_id": "34f744082477",
   "strategy": "manual-commit",
   "branch": "feat/clairic-extraction",
-  "checkpoints_count": 2,
+  "checkpoints_count": 6,
   "files_touched": [
     "src/components/ui/global-speech-player.tsx",
     "src/utils/application-errors.test.ts",
@@ -16,6 +16,13 @@
       "compact_transcript": "/34/f744082477/0/transcript.jsonl",
       "content_hash": "/34/f744082477/0/content_hash.txt",
       "prompt": "/34/f744082477/0/prompt.txt"
+    },
+    {
+      "metadata": "/34/f744082477/1/metadata.json",
+      "transcript": "/34/f744082477/1/full.jsonl",
+      "compact_transcript": "/34/f744082477/1/transcript.jsonl",
+      "content_hash": "/34/f744082477/1/content_hash.txt",
+      "prompt": "/34/f744082477/1/prompt.txt"
     }
   ],
   "token_usage": {
