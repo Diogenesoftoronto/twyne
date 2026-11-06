@@ -1,0 +1,1043 @@
+I  want you to look through each of the pages to find out the inconsistencies in styling that is being used. I also want you to  think about how we could better utilise space for text in the main editor component. I also want to know why it needs to load in the first place and if there is a better animation for the editor loading to improve that or remove that entirely.
+
+---
+
+Going further if we were to codify this practice of adding juice to the user interface, look at each of the interfaces in the desk and writers room each of the components. Think about how we could add shaders and animations and variants that help communicate what this interaction does and why you should or should not interact with it. You can do your research on similar things online but also consider gaps that mighth be missing thata fit right in here. Continue until you have come up with a way for each component to 'give joy' making the user experience smooth but also different from other more generic editors. The editor should have an identity it is trying to communicate whether thaht is is as you move you mouse around, type something, scroll or drag. We should consider important interactions that seem well suited but also enjoyable. There should be a sense that this application is living. You will need to demonstrate properly how you managed to do this and what choices you made and why as well as compare those surfaces afterwards.
+
+---
+
+max for these is too much we will want to go down to high
+
+---
+
+<task-notification>
+<task-id>a0416bd6ca35db026</task-id>
+<tool-use-id>toolu_014Gu8xiRmMJY2eygDwaH48Z</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/43e12872-3bbc-4112-a8d8-a54d929f1273/tasks/a0416bd6ca35db026.output</output-file>
+<status>killed</status>
+<summary>Agent "Inventory Desk page surfaces" was stopped by Claude</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Now the `.dept-label` (two definitions), `.folio`, the 655/745 animation blocks, and checks for `--shade` and `.btn-paper:disabled`.</result>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>acf5baf488ccd1a68</task-id>
+<tool-use-id>toolu_01XHZhKsgi2sB7YbsXi3dBeB</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/43e12872-3bbc-4112-a8d8-a54d929f1273/tasks/acf5baf488ccd1a68.output</output-file>
+<status>killed</status>
+<summary>Agent "Inventory editor chrome surfaces" was stopped by Claude</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Notable: `.icon-btn` and `.dept-label` are each defined twice. Next I'll read the flow/zen rules at 8600-8660 and 10000-10075.</result>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ac82fab58b6fe9b9b</task-id>
+<tool-use-id>toolu_01S2q98AFvkLF2trqxuhP2UU</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/43e12872-3bbc-4112-a8d8-a54d929f1273/tasks/ac82fab58b6fe9b9b.output</output-file>
+<status>killed</status>
+<summary>Agent "Inventory manuscript text surface" was stopped by Claude</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Now let me survey the extensions for decorations, classes, and plugin props in parallel.</result>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>aa4f02d3a09751a6e</task-id>
+<tool-use-id>toolu_016TfFaqLrv5aBpU5f9qQyoL</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/43e12872-3bbc-4112-a8d8-a54d929f1273/tasks/aa4f02d3a09751a6e.output</output-file>
+<status>killed</status>
+<summary>Agent "Inventory writers-room panels" was stopped by Claude</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Next: the panel's root JSX, the analysis modal, and cost/provider/credit signals.</result>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ac3347e068ff21656</task-id>
+<tool-use-id>toolu_01BEA8FdRKEhAvqr5yHsejAg</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/43e12872-3bbc-4112-a8d8-a54d929f1273/tasks/ac3347e068ff21656.output</output-file>
+<status>killed</status>
+<summary>Agent "Research editor UI juice and motion" was stopped by Claude</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a193298a0a25c1f58</task-id>
+<tool-use-id>toolu_01MBfKjbVCs4e8zPveHKvmSK</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/43e12872-3bbc-4112-a8d8-a54d929f1273/tasks/a193298a0a25c1f58.output</output-file>
+<status>completed</status>
+<summary>Agent "Inventory Desk page surfaces" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I've mapped the Desk page below. Three things stand out:
+
+- **Range buttons show no selected state, very likely.** The active range button adds Tailwind `bg-[var(--color-ink)] text-[var(--color-paper)]` on top of `.btn-paper`. global.css has no `@layer`, so the unlayered `.btn-paper` rule (2101–2116) should beat Tailwind v4's layered utilities. If so, the selected range is only in `aria-pressed`. I haven't checked this in a browser.
+- **The loader can hang.** The local-load task (index.tsx:256–294) has no try/catch. If IndexedDB fails, the page stays on "Reading the ledger" forever, and there is no local error state.
+- **Several files in your list are not on the Desk page.** `data-controls` is mounted in `routes/account/index.tsx:203`. `PublicDeskSettings` is in `components/account/writer-profile-settings.tsx:1041`. `PublicDeskSync` is in `utils/auth-context.tsx:292` and renders nothing. `UsageSyncController` is in `root.tsx:108` and renders nothing. They're covered at the end.
+
+## Tokens and motion
+- **Colours** (global.css:16–65): `--color-paper #f4ecd8`, `-paper-2`, `-paper-3` (rule), `-paper-soft`, `--color-ink #1f1b16`, `-ink-light`, `-ink-muted`, `--color-vermilion #c1272d`, `-vermilion-2`, `--color-cobalt #2c4a7c`, `--color-sage`, `--color-mustard`. Shadows use `--shade` (200). Themes `foolscap`/`broadsheet`/`nightpress` are at 216/240/266.
+- **Type:** `--font-display` (Libre Baskerville), `--font-serif` (Lora), `--font-sans` (DM Sans), `--font-mono`, `--font-typewriter` (Special Elite).
+- **z-index** (69–75): `--z-sticky 20`, `--z-dropdown 30`, `--z-overlay 40`, `--z-modal 50`, `--z-toast 60`. The Desk uses none of them.
+- **Motion tokens:** there are none; every rule hard-codes its values. The house curve is `cubic-bezier(0.22,1,0.36,1)` (page-in at 95, the button press at 2077/2109). Common durations are 0.12s, 0.15s and 0.18s.
+- **Page transition:** `twyne-page-out` is 120ms ease-in and `twyne-page-in` is 220ms (90–112). Reduced motion turns it off (114–119).
+- **Global** `button, a { transition: color/background/border-color .15s }` at ~4503.
+- **Reduced motion** blocks exist at 4091 and 4582. Neither covers `.btn-paper`, `.btn-press`, `.dept-label` or `animate-pulse`.
+
+## Shared classes
+- **`.dept-label`, defined twice:**
+  - 582: typewriter font, 0.625rem, letter-spacing 0.32em, uppercase, ink-muted.
+  - 4488–4494: `transition: letter-spacing .2s`, and `:hover` sets letter-spacing to 0.22em, which tightens it (the comment says "underline grow"). This hover fires on a non-interactive label.
+- **`.icon-btn`, defined twice** (the Desk doesn't use it):
+  - 2164–2188: transitions color/bg .15s and transform .1s; hover adds paper-2; `:active` scales to 0.9; focus outline is vermilion at 1px offset.
+  - 4496–4503: transitions transform/color only, which drops background; `:active` scales to 0.92.
+- **`.btn-paper`** 2101–2125: paper-soft fill, paper-3 border, radius 2px. Hover goes to paper-2 with a `--shade` shadow; `:active` moves down 1px. Focus is at 2156–2161: vermilion outline, 2px offset. There is no `:disabled` rule, unlike `.btn-press:disabled` (2096).
+- **`.btn-press`** 2069–2099: ink fill. Hover goes to vermilion-2 with a glow; `:active` is translateY(1px) scale(.98).
+
+## Page shell: `routes/desk/index.tsx`
+- **`&lt;main&gt;` (477):** paper background, `max-w-6xl`.
+- **Top nav (479–494):** three Links, ← Writing room `/editor/`, Account, Preferences. Hover turns them vermilion. Focus uses browser defaults. Navigation only.
+- **Range nav (515–536):** buttons 7, 30, 90, All. A click sets `preset`, calls `history.replaceState` with `?range=` and fires `usage_range_changed` (453–457). That re-runs the local load (store.loaded=false, so the loader comes back), the remote merge, the hosted fetch (Convex) and the runway. Consequence: local re-read, plus an account query if signed in. No AI or cost. The selected-state issue is noted above.
+- **Loading (538–542):** `.dept-label` "Reading the ledger" plus a 1px `animate-pulse` rule in ink-muted. No reduced-motion handling, and the page shows it again on every range change.
+- **Footer (574–580):** a Link to `/account/#data` with an underline. Navigation only.
+- **Live data with no visible indicator:**
+  - `remoteState` "loading" shows the same as "local".
+  - The page doesn't listen for `USAGE_SYNC_STATE_EVENT`, so it doesn't refresh after a sync.
+  - The `FORECAST_PREVIEW_EVENT` listener (239) can swap the runway live.
+
+## DeskSummary: `desk-summary.tsx:34` (`&lt;header&gt;`, border-b-2 ink)
+- **Shows:** a "Writer's usage dossier" label, an `h1` "My Desk" (display, 4xl/5xl), "Prepared for" with the name and range, and an aside "Desk facts" (50).
+- **Desk facts `dl` (52):** Days writing, folio count, Editorial actions, and a cost row.
+- **Cost row states:**
+  - signed-out: a "Sign in to view charges" `btn-paper` Link (77); navigation only.
+  - ready: $X.XXXX, with "(partial)" when applicable.
+  - loading: "Checking…"
+  - error: "Unavailable"
+  - otherwise: local actual cost.
+- **Provenance text (99–122)** covers loading, combined, offline, partial and error. The "error" source state can't actually happen, because index.tsx:459–469 maps errors to "partial".
+- **Interactions:** only the sign-in link.
+- **Values that change:** writingDays, folioCount, logicalActions, the cost, and the provenance and sync lines. All of these change on range switch or when the remote merge lands.
+- **Inconsistent:** this is the only `h1`, and the aside uses a `border-l` column pattern.
+
+## WritingActivity: `writing-activity.tsx:25` (border-b-2, py-7, "01 / Activity", h2 2xl)
+- **Shows:** the help text, an optional dotted `windowLabel` band (41–45), the heatmap (46), a daily chart, a Selected-day aside (59–135), and a ChartTable.
+- **Selected-day aside:** it is `aria-live`. Clicking a heatmap cell sets `selected`, and the aside re-renders with a `dl` of four figures and a list of folios. No motion.
+- **Aside variants:**
+  - Empty: "Choose a marked day…" (70).
+  - Partial legacy day note (121).
+  - Truncation warning in vermilion bold (129–134).
+- **Consequence:** local only.
+- **Inconsistent:** it uses `border-b-2`, while RecentWork uses `border-t-2` (see Cross-component).
+
+### WritingHeatmap: `components/profile/writing-heatmap.tsx:88`
+- **Shows:** 53×7 grid of 10px `&lt;button&gt;` cells, `rounded-[1px]`. Fill follows `LEVEL_COLORS`, which mixes vermilion into paper-3 (29–35).
+- **Selected / partial cells:** set by inline `boxShadow` (110–115), which is not transitioned.
+- **Interactions:** click or keyboard selects a day. Focus is a cobalt outline (104). Future days are disabled. There is no hover style. The grid scrolls horizontally (`overflow-x-auto`).
+- **Footer:** typewriter-font "N entries in the last year" plus a Less/More legend that uses `rounded-[2px]`, which doesn't match the cells.
+
+### DailyActivityChart: `daily-activity-chart.tsx:21`
+- **Shows:** h-36 paired bars, sage for writing and vermilion for AI. Heights are % inline styles, min 2%.
+- **Interactions:** none. A native `title` tooltip only. It has a `group` class with no `group-*` styles using it.
+- **Empty:** "No writing or AI actions…" (9).
+- **Inconsistent:** bars are sized in %, while UsageCost bars use px.
+
+## ChartTable: `chart-table.tsx:20` (`&lt;details&gt;`)
+- **Shows:** a "View data table" summary, uppercase muted text, with a cobalt focus outline (24).
+- **Interactions:** click or keyboard toggles it open and shut. No open/close animation, no rotating marker, and no hover style beyond `cursor-pointer`. Rows have no hover. Local only.
+- **Used in:** WritingActivity, DailyActivityChart, UsageCost, UsageBreakdowns and TokenDimensions. The Writing section ends up with two stacked tables.
+
+## UsageCost: `usage-cost.tsx:45` (border-b-2, "02 / AI ledger")
+- **Tablist (53–74):** a 4-column grid with ink borders. The selected tab inverts to ink. Focus is a cobalt inset outline. Tab switching is instant, with no indicator slide or panel crossfade. Clicking a tab fires the `desk_section_opened` analytics event; otherwise local.
+- **Tablist is missing ARIA wiring:** no arrow-key handling, no `aria-controls`, no `tabindex` management.
+- **Cost panel:**
+  - h-40 stacked bars, cobalt for actual and mustard for estimated, in px heights (95–120). Native `title` tooltips.
+  - Empty: "No AI cost evidence…" (122).
+  - A 4-figure `dl` in display xl: actual $, estimate $, local generation count, unknown-price count (137–176). All change on range switch or remote merge.
+- **`totalsOnly` note:** at 75. It repeats the `windowLabel` text in WritingActivity.
+
+### HostedCost: `hosted-cost.tsx:61` (border-y, `aria-live`)
+- **States:** signed-out, "Checking hosted charges…", error, and ready.
+- **Ready shows:** a big display-2xl $, plus settled and unresolved counts, a truncation note and the unverified amount.
+- **Buttons:**
+  - **Refresh charges `btn-paper` (111):** bumps `hostedRevision`, which re-queries Convex and Not Organic billing. Read-only and costs nothing. It is disabled while loading, but there's no disabled style.
+  - **Sign-in Link (104):** navigation.
+- **"View Not Organic wallet":** an external `&lt;a&gt;` (120), so it leaves the app.
+
+### CreditRunway: `hosted-cost.tsx:19`
+- **Shows:** a month median with p10–p90, credit left, and a run-out date. The run-out line turns vermilion when the credit won't last the month (37).
+- **Data:** forecast numbers that could tick in on arrival.
+
+### UsageBreakdowns: `usage-breakdowns.tsx:41` (features and models tabs)
+- **Shows:** rows with an h-2 paper-3 track and a cobalt fill, width as %.
+- **Interactions:** none.
+- **Empty:** 33.
+
+### TokenDimensions: `token-dimensions.tsx:31` (tokens tab)
+- **Shows:** six rows (Input, Output, Cache read, Cache write, Reasoning, Provider total) with a mustard fill.
+- **Interactions:** none.
+- **Empty and discrepancy notes:** 25 and 50.
+- **Inconsistent:** the label column is `7rem`, while breakdowns use `minmax(8rem,1fr)`. Count text is ink here but muted in breakdowns.
+
+## WriterPatterns: `writer-patterns.tsx:53` (py-7, no border, "03 / Evidence")
+- **Shows:** a `dl` of five rows (current streak, longest streak, weekday, tool, most-revised folio). Each shows a value or "Needs N more evidence points".
+- **Interactions:** none.
+- **Data:** the streak values, and the moment a pattern goes from locked to unlocked. That transition is a natural "stamp" moment.
+- **Inconsistent:** it's the only section with no rule border.
+
+## RecentWork: `recent-work.tsx:10` (border-t-2, "04 / Return")
+- **Shows:** a list with border-y and dotted dividers. Each row has the title (display lg), words, active days, actions, a date, and an "Open folio" `btn-paper` Link.
+- **"Open folio":** `onClick` writes the active folio id to IndexedDB, then goes to `/editor/`. Local plus navigation.
+- **Empty:** 19.
+- **Rows:** no hover style.
+
+## Cross-component inconsistencies
+- **Section borders:** WritingActivity and UsageCost use border-b-2, WriterPatterns has none, RecentWork and the footer use border-t-2. That gives a double-thick rule between RecentWork and the footer, and doubled rules elsewhere.
+- **Focus colours:** focus is cobalt on tabs, summary and heatmap, vermilion on `.btn-*`, and the browser default on nav links.
+- **Radii:** cells 1px, legend 2px, buttons 2px. No cards, no shadows except the `.btn-*` hover.
+- **Header styles:** "Selected UTC day" and "This month" are hand-built uppercase labels (tracking 0.12em and 0.1em), not `.dept-label`.
+- **Disabled styling:** disabled `.btn-paper` buttons look the same as enabled ones.
+
+## Not rendered on Desk
+- **DataControls** (`data-controls.tsx:195`, on the Account page):
+  - Export JSON/CSV: local file download plus analytics.
+  - Enable/Stop usage sync: syncs to the account and dispatches `USAGE_SYNC_REQUEST_EVENT`.
+  - Attach to this account / Keep device-only: syncs to the account.
+  - Delete "This device": opens a vermilion-bordered `alertdialog` (316), then a `.btn-press` delete. Destructive and permanent, local.
+  - Delete "Synchronized": dialog at 348. Destructive, on the account.
+  - Shared `busy` state and a `role=status` message (380).
+  - No motion.
+- **PublicDeskSettings** (`public-desk.tsx:151`):
+  - The "Publish my desk to my PDS" checkbox publishes publicly.
+  - The "Connect or renew PDS permission" underline button starts OAuth.
+  - "Retry synchronization" re-runs publishing.
+  - Status line (173), vermilion error alert (210). Note its dashed paper-3 border, used only here.
+- **PublicDeskSync** (`public-desk.tsx:17`): renders nothing. Publishes on a 60s interval, on `online`, and on events.
+- **UsageSyncController** (`usage-sync-controller.tsx:45`): renders nothing. Uploads usage rows to Convex and emits `USAGE_SYNC_STATE_EVENT`, which nothing on the Desk listens to yet.
+- **AI provider calls and hosted-credit spending:** nothing on the Desk does either.</result>
+<usage><subagent_tokens>80311</subagent_tokens><tool_uses>30</tool_uses><duration_ms>192940</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a0d6c5c21488ae515</task-id>
+<tool-use-id>toolu_01WTvsDbLzWY9FyEUKi7txEW</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/43e12872-3bbc-4112-a8d8-a54d929f1273/tasks/a0d6c5c21488ae515.output</output-file>
+<status>completed</status>
+<summary>Agent "Inventory manuscript text surface" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I haven't edited anything. Here is the inventory, cited as file:line. `TE` = `src/components/editor/twyne-editor.tsx`, `G` = `src/global.css`, `ext/` = `src/components/editor/extensions/`.
+
+## Short answers
+- **Custom caret:** No. The browser caret is used everywhere. `caret-color: var(--color-vermilion)` is set only on the illuminated drop-cap span (G:861). The numeric stepper input uses cobalt (G:5715). The ProseMirror body has no `caret-color`, so the caret takes the ink colour.
+- **Caret-like things that do exist:**
+  - Dropcursor: StarterKit config at TE:1245, 2px wide, class `twyne-dropcursor`, vermilion with a 25% halo (G:716).
+  - Gapcursor: a 1.25rem vermilion bar with `twyne-gapcursor-blink` 1.1s `steps(2)`, turned off under reduced motion (G:723-755).
+  - A `▍` caret on flow cards (`flow-caret`, G:8370-8379). `persona-reply-caret` (G:9721) is used for streaming replies.
+- **`::selection`:** There is no global rule, so selection uses the system colour. The only rule is `.twyne-illuminated-initial::selection { background: var(--color-vermilion-light, #c1272d30) }` (G:885). The Typst CodeMirror editor styles its own selection (`typst-code-editor.ts:497`).
+- **Scroll tracking:** There is no IntersectionObserver in the editor (the only one is on the landing page). Four scroll listeners:
+  - TE:3174, passive on `.manuscript-scroller`. Batched to one rAF; repositions comment and suggestion popovers. Also a ResizeObserver on the canvas.
+  - `flow-surface.tsx:775`, passive. Runs `layout()` for margin cards and connectors, plus a linger timer and a ResizeObserver (:729).
+  - `floating-table-toolbar.tsx:360`, capture on window.
+  - `passage-gather.tsx:348`, capture on document, only while the sheet is open.
+  - `margin-rail.tsx:159` uses a ResizeObserver only.
+- **Paragraph drag reordering:** No paragraph handles. There are **section (heading) drag handles** in `ext/section-reorder.ts:40-53`:
+  - A `⋮⋮` widget at every heading, with inline style (opacity .55, `cursor:grab`) and no CSS class rules.
+  - The drop indicator is an inline 2px line in `var(--accent-color,#6d5dfc)` (:84). That purple fallback is off-brand.
+  - It uses the custom MIME `application/x-twyne-section`.
+  - Ordinary text drag-and-drop uses ProseMirror's native behaviour.
+- **Fonts (G:62-66):**
+  - Display: Libre Baskerville
+  - Body serif: Lora (the manuscript, 1.125rem, line-height 1.8, `onum`/`liga`/`kern`, justified, hyphenated; G:804-822)
+  - UI: DM Sans
+  - Mono: JetBrains Mono
+  - Labels: Special Elite (typewriter)
+- **Colours (G:18-35):** paper `#f4ecd8` (paper-2 `#ebe1c9`, paper-3 `#ddd0b1`, paper-soft `#faf3df`), ink `#1f1b16` (ink-light `#4a3f33`, ink-muted `#8a7e6c`), vermilion `#c1272d`, cobalt `#2c4a7c`. Alternate themes are at G:217, 241 and 267 (the last is dark: paper `#191714`, vermilion `#e2686c`). Paper grain is mixed from ink at G:189.
+
+## Update path (runs per keystroke)
+- `onUpdate` (TE:1368) calls:
+  - `scheduleLiveMeta`: leading-edge throttle, 200ms, `getText()` for the word count (TE:980).
+  - `scheduleDerive`: 500ms debounce with a 2500ms max wait (TE:1017). One `getHTML()` feeds the comment reconcile, the mirror/persistence, citation detection, and the `twyne:content` event. It flushes on `pagehide`/`visibilitychange` (TE:1052).
+- `transaction` → `refreshActive` (TE:1643): about 20 `isActive` checks plus `can().undo/redo` on **every transaction**, including caret moves. It also calls `refreshSelectionAction` unless a pointer is down.
+- `transaction` → `refreshSlashMenu` (TE:1704): one `coordsAtPos` per transaction.
+- `update` → structure refresh, 300ms debounce: outline, notes and Mermaid (TE:1672).
+- `update` → popover reposition via rAF (TE:3176), and row-resize handle refresh (TE:2293, synchronous per update).
+- flow-conductor `onTransaction` (`ext/flow-conductor.ts:509`) logs insert/delete samples on docChanged. It skips y-sync and non-history transactions. There is also a 1s tick (:127) and window listeners for `pointermove`/`keydown` (:1669-1670).
+- **Decorations rebuilt on every docChanged:**
+  - `mark-anchor-widgets` (full rebuild).
+  - `section-reorder` (calls `buildDocumentOutline` per doc change).
+  - `quick-review` (clears to empty).
+  - remote-cursors and find-replace map or rebuild on docChanged.
+  - living-desk only maps positions; it recomputes after a 400ms delay plus `requestIdleCallback`.
+- **IME/composition:** `editor.view.composing` is checked in quick-review (`ext/quick-review.ts:231`, retries in 300ms) and struggle-tracker (`ext/struggle-tracker.ts:271`). Nothing else checks it: no `compositionstart` listener, and the derive/live-meta schedulers keep running during composition.
+
+## Manuscript surface (TE)
+- **Zen mode:** TE:448-480. It is **on by default** (`zenMode: true`, TE:428). It removes backgrounds and underlines from persona notes, comment marks, citations, suggestions and endnotes, and sets the toolbar to `opacity .15`. Further zen rules: G:3048 (mark anchors), 6881 (ruler), 7361 (quick-review marker), 7813 (in-flow rails), 10056-10071 (page-canvas border). It is toggled by the `view.zen` shortcut (TE:3906), and the flow conductor also sets it (`flow-conductor.ts:470`).
+- **Hover on marks:** a delegated `mouseover`/`mouseout` on the editor element (TE:2010-2090) opens the persona-note and writer-comment popovers.
+  - Hover is disarmed while typing: printable keys, Backspace and Enter set `hoverArmed=false` (TE:2172).
+  - It re-arms after more than 3px of mouse movement (TE:2205).
+  - Zen mode suppresses it.
+- **Click:** TE:2094. A click on a `.twyne-mark-anchor` chip opens the comment, note or suggestion card by `data-anchor-kind`. A click on the mark text falls through to caret placement. Double-click on a mark is a fallback opener (TE:2152).
+- **`.twyne-mark-anchor` chips:** `ext/mark-anchor-widgets.ts:114-160` places a widget `&lt;button&gt;` at the end of each mark run, with an avatar face. CSS at G:2975-3055: round, 1.5px border in `--anchor-color`, a 150ms `translateY(-1px)` transform on hover, no transition under reduced motion, and a zen rule.
+- **Mark styles:**
+  - Comment marks: inline style from `ext/comment-mark.ts:95` (18% fill plus a 2px solid underline in the comment colour). The G:1716 rule targets the stale class `.comment-mark`, which the code no longer emits.
+  - Citations: `.citation-mark` at G:1453, periwinkle 10% fill and a dotted underline. It appears only in CSS and zen rules; no extension emits it.
+  - Persona notes: `.twyne-persona-note` at G:2767, 11% fill, dotted underline, 15ms hover fill, and `.is-flashing` → `persona-note-flash` 1.4s.
+  - Suggestions: `.twyne-suggestion` at G:3056, with the same flash.
+  - Flash-to-mark: `flashMarkedElement` (TE:4616) does `scrollIntoView` and adds `is-flashing`.
+- **Selection popover:**
+  - Logic: `refreshSelectionAction` (TE:1448). It is gated on pointerup plus one rAF (TE:1489-1514) and hidden during a native text drag (TE:1506).
+  - Component: `selection-actions.tsx:197-330`. Buttons: Compare a revision, Find sources, Comment, Ask an editor ▾ (persona menu), More ▾ (Hear it read, Threads, Scene bench, Task desk), and ×. Errors show in `.selection-actions__error`.
+  - CSS at G:1466-1530: translucent paper, `backdrop-filter: blur(14px)`, a shadow, and translate placement. **No entry animation.**
+  - Consequence: Find sources, Ask an editor and Scene/Task send text to an AI provider or spend credits. Comment is local, then synced. Compare a revision is local.
+- **Drag and drop:**
+  - `handleDrop` (TE:1341) inserts dropped HTML `&lt;img&gt;` content.
+  - Image files go through `ext/image-node.ts` `handleDrop`/`handlePaste` (:650-670) to an upload adapter, with progress shown in the image-inspector (`uploading… %`) and a retry button.
+  - The file-drag overlay `.drag-overlay` reads "Drop plate or tabular here" (`manuscript-panel.tsx:118`; G:1732, fixed position, 7% vermilion wash, dashed border, typewriter label, **no animation**). It only appears for file drags (`isFileDrag`, TE:3363).
+  - The dragover guard is in `manuscript-panel.tsx:96`. Table row-resize uses mousedown at TE:2296.
+- **Paste:** Only image-file paste is custom. Everything else uses the TipTap defaults plus Typography input rules.
+- **Approval stamp:** the `twyne:stamp` event (TE:2715) shows `.approval-stamp-overlay` in `suggestion-panel.tsx:198`, with the stamp keyframes at G:1939-2034 and 3089. This is the existing "juice".
+- **Remote cursors:** `ext/remote-cursors.ts:116-132` adds a `remote-selection` inline decoration and a `remote-cursor` widget, fed by a presence poll (TE:1757). Local cursor position is reported on every `selectionUpdate` (TE:1755). This is sync/collab.
+
+## Extensions (what each decorates)
+- **`code-block-lines`:** `twyne-code-line-hl` inline highlight (G:1213).
+- **`comment-mark` / `persona-note-mark` / `suggestion-mark`:** marks, described above. Suggestions come from AI; accepting one is destructive (it replaces text) and fires the stamp.
+- **`illuminated-initial`:** node and inline decorations for the drop cap; `is-illuminated` swaps the letter for engraving artwork (G:825-895).
+- **`editorial-roles`:** `twyne-role-*` nodes (kicker, epigraph, sceneBreak, etc.).
+- **`endnote-node` / `inline-note-popover`:** the `.twyne-endnote` reference (G:4370) with `note-pop` and `endnote-flash` (G:4413, 4428).
+- **`find-replace`:** `twyne-find-match` with **hard-coded inline colours** `#ffe89a` / `#f5bf42` (:151).
+- **`flow-conductor`:** no decorations. Sets `html[data-flow]` and calls Jev (`askJudgement`/`askExtraction`, which spend the System One budget) at state edges.
+- **`living-desk`:** `ld-occ` (flagged, context, focused, previewing), `ld-ghost` widget, `ld-flash` (`living-desk/living-desk.css:48-128`). Sends text to an AI after a 2s judgement delay.
+- **`quick-review`:** `twyne-quick-review-passage` node and a cobalt typewriter marker button in the right margin, with a card (G:7312-7380). Runs `askJudgement` 650ms after an update; this is AI.
+- **`struggle-tracker` (`InFlowAnchor`):** `twyne-thread-span`, `twyne-in-flow-span` (a 1px cobalt underline gradient, G:7389), `sentence-bench-original`. AI only on a pause.
+- **`pagination`:** `twyne-page-spacer` widgets (G:376-470), batched in rAF and re-run after fonts load.
+- **`section-reorder`:** described above.
+- **`math` / `mermaid-node`:** node views with `twyne-math-loading` and `twyne-math-error` states.
+- **No decorations:** `indent`, `paragraph-format`, `table-format`, `table-cell-format`, `page-break-node`, `raw-typst`, `slash-command`. `slash-command` supplies only state; the menu is `slash-command-menu.tsx:147`, a fixed Tailwind box with no animation and a capture `keydown`.
+
+## Panels
+- **`suggestion-panel`:** Accept &amp; stamp shows "Stamping…" while `aria-busy` (:173-189).
+- **`persona-note-panel`:** streaming reply `.is-streaming` (:193), typing dots `persona-note-bounce` (TE:491), and an error state. Replies are AI.
+- **`user-comment-panel`:** local comments, then synced. Deleting is destructive.
+- **`grammar-panel`:** `loading`/`ready`/`error` states. Runs a **local** Harper-style linter (`utils/grammar.ts:118`); nothing is sent off-device.
+- **`find-replace-panel`:** an error id; replace-all is destructive.
+- **`document-outline`:** jumps with `scrollIntoView` and `behavior:"auto"` (:52).
+- **`image-inspector`:** upload progress.
+- **`floating-table-toolbar`:** repositions on scroll.
+- **`insert-panels`:** static.
+- **`forecast-line`:** a status-bar pace forecast, updated on `twyne:content` plus the saved-draft event.
+
+## In-flow (`src/components/in-flow/`)
+- **Flow modes** (`utils/flow-state.ts:21`): `away | working | settling | flow | stuck`, published as `html[data-flow]` (`flow-conductor.ts:501-504`).
+  - Typing vs idle is read from key-sample rhythm.
+  - The `flowMs` threshold is learned per writer and clamped to 60–240s; `settleMs = flowMs/3` (`flow-profile.ts:157`).
+  - A pause becomes `working` or `stuck`, and a long pause becomes `away`. Escape releases focus (:738).
+- **Flow CSS** (G:8611-8655):
+  - `settling`: chrome fades to 0.4 over 1.2s.
+  - `flow`: rails, cards and the header are hidden over 0.8–1.2s, keeping their size so "the page never moves".
+  - `stuck`: `.flow-card` gets `flow-slip-in` 360ms.
+  - Reduced-motion overrides at G:10006-10050.
+- **`flow-surface.tsx`:** right margin is the room (notes, sources, charter); left margin is the archive.
+  - Hovering a card or passage draws a bracket and SVG connector (`flow-draw` stroke-dashoffset, G:8076).
+  - Cards slide in with `flow-slip-in` and `flow-slip-in-left` (G:8131/8140). Also `flow-edge-in`, `flow-post-drop`, `flow-slip-feed` (G:8294, 8767, 8790).
+  - The flow desk is the pneumatic post at the head of the room and the galley slip at its foot.
+- **`flow-ribbon.tsx`:** a status-line typewriter ribbon (black/red band, slack line) keyed on `data-mode` (G:8971-9024). Motion is only the slow shift between states.
+- **`margin-rail.tsx`:** right side has one live tool card with a hairline to its passage; left side has saved tools and `.in-flow-tick` cobalt ticks beside struggled paragraphs (G:7805). A narrow window falls back to a dock or chip.
+- **`passage-gather.tsx`:** a read-only sheet over a scrim with a miniature manuscript and connecting lines.
+- **`sentence-bench.tsx`:** a local revision comparison with a refused state.
+- **`thread-instrument.tsx`:** thread spans, gather and room actions.
+- **`tool-renderer.tsx`:** catalog tools (a rhythm bar chart, `.in-flow-bar__fill`; claim slots; angle input). Reader Questions streams from the writer's own model (AI).
+
+## Opportunities and risks for motion
+- **Gaps (no motion today):** the selection popover entry, the drag overlay, the slash menu, the section drag handle and drop indicator, and the default `::selection` colour.
+- **Off-brand colours:** the section drop indicator's `#6d5dfc` fallback and the find-match hex colours.
+- **Load:** mark-anchor and section decorations rebuild on every docChanged. `refreshActive` runs on every transaction. Adding animated decorations in either path would add per-keystroke cost.
+- **IME:** no composition guard on the derive schedulers.
+- **Stale CSS:** the `.comment-mark` rule at G:1716 no longer matches anything, and `.citation-mark` is styled in CSS but no extension emits it.</result>
+<usage><subagent_tokens>97233</subagent_tokens><tool_uses>38</tool_uses><duration_ms>276027</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a43ea586a16d56de5</task-id>
+<tool-use-id>toolu_01XB1FPaUjEajJivpxGS3oos</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/43e12872-3bbc-4112-a8d8-a54d929f1273/tasks/a43ea586a16d56de5.output</output-file>
+<status>completed</status>
+<summary>Agent "Inventory editor chrome surfaces" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result># Twyne editor chrome inventory (read-only)
+
+All paths are under `/home/diogenes/Projects/apps/twyne/`. `g:` means `src/global.css`, `tw:` means `src/components/editor/typst-workspace.css`, and `idx:` means `src/routes/editor/index.tsx`.
+
+**Consequence codes:** L = local only (IndexedDB/localStorage). S = syncs to Convex (`markDirty`). AI = sends text to a model provider. P = publishes or shares. D = destructive. V = view only.
+
+## Shared primitives (global.css)
+- **`.btn-press`** g:2069-2099: ink fill, typewriter caps, radius 2px, 0.12s transform. Hover turns vermilion-2 with a glow shadow. Active is `translateY(1px) scale(.98)`. Disabled is opacity .4. Focus at g:2156.
+- **`.btn-paper`** g:2101-2125: sans 600, radius 2px. Hover goes to paper-2 with a shade shadow. Active is `translateY(1px)`.
+- **`.icon-btn`** has two definitions:
+  - g:2164-2188: 1.75rem hit target, hover background paper-2, active `scale(.9)`, focus offset 1px.
+  - g:4496-4503: redefines the transition (transform + color only, so the background transition is lost) and sets active to `scale(.92)`. The second one wins.
+- **`.dept-label`** has two definitions:
+  - g:582: typewriter, 0.625rem, letter-spacing .32em, ink-muted.
+  - g:4488-4493: adds a letter-spacing transition, and hover sets .22em. So every kicker *tightens* on hover, which is odd for non-interactive labels.
+- **`.tool-btn`** g:2191-2217: hover vermilion, active `scale(.95)`. Pressed state (`[aria-pressed=true]`) gets an inset vermilion underline.
+- **Other primitives:**
+  - `.focus-ring` g:1768: 2px vermilion outline, offset 2px.
+  - Global rule `button, a { transition: color/bg/border .15s }` at g:4506.
+  - `.folio` g:699 (embossed sheet), `.index-card` g:622, `.ornament-divider` g:590, `.stamp` g:607 (rotated -3deg), `.field-live` g:7152.
+- **Existing keyframes worth reusing:**
+  - `stamp-die-press` g:1939, `stamp-ink-settle` g:1970, `presswobble` g:2034 (`.press`, infinite).
+  - `ink-bleed` g:4268, `dossier-action-pulse` g:2144, `filed-dossier-arrive` g:687.
+  - `application-toast-in` g:4549, `gentle-pulse` g:4560.
+- **Reduced motion:** g:4091, g:4582, g:10003.
+
+## Hydration gate ("Press Room")
+1. idx:1110-1124: `.folio` card containing "Press Room" (`.dept-label`) and italic display text "Setting the type…".
+2. No interactions.
+3. No motion; it swaps hard to the workspace.
+4. V.
+5. Driven by `store.hydrated`. A natural spot for a type-setting or ink-down reveal.
+
+## Sign-in toast
+1. idx:1129-1178: fixed bottom-center, `border-2` ink, **radius 4px**, heavy shadow `0 14px 36px rgba(0,0,0,.28)` (hard-coded rgba, not `--shade`), ❦ fleuron.
+2. Interactions:
+   - "Sign in" (`.btn-press`): opens AccountMenu and saves a dismissed flag to IndexedDB.
+   - "Not now" (typewriter text link): dismisses.
+3. No enter or exit animation. It does not use `.application-toast` (`application-toast-in`).
+4. L (dismissal). Sign-in leads to S.
+
+## Workspace error notice
+1. idx:1751-1771: `ApplicationNotice` (`src/components/ui/application-notice.tsx:79`) in a bordered strip.
+2. Interactions: Dismiss, plus a recovery link ("Sign in" → /signin/).
+3. No motion.
+4. V/L.
+5. Shown when `workspaceError` or `joinError` is set.
+
+## The Drawer (left sidebar)
+1. idx:1181-1517: `&lt;aside class="sidebar-transition …"&gt;`, `w-72` (288px) when open, `w-0` when closed, with a fixed-width `w-72` inner box.
+2. Elements and interactions:
+   - **Header** idx:1187-1232: "Drawer No. {numeral}" / "Shared drawer", a display h2 title, and a `role=status` line with folio count and access role (eye / edit / comment-add icons).
+   - **Folio rows** idx:1239-1256: click calls `activateFolio`, which stops research and the room, loads from IndexedDB, and remounts the editor via `folioKey`. Active row: paper-3 border on paper-soft. Inactive: transparent border with hover paper-soft. Radius 2px, serif. **No transition on active-row change, and no focus-ring style beyond `.focus-ring`.** Consequence L (saves active id); it restarts AI background processes.
+   - **New folio** idx:1300-1310: dashed button opens an inline input (idx:1261, autoFocus, vermilion focus border). Enter / "Create" (`.btn-press`) calls `createFolio`, which persists, runs `markDirty` (S) and navigates to /dossier/create. Escape / "Cancel" (`.btn-paper`) closes.
+   - **ProjectBriefCard** idx:1322 (see below).
+   - **Nav links** idx:1342-1426: Room of Editors, Library, Galley Proof, Full Analysis, Apparatus, Subscription, My Desk, Composing Room. All share the same hover background. "Tools" (idx:1378) is a button that opens the Board's tools tab (V).
+   - **"Elsewhere in the paper"** idx:1438-1455, then Terms/Privacy at idx:1457.
+   - **"+ File a new piece"** idx:1506 (`.btn-press w-full`): opens a confirm `.index-card` (idx:1478), then `createFolio(Untitled)` (S). The state is still named `confirmNukeOpen` but nothing is destroyed.
+3. Motion: `.sidebar-transition` g:1761 animates width/opacity/transform over 0.2s ease (reduced motion at g:4103). Only width actually changes. Content is clipped, not faded.
+4. Hidden in flow (g:8641).
+5. Folio count, role, active row, and `newFolioFormOpen` change over time.
+
+## Masthead
+1. idx:1522-1749: `&lt;header hidden={zenActive}&gt;` with a double border-bottom.
+2. Contents and interactions:
+   - **Drawer toggle** idx:1527 (`.icon-btn`, hover vermilion, hamburger SVG): flips `leftSidebarOpen` and clamps `rightPanelWidth`. The icon does not change state (no `aria-expanded` visual). V.
+   - **Wordmark area** idx:1553-1570, an `@container`: kicker "An Anti-Tabula-Rasa Quarterly" (hidden under 16.5rem), "TWYNE" with `.masthead-wordmark.press.ink-bleed`, and a dateline (hidden under 18.25rem).
+     - `.press` is an infinite 4s wobble (g:2046).
+     - `.ink-bleed` hover runs keyframe g:4480.
+     - Sizes step down via container queries (g:2054-2066).
+     - Links to "/".
+   - **Dossier button** idx:1575-1592 (`.btn-paper`): navigates to create/refine dossier. With no brief it adds `.dossier-action-pending` (g:2127-2154): a vermilion border plus a `::after` 2.8s pulse ring with **radius 4px**. The label shows only at ≥1280px.
+   - **FolioMenu**, **ShareDialog** (only when authenticated), **AccountMenu**, then the **Board toggle** idx:1718 (`.icon-btn`): toggles `rightPanelOpen`.
+   - **Rule** idx:1744: hairlines with a vermilion ✦.
+3. In zen the `.zen-masthead` class is added (g:4516-4529: max-height 24px, opacity 0, hover reveal). **This is dead code.** The `hidden` attribute plus `.zen-masthead[hidden]{display:none}` (g:10067) means there is no hover strip.
+4. Flow: settling sets opacity .4 (1.2s), and hover brings it back to 1 (0.2s) (g:8611, 8648). Flow sets it to hidden over 1.2s while keeping its size (g:8637).
+
+## FolioMenu (`src/components/folio/folio-menu.tsx`)
+1. Trigger at :670: `.btn-paper text-xs` reading "File ▾". Dropdown at :684: `.folio w-56` with `role=menu`. Closes on outside click or Escape (:155-169).
+2. Items:
+   - "Dossier &amp; House context" link: V.
+   - "Include persona comments" checkbox: L.
+   - `MenuItem` (:1293, serif, **radius 0**, hover paper-soft) entries:
+     - "PDF…"
+     - "PDF (Typst)…" (busy label "Preparing Typst export…", and a "Cancel Typst export" item while busy)
+     - ".typ", Markdown, HTML, DOCX, Plain text, Twyne backup
+     - All of these are local downloads (L).
+   - "Import…" opens a modal (:829, `rgba(15,12,8,.55)` scrim, `.folio` 28rem) with a dashed drop label reading "click to choose a file" / "reading…". It writes to IndexedDB, may create a new folio, then `onImported$` remounts the editor and runs `markDirty`. S, and it **replaces the current manuscript in view**.
+   - Typst status popover at :808: `role=alert` or `status`, "Cancel export" / "Dismiss".
+   - **Share modal** :907:
+     - "Publish now" (`.btn-press`, busy "Publishing…"): `api.published.publish`. **P**.
+     - "Copy" link (shows "Copied"), "Open the public view ↗".
+     - "Unpublish" (busy "…"): **P + D**, with no confirmation.
+     - "Download page for my domain": L.
+     - PDS: Connect / Publish / Re-publish / "Unpublish from PDS" (busy "Updating…" / "Removing…"). **P**, unpublish is D.
+     - Micropub "Publish via Micropub". **P**.
+3. Feedback is text swaps only, with no motion. Copy uses `copyState` "idle" → "copied". The dropdown and modals appear with no transition. Notices use `ApplicationNotice compact`.
+
+## ShareDialog (`src/components/collaboration/share-dialog.tsx`)
+1. Trigger at :342: `.btn-paper` "Share" with an inline SVG. Presence avatars at :370: 24px colored circles, maximum 4 plus "+N", **polled every 4s** (:163). Popover at :408: `.folio w-80`, with a transparent click-catcher at :399.
+2. Actions:
+   - "Share this folio" (`.btn-press`, "Promoting…"): **P/S, Pro feature**.
+   - Invite email + role select + "Invite" ("Inviting…"): P.
+   - Collaborator "remove" (tiny typewriter text, hover vermilion): **D**, no confirm.
+   - "View recovery copies" link.
+   - "Copy invite link" (`.btn-paper`): message "Invite link copied."
+   - "Stop sharing" (vermilion text) opens `ThemedDialog tone="danger"` (:591): **D**.
+3. No motion on presence join/leave or on the popover.
+5. Presence count and the collaborator list change over time and could animate.
+
+## AccountMenu (`src/components/auth/account-menu.tsx`)
+1. Trigger at :174, `.icon-btn`:
+   - Signed in: **sage border**, avatar or initials circle, name shown at ≥lg.
+   - Signed out: user icon.
+   - Dropdown at :225: `.folio w-72 p-3`.
+2. Contents and interactions:
+   - Alias link.
+   - Nav buttons (:238-305): display font, hover turns the **text** vermilion (no background, unlike the drawer and FolioMenu, which use background hover). Covers Desk, Account, Preferences, Plans (behind a flag), Manual, Privacy ledger.
+   - Pending invitations (:308): "Open" leads to a shared join (S); "Decline" calls `rejectInvitation` (D, `disabled:opacity-50` while busy).
+   - Shared-with-me list (:362).
+   - `AuthPanel` sign-in (S).
+   - Outside click or Escape closes (:151-170).
+   - Opened externally by the toast or `?shared=` via the `accountOpen` signal.
+3. No open/close motion.
+6. Section headings here use a sans, 10px, .12em tracking label instead of `.dept-label`.
+
+## Editorial Board (right panel)
+1. `src/components/editorial-board/editorial-board-overlay.tsx:73`, mounted at idx:1817.
+2. Interactions:
+   - Close "×" (:106), or Escape while focus is inside the board (:83-102). Focus returns to the toggle.
+   - Context tabs (:126): personas, rubric, comments, citations, tools, history. Each has a numeral and a per-tab `--context-accent`. Unread badges show 9+.
+   - In citations: "Steer search" composer (busy, error, notice states). **AI** (`steerBackgroundResearch`).
+3. CSS:
+   - g:4752: width `min(29rem,100%-3rem)`; apparatus variant 31rem (g:4777).
+   - Closed (`--closed`, g:4780): width 0, hidden, opacity 0.
+   - Transition is 180ms `cubic-bezier(.22,1,.36,1)` on opacity/width/transform. Backdrop blur(12px). Shadow `rgba(32,25,16,.12)`, hard-coded.
+   - Active tab (g:4943): accent bottom border plus a 7% accent tint, with **no transition**.
+   - Badge (g:4928): a pill (radius 999px), **white** text.
+   - Mobile at g:5116; reduced motion at g:5137.
+   - Panels stay mounted and are hidden with the `hidden` class (idx:1839-1904).
+5. Unread counts arrive via the `twyne:panel-activity` event.
+- **No drag-resize exists.** `store.rightPanelWidth` (idx:248, 677, 1530) is clamped but never rendered. It is dead state.
+
+## LiveReviewStatus (`src/components/writing-tools/live-review-status.tsx`)
+1. :136 notice row (`--notice`) or :174 finding line, styled at g:7230-7280. It is not rendered in zen (idx:1774).
+2. Interactions:
+   - "◇ finding" toggles the detail (V).
+   - "Sign in" / "Set up a model" links.
+   - "×" dismiss (stored in sessionStorage, L).
+3. No motion. A problem only appears after it has **lasted 2s** (:66), a built-in debounce.
+4. The review itself is **AI** (`startLiveReview`, idx:934; hosted or bring-your-own-key).
+5. `label` / `detail` / `problem` change. Statuses: paused, offline, unavailable, "Waiting for a pause…", "No clear issue…". Hidden in flow (g:8640).
+
+## TypstWorkspace (`typst-workspace.tsx` + .css)
+1. Root `.typst-workspace` at :241.
+2. Elements and interactions:
+   - **Desk controls row** :246 (`.editor-desk-controls`, tw:358):
+     - "Compositor" toggle: exits zen, saves the preference to localStorage. L.
+     - View tabs Write / Source / Proof (`.compositor-tab.typst-view`, pressed state vermilion, tw:37).
+     - "Split" toggle.
+     - "PDF" / "Previous PDF" download (L).
+   - **Compositor container** :327 (`hidden` when closed or in zen). Escape closes pickers first, then the compositor. In source mode it holds the TypstSourceRibbon. In proof mode it holds zoom tools (−/+ between 50 and 200%, "Fit", disabled at the bounds).
+   - **Draft bar** :420 (tw:76): "Source draft · kept on this device".
+     - "Discard": **D**, no confirm.
+     - "Apply source" (`.typst-apply`, vermilion fill, label "Applying…", ⌘/Ctrl-Enter): S. **Disabled styling equals enabled styling** (tw:102), so there is no visual cue.
+   - **Error / conflict alert** :460 with "Save source copy".
+   - **Proof pane**: "Preparing your typeset pages…" empty state; page figures.
+   - **Status bar** :555 (`.typst-statusbar.editor-bottom-bar`, tw:250/458):
+     - Word count, ForecastLine (AI credit link `a.editor-forecast__credit` tw:510).
+     - Page select (jumps to proof).
+     - `FlowRibbon`, `LastSavedLine`, `SyncDot`.
+     - **Zen toggle** :595: label "Zen" / "Writing focus", `aria-pressed`, dispatches `twyne:zen-mode`.
+     - Ln/Col in source mode.
+3. Motion: none beyond `.tool-btn`.
+5. Changing values: word count, pages, `proofStale` / `dirty` / `applying`, saved-ago text (1Hz tick), sync status.
+
+## TypstSourceRibbon (`typst-source-ribbon.tsx:35`)
+- Groups:
+  - History: undo, redo.
+  - Navigate: Find, Go to line.
+  - Insert: 10 snippets.
+  - Code: Comment, Wrap (pressed state).
+  - File: "Save .typ".
+- All are `.tool-btn.typst-tool-btn`; disabled state is opacity .4 (tw:53).
+- Consequences: L, except edits flow to Apply.
+
+## SyncDot / LastSavedLine (`sync-indicator.tsx:28,49`)
+- An 8px circle with a 200ms background-color transition. Colors from `sync-indicator-helpers.ts:19`:
+  - local-only: ink-muted
+  - pending / syncing: paper-3
+  - synced: accent-green
+  - offline / error: vermilion
+- There is no pulse while syncing.
+- "Saved Xs ago" re-renders every second.
+- Rendered both in the compositor quick actions (`compositor-panel.tsx:195`) and in the status bar, so it appears twice.
+
+## CompositorPanel (`compositor-panel.tsx:115`)
+1. `.twyne-toolbar` (`role=toolbar`, `data-active-tab`).
+2. Interactions:
+   - Tabs Home / Insert / Review / View: click or ←/→ arrows (:133-160). Styled `.compositor-tab` g:2245-2266, selected state is a vermilion underline with no transition.
+   - Quick actions: "◉ Talk" (opens Live voice, **AI**), undo/redo (`disabled:opacity-30`, unlike .4 elsewhere).
+   - Groups (`.compositor-group` g:2284, each with a `::after` caption):
+     - Character, with highlight and text-color pickers.
+     - Type: font, size, "More" popover.
+     - Styles, Lists, Alignment.
+     - Objects (Image, Table, Diagram).
+     - Breaks, Notes, Comments, Listening.
+     - Versions: opens history.
+     - Proofing: "The piece", Task desk, Find, Grammar.
+     - Navigation: Outline.
+     - Help: Shortcuts.
+     - Page: "Layout" popover, ~:1000-1500. `emitLayout` fires `twyne:layout`, which reaches idx:585-596 and runs `markDirty(["folios"])`. **S**.
+3. Pickers and popovers open with no motion.
+- Flow: settling dims to .4; flow hides it (g:8612, 8638). In zen, an editor-scoped style sets opacity .15 (`twyne-editor.tsx:476`).
+
+## PageRuler (`page-ruler.tsx:146`; mounted at `manuscript-panel.tsx:124`)
+- Drag the margin handles (pointer capture, snaps to step) or use keys: ←/→ (Shift moves ×4), Home.
+- `data-dragging` turns the handle vermilion; hover/focus scales the handle triangle to 1.15 (g:6826-6863). A `.ruler-readout` tooltip shows while dragging.
+- In zen, opacity 0, and hover brings it to .6 (g:6881-6888).
+- Consequence: layout change, S.
+
+## PageChrome / PageBorder (`page-chrome.tsx:62`, `page-border.tsx:11`)
+- Sheets, running header/footer (`PageFurnitureEditor` click-to-edit, S via `twyne:header` / `twyne:footer` at idx:600-632), page numbers.
+- `.twyne-page-chrome` has a 0.3s opacity transition; zen sets opacity .25 (g:383-387).
+- `.manuscript-border` g:764 (ornate variant uses border-image); it is hidden in zen on continuous canvases (g:10064).
+
+## VersionHistoryPanel (`version-history-panel.tsx:227`)
+- **Header:** intent input plus "Save checkpoint" (`.btn-press`). L, stored in IndexedDB meta. Message in **sage**: "Checkpoint saved." / "already has a checkpoint."
+- **Compare:** two `SiteSelect`s (V).
+- **"Restore"** (`.btn-paper`, :359) opens an inline vermilion-bordered confirm (:454), then "Save current and restore" (`.btn-press`). Restore snapshots first, writes to IndexedDB, and runs `markDirty`. **D (mitigated) + S**.
+- **Diff cards:** vermilion 7% tint for "before", sage for "after".
+- **Revision tasks:** checkboxes with line-through (L).
+- No motion. Labels use ad-hoc `text-[10px] uppercase tracking-[0.1em]`.
+
+## WritingToolsPanel (`writing-tools-panel.tsx:34`)
+- "Review guide" link (g:7853).
+- `ReviewControls`.
+- Tabs "Writing checks" / "Grammar" (`.writing-tools-tab` g:7868-7891): 150ms transition, vermilion-2 underline, active state paper-3.
+- Grammar is **AI**; it mounts only while active.
+
+## ShortcutDialog (`shortcut-dialog.tsx:61`)
+- Opened with Mod-/ or Mod-Shift-/ (`src/utils/keybindings.ts:47`).
+- Scrim `rgba(20,16,10,.58)`, a different alpha from FolioMenu's .55.
+- `.folio` dialog with search (`.field-input`); close button is `.tool-btn` "Esc"; Escape or backdrop click also closes.
+- No enter animation. V.
+
+## ProjectBriefCard (`project-brief-card.tsx`)
+- **Empty state** :17: `.folio` "No dossier filed." plus "Start" (`.btn-press`).
+- **Filed state** :50: `.filed-dossier-paper` (g:651, **offset hard shadow** `3px 4px 0`, arrives with `filed-dossier-arrive` 260ms) with mustard tab, `.stamp` "Filed" / "Edition", and an editions `&lt;details&gt;` (selected row uses `.field-live`).
+- Counts "N particulars answered · N references".
+- "Open filed dossier" (`.btn-paper`) navigates.
+- V, apart from navigation.
+
+## Zen mode
+- **Sources:** the status-bar toggle (`typst-workspace.tsx:595`), command `view.zen` (`twyne-editor.tsx:3906`; no default key in `src/utils/keybindings.ts`), and the Compositor toggle (exits zen).
+- **Persistence:** saved to localStorage by `editor-view-preferences`, **default on** (`src/utils/editor-view-preferences.ts:7`). The `?panel=` param forces it off.
+- **Route handler** idx:646-670 on `twyne:zen-mode`:
+  - Ignores `source:"flow"`.
+  - Sets `zenActive`.
+  - Saves `panelsBeforeZen`, closes the drawer and board, and restores them on exit.
+- **Effects:**
+  - Masthead gets `hidden`.
+  - LiveReviewStatus unmounts.
+  - Compositor hidden.
+  - `.twyne-editor.zen-mode` strips marks (`twyne-editor.tsx:448-477`).
+  - ThreadsInstrument unmounts (:4459).
+  - Popovers close (:3973).
+  - Ruler and page chrome fade.
+  - `.page-canvas.zen-mode` widens to 74rem (g:10056).
+
+## "Quiet while typing" (flow)
+- **Where it is set:** `src/components/editor/extensions/flow-conductor.ts:500-505` sets `document.documentElement.dataset.flow`.
+- **Modes** come from `src/utils/flow-state.ts`: away | working | settling | flow | stuck.
+  - settling: a steady run of ≥30s with gaps ≤4s.
+  - flow: ≥90s.
+- **AI gate:** entering flow is **confirmed by Jev**. It sends the last 1500 characters of the passage (`flow-conductor.ts:676-689`), so this is **AI**. If declined, the mode stays at settling for 3 minutes.
+- **Exit:** Escape, or pointer dwell on the chrome or the top 48px (`flow-conductor.ts:723-745`).
+- **CSS:**
+  - settling: header, toolbar and rails go to opacity .4 over 1.2s; hover brings them back over 0.2s (g:8611-8651).
+  - flow: margin cards hide over 0.8s; header, toolbar, desk controls, live-review and drawer hide over 1.2s, keeping their size.
+  - stuck: cards replay `flow-slip-in`.
+  - Reduced motion: g:10003-10024.
+- Flow also dispatches `twyne:zen-mode {source:"flow"}`, which the route and editor deliberately ignore.
+- Other readers: `src/components/living-desk/document-spine.tsx:66`, `src/components/in-flow/flow-surface.tsx:676`, `src/components/editor/forecast-line.tsx:155`.
+
+## Inconsistencies
+- **Radii:** 2px almost everywhere. The toast and the `.dossier-action-pending` ring use 4px. MenuItem uses 0. The invitation cards use `rounded-sm`. Avatars and badges are circles.
+- **Shadows:** `--shade` color-mix in the buttons, `.folio` and `.index-card`. Hard-coded rgba in the toast, the board, and typst `#0002`. `.filed-dossier-paper` uses an offset hard shadow.
+- **Hover idioms:** background paper-soft (drawer, FolioMenu), text vermilion only (AccountMenu, `.icon-btn` triggers), background paper-2 (`.icon-btn` base).
+- **Disabled styles:** opacity .4 (`.btn-press`, typst), .3 (compositor undo/redo), .5 (invites), and none at all for `.typst-apply`.
+- **Fonts:** item fonts vary. Drawer links use display, folio rows serif, MenuItem serif, AccountMenu display, `.btn-paper` sans, `.btn-press` typewriter.
+  - Section labels come in three forms: `.dept-label` (.32em), sans 10px .12em (AccountMenu), and 10px .1em (history).
+- **Scrims:** .55 vs .58 alpha. ShareDialog is a popover with a transparent catcher, while FolioMenu "Share…" is a modal.
+- **Two "Share" entry points** (FolioMenu publishes publicly; ShareDialog shares with collaborators) look identical (`.btn-paper`) side by side.
+- **Destructive actions without confirm:** Unpublish, Unpublish from PDS, remove collaborator, Discard source. Stop sharing and Restore do have confirms.
+- **Dead or ineffective code:**
+  - `.zen-masthead` hover reveal.
+  - `rightPanelWidth`.
+  - The `.icon-btn` second definition drops the background transition.
+  - The `.dept-label` hover tightening.
+- **Duplicates:** two SyncDots. The drawer toggle icon never reflects its state.</result>
+<usage><subagent_tokens>157014</subagent_tokens><tool_uses>58</tool_uses><duration_ms>359256</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ab16ed4ad06c7846d</task-id>
+<tool-use-id>toolu_018TaccKXUnQMS4VzizRtGJj</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/43e12872-3bbc-4112-a8d8-a54d929f1273/tasks/ab16ed4ad06c7846d.output</output-file>
+<status>completed</status>
+<summary>Agent "Inventory writers-room panels" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I mapped every component in scope to file:line references. Five things matter most for your design:
+
+- **No "editor is thinking" state on the portrait in the Cast panel.** `.persona-portrait` only has `data-speaking`, for read-aloud and live voice. While an editor works, the only signals are a text stamp ("thinking…" / "writing…") and an `animate-spin ✦` on the button.
+- **The thinking pose exists but the Cast panel never triggers it.** `persona-bust-ponder` (global.css:9765) only fires when a `.persona-note__note` contains `.persona-note__thinking`. That markup is in `editor/persona-note-panel.tsx`, not `personas-panel.tsx`.
+- **A note "arrives" by swapping a streaming card for a filed one.** The filed card enters with `feedbackSlide` (0.35s). Replies get a fade-up plus a blinking caret while streaming. There is no stamp or settle moment when a note is filed.
+- **The interface shows no per-action cost.** Personas only shows the provider afterwards (`.provider-pill`). Rubric, comments, citations and steering show none. Cost copy exists only in scene-bench, instrument-room/dock, live-voice-desk and `desk/hosted-cost.tsx`.
+- **`StampShader` is not imported anywhere.** It is ready to be the "verdict" accent.
+
+---
+
+## Editorial Board overlay
+- **Root:** `editorial-board-overlay.tsx:73` `&lt;aside.editorial-overlay&gt;`. Tabs are at :126; the six tabs are defined in `board-tabs.ts:11` with numerals I–VI, each with its own `accent`.
+- **Interactions:**
+  - Escape closes the board and returns focus to the toggle (:83).
+  - Clicking a tab calls `onContext$`.
+  - The unread badge `&lt;small&gt;` (:142) reads from `activity[tab.id]`, shown as "9+" above nine.
+  - The steering disclosure (:159) holds a `ChatComposer` (:177).
+- **Motion:** open/close is a 180ms opacity/transform/visibility transition (global.css:4771). `--closed` is at :4780, the mobile version at :5116, and there is a reduced-motion override. The accent is passed as `--board-accent`/`--context-accent`; the active tab is styled at :4943.
+- **Consequence:** steering calls `steerBackgroundResearch` (sends text to the AI and queues a research pass). No cost is shown.
+- **Lifecycle:** `steeringBusy` → `steeringNotice` | `steeringError` (:29-35).
+
+## Personas / Cast (`personas-panel.tsx`, 3404 lines)
+- **Store:** :139-226. Hooks you can animate:
+  - `isGenerating`, `isReplying`, `isMarkingUp`, `isAnalyzing`, `fixingNoteId`
+  - `streamingNotes[personaId]`, `streamingReplies[noteId]`, `streamingSynthesis`
+  - `lastProvider`, `backgroundRoom.status` (off|armed|idle|reading|error)
+  - `decisions[]` (settled), `aiFeedback[traceId]`, `openNoteKey`, `analysisCopiedId`
+- **Stream snapshot type:** `GenerationStreamSnapshot` in `utils/generation-stream.ts:15`:
+  - `activePart`: reasoning|text|null
+  - `status`: running|complete|error
+  - `textStatus` and `reasoningStatus`: pending|running|complete
+- **Header :1862.** `.provider-pill[data-provider]` (:1881) appears only after a run and shows "fallback" for the local provider.
+- **Cast faces :1938.** Clicking opens live voice (`openLiveVoice`, which spends hosted credit). Hover is `translateY(-2px) scale(1.18)`, 180ms, in scoped CSS (:555-575).
+- **Action buttons:**
+
+| Button | Line | Function | Busy state |
+|---|---|---|---|
+| Get notes `.convene-btn` | :1967 | `requestFeedback` :657 | `animate-spin ✦` + "The room is reading…" |
+| Propose edits `.markup-btn` | :1984 | `markUpDraft` :1806 | "Proposing…" |
+| Full analysis `.room-btn-link` | :2000 | `expandAnalysis` :1080 | "✦ Writing analysis…" |
+
+  All three send the draft to the AI. `requestFeedback` tries BYOK on the client first, then falls back to the hosted Convex service (:812).
+- **Background room line :2031.** A `✦` with `animate-pulse` while reading, coloured vermilion (reading), red (error) or muted. The label comes from `backgroundRoomLabel` :3353 (e.g. "after N more words").
+- **Waiting with no stream yet :2279.** `EditorialLoader` in compact mode.
+- **Streaming card :2306** (`desk-card`, `aria-live`):
+  - Uses the same `PersonaMasthead` as the filed card, so nothing shifts on landing.
+  - `.desk-card__stamp` shows "thinking…" or "writing…" (:2327).
+  - The reasoning `&lt;details&gt;` is at :2337; the body markdown re-renders on every chunk.
+  - None of this is animated: only the text changes.
+- **Synthesis streaming :2362.** Stamp `--quiet` reading "writing…".
+- **Empty state :2382.** The ❦ glyph with copy that changes by `backgroundRoom`.
+- **Filed note card :2743.** `article.desk-card.note-card.board-card.feedback-enter` plus `--passing` (background origin) or `--filed`.
+  - Settled cards get `is-settled`: opacity .62, back to 1 on hover (global.css:10080).
+  - `feedbackSlide` 0.35s translateY(8px) is in scoped CSS at :511, with reduced-motion handled at :520 and global.css:4094.
+- **Note keys** (`.board-key`, global.css:6230):
+  - Hover scales the svg to 1.12; pressed scales to .92.
+  - `[aria-busy]` reuses `persona-reply-dot` (:6272).
+  - Keep/Later (`decideNote` :1009) are local and synced.
+  - Ask for a fix (:2654, `fixingNoteId`) sends to the AI.
+  - 👍/👎 (`submitAiFeedback`) sends telemetry.
+  - Talk opens live voice (hosted). `SpeakButton` triggers TTS.
+- **Thread :2439.**
+  - A streaming reply is `.persona-note__reply.is-streaming`: `persona-reply-enter` 0.32s, `persona-reply-rule` scaleY, and a block caret `persona-reply-caret` (global.css:9690-9725).
+  - Before the first token, `.persona-note__thinking` shows three dots (`persona-reply-dot`, :9732-9763).
+  - `.is-fresh::before persona-reply-settle` (a glow) is defined at :9707 but the Cast panel never applies it.
+- **Reply compose :2517.** The send button (:2580) has `aria-busy` and calls `submitReply` :1251, which sends to the AI.
+- **Note sheet :2950.** A native `&lt;dialog&gt;` that closes on backdrop click and returns focus. Open animation `noteSheetIn` is at global.css:6556.
+- **Strike the room :2263, `clearRoom` :1849.** Destructive, with no confirmation. It clears notes and manuscript pins.
+- **Sub-components:**
+  - `persona-portrait.tsx:39` uses `data-speaking` tts|live. `pp-talk` animates `--pp-level` (css:115); hover scales 1.06 (css:164); reduced-motion at :212.
+  - `persona-card.tsx:34` has a figure transform transition of 500ms (css:48) and calls live voice at :90.
+  - `grounded-note.tsx:112`: clicking a quote reveals it in the manuscript (local).
+  - `note-evidence-list.tsx:45`: passage and source jumps.
+
+## Rubric
+- **Store:** `rubric-panel.tsx:105`. Fields: `isAnalyzing` (writer-initiated), `isReviewing` (quiet/automatic), `resultFresh`, `judges[]`, `judgesFingerprint` against `result.draftFingerprint` (stale notes), `isSuggesting`, `status`, `error`.
+- **Lifecycle:** analyze at :267 → snapshot revision (:337) → judgement pass → client judges (:400) → `resultFresh` → `playRubricGradeCue` (an audio cue, :752). `autoReadRoom` :765 is triggered by the live-review snapshot (:849).
+- **Render:**
+  - Empty state with "Grade this draft" (:1018, sends to the AI).
+  - `EditorialLoader` while analyzing (:1048).
+  - Verdict `.rubric-proof` plus `--fresh` (:1066).
+  - `GradeStamp animated={resultFresh} impressionKey={timestamp}` (:1073).
+  - Section tabs (:1147). The Editors tab shows "reading…" / "soon" (:1178).
+  - "Ask them now" (:1261) and "Grade again" (:1306) both send to the AI.
+  - Sparkline (:1342) and delta badge ▲/▼ (:1393).
+  - The criteria editor's "suggest" (`isSuggesting`) sends to the AI.
+- **Stamp press:**
+  - `ui/stamp-press.tsx:12` adds `.ink-stamp--pressing` only after the walnut die image loads.
+  - Keyframes, all 500ms linear: `stamp-die-press` (global.css:1939), `stamp-ink-settle` (:1970), `stamp-contact-shadow` (:1992). The press is wired at :1842-1850.
+  - `rubric-proof-settle` is 380ms (:1798/:1927). `rubric-fill` is 0.6s (:2030).
+  - Reduced-motion: :2011 and :4091.
+- **Other stamp pieces:**
+  - `grade-stamp.tsx:24` sets tier rotation (a/b/c/revise) and a `--highest` flag for A+.
+  - `workflow-stamp.tsx:10` covers "filed" and "revised".
+  - `presswobble` (:2034) is an infinite 4s wobble on `.press`.
+  - `stamp-shader.tsx:4` is a WebGL corona driven by a `strength` value from 1 to 3+ (1.25–2.2s, teal→gold→prism). It honours reduced-motion and cleans up after itself, but nothing imports it.
+
+## Marginalia (`comments-panel.tsx`)
+- **Store :178:** `askPersonaFor`, `askPersonaId`, `isAskingEditor`, `streamingEditorReply`, `askGeneration` (cancellation), `askError`, `ghostIds`.
+- **Render :664.** The header shows "N pending · N struck · N ghost", with a ghost filter toggle (:707). Empty state ✎ "The margins are quiet." (:722).
+- **Interactions:**
+  - Strike ✓ `resolveComment` :319 is local and syncs via an event.
+  - Erase ✕ `deleteComment` :335 is destructive, optimistic, and has no confirmation.
+  - Send to editor (:960) sends to the AI. Its label changes to "Editor is reading…".
+  - The streaming reply block (:943) shows placeholder text and has no motion.
+  - `VoiceNotePlayback` :1248 is local.
+- **Motion:** none on cards. The `thread-arrive` 1.4s flash (global.css:9226) is for manuscript cards.
+
+## Apparatus (`citations-panel.tsx`)
+- **Store `research`:**
+  - `status`, `phase` (idle|extracting|searching|saving|error), `passActive`
+  - `progress[]` items whose status is queued|searching|found|missed|error (`utils/background-research.ts:128`)
+  - `pendingInsertions`, `formattingIds`, `lastBackgroundSave`
+- **Signal desk :513.** `.apparatus-status-dot` pulses while `passActive`. Its colour is mustard (active), cobalt (saving), vermilion (error) or green.
+- **Deep trace :598.** Each item's dot uses an inline `pulse 1.4s` while searching (:626). Retry (:678, :703) sends to the AI.
+- **Saved-sources notice :720** (static mustard box). Auto-footnote toggle (:779) writes to the manuscript.
+- **Bibliography card actions:** "cite in draft" shows "placing…" → "✓ footnoted" (:857) and edits the manuscript. Open embed (:870). Remove ✕ (:876) is destructive with no confirmation. Re-scan (:893) is local.
+
+## Living desk
+- **Panel root:** `living-desk-panel.tsx:489` `.ld-panel`, hidden in Zen.
+- **UI store :121:** `animate`, `tone[key]` up|down, `delta`, `announce`, `stale`, `reviewStatus` (waiting|reading|current|paused|offline|unavailable, from `utils/live-review.ts:70`), `confirmRequested`.
+- **Motion:**
+  - FLIP reorder via WAAPI, 200ms `cubic-bezier(.2,.8,.2,1)` (:240). It is deferred while you type, while the pointer is inside, or while focus is in the list (:253).
+  - Criterion fill uses `.is-animated.is-up/.is-down` (:595).
+  - `ld-flash` 1.2s (css:128). The `ld-delta` pill fades over 2.8s (css:319); reduced-motion swaps it for a static version (css:771).
+  - `[data-ld-typing]` silences fills and deltas (css:830-838).
+- **States:** `.ld-quiet` "reading…" (:512, :845). `.ld-card.is-open/.is-done` with `data-state` open|deliberate|resolved (:821).
+- **Actions:**
+  - "Confirm with a full read" (:571) is AI and is queued until you pause.
+  - fix / fix-all / deliberate (:859-880) edit the manuscript locally.
+  - Lenses (:779).
+- **Document spine:** `document-spine.tsx:159`. It hides while `data-flow` is flow|settling (:66). The cap shows ≈grade; ticks jump to findings.
+- **`presence.ts:9`** is pure analysis with no UI.
+
+## Instruments
+- **Dock:** `instrument-dock.tsx:213`, a `&lt;dialog&gt;` with tabs (:233-266). `InstrumentMotion state="open"` (:268).
+  - `costLabel` and destination come from capabilities (:178-197). `spendSystemOne` is at :338. The low-credit refresh is at :373.
+- **Room:** `instrument-room.tsx`. `busy` drives "Ask the room" / "Inviting…" (:281). It has provider/charge copy (:289, :297) and sends to the AI.
+- **Task desk:** `task-desk.tsx` with `busy` and "Queue task" (:449).
+  - Task status: queued → claimed → running → complete|failed|cancelled (`instrument-tasks-model.ts:3`). `failureKind` can be needs-input or provider-unavailable (:472).
+  - Cancel is available for queued/claimed/running.
+  - The card is `.task-card` (:463) with no motion.
+- **Scene bench:** `scene-bench.tsx:217` `state={assessment?"arrive":"rest"} quiet={props.quiet}`. `InstrumentMotionPart result` (:376).
+  - The judge, narration and picture actions each show destination and `costLabel` (:325, :398, :673) plus `SCENE_CREDIT_WARNING` / `lowCreditWarning`.
+- **Entity instrument and intent field:** `busy` + `spendSystemOne` (:126; intent field :71).
+- **Shared budget:** `utils/system-one-budget.ts` allows 12 calls/min with a 30s backoff. Its window could drive a cost meter.
+- **Motion:** `instrument-motion.css`, `--instrument-ease cubic-bezier(.22,1,.36,1)`:
+  - `instrument-open` 220ms, `instrument-compare` 200ms, `instrument-result` 240ms, `instrument-rule` 260ms.
+  - Quiet kill-switch (:72): `data-instrument-quiet`, `data-flow=flow|settling`, `data-zen`, `.zen-mode`.
+- **`instrument-art.tsx:40`** has `data-instrument-art` and `data-size`, and no motion.
+
+## UI and voice
+- **`editorial-loader.tsx:26`:** a `motion-safe:animate-spin` cobalt ring with ✦, rotating persona "wait lines" every 3.2s, `role=status`.
+- **`application-notice.tsx:79`:** variants via `data-variant` (error/alert = assertive; warning = status/polite), with retry/recovery/dismiss. No motion.
+- **`global-application-toasts.tsx:92`:** keeps at most two toasts, auto-dismissed after 12s (:69). Entry is `application-toast-in` 180ms (global.css:4544).
+- **`global-connectivity-banner.tsx:40`:** reuses `.application-toast` and is dismissible.
+- **`themed-dialog.tsx`:** `tone: default|danger`, `.error-slip`. `text-modal.tsx:121` is a fixed overlay with no motion.
+- **`speak-button.tsx:104`:** idle|loading (`animate-pulse`)|playing|paused|error; `aria-pressed`. Sends to the TTS provider.
+- **`global-speech-player.tsx:557`:** a bottom bar showing provider·model (:603). It drives the nearest portrait's `data-speaking` (:255). Highlights: `::highlight(twyne-speech-sentence/word)` and `[data-speech-active]` (global.css:121-151).
+- **`voice-recorder.tsx:46`:** phase idle → recording (`animate-pulse` red dot :230) → transcribing (abortable, sends audio to the provider) → review.
+- **`live-voice-desk.tsx:256`:** `data-status` connecting|listening|speaking|closing. `--pp-level` and `--mic-level` are set per frame (:194).
+  - Keyframes: `lvd-blink` (css:71) and `lvd-breathe` on `.lvd-halo` (css:131).
+  - Credit and billing copy: :530-575 (hosted wallet, "$0.50 reserved per conversation").
+- **Writing tools:**
+  - `writing-tools.tsx:887`: `busy` shows "Checking…" with `aria-busy` on the results.
+  - `live-review-status.tsx:131`: an sr-only status plus a notice row.
+  - `review-controls.tsx:106`: switches.
+  - `hosted-cost.tsx` (desk) is the only place spend and credit runway are shown.
+
+## Reusable motion pieces
+- **Easing:** `cubic-bezier(.22,1,.36,1)` is used everywhere, but only `--instrument-ease` names it. `(.16,1,.3,1)` is used for proof and dossier. There are no global duration tokens.
+- **Arrival keyframes:** `feedbackSlide` (scoped), `slide-in-below` with nth-child stagger capped at 6 (:4310), `fade-in` (:4332), `note-pop` / `persona-note-pop` (:4384 / :2946), `persona-notice-enter`, `application-toast-in`, `filed-dossier-arrive` (:655), `twyne-page-in/out` view transition (:90).
+- **Thinking/busy keyframes:** `persona-reply-dot`, `persona-bust-ponder`, `persona-reply-caret`, `gentle-pulse` / `.interview-stream-pulse` (:4560), `composer-pulse` (:6755), Tailwind `animate-pulse` / `animate-spin`.
+- **Confirmation keyframes:** `persona-note-flash` / `endnote-flash` / `thread-arrive` (1.4s highlights), `persona-reply-settle` glow, `probe-filed-flash/receipt` (:2896), `dossier-stamp-filed` / `dossier-filed-wash` (:7082-7091), `stamp-acknowledgement-fade` (:3087), `ld-flash` / `ld-delta`.
+- **Reduced motion:** about 30 `@media` blocks in global.css plus per-component CSS. `StampShader` and the living desk also check `matchMedia` in JavaScript.
+- **Quiet mechanisms:**
+  - `data-instrument-quiet`
+  - `html[data-flow="flow"|"settling"]`, which hides rails and `.ld-panel` (:8611-8626)
+  - `data-zen` / `.zen-mode`
+  - `.ld-panel[data-ld-typing]`
+  - Living desk's typing/pointer deferral
+  - `StampPress`'s convention of keying only on a new event (`impressionKey`)</result>
+<usage><subagent_tokens>144850</subagent_tokens><tool_uses>72</tool_uses><duration_ms>408503</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a99193f9b5b8e8279</task-id>
+<tool-use-id>toolu_01NerbzZfN6kHdjc8J3uhENi</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/43e12872-3bbc-4112-a8d8-a54d929f1273/tasks/a99193f9b5b8e8279.output</output-file>
+<status>completed</status>
+<summary>Agent "Research editor UI juice and motion" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I've written the report below with a source URL on each bullet. Some details I couldn't confirm are flagged inline and collected in the last section.
+
+## Research report: interaction motion for Twyne
+
+### 1. Game feel and juice applied to productivity UI
+- **Juice it or lose it (Jonasson and Purho, GDC 2012).** They take a plain Breakout and keep the rules fixed. They then add layers in order: colour, tweening and easing, squash and stretch, sound, particles, screen shake, then faces. Takeaway: feedback comes in layers on top of rules that don't change, so juice is presentation and never changes outcomes. https://www.gdcvault.com/play/1016487/juice-it-or-lose
+- **Screen shake causes motion sickness.** Later write-ups say "a shake should be a punch, not an earthquake." Shake a stamp, never the viewport. https://www.gdcvault.com/play/1016487/juice-it-or-lose (Nijman's "Art of Screenshake" talk covers the same ground)
+- **Emil Kowalski: animation budget scales with how often an action happens.** Rules from his STANDARDS.md:
+  - Used 100+ times a day: no animation.
+  - Used tens of times a day: remove or minimise.
+  - Occasional (modals, toasts): a standard animation.
+  - Rare (onboarding, celebrations): delight is allowed.
+  - Keyboard-triggered actions are never animated. Raycast is his example.
+  https://github.com/emilkowalski/skills/blob/main/skills/review-animations/STANDARDS.md
+- **Kowalski's numbers.**
+  - UI animations stay under 300ms. 200ms is the default.
+  - Press feedback is 100–160ms, for example `transform 160ms ease-out` with scale 0.97.
+  - Tooltips take 125ms, and every tooltip after the first shows instantly.
+  - Drawers take about 500ms with `cubic-bezier(0.32, 0.72, 0, 1)`.
+  - Stagger items by 30–80ms.
+  - Use ease-out for entering elements and avoid ease-in, which feels slow.
+  - Use blur (around 2px) only as a last resort to smooth a crossfade.
+  https://emilkowal.ski/ui/7-practical-animation-tips
+- **Rauno Freiberg, "Invisible details of interaction design".**
+  - Motion should be interruptible: you can reverse it mid-gesture and never have to wait for it to finish.
+  - Thrown objects keep their momentum, and bounce matches how heavy the object should feel.
+  - A threshold commits an action. Before the threshold, the response tracks the input.
+  - "Fidgetability" means small satisfying responses invite people to repeat them.
+  - Scroll stays with the pane where it started.
+  Takeaway: margin notes and stamps should be draggable and reversible before they commit. https://rauno.me/craft/interaction-design
+- **Linear's timing.** This comes from a third-party reading of Linear's stylesheet, not from Linear itself. Highlights fade in over 0s and out over 0.15s. The quick, regular and slow transitions are 0.1s, 0.25s and 0.35s. Popovers appear instantly and fade out on dismiss. Width, height and margin are never animated. Takeaway: appear instantly, leave softly. https://performance.dev/how-is-linear-so-fast-a-technical-breakdown
+- **Raycast's bar is "feeling native".** Their deep dive lists: no flicker when views appear, no `cursor: pointer` on controls, and the WebView finishes drawing before the window is shown. https://www.raycast.com/blog/a-technical-deep-dive-into-the-new-raycast
+- **Apple HIG.** Avoid motion on UI interactions people repeat often. Avoid oscillation near 0.2 Hz (one cycle every five seconds); if something must oscillate, keep the amplitude low and the content translucent. This matters for any "breathing" idle state. https://developer.apple.com/design/human-interface-guidelines/motion
+- **Vercel interface guidelines.**
+  - Animate only `transform` and `opacity`, and never use `transition: all`.
+  - Every animation must be interruptible.
+  - Motion that autoplays for more than 5 seconds needs a pause control.
+  - Decorative loops stop under reduced motion.
+  - Per-keystroke work must stay cheap.
+  https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md
+
+### 2. Editors with a distinctive typing, caret or scroll feel
+- **Word's gliding caret (since Office 2013) is widely disliked.**
+  - On Hacker News: "that cursor animation is just awful… laggy animation on top of what should be instant."
+  - Word's own "Provide feedback with animation" checkbox doesn't turn it off. The only fixes are the Windows-wide animation setting (which some Windows updates turn back on) or the `DisableAnimations` registry value.
+  Takeaway: never delay the caret on a keypress. https://news.ycombinator.com/item?id=19686799
+- **VS Code keeps the caret instant while typing.** `editor.cursorSmoothCaretAnimation` has the values off, explicit and on. "explicit" animates only when you jump with a click or navigation, not while typing. Adopt that split. https://github.com/microsoft/vscode/issues/169332
+- **Monkeytype** has `smoothCaret: off | slow | medium | fast`, and the speed setting came from users saying the glide was too slow. Typing-test users accept a smooth caret only when it is fast and optional. Source for the options: https://github.com/monkeytypegame/monkeytype (packages/schemas/src/configs.ts). Source for the complaint: https://github.com/monkeytypegame/monkeytype/discussions/1248
+- **iA Writer's Focus Mode** dims everything except the current sentence or paragraph, and Typewriter Mode keeps the current line vertically centred. Both are toggles, and the dimming is a colour change, not movement. https://ia.net/writer/support/editor/focus-mode
+- **Ulysses, Typora, Obsidian, Bear.**
+  - Ulysses' typewriter mode, with a configurable line position and a line highlight, is a fan favourite.
+  - Typora has Focus (F8) and Typewriter (F9) modes.
+  - Obsidian gets the same through the obsidian-typewriter-mode plugin, which offers line position as a percentage, a highlight style and paragraph dimming.
+  - Bear users still have an open feature request for typewriter mode.
+  Takeaway: writers value stillness and a predictable eye line more than motion. Unverified: Ulysses' exact options, because its help page now redirects.
+- **Paper by FiftyThree (now WeTransfer)** drew stroke width from drawing speed rather than pressure, on a custom OpenGL engine; a later update advertised three-times-faster ink. A strong precedent for ink whose physics comes from speed. https://en.wikipedia.org/wiki/FiftyThree
+- **Teenage Engineering's OP-1** gives each mode its own colour and animated graphic, so the playful visuals tell you which mode you are in. https://blakecrosley.com/guides/design/teenage-engineering
+- **Not verified:** Craft's and Hemingway's motion. Hemingway uses static colour highlights only.
+
+### 3. Ink, paper and letterpress on the web
+- **SVG filter recipes for type (Carmen Ansio).**
+  - Ink gain: `feMorphology dilate`, then `feFlood`, then `feComposite in`.
+  - Rough, bled edges: `feTurbulence` into `feDisplacementMap`. `fractalNoise` gives softer edges than `turbulence`.
+  - Pitfalls: turbulence, displacement and lighting are the expensive primitives. Defs inside a `display:none` SVG are dropped in Chromium. Set `color-interpolation-filters="sRGB"`. CSS cannot animate filter primitive attributes, so drive changes from JS with requestAnimationFrame and an IntersectionObserver.
+  https://www.carmenansio.com/articles/svg-filters-on-type/
+- **SVG filter performance.**
+  - Keep the filter region tight. `feTurbulence` is unbounded and defaults to a region of 120%.
+  - Never animate transform on a filtered element, because the filter is recomputed every frame.
+  - Pre-render the result to a bitmap.
+  - CSS filter functions are much cheaper than SVG filters.
+  Rule for Twyne: never put a live filter on the editor surface. Use filters only on small, short-lived elements such as a stamp. https://tympanus.net/codrops/2019/02/19/svg-filter-effects-creating-texture-with-feturbulence/
+- **Paper grain.** Generate the texture once (feTurbulence or a shader) and cache it as a tiled background. Lighting by a moving light is best done as a fragment shader on a small canvas behind the text, at half or quarter resolution, re-rendered only when the light moves. I found no authoritative procedural paper shader; three.js normal-map approaches exist. https://discourse.threejs.org/t/distorted-grainy-material-due-to-a-normal-map/72599
+- **Risograph and halftone.** Codrops has a risograph grain tutorial. glsl-halftone provides rotated dot grids. Mis-registration is a UV offset per spot-ink layer, which suits two inks, vermilion and cobalt.
+  - https://tympanus.net/codrops/2022/03/07/creating-a-risograph-grain-light-effect-in-three-js/
+  - https://github.com/glslify/glsl-halftone
+- **Letterpress deboss in CSS** is a pair of `text-shadow` layers: light offset down, dark offset up. Animating the pair fakes a moving light. Note that `text-shadow` does not render on `background-clip:text`.
+- **`backdrop-filter`** is costly inside scrolling content. I found no benchmark. Avoid it over the manuscript.
+
+### 4. Browser APIs (verified November 2026)
+- **CSS Custom Highlight API.** Baseline Newly Available since 2026-03-24 (Chrome 105, Safari 17.2, Firefox 149).
+  - Allowed properties: `color`, `background-color`, `text-decoration*`, `text-shadow`, `-webkit-text-stroke/fill`.
+  - `background-image` is ignored.
+  - There are no transitions or animations today. On 2026-10-30 the CSSWG resolved that highlights should get opacity and that animations and transitions should be allowed. That is spec intent and is not shipped.
+  - To animate now, swap highlight names or change registered ranges from JS.
+  - Sources: https://developer.mozilla.org/en-US/docs/Web/CSS/::highlight and https://github.com/w3c/csswg-drafts/issues/14613
+- **Same-document View Transitions.** Baseline Newly Available since 2025-10-14, Firefox 144 last. https://web-platform-dx.github.io/web-features-explorer/features/view-transitions/
+- **Scroll-driven animations.** Baseline Newly Available since 2026-10-27 (Chrome 115, Safari 26, Firefox 159). Older articles saying Firefox needs a flag are out of date. https://web-platform-dx.github.io/web-features-explorer/features/scroll-driven-animations/
+- **`@property`.** Baseline since 2024-07 (Firefox 128 last). Safe for animated gradients and ink-fill progress. https://web-platform-dx.github.io/web-features-explorer/features/registered-custom-properties/
+- **`linear()` easing.** Widely Available since 2026-06. Safe for spring curves in pure CSS. https://web-platform-dx.github.io/web-features-explorer/features/linear-easing/
+- **Popover** is Baseline since 2025-01 and **`@starting-style`** since 2024-08. I found no separate support data for `popover=hint`.
+  - https://web-platform-dx.github.io/web-features-explorer/features/popover/
+  - https://web-platform-dx.github.io/web-features-explorer/features/starting-style/
+- **`interpolate-size`** ships in Chromium only (129+). Firefox and Safari have not shipped it. Gate it with `@supports`. https://web-platform-dx.github.io/web-features-explorer/features/interpolate-size/
+- **WebGPU.**
+  - Chrome 113+ on Windows, macOS and ChromeOS. Android ships too; I didn't confirm the version.
+  - Firefox 141 on Windows, and Firefox 145 on Apple Silicon macOS Tahoe.
+  - Safari 26.
+  - Linux Chrome is a gradual rollout on Vulkan, and Linux Firefox is Nightly only.
+  - WebGL2 stays the default for ambient shaders, with WebGPU as an optional upgrade.
+  - https://web.dev/blog/webgpu-supported-major-browsers
+  - https://developer.chrome.com/blog/new-in-webgpu-144 (I could not confirm the exact Linux GPU list.)
+
+### 5. Motion that communicates consequence and trust
+- **Undo beats "are you sure?"** People click through repeated warnings out of habit (Raskin). Gmail's Undo Send holds the message 5–30s. Use a visible delayed commit for "send to AI" or "publish". Keep heavy friction, like typing the item's name as GitHub does, for permanent destructive actions only. https://alistapart.com/article/neveruseawarning/
+- **Hold-to-confirm.** Timings in component libraries range from 300ms to 2s. It is hard for people with tremor, so provide a single-activation path for keyboard and screen readers, and let releasing early cancel cleanly. https://www.w3.org/WAI/WCAG22/Understanding/pointer-cancellation.html
+- **Disabled-with-reason.** Use `aria-disabled` rather than `disabled` so the control stays focusable, and explain why it is disabled. This fits out-of-credits and rate-limited states.
+  - https://www.smashingmagazine.com/2021/08/frustrating-design-patterns-disabled-buttons/
+  - https://uxdesign.cc/never-ever-disable-buttons-requirements-for-an-accessible-solution-acaf9c5191f9
+- **Response-time limits (NN/g).**
+  - Under 0.1s feels instant and needs no feedback.
+  - About 1s keeps the user's train of thought; a subtle indicator helps.
+  - Over about 10s needs real progress, such as percent done.
+  Map AI waits onto these bands. https://www.nngroup.com/articles/response-times-3-important-limits/
+- **AI thinking states.**
+  - Accepted patterns: show the current step and total steps, an elapsed counter ("Thinking for N s"), steps that collapse, and a clear "done" state.
+  - Anti-pattern: fake progress shown before the model has started.
+  - Text shimmer is now a generic AI cliché.
+  - A stronger fit for Twyne is to show what an editor is reading, for example a marker moving through the paragraphs it has consumed.
+  - Source: https://panelui.dev/docs/ai-components/shimmer, a component library. I found no authoritative critique of shimmer.
+
+### 6. Ambient life and accessibility
+- **Smooth remote cursors.** Fit a spline through position updates (about every 50–80ms) instead of using CSS transitions, which never finish when updates arrive irregularly. This is perfect-cursors, used in tldraw. Use it for any AI-editor presence marker. https://github.com/steveruizok/perfect-cursors
+- **Figma shows your own edits before the server confirms them** and ignores conflicting incoming changes until then, to avoid flicker. The same applies to local versus synced state. https://www.figma.com/blog/how-figmas-multiplayer-technology-works/
+- **WCAG 2.3.3 (AAA).** Motion triggered by interaction must be possible to disable unless it is essential. Colour, blur and opacity changes don't count as motion, so a reduced-motion mode can keep fades and ink-colour shifts. https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html
+- **Vestibular triggers.** Parallax, scroll-jacking, zoom, spinning, and large or full-screen motion. Never use parallax or scroll-linked movement in the manuscript; scroll-driven effects belong in the margin or chrome only. https://alistapart.com/article/designing-safer-web-animation-for-motion-sensitivity/
+- **Opt in to motion.** Josh Comeau and Ben Myers suggest motion only under `prefers-reduced-motion: no-preference`, plus an in-app override. https://benmyers.dev/encyclopedia/reduced-motion/
+- **Time-of-day lighting.** Precedents are f.lux, Night Shift and dark mode by local sunlight (Hacker News, 2021). Change it slowly, never in steps, and keep text contrast fixed.
+
+### What I couldn't verify
+- Ulysses' exact typewriter-mode options (its help page redirected).
+- Craft's motion behaviour.
+- The exact GPU list for Chrome's WebGPU rollout on Linux.
+- Kowalski's ease-out curve values other than the drawer curve.
+- Linear's numbers are third-party, not from Linear.
+- Apple HIG wording on "let people cancel" (not seen in the text I fetched).
+- No benchmark for the cost of `backdrop-filter`.
+
+### 10 gaps that fit a literary editor with AI editors
+1. **A caret that never glides on a keystroke** but leaves a brief wet-ink fade on each new glyph, done with highlight colour (no layout) and drying in about 300ms.
+2. **Ink colour that tells you where text lives:** fresh ink for local only, dried ink once synced, a cobalt edge on text sent to a provider, and vermilion for published.
+3. **Reading-progress presence for AI editors:** a quiet marker moving through the paragraphs each editor has read, with spline smoothing, instead of a shimmer or spinner.
+4. **The rubric stamp:** a short ink-impression stamp with a halftone or mis-registration shader on a small canvas. It can be dragged and reversed until a threshold, and is fully undoable.
+5. **"Send to the room" as a visible delayed commit:** the envelope sits on the desk for N seconds, and you can pull it back.
+6. **Out-of-credits as an empty inkwell:** the control stays focusable and says why and when the credits refill.
+7. **Margin notes that slide in from the margin edge,** grouped, with a stagger of 50ms or less. They never shift the manuscript layout.
+8. **Paper grain lit by the time of day:** one cached texture plus a low-resolution light pass that only re-renders when the light changes. It pauses while you type.
+9. **Destructive actions as a press imprint that deepens while held,** with a keyboard path and an undo window, rather than a modal.
+10. **A Desk page where stats are set like a printer's composing stick:** movement happens only when you open the page, never during writing, and scroll effects stay out of the reading column.</result>
+<usage><subagent_tokens>74507</subagent_tokens><tool_uses>91</tool_uses><duration_ms>821860</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bv37ok8ms</task-id>
+<tool-use-id>toolu_017niN8ZvyUrBQEKxPbQKAyc</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/43e12872-3bbc-4112-a8d8-a54d929f1273/tasks/bv37ok8ms.output</output-file>
+<status>killed</status>
+<summary>Background command "Start the frontend dev server on port 5174" was stopped after reaching its background time limit</summary>
+<note>If the work in progress still needs it, start it again with `run_in_background` and a longer `timeout`. If it already had the longest `timeout` allowed, do not restart it. Either way, report that it was stopped.</note>
+</task-notification>

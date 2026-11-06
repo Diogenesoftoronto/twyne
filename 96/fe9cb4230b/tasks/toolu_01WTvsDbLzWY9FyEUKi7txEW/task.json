@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01WTvsDbLzWY9FyEUKi7txEW",
+  "agent_id": "a0d6c5c21488ae515",
+  "subagent_type": "Explore",
+  "task_description": "Inventory manuscript text surface",
+  "token_usage": {
+    "input_tokens": 58,
+    "cache_creation_tokens": 172390,
+    "cache_read_tokens": 1768884,
+    "output_tokens": 16433,
+    "api_call_count": 29
+  },
+  "started_at": "2026-11-05T05:14:40.984301614-05:00",
+  "completed_at": "2026-11-05T06:09:57.702717799-05:00"
+}

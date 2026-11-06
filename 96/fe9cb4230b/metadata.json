@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "96fe9cb4230b",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "bun.lock",
+    "eslint.config.js",
+    "package.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/96/fe9cb4230b/0/metadata.json",
+      "transcript": "/96/fe9cb4230b/0/full.jsonl",
+      "compact_transcript": "/96/fe9cb4230b/0/transcript.jsonl",
+      "content_hash": "/96/fe9cb4230b/0/content_hash.txt",
+      "prompt": "/96/fe9cb4230b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1644,
+    "cache_creation_tokens": 68815099,
+    "cache_read_tokens": 291907507,
+    "output_tokens": 1617909,
+    "api_call_count": 794,
+    "subagent_tokens": {
+      "input_tokens": 434,
+      "cache_creation_tokens": 1771644,
+      "cache_read_tokens": 14596153,
+      "output_tokens": 111331,
+      "api_call_count": 217
+    }
+  }
+}

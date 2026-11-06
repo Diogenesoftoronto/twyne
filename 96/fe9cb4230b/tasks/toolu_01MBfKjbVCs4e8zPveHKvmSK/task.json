@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01MBfKjbVCs4e8zPveHKvmSK",
+  "agent_id": "a193298a0a25c1f58",
+  "subagent_type": "Explore",
+  "task_description": "Inventory Desk page surfaces",
+  "token_usage": {
+    "input_tokens": 30,
+    "cache_creation_tokens": 126338,
+    "cache_read_tokens": 742029,
+    "output_tokens": 12551,
+    "api_call_count": 15
+  },
+  "started_at": "2026-11-05T05:14:25.209642279-05:00",
+  "completed_at": "2026-11-05T06:09:57.54598273-05:00"
+}
