@@ -1,0 +1,46 @@
+hey ran into this remounting issue again that keeps happening in this project i think qwik just comes up with this problem again and again. But component this time that is a problem is the expanded personanote panel when reply typing unfocus and then focuses again. Can you point me to the part of the code that is a problem and explain this?
+
+---
+
+continue
+
+---
+
+we will need some sort of lint rule warning to catch this being an issue.
+
+---
+
+if you have already implemented one great, if not I think the other option should be to find some way to test this and check around the repo, if you have the lint rule we are going to want this in our other qwik projects so turning this into a shared thing we can reuse would be phenominal
+
+---
+
+once you are complete deploy the changes we will want this added to memory in the future as a notable issue for qwik projects
+
+---
+
+Should I deploy Twyne to production, publish the shared lint plugin to npm, or do both? The changes so far add lint detection; the reply-panel runtime fix is still outstanding.
+Publish the shared plugin to npm
+
+---
+
+npm returned `401 Unauthorized` for the saved credential. Please complete [npm browser login](https://www.npmjs.com/login?next=/login/cli/55639471-dcfe-45ed-9cc0-8f7bd10efe08), then let me know when it’s finished.
+Stop npm publication
+
+---
+
+Background command completed (exit 1): /bin/bash -lc 'rtk proxy npm login --auth-type=web --registry=https://registry.npmjs.org --browser=false'
+
+Output tail:
+npm notice Log in on https://registry.npmjs.org/
+npm notice npm tokens that bypass 2FA are being restricted for account changes and direct publishing. Learn how to prepare: https://gh.io/npm-gat-bypass2fa-deprecation
+Login at:
+https://www.npmjs.com/login?next=/login/cli/55639471-dcfe-45ed-9cc0-8f7bd10efe08
+^C
+
+---
+
+let's stop for now with pushing this, just make sure that this plugin can catch past errors that we have had.
+
+---
+
+can you try this with my other qwik projects and see if you can find anything

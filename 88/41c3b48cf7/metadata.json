@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "8841c3b48cf7",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 8,
+  "files_touched": [
+    "bun.lock",
+    "eslint.config.js",
+    "package.json",
+    "packages/eslint-plugin-qwik-guards/README.md",
+    "packages/eslint-plugin-qwik-guards/package.json",
+    "packages/eslint-plugin-qwik-guards/src/index.d.ts",
+    "packages/eslint-plugin-qwik-guards/src/index.js",
+    "packages/eslint-plugin-qwik-guards/src/rules/no-empty-array-before-sibling.js",
+    "packages/eslint-plugin-qwik-guards/src/rules/no-plain-jsx-form-wrapper.js",
+    "packages/eslint-plugin-qwik-guards/test/fixtures/past-errors/brief-after.tsx",
+    "packages/eslint-plugin-qwik-guards/test/fixtures/past-errors/brief-before.tsx",
+    "packages/eslint-plugin-qwik-guards/test/fixtures/past-errors/dossier-folio.tsx",
+    "packages/eslint-plugin-qwik-guards/test/fixtures/past-errors/persona-after.tsx",
+    "packages/eslint-plugin-qwik-guards/test/fixtures/past-errors/persona-before.tsx",
+    "packages/eslint-plugin-qwik-guards/test/fixtures/past-errors/tsconfig.json",
+    "packages/eslint-plugin-qwik-guards/test/packed.smoke.js",
+    "packages/eslint-plugin-qwik-guards/test/past-errors.test.js",
+    "packages/eslint-plugin-qwik-guards/test/plain-jsx-form-wrapper.test.js",
+    "packages/eslint-plugin-qwik-guards/test/plugin.test.js",
+    "packages/eslint-plugin-qwik-guards/test/rule.test.js",
+    "scripts/eslint-rules/no-empty-array-before-sibling.js",
+    "tests/qwik-empty-array-lint.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/88/41c3b48cf7/0/metadata.json",
+      "transcript": "/88/41c3b48cf7/0/full.jsonl",
+      "compact_transcript": "/88/41c3b48cf7/0/transcript.jsonl",
+      "content_hash": "/88/41c3b48cf7/0/content_hash.txt",
+      "prompt": "/88/41c3b48cf7/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 318186,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 24900864,
+    "output_tokens": 89839,
+    "api_call_count": 123,
+    "subagent_tokens_complete": true
+  }
+}
