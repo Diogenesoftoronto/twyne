@@ -293,6 +293,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       const observedCards = new Set<Element>();
       let waiters: Array<(slot: MarginSlot | null) => void> = [];
       let arrivingTimer: ReturnType<typeof setTimeout> | undefined;
+      let peekTimer: ReturnType<typeof setTimeout> | undefined;
       let seenSessionId: string | null = null;
 
       const itemsToShow = (): FlowItem[] => {
@@ -705,6 +706,13 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
 
       // Hovering a marked passage in the text peeks its card, even one that
       // is waiting — the writer asked by pointing at it.
+      const releasePeek = () => {
+        clearTimeout(peekTimer);
+        peekTimer = setTimeout(() => {
+          state.peekId = null;
+          layout();
+        }, 450);
+      };
       const onOver = (event: Event) => {
         if (props.zen) return;
         const target = event.target as Element | null;
@@ -713,6 +721,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
         );
         const note = target?.closest<HTMLElement>("[data-persona-note-id]");
         const chip = target?.closest<HTMLElement>(".twyne-mark-anchor");
+        const card = target?.closest<HTMLElement>("[data-flow-card]");
         const chipKind = chip?.dataset.anchorKind;
         const id = comment
           ? `comment:${comment.dataset.commentId}`
@@ -720,10 +729,19 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             ? `note:${note.dataset.personaNoteId}`
             : chip && (chipKind === "comment" || chipKind === "note")
               ? `${chipKind}:${chip.dataset.anchorId}`
-              : null;
+              : (card?.dataset.flowCard ?? null);
+        if (!id) {
+          releasePeek();
+          return;
+        }
+        clearTimeout(peekTimer);
         if (id === state.peekId) return;
         state.peekId = id;
         layout();
+      };
+      const onLeave = (event: PointerEvent | FocusEvent) => {
+        const next = event.relatedTarget as Node | null;
+        if (!next || !canvas.contains(next)) releasePeek();
       };
 
       const observer = new ResizeObserver(layout);
@@ -775,6 +793,8 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       scroller.addEventListener("scroll", onScroll, { passive: true });
       canvas.addEventListener("pointerover", onOver);
       canvas.addEventListener("focusin", onOver);
+      canvas.addEventListener("pointerout", onLeave);
+      canvas.addEventListener("focusout", onLeave);
       observer.observe(canvas);
       observer.observe(scroller);
       onSnapshot(new CustomEvent(FLOW_EVENT, { detail: flowSnapshot() }));
@@ -783,6 +803,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
         for (const resolve of waiters) resolve(null);
         cancelAnimationFrame(frame);
         clearTimeout(arrivingTimer);
+        clearTimeout(peekTimer);
         window.removeEventListener(FLOW_EVENT, onSnapshot);
         window.removeEventListener(FLOW_SESSION_EVENT, onSession);
         window.removeEventListener("resize", layout);
@@ -793,6 +814,8 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
         clearTimeout(hold.gather);
         canvas.removeEventListener("pointerover", onOver);
         canvas.removeEventListener("focusin", onOver);
+        canvas.removeEventListener("pointerout", onLeave);
+        canvas.removeEventListener("focusout", onLeave);
         observer.disconnect();
       });
     });
