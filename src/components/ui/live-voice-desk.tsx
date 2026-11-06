@@ -300,6 +300,13 @@ export const LiveVoiceDesk = component$(() => {
             imageUrl={speaker?.imageUrl}
             size={ui.compact ? 56 : 148}
             speaking={connected ? "live" : undefined}
+            activity={
+              live.status === "listening"
+                ? live.working
+                  ? "thinking"
+                  : "listening"
+                : undefined
+            }
           />
         </div>
         {!ui.compact && (

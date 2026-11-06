@@ -35,6 +35,7 @@ import {
 } from "../../utils/background-research";
 import { REVEAL_QUOTE_EVENT } from "../../utils/quote-grounding";
 import { targetKindLabel } from "../../utils/research-targets";
+import { EditorialActivity } from "../ui/editorial-activity";
 import {
   loadAiSettingsFromIdb,
   loadApparatusSettingsFromIdb,
@@ -519,7 +520,9 @@ export const CitationsPanel = component$(
         <section class="apparatus-monitor-card apparatus-signal-desk">
           <header class="apparatus-monitor-card__head">
             <div class="flex min-w-0 items-center gap-2.5">
-              <span
+              {!hasResearchErrors && store.research.passActive ? (
+                <EditorialActivity iconOnly kind={store.research.phase === "saving" ? "saving" : store.research.phase === "searching" ? "searching" : "reading"} label="Research in progress" />
+              ) : <span
                 class={[
                   "apparatus-status-dot",
                   { "animate-pulse": store.research.passActive },
@@ -534,7 +537,7 @@ export const CitationsPanel = component$(
                         : "var(--color-accent-green)",
                 }}
                 aria-hidden="true"
-              />
+              />}
               <div class="min-w-0">
                 <p class="dept-label">Signal</p>
                 <p

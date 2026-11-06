@@ -16,6 +16,7 @@ if (process.env.RAILWAY_ENVIRONMENT_ID && !process.env.PROTOCOL_HEADER) {
 
 const DIST_ROOT = fileURLToPath(new URL("./dist/", import.meta.url));
 const ROOT_FILE_TYPES = {
+  ".html": "text/html; charset=utf-8",
   ".ico": "image/x-icon",
   ".js": "application/javascript; charset=utf-8",
   ".jpg": "image/jpeg",

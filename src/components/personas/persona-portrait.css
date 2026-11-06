@@ -160,6 +160,51 @@
   transform: scale(1.04);
 }
 
+/* Written replies keep their mouths closed. The small downward movement
+   suggests attending to the page, without competing with arriving text. */
+.persona-portrait:is([data-activity="writing"], [data-activity="thinking"]):not(
+    [data-speaking]
+  )
+  .persona-portrait__stage {
+  animation: pp-attend 3.2s ease-in-out infinite;
+}
+
+.persona-portrait[data-activity="thinking"]:not([data-speaking])
+  .persona-portrait__stage {
+  animation-duration: 4.8s;
+}
+
+@keyframes pp-attend {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  30%,
+  65% {
+    transform: translateY(1px) rotate(-0.6deg);
+  }
+}
+
+.persona-portrait[data-activity="listening"] .persona-portrait__stage {
+  animation: pp-listen 4.8s ease-in-out infinite;
+}
+
+.persona-portrait[data-activity="thinking"][data-speaking="live"]
+  .persona-portrait__stage {
+  animation: pp-attend 4.8s ease-in-out infinite;
+}
+
+@keyframes pp-listen {
+  0%,
+  100% {
+    transform: rotate(0) scale(1);
+  }
+  35%,
+  65% {
+    transform: rotate(-0.8deg) scale(1.012);
+  }
+}
+
 @media (hover: hover) {
   .persona-portrait[data-framing="face"]:hover .persona-portrait__stage {
     transform: scale(1.06);
@@ -216,6 +261,7 @@
   }
   .persona-portrait__stage {
     transition: none;
+    animation: none !important;
   }
 }
 

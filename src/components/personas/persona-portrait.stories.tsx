@@ -1,7 +1,7 @@
 import { component$, useStyles$ } from "@qwik.dev/core";
 import type { Meta, StoryObj } from "storybook-framework-qwik";
 import { PERSONAS } from "../../utils/personas";
-import { PersonaMasthead } from "./persona-portrait";
+import { PersonaMasthead, PersonaPortrait } from "./persona-portrait";
 
 const sampleNotes = [
   {
@@ -106,3 +106,29 @@ export const Narrow: Story = {
   globals: { viewport: { value: "compactPhone", isRotated: false } },
 };
 export const ResidentCast: Story = { args: { allResidents: true } };
+
+const MotionSamples = component$(() => (
+  <div style="display:flex;flex-wrap:wrap;gap:32px;padding:24px">
+    <div>
+      <PersonaPortrait personaId="reader" size={148} activity="listening" />
+      <p>Listening</p>
+    </div>
+    <div>
+      <PersonaPortrait personaId="devil" size={148} speaking="tts" />
+      <p>Speaking</p>
+    </div>
+    <div>
+      <PersonaPortrait personaId="editor" size={148} activity="writing" />
+      <p>Writing, mouth closed</p>
+    </div>
+    <div>
+      <PersonaPortrait personaId="scholar" size={148} activity="thinking" />
+      <p>Thinking</p>
+    </div>
+    <div>
+      <PersonaPortrait personaId="angel" size={148} />
+      <p>At rest</p>
+    </div>
+  </div>
+));
+export const MotionStates: Story = { render: () => <MotionSamples /> };

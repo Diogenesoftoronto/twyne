@@ -116,6 +116,7 @@ import { ApplicationNotice } from "../ui/application-notice";
 import { SpeakButton } from "../ui/speak-button";
 import { SpeechTransport } from "../ui/speech-transport";
 import { EditorialLoader } from "../ui/editorial-loader";
+import { EditorialActivity } from "../ui/editorial-activity";
 import { NumericStepper } from "../ui/numeric-stepper";
 import { ANALYSIS_READING_ID, speakQueue } from "../../utils/speech";
 import type { AppError } from "../../types/application-errors";
@@ -2322,12 +2323,12 @@ export const PersonasPanel = component$(
                       name={persona.name}
                       role={persona.role}
                       size={56}
+                      activity={store.streamingNotes[persona.id].status === "running" ? store.streamingNotes[persona.id].activePart === "reasoning" ? "thinking" : "writing" : undefined}
                     />
                     <span class="desk-card__stamp">
-                      {store.streamingNotes[persona.id].activePart ===
-                      "reasoning"
-                        ? "thinking…"
-                        : "writing…"}
+                      {store.streamingNotes[persona.id].status === "running" ? (
+                        <EditorialActivity kind={store.streamingNotes[persona.id].activePart === "reasoning" ? "reading" : "writing"} label={store.streamingNotes[persona.id].activePart === "reasoning" ? "Thinking…" : "Writing…"} />
+                      ) : store.streamingNotes[persona.id].status === "complete" ? "Written" : "Interrupted"}
                     </span>
                     {/* The model's scratch work, folded away. Offered rather
                       than shown: it is how the note was arrived at, not the
