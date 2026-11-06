@@ -1,4 +1,5 @@
 import { component$, useStore, useVisibleTask$ } from "@qwik.dev/core";
+import { SpeechErrorPanel } from "./speech-error-panel";
 import { useSpeechPlayer } from "../../utils/use-speech-player";
 import { openLiveVoice } from "../../utils/live-voice-workspace";
 import {
@@ -557,11 +558,110 @@ export const GlobalSpeechPlayer = component$(() => {
   if (player.state.status === "idle") return null;
 
   const busy = player.state.status === "loading";
-  const paused = player.state.status === "paused";
   const playing = player.state.status === "playing";
   const canGoBack = player.state.queueIndex > 0 || player.state.currentTime > 0;
   const canGoNext = player.state.queueIndex < player.state.queueLength - 1;
   const progressMax = Math.max(player.state.duration, 0);
+
+  const voicePicker = player.voiceMenu.options.length > 0 && (
+    <div class="relative order-last w-full shrink-0 md:order-none md:w-auto">
+      <label for="global-speech-voice" class="sr-only">
+        Narration voice
+      </label>
+      <select
+        id="global-speech-voice"
+        class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-2 py-1 text-[0.65rem] text-[var(--color-ink)] focus:border-[var(--color-vermilion)] focus:outline-none md:max-w-32"
+        style={{
+          fontFamily: "var(--font-typewriter)",
+          borderRadius: "2px",
+        }}
+        value={local.customOpen ? "__custom__" : player.voiceMenu.selected}
+        disabled={busy}
+        onChange$={async (_, el) => {
+          if (el.value === "__custom__") {
+            local.customOpen = true;
+            local.customVoice = "";
+            return;
+          }
+          local.customOpen = false;
+          await player.changeVoice$(el.value);
+        }}
+        aria-label="Change narration voice and restart passage"
+        title="Change voice and restart this passage"
+      >
+        {player.voiceMenu.options.map((voice) => (
+          <option
+            key={voice.id}
+            value={voice.id}
+            selected={
+              !local.customOpen && voice.id === player.voiceMenu.selected
+            }
+          >
+            {voice.label}
+          </option>
+        ))}
+        {player.voiceMenu.allowsCustom && (
+          <option value="__custom__" selected={local.customOpen}>
+            Custom voice…
+          </option>
+        )}
+      </select>
+      {local.customOpen && (
+        <div
+          class="absolute bottom-full right-0 mb-2 flex w-64 gap-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-2"
+          style={{ borderRadius: "3px" }}
+        >
+          <input
+            value={local.customVoice}
+            onInput$={(_, el) => {
+              local.customVoice = el.value;
+            }}
+            placeholder="Provider voice id"
+            class="min-w-0 flex-1 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-2 py-1 text-xs focus:border-[var(--color-vermilion)] focus:outline-none"
+            aria-label="Custom provider voice id"
+          />
+          <button
+            type="button"
+            class="btn-press px-2 py-1 text-[0.65rem] disabled:opacity-40"
+            disabled={!local.customVoice.trim()}
+            onClick$={async () => {
+              await player.changeVoice$(local.customVoice);
+              local.customOpen = false;
+            }}
+          >
+            Use
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  if (player.state.status === "error") {
+    return (
+      <aside
+        class="fixed bottom-3 left-1/2 w-[min(44rem,calc(100vw-1rem))] -translate-x-1/2 border border-[var(--color-vermilion)] bg-[var(--color-paper)]"
+        style={{
+          zIndex: "var(--z-overlay)",
+          borderRadius: "4px",
+          boxShadow:
+            "0 4px 8px color-mix(in srgb, var(--shade) 24%, transparent)",
+        }}
+        aria-label="Global narration player"
+      >
+        <SpeechErrorPanel
+          error={player.state.error}
+          label={player.state.label ?? ""}
+          queueIndex={player.state.queueIndex}
+          queueLength={player.state.queueLength}
+          canGoNext={canGoNext}
+          onRetry$={player.retry$}
+          onNext$={player.next$}
+          onClose$={player.stop$}
+        />
+        {voicePicker && <div class="px-3 pb-3">{voicePicker}</div>}
+      </aside>
+    );
+  }
 
   return (
     <aside
@@ -596,18 +696,10 @@ export const GlobalSpeechPlayer = component$(() => {
             class="truncate text-[0.6rem] text-[var(--color-ink-muted)]"
             style={{ fontFamily: "var(--font-typewriter)" }}
           >
-            {player.state.status === "error"
-              ? player.state.error?.message || "Narration failed"
-              : busy
-                ? "Preparing voice…"
-                : `${player.voiceMenu.provider || player.state.provider || "Voice"} · ${player.voiceMenu.model || player.state.model || "narration"}`}
+            {busy
+              ? "Preparing voice…"
+              : `${player.voiceMenu.provider || player.state.provider || "Voice"} · ${player.voiceMenu.model || player.state.model || "narration"}`}
           </p>
-          {player.state.status === "error" &&
-            player.state.error?.referenceId && (
-              <p class="break-all text-[0.6rem] text-[var(--color-ink-muted)]">
-                Reference: {player.state.error.referenceId}
-              </p>
-            )}
         </div>
 
         <div class="flex shrink-0 items-center gap-1">
@@ -638,26 +730,12 @@ export const GlobalSpeechPlayer = component$(() => {
           <button
             type="button"
             class="btn-press flex h-8 w-8 items-center justify-center p-0 disabled:opacity-50"
-            aria-label={
-              player.state.status === "error"
-                ? "Retry narration"
-                : playing
-                  ? "Pause narration"
-                  : "Resume narration"
-            }
-            title={
-              player.state.status === "error"
-                ? "Retry narration"
-                : playing
-                  ? "Pause narration"
-                  : "Resume narration"
-            }
+            aria-label={playing ? "Pause narration" : "Resume narration"}
+            title={playing ? "Pause narration" : "Resume narration"}
             disabled={busy}
-            onClick$={
-              player.state.status === "error" ? player.retry$ : player.toggle$
-            }
+            onClick$={player.toggle$}
           >
-            {busy ? "…" : playing ? "Ⅱ" : paused ? "▶" : "!"}
+            {busy ? "…" : playing ? "Ⅱ" : "▶"}
           </button>
           <button
             type="button"
@@ -704,80 +782,7 @@ export const GlobalSpeechPlayer = component$(() => {
           </span>
         </div>
 
-        {player.voiceMenu.options.length > 0 && (
-          <div class="relative order-last w-full shrink-0 md:order-none md:w-auto">
-            <label for="global-speech-voice" class="sr-only">
-              Narration voice
-            </label>
-            <select
-              id="global-speech-voice"
-              class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-2 py-1 text-[0.65rem] text-[var(--color-ink)] focus:border-[var(--color-vermilion)] focus:outline-none md:max-w-32"
-              style={{
-                fontFamily: "var(--font-typewriter)",
-                borderRadius: "2px",
-              }}
-              value={
-                local.customOpen ? "__custom__" : player.voiceMenu.selected
-              }
-              disabled={busy}
-              onChange$={async (_, el) => {
-                if (el.value === "__custom__") {
-                  local.customOpen = true;
-                  local.customVoice = "";
-                  return;
-                }
-                local.customOpen = false;
-                await player.changeVoice$(el.value);
-              }}
-              aria-label="Change narration voice and restart passage"
-              title="Change voice and restart this passage"
-            >
-              {player.voiceMenu.options.map((voice) => (
-                <option
-                  key={voice.id}
-                  value={voice.id}
-                  selected={
-                    !local.customOpen && voice.id === player.voiceMenu.selected
-                  }
-                >
-                  {voice.label}
-                </option>
-              ))}
-              {player.voiceMenu.allowsCustom && (
-                <option value="__custom__" selected={local.customOpen}>
-                  Custom voice…
-                </option>
-              )}
-            </select>
-            {local.customOpen && (
-              <div
-                class="absolute bottom-full right-0 mb-2 flex w-64 gap-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-2"
-                style={{ borderRadius: "3px" }}
-              >
-                <input
-                  value={local.customVoice}
-                  onInput$={(_, el) => {
-                    local.customVoice = el.value;
-                  }}
-                  placeholder="Provider voice id"
-                  class="min-w-0 flex-1 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-2 py-1 text-xs focus:border-[var(--color-vermilion)] focus:outline-none"
-                  aria-label="Custom provider voice id"
-                />
-                <button
-                  type="button"
-                  class="btn-press px-2 py-1 text-[0.65rem] disabled:opacity-40"
-                  disabled={!local.customVoice.trim()}
-                  onClick$={async () => {
-                    await player.changeVoice$(local.customVoice);
-                    local.customOpen = false;
-                  }}
-                >
-                  Use
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        {voicePicker}
 
         <button
           type="button"
