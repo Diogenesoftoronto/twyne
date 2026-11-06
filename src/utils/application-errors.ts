@@ -28,6 +28,7 @@ const RECOVERY_ACTION_SET = new Set<AppErrorRecovery["action"]>([
   "check-connection",
   "check-configuration",
   "choose-provider",
+  "download-required",
   "contact-support",
   "none",
 ]);

@@ -69,6 +69,25 @@ describe("application error construction", () => {
       metadata: { provider: "openai", feature: "room" },
     });
   });
+
+  test("preserves the browser voice download recovery across provider normalization", () => {
+    const original = createAppError("CONFIGURATION_ERROR", {
+      source: "application",
+      referenceId: "err_11111111-1111-4111-8111-111111111111",
+      recovery: { action: "download-required", canRetry: true },
+      metadata: { feature: "voice-narration" },
+    });
+    expect(isAppError(original)).toBe(true);
+    const normalized = normalizeApplicationError(original, {
+      source: "provider",
+    });
+    expect(normalized.referenceId).toBe(original.referenceId);
+    expect(normalized.recovery).toEqual({
+      action: "download-required",
+      canRetry: true,
+    });
+    expect(normalized.code).toBe("CONFIGURATION_ERROR");
+  });
 });
 
 describe("validation normalization", () => {

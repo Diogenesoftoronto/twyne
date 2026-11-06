@@ -689,6 +689,9 @@ export async function restartSpeechWithVoice(voice: string): Promise<void> {
 /** Retry the active queue item after a recoverable provider or playback error. */
 export async function retrySpeech(): Promise<void> {
   if (!queue[queueIndex]) return;
+  // Claim the retry's user gesture before settings or synthesis yields. A
+  // browser that blocked the first play may require this fresh permission.
+  unlockSpeechPlayback();
   await playCurrent();
 }
 

@@ -43,6 +43,7 @@ const originalRevokeObjectURL = URL.revokeObjectURL;
 /** Minimal Audio + URL doubles: enough surface for the manager to drive. */
 class FakeAudio {
   static instances: FakeAudio[] = [];
+  static blockedPlays = 0;
   src = "";
   currentTime = 0;
   duration = 0;
@@ -58,6 +59,10 @@ class FakeAudio {
     FakeAudio.instances.push(this);
   }
   async play(): Promise<void> {
+    if (FakeAudio.blockedPlays > 0) {
+      FakeAudio.blockedPlays--;
+      throw new DOMException("Playback needs a new gesture", "NotAllowedError");
+    }
     this.paused = false;
     this.playCount += 1;
   }
@@ -77,6 +82,7 @@ beforeEach(async () => {
     value: { onLine: true },
   });
   FakeAudio.instances = [];
+  FakeAudio.blockedPlays = 0;
   createdUrls = 0;
   revokedUrls = 0;
 
@@ -803,6 +809,61 @@ describe("speakQueue", () => {
     expect(s.queueIndex).toBe(0);
     expect(s.queueLength).toBe(3);
     expect(s.label).toBe("Marguerite");
+  });
+
+  test("retry recovers the failed passage without losing the room queue", async () => {
+    let attempts = 0;
+    const client = {
+      action: async (_ref: unknown, args: { text: string }) => {
+        if (args.text === "one" && attempts++ === 0)
+          throw new Error("Temporary narration failure");
+        return { audioBase64: "", mimeType: "audio/mpeg" };
+      },
+    } as never;
+    await speakModule.speakQueue(room(client), { ownerId: "room" });
+    expect(speakModule.speechState().status).toBe("error");
+    expect(speakModule.speechState().id).toBe("memo-1");
+    await speakModule.retrySpeech();
+    const recovered = speakModule.speechState();
+    expect(recovered.status).toBe("playing");
+    expect(recovered.error).toBeNull();
+    expect(recovered.queueIndex).toBe(0);
+    expect(recovered.queueLength).toBe(3);
+    expect(recovered.ownerId).toBe("room");
+    speakModule.nextSpeech();
+    await playing("memo-2");
+    expect(speakModule.speechState().label).toBe("Inés");
+  });
+
+  test("retry renews playback permission after the browser blocked the first gesture", async () => {
+    const { client } = hostedClient();
+    // Both the initial silent unlock and the first clip are refused.
+    FakeAudio.blockedPlays = 2;
+    await speakModule.speakQueue([room(client)[0]], { ownerId: "room" });
+    expect(speakModule.speechState().error?.code).toBe("PERMISSION_DENIED");
+    expect(FakeAudio.instances[0].playCount).toBe(0);
+    await speakModule.retrySpeech();
+    expect(speakModule.speechState().status).toBe("playing");
+    // A fresh silent unlock, followed by playback of the cached clip.
+    expect(FakeAudio.instances[0].playCount).toBe(2);
+  });
+
+  test("a failed passage can be skipped, and closing prevents a later retry", async () => {
+    const client = {
+      action: async (_ref: unknown, args: { text: string }) => {
+        if (args.text === "one") throw new Error("Narration unavailable");
+        return { audioBase64: "", mimeType: "audio/mpeg" };
+      },
+    } as never;
+    await speakModule.speakQueue(room(client), { ownerId: "room" });
+    expect(speakModule.speechState().status).toBe("error");
+    speakModule.nextSpeech();
+    await playing("memo-2");
+    expect(speakModule.speechState().queueIndex).toBe(1);
+    speakModule.stopSpeech();
+    await speakModule.retrySpeech();
+    expect(speakModule.speechState().status).toBe("idle");
+    expect(speakModule.speechState().queueLength).toBe(0);
   });
 
   test("moves to the next editor when a passage ends", async () => {
