@@ -61,6 +61,7 @@ export const CardBust = component$<{
   imageUrl?: string;
   color?: string;
   speaking?: "tts" | "live";
+  activity?: "writing" | "thinking";
   /** Replaces the cast role, e.g. for the writer's own notes. */
   role?: string;
   /** Replaces the cast focus line. */
@@ -94,6 +95,7 @@ export const CardBust = component$<{
           framing={figure ? "figure" : "face"}
           size={figure ? 96 : 40}
           speaking={props.speaking}
+          activity={props.activity}
         />
       </span>
       <span class="persona-note__who" id={id} aria-hidden="true">

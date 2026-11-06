@@ -15,6 +15,7 @@ import { renderMarkdown } from "../../utils/markdown";
 import { revealQuoteFromEvent } from "../../utils/quote-grounding";
 import { SpeakButton } from "../ui/speak-button";
 import { PersonaPortrait } from "../personas/persona-portrait";
+import { EditorialActivity } from "../ui/editorial-activity";
 import type { NotePopover } from "./editor-state";
 import { openLiveVoice } from "../../utils/live-voice-workspace";
 import { stopSpeech } from "../../utils/speech";
@@ -113,7 +114,7 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
         <div class="persona-note__head">
           <CardBust
             name={note.author}
-            speaking={streaming ? "tts" : undefined}
+            activity={note.replying ? "writing" : undefined}
           />
           <div class="persona-note__tools">
             <button
@@ -127,7 +128,7 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
             </button>
             <span class="persona-note__tool">
               <SpeakButton
-                  inheritColor
+                inheritColor
                 id={speechId}
                 text={note.note}
                 author={note.author}
@@ -208,11 +209,8 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
             </div>
           )}
           {note.replying && !streaming && (
-            <div class="persona-note__thinking" role="status">
-              <span aria-hidden="true" />
-              <span aria-hidden="true" />
-              <span aria-hidden="true" />
-              <span class="sr-only">{`${note.author} is replying`}</span>
+            <div class="py-3">
+              <EditorialActivity label={`${note.author} is replying`} />
             </div>
           )}
           {note.error && (

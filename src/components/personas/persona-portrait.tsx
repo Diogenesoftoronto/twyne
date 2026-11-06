@@ -19,6 +19,8 @@ export interface PersonaPortraitProps extends PersonaPortraitIdentity {
    * Read-aloud elsewhere is picked up by the speech player, not this prop.
    */
   speaking?: "tts" | "live";
+  /** Written generation is distinct from audible speech. */
+  activity?: "writing" | "thinking" | "listening";
   class?: string;
 }
 
@@ -58,10 +60,11 @@ export const PersonaPortrait = component$<PersonaPortraitProps>((props) => {
       data-persona-name={identity.name}
       data-portrait-fallback={!showImage ? "true" : undefined}
       data-speaking={props.speaking}
+      data-activity={props.activity}
       aria-hidden="true"
     >
       {showImage ? (
-        <span class="persona-portrait__stage">
+        <span class="persona-portrait__stage" data-ambient>
           <img
             src={identity.src}
             alt=""
@@ -117,6 +120,7 @@ export const PersonaMasthead = component$<PersonaMastheadProps>((props) => {
         size={props.size}
         framing={props.framing}
         speaking={props.speaking}
+        activity={props.activity}
       />
       <div class="persona-masthead__identity">
         <p class="persona-masthead__name">{identity.name}</p>

@@ -1,6 +1,13 @@
-import { component$, useStore, useVisibleTask$ } from "@qwik.dev/core";
+import {
+  component$,
+  useStore,
+  useStyles$,
+  useVisibleTask$,
+} from "@qwik.dev/core";
 import type { Persona } from "../../types";
 import { editorialWaitLines } from "../../utils/editorial-chatter";
+import { PersonaPortrait } from "../personas/persona-portrait";
+import styles from "./editorial-loader.css?inline";
 
 interface EditorialLoaderProps {
   personas: Persona[];
@@ -10,6 +17,7 @@ interface EditorialLoaderProps {
 
 /** A quiet, rotating bit of pressroom theatre for genuinely long waits. */
 export const EditorialLoader = component$<EditorialLoaderProps>((props) => {
+  useStyles$(styles);
   const store = useStore({ index: 0 });
   const lines = editorialWaitLines(props.personas);
 
@@ -25,25 +33,44 @@ export const EditorialLoader = component$<EditorialLoaderProps>((props) => {
   return (
     <div
       class={[
-        "mx-auto flex max-w-sm flex-col items-center text-center",
-        props.compact ? "px-3 py-4" : "px-6 py-10",
+        "editorial-loader",
+        { "editorial-loader--compact": props.compact },
       ]}
       role="status"
       aria-live="polite"
     >
-      <div class="room-type-line" data-ambient aria-hidden="true">
-        <span data-ambient /><span data-ambient /><span data-ambient /><span data-ambient /><span data-ambient /><span data-ambient />
+      <div class="editorial-loader__scene" aria-hidden="true">
+        <span class="editorial-loader__sheet editorial-loader__sheet--back" />
+        <span class="editorial-loader__sheet">
+          <span class="editorial-loader__rule" data-ambient />
+          <span class="editorial-loader__rule" data-ambient />
+          <span class="editorial-loader__rule" data-ambient />
+          <span class="editorial-loader__rule" data-ambient />
+        </span>
+        <span class="editorial-loader__mark" data-ambient />
       </div>
-      <p
-        class="mt-3 text-[0.62rem] uppercase tracking-[0.15em] text-[var(--color-ink-muted)]"
-        style={{ fontFamily: "var(--font-typewriter)" }}
-      >
-        {props.label}
-      </p>
-      <p
-        class="mt-2 min-h-10 text-sm italic leading-5 text-[var(--color-ink-light)]"
-        style={{ fontFamily: "var(--font-serif)" }}
-      >
+      {props.personas.length > 0 && (
+        <div class="editorial-loader__cast" aria-hidden="true">
+          {props.personas.map((persona, index) => (
+            <span
+              key={persona.id}
+              class="editorial-loader__resident"
+              data-ambient
+              style={{ "--reader-index": index }}
+            >
+              <PersonaPortrait
+                personaId={persona.id}
+                name={persona.name}
+                color={persona.color}
+                imageUrl={persona.imageUrl}
+                size={32}
+              />
+            </span>
+          ))}
+        </div>
+      )}
+      <p class="editorial-loader__label">{props.label}</p>
+      <p class="editorial-loader__aside" aria-hidden="true">
         {lines[store.index % lines.length]}
       </p>
     </div>
