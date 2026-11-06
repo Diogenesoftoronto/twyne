@@ -1,0 +1,36 @@
+i noticed that the mouse over behaviour that was recently changed for the persona notes summaries need work to make it easier for people to actually usse the descriptions in the first place and find out why they work  at allthis makes it possible  fofr the editor to more easily get access to the interrfave in the first place.
+
+---
+
+show me\
+
+---
+
+get rid of the about there its eww
+
+---
+
+i mean when i mean the mouseover and persona not i am talking about t he stuff where we are are  talking aboutu t he highlight over the text in the editor
+
+---
+
+Note: the T3 server restarted, and this background work was cancelled before it finished. It will not report back on its own, so resume or restart what you still need and wait for its result:
+- shell: /bin/bash -lc 'rtk proxy bun run storybook'
+
+Continue where you left off. Your last turn was cut short, so a command or other action it started may have finished or may still be running. Before you repeat one that changes state, confirm it did not take effect and is not still running; if you cannot tell, say so instead of repeating it.
+
+---
+
+alright these changes are glorius push them
+
+---
+
+what work is unrelated that hasbeen done?
+
+---
+
+i thought those were already pushed
+
+---
+
+let's get the narration fixed too then
