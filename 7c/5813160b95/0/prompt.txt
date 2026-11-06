@@ -1,0 +1,51 @@
+hey i noticed this when working in twyne but I don't know why the research  loop with  the apparatus doesn't seem to be autonomous looking for source in actuality at all. the apparatus seems blocked for some reason as a feature and doesn't live up to the vision that i had for it.
+
+---
+
+keenable should be avaiable for this key but also noorganic should be workingn here
+
+---
+
+so hosted should use keenable so that works out
+
+---
+
+like why is hosted not working?
+
+---
+
+then research provider should be set to notorganic
+
+---
+
+will that actually fix the issue? if the user is not signed in then it should use the users own key and there should be an indication for this sort of thing
+
+---
+
+if someone is then this should all work!
+
+---
+
+.
+
+---
+
+[Assistant quote](t3-citation://v1/e7d9c78b-b5f5-45d5-bf9b-919dcf31ffa1/078350aa-cefa-402a-9c8c-982192ad4fba/message%3Aprovider%3AclaudeAgent%3Anative-item%3Ac3887355-7152-4bc1-8c3b-52684c5b148e?text=The+bigger+gap+from+before+is+untouched%3A+one+search+per+claim+using+the+raw+sentence%2C+and+nothing+reads+the+pages+or+checks+that+they+support+the+claim.&start=2485&end=2637&prefix=_KEY+there+would+fix+local+dev.+&suffix=+Should+I+commit+this+and+set+up&comment=get+that+gap+closed+that+is+terrible)
+
+---
+
+keenable key should be in skate also for local dev
+
+---
+
+deploy once you have finished this to get that research loop
+
+---
+
+<task-notification>
+<task-id>b4xh1m8y7</task-id>
+<tool-use-id>toolu_015Q4rAdqHT29r2RW3YzehAC</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-apps-twyne/f0923f07-3481-4c19-b728-23a4c59d32af/tasks/b4xh1m8y7.output</output-file>
+<status>completed</status>
+<summary>Background command "Wait for the Railway deployment to finish" completed (exit code 0)</summary>
+</task-notification>

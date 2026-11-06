@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.12.0",
+  "checkpoint_id": "7c5813160b95",
+  "strategy": "manual-commit",
+  "branch": "feat/clairic-extraction",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "bun.lock",
+    "convex/integrationAi.test.ts",
+    "convex/research.ts",
+    "eslint.config.js",
+    "package.json",
+    "src/components/citations/citations-panel.tsx",
+    "src/global.css",
+    "src/routes/apparatus/index.tsx",
+    "src/routes/editor/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/types/index.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/background-research-loop.test.ts",
+    "src/utils/background-research.ts",
+    "src/utils/bibliography.ts",
+    "src/utils/research-backends.test.ts",
+    "src/utils/research-backends.ts",
+    "src/utils/research-route.test.ts",
+    "src/utils/research-route.ts",
+    "src/utils/research-verify.test.ts",
+    "src/utils/research-verify.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/7c/5813160b95/0/metadata.json",
+      "transcript": "/7c/5813160b95/0/full.jsonl",
+      "compact_transcript": "/7c/5813160b95/0/transcript.jsonl",
+      "content_hash": "/7c/5813160b95/0/content_hash.txt",
+      "prompt": "/7c/5813160b95/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 364,
+    "cache_creation_tokens": 816999,
+    "cache_read_tokens": 29424620,
+    "output_tokens": 131129,
+    "api_call_count": 171
+  }
+}
