@@ -93,13 +93,8 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
         event.stopPropagation();
         if (!note.pinned) onPin$(note.id);
       }}
-      onMouseLeave$={(event) => {
-        if (note.pinned || note.replying || note.thread.length > 0) return;
-        const related = (event as MouseEvent)
-          .relatedTarget as HTMLElement | null;
-        if (related?.closest(".twyne-persona-note")) return;
-        if (related?.closest(".twyne-mark-anchor")) return;
-        onClose$();
+      onFocusIn$={() => {
+        if (!note.pinned) onPin$(note.id);
       }}
     >
       <section class="persona-note__note">
