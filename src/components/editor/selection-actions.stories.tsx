@@ -11,6 +11,7 @@ import type { Meta, StoryObj } from "storybook-framework-qwik";
 import type { NotePopover, SelectionActionState } from "./editor-state";
 import { SelectionActions } from "./selection-actions";
 import { PersonaNotePanel } from "./persona-note-panel";
+import { bindPersonaNoteHover } from "./persona-note-hover";
 import {
   copyFixture,
   ModalCardStage,
@@ -31,7 +32,7 @@ const ManuscriptSelectionPreview = component$<SelectionStoryProps>((props) => {
     selection: null as SelectionActionState | null,
     note: null as NotePopover | null,
     status:
-      "Type in the manuscript, select a passage, or click the red button at the end of its persona mark.",
+      "Hover the highlighted passage to read its note, or use the portrait at the end to open the conversation. The manuscript stays editable.",
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -52,7 +53,7 @@ const ManuscriptSelectionPreview = component$<SelectionStoryProps>((props) => {
     if (!mount.value) return;
     state.note = null;
     state.selection = null;
-    const openNote = (anchor?: HTMLElement) => {
+    const openNote = (anchor?: HTMLElement, pinned = true) => {
       const mark =
         anchor ??
         mount.value?.querySelector(
@@ -62,6 +63,7 @@ const ManuscriptSelectionPreview = component$<SelectionStoryProps>((props) => {
       const rect = mark.getBoundingClientRect();
       state.note = {
         ...copyFixture(personaNote),
+        pinned,
         x: Math.max(12, Math.min(rect.right + 24, window.innerWidth - 364)),
         top: Math.max(96, Math.min(rect.top, window.innerHeight - 400)),
         maxH: Math.max(240, window.innerHeight - 120),
@@ -166,6 +168,24 @@ const ManuscriptSelectionPreview = component$<SelectionStoryProps>((props) => {
       openNote(chip);
     };
     host.addEventListener("click", onAnchorClick);
+    const hover = bindPersonaNoteHover(host, {
+      canOpen: () => !state.note?.pinned && instance.state.selection.empty,
+      openId: () => state.note?.id,
+      open: (mark) => openNote(mark, false),
+      canClose: () =>
+        !!state.note &&
+        !state.note.pinned &&
+        !state.note.draft.trim() &&
+        state.note.thread.length === 0,
+      close: () => {
+        state.note = null;
+      },
+    });
+    const onKeyDown = () => {
+      hover.cancel();
+      if (state.note && !state.note.pinned) state.note = null;
+    };
+    host.addEventListener("keydown", onKeyDown);
     editor.value = noSerialize(instance);
     if (initial === "selection")
       instance.commands.setTextSelection({
@@ -179,6 +199,8 @@ const ManuscriptSelectionPreview = component$<SelectionStoryProps>((props) => {
     instance.commands.focus();
     cleanup(() => {
       host.removeEventListener("click", onAnchorClick);
+      host.removeEventListener("keydown", onKeyDown);
+      hover.destroy();
       instance.destroy();
       editor.value = undefined;
     });

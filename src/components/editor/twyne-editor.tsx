@@ -70,6 +70,7 @@ import { MANUSCRIPT_READING_ID, ManuscriptPanel } from "./manuscript-panel";
 import { SuggestionPanel } from "./suggestion-panel";
 import { UserCommentPanel } from "./user-comment-panel";
 import { PersonaNotePanel } from "./persona-note-panel";
+import { bindPersonaNoteHover } from "./persona-note-hover";
 import type { NoteEvidence } from "../../utils/note-evidence";
 import {
   REVEAL_QUOTE_EVENT,
@@ -1977,8 +1978,8 @@ export const TwyneEditor = component$(
 
         // ── Hover: preview a persona note below its sentence ──
         // Non-blocking rules:
-        //   1. Hover-intent delay (350ms) — passing through doesn't
-        //      accidentally open a card.
+        //   1. A short hover-intent delay avoids accidental previews;
+        //      a grace period keeps them reachable across the margin.
         //   2. Typing disarm — once the writer types (or deletes /
         //      hits Enter), the next hover is suppressed. We re-arm
         //      only on real mouse motion (>3px), filtering the
@@ -2007,22 +2008,39 @@ export const TwyneEditor = component$(
             hoverTimer = null;
           }
         };
+        const noteHover = bindPersonaNoteHover(el, {
+          canOpen: () =>
+            !store.zenMode &&
+            !marginSurface() &&
+            !store.notePopover?.pinned &&
+            hoverArmed &&
+            editor.state.selection.empty,
+          openId: () => store.notePopover?.id,
+          open: (mark) => buildAndPin(mark, false),
+          canClose: () => {
+            const note = store.notePopover;
+            return (
+              !!note &&
+              !note.pinned &&
+              !note.replying &&
+              note.thread.length === 0 &&
+              !note.draft.trim()
+            );
+          },
+          close: () => {
+            store.notePopover = null;
+          },
+        });
         el.addEventListener("mouseover", (e) => {
           if (store.zenMode) {
             clearHoverTimer();
             return;
           }
           const target = e.target as HTMLElement;
-          const noteSpan = target.closest(
-            ".twyne-persona-note",
-          ) as HTMLElement | null;
           const writerCommentSpan = target.closest(
             '.twyne-comment-mark:not([data-comment-resolved="true"])',
           ) as HTMLElement | null;
-          const chip = target.closest(
-            ".twyne-mark-anchor",
-          ) as HTMLElement | null;
-          if (!noteSpan && !writerCommentSpan && !chip) return;
+          if (!writerCommentSpan) return;
           // With the margin carrying notes, pointing at a passage peeks its
           // card there (the flow surface draws the connection); the floating
           // preview would be a second copy of the same note.
@@ -2044,21 +2062,6 @@ export const TwyneEditor = component$(
             }, 350);
             return;
           }
-          // Don't clobber a pinned card the writer is interacting with.
-          if (store.notePopover?.pinned) return;
-          if (!hoverArmed) return;
-          // Resolve to the actual note span for geometry. The chip
-          // belongs to whichever note span it sits in (or directly
-          // adjacent to).
-          const anchor =
-            noteSpan ??
-            (chip?.closest(".twyne-persona-note") as HTMLElement | null);
-          if (!anchor) return;
-          clearHoverTimer();
-          hoverTimer = setTimeout(() => {
-            if (store.zenMode) return;
-            buildAndPin(anchor, false);
-          }, 350);
         });
         el.addEventListener("mouseout", (e) => {
           const related = (e as MouseEvent).relatedTarget as HTMLElement | null;
@@ -2081,18 +2084,13 @@ export const TwyneEditor = component$(
             hoveredWriterCommentId = null;
             return;
           }
-          // Mid-conversation: keep the live thread open even if the
-          // popover was opened by hover rather than a click.
-          if (store.notePopover?.pinned) return;
-          if (store.notePopover?.replying) return;
-          if ((store.notePopover?.thread.length ?? 0) > 0) return;
-          store.notePopover = null;
         });
 
         // ── Click handler: anchor-chip routes by data-anchor-kind; mark
         // clicks fall through to ProseMirror (caret placement, no popover). ──
         el.addEventListener("click", (e) => {
           dismissEditorialFurniture();
+          noteHover.cancel();
           const target = e.target as HTMLElement;
 
           // Anchor chip first — must preventDefault so clicking the
@@ -2183,6 +2181,7 @@ export const TwyneEditor = component$(
           }
           hoverArmed = false;
           clearHoverTimer();
+          noteHover.cancel();
           // An unpinned preview (no thread, not replying) closes — but a
           // pinned card or one that's mid-thread stays open so the
           // conversation can continue.
@@ -2249,6 +2248,8 @@ export const TwyneEditor = component$(
             }
           }
           if (e.key !== "Escape") return;
+          clearHoverTimer();
+          noteHover.cancel();
           threadRequest.value++;
           store.selectionAction = null;
           if (store.notePopover) store.notePopover = null;
@@ -2773,6 +2774,7 @@ export const TwyneEditor = component$(
             onScrollToSuggestion,
           );
           clearHoverTimer();
+          noteHover.destroy();
           document.removeEventListener("mousemove", rearmOnMove);
           window.removeEventListener("keydown", onGlobalKeydown);
           editor.off("transaction", refreshSlashMenu);
