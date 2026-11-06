@@ -3,9 +3,11 @@
   "checkpoint_id": "34f744082477",
   "strategy": "manual-commit",
   "branch": "feat/clairic-extraction",
-  "checkpoints_count": 9,
+  "checkpoints_count": 12,
   "files_touched": [
     "src/components/ui/global-speech-player.tsx",
+    "src/components/ui/speech-error-model.test.ts",
+    "src/components/ui/speech-error-model.ts",
     "src/components/ui/speech-error-panel.tsx",
     "src/utils/application-errors.test.ts",
     "src/utils/application-errors.ts",
@@ -33,14 +35,20 @@
       "compact_transcript": "/34/f744082477/2/transcript.jsonl",
       "content_hash": "/34/f744082477/2/content_hash.txt",
       "prompt": "/34/f744082477/2/prompt.txt"
+    },
+    {
+      "metadata": "/34/f744082477/3/metadata.json",
+      "transcript": "/34/f744082477/3/full.jsonl",
+      "compact_transcript": "/34/f744082477/3/transcript.jsonl",
+      "content_hash": "/34/f744082477/3/content_hash.txt",
+      "prompt": "/34/f744082477/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 362550,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 34945536,
-    "output_tokens": 50480,
-    "api_call_count": 182,
-    "subagent_tokens_complete": true
+    "input_tokens": 362592,
+    "cache_creation_tokens": 110498,
+    "cache_read_tokens": 35905333,
+    "output_tokens": 63963,
+    "api_call_count": 199
   }
 }
