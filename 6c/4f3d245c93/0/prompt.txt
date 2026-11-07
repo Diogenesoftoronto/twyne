@@ -1,0 +1,17 @@
+hey if the models in the speaking part of the application don't move when speaking can you make a series of gifs for the persona images so that it makes sense with what they are saying and then show me those? i want to see how well it works.
+
+---
+
+we could also add some more of these animated assets in the app too as well for example when typing i also think that the loading animation for the editor could use some more work
+
+---
+
+love these keep going i think we could have more
+
+---
+
+moorrrree
+
+---
+
+alright great deploy
