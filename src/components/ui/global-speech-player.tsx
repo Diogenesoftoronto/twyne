@@ -1,4 +1,11 @@
-import { component$, useStore, useVisibleTask$ } from "@qwik.dev/core";
+import {
+  component$,
+  useStore,
+  useVisibleTask$,
+  useStyles$,
+} from "@qwik.dev/core";
+import voiceSelectStyles from "./speech-voice-select.css?inline";
+import { SiteSelect } from "./site-select";
 import { SpeechErrorPanel } from "./speech-error-panel";
 import { useSpeechPlayer } from "../../utils/use-speech-player";
 import { openLiveVoice } from "../../utils/live-voice-workspace";
@@ -311,6 +318,7 @@ function formatClock(seconds: number): string {
 
 /** Persistent transport for every narration surface in the application. */
 export const GlobalSpeechPlayer = component$(() => {
+  useStyles$(voiceSelectStyles);
   const player = useSpeechPlayer();
   const local = useStore({ customVoice: "", customOpen: false });
 
@@ -565,47 +573,37 @@ export const GlobalSpeechPlayer = component$(() => {
 
   const voicePicker = player.voiceMenu.options.length > 0 && (
     <div class="relative order-last w-full shrink-0 md:order-none md:w-auto">
-      <label for="global-speech-voice" class="sr-only">
-        Narration voice
-      </label>
-      <select
-        id="global-speech-voice"
-        class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-2 py-1 text-[0.65rem] text-[var(--color-ink)] focus:border-[var(--color-vermilion)] focus:outline-none md:max-w-32"
-        style={{
-          fontFamily: "var(--font-typewriter)",
-          borderRadius: "2px",
-        }}
+      <SiteSelect
+        class="speech-voice-select"
+        ariaLabel="Narration voice — changing voice restarts this passage"
+        placement="top"
         value={local.customOpen ? "__custom__" : player.voiceMenu.selected}
         disabled={busy}
-        onChange$={async (_, el) => {
-          if (el.value === "__custom__") {
+        options={[
+          ...player.voiceMenu.options.map((voice) => ({
+            value: voice.id,
+            label: voice.label,
+          })),
+          ...(player.voiceMenu.allowsCustom
+            ? [
+                {
+                  value: "__custom__",
+                  label: "Custom voice…",
+                  description: "Use a provider voice ID",
+                },
+              ]
+            : []),
+        ]}
+        onChange$={async (value) => {
+          if (value === "__custom__") {
             local.customOpen = true;
             local.customVoice = "";
             return;
           }
           local.customOpen = false;
-          await player.changeVoice$(el.value);
+          await player.changeVoice$(value);
         }}
-        aria-label="Change narration voice and restart passage"
-        title="Change voice and restart this passage"
-      >
-        {player.voiceMenu.options.map((voice) => (
-          <option
-            key={voice.id}
-            value={voice.id}
-            selected={
-              !local.customOpen && voice.id === player.voiceMenu.selected
-            }
-          >
-            {voice.label}
-          </option>
-        ))}
-        {player.voiceMenu.allowsCustom && (
-          <option value="__custom__" selected={local.customOpen}>
-            Custom voice…
-          </option>
-        )}
-      </select>
+      />
       {local.customOpen && (
         <div
           class="absolute bottom-full right-0 mb-2 flex w-64 gap-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-2"

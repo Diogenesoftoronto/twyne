@@ -113,27 +113,41 @@ export const synthesizeSpeech = action({
       // The gateway authorizes and settles the linked account's credit. A
       // gateway rejection must never spend against the legacy OpenAI key.
       const voice = resolveHostedSpeechVoice(args.voice);
-      const res = await route.fetch(`${route.baseURL}/audio/speech`, {
-        method: "POST",
-        headers: {
-          ...route.headers,
-          authorization: `Bearer ${route.apiKey}`,
-          "content-type": "application/json",
-        },
-        signal: AbortSignal.timeout(150_000),
-        body: JSON.stringify({
-          model: route.model,
-          input,
-          voice,
-          response_format: responseFormat,
-          stream: false,
-          timestamps: true,
-          include_timestamps: true,
-          // ElevenLabs accepts audio tags in the input, not OpenAI's freeform
-          // instructions or speed parameters. Never read those directions aloud.
-          voice_settings: { stability: 0.5, similarity_boost: 0.75 },
-        }),
-      });
+      let res: Response;
+      try {
+        res = await route.fetch(`${route.baseURL}/audio/speech`, {
+          method: "POST",
+          headers: {
+            ...route.headers,
+            authorization: `Bearer ${route.apiKey}`,
+            "content-type": "application/json",
+          },
+          signal: AbortSignal.timeout(150_000),
+          body: JSON.stringify({
+            model: route.model,
+            input,
+            voice,
+            response_format: responseFormat,
+            stream: false,
+            timestamps: true,
+            include_timestamps: true,
+            // ElevenLabs accepts audio tags in the input, not OpenAI's freeform
+            // instructions or speed parameters. Never read those directions aloud.
+            voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+          }),
+        });
+      } catch (error) {
+        const timedOut =
+          error instanceof Error &&
+          ["TimeoutError", "AbortError"].includes(error.name);
+        throw reportedApplicationError(
+          "voice.synthesize",
+          timedOut ? "timeout" : "provider_unavailable",
+          error,
+          { provider: "notorganic", operation: "speech" },
+          { provider: "notorganic", model: route.model, operation: "speech" },
+        );
+      }
       if (!res.ok) {
         // Retain HTTP evidence and a support reference, never raw upstream
         // bodies (which can echo manuscript text or credentials).
@@ -159,6 +173,12 @@ export const synthesizeSpeech = action({
                   ? "The hosted voice route is unavailable. Please contact support with this reference."
                   : "Hosted narration could not finish. Please try again later.",
             retryable: res.status === 429 || res.status >= 500,
+            status: res.status,
+            provider: "notorganic",
+            operation: "speech",
+            ...(res.status === 400 || res.status === 404
+              ? { recovery: "contact_support" as const }
+              : {}),
           },
           {
             status: res.status,
