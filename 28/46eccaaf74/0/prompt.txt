@@ -1,0 +1,14 @@
+can we get production to use inkling small 2 for this as well
+
+---
+
+Should Inkling Small 2 become the default for all Twyne production AI features, or only the research/fact-checking flow?
+All production AI features
+
+---
+
+well the speech aspect is a problem for a reason, primarily because inkling has no way to output audio it can get audio input t hough
+
+---
+
+think a bit more deeply about inkling integration i think it should replace where we have other models that do text gen, since it can take audio and image input that also works
