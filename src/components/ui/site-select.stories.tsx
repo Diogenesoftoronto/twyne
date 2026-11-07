@@ -1,4 +1,5 @@
-import { $ } from "@qwik.dev/core";
+import { $, component$, useSignal, useStyles$ } from "@qwik.dev/core";
+import voiceStyles from "./speech-voice-select.css?inline";
 import type { Meta, StoryObj } from "storybook-framework-qwik";
 import { SiteSelect, type SiteSelectOption } from "./site-select";
 
@@ -61,4 +62,42 @@ export const Empty: Story = {
 
 export const Disabled: Story = {
   args: { disabled: true },
+};
+
+const NarrationVoiceExample = component$(() => {
+  useStyles$(voiceStyles);
+  const voice = useSignal("Chris");
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: "1rem",
+        left: "1rem",
+        width: "min(22rem, calc(100vw - 2rem))",
+      }}
+    >
+      <p style={{ fontFamily: "var(--font-serif)", marginBottom: "0.75rem" }}>
+        Narration voice: {voice.value}
+      </p>
+      <SiteSelect
+        class="speech-voice-select"
+        placement="top"
+        ariaLabel="Narration voice"
+        value={voice.value}
+        options={["Alice", "Matilda", "Daniel", "George", "Chris"].map(
+          (name) => ({ value: name, label: name }),
+        )}
+        onChange$={(value) => {
+          voice.value = value;
+        }}
+      />
+      <button type="button" style={{ marginTop: "0.5rem" }}>
+        Next control
+      </button>
+    </div>
+  );
+});
+
+export const NarrationVoice: Story = {
+  render: () => <NarrationVoiceExample />,
 };

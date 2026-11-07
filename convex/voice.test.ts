@@ -1,5 +1,7 @@
 import { afterEach, expect, spyOn, test } from "bun:test";
 import { synthesizeSpeech } from "./voice";
+import { normalizeApplicationError } from "../src/utils/application-errors";
+import { describeSpeechError } from "../src/components/ui/speech-error-model";
 import * as notorganic from "./lib/notorganic";
 import * as entitlement from "./lib/entitlement";
 import * as rateLimit from "./lib/rateLimit";
@@ -303,4 +305,69 @@ test("timed gateway audio preserves native word alignment for the exact requeste
       },
     ],
   });
+});
+
+// Exercise the complete server envelope -> client normalization -> player copy
+// boundary: testing only the thrown message missed these recovery regressions.
+for (const status of [400, 401, 402, 403, 404, 429, 503]) {
+  test(`hosted HTTP ${status} survives normalization with honest recovery`, async () => {
+    const f = fixture();
+    f.respond(
+      Response.json({ error: "private upstream body sk-secret" }, { status }),
+    );
+    let failure: unknown;
+    try {
+      await f.run();
+    } catch (error) {
+      failure = error;
+    }
+    expect(failure).toBeDefined();
+    const normalized = normalizeApplicationError(failure);
+    const view = describeSpeechError(normalized);
+    expect(normalized.status).toBe(status);
+    expect(normalized.referenceId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(JSON.stringify(view)).not.toContain("private upstream");
+    expect(JSON.stringify(view)).not.toContain("sk-secret");
+    if (status === 402) {
+      expect(view.title).toBe("Narration needs wallet credit");
+      expect(view.recovery?.href).toBe("/pricing/");
+      expect(view.retry).toBe(false);
+    } else if (status === 400 || status === 404) {
+      expect(view.recovery).toBeUndefined();
+      expect(view.message).toContain("Contact support");
+      expect(view.retry).toBe(false);
+    } else if (status === 401) {
+      expect(view.recovery?.label).toBe("Sign in");
+    } else if (status === 403) {
+      expect(view.recovery).toBeUndefined();
+      expect(view.retry).toBe(false);
+    } else {
+      expect(view.retry).toBe(true);
+      expect(view.recovery).toBeUndefined();
+    }
+  });
+}
+
+test("a hosted timeout has a copyable reference and can be retried", async () => {
+  const f = fixture();
+  f.route.mockReturnValue({
+    baseURL: "https://gateway.example.test/v1",
+    apiKey: "fixture-token",
+    model: "speech-eleven-v4",
+    headers: {},
+    fetch: (async () => {
+      throw new DOMException("private transport detail", "TimeoutError");
+    }) as unknown as typeof fetch,
+  });
+  let failure: unknown;
+  try {
+    await f.run();
+  } catch (error) {
+    failure = error;
+  }
+  const normalized = normalizeApplicationError(failure);
+  expect(normalized.code).toBe("TIMEOUT");
+  expect(normalized.referenceId).toMatch(/^[0-9a-f-]{36}$/);
+  expect(describeSpeechError(normalized).retry).toBe(true);
+  expect(JSON.stringify(normalized)).not.toContain("private transport");
 });

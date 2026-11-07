@@ -1,0 +1,29 @@
+.speech-voice-select .site-select__trigger {
+  min-height: 2.5rem;
+  background: var(--color-paper-soft);
+  font-size: 0.6875rem;
+}
+
+.speech-voice-select .site-select__trigger::before {
+  content: "Voice";
+  color: var(--color-ink-muted);
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.speech-voice-select .site-select__menu {
+  width: max(100%, 15rem);
+  padding: 0.4rem;
+  border-top: 2px solid var(--color-vermilion);
+  box-shadow: 0 -4px 24px color-mix(in srgb, var(--color-ink) 12%, transparent);
+}
+
+.speech-voice-select .site-select__option {
+  min-height: 2.75rem;
+  align-items: center;
+}
+
+.speech-voice-select .site-select__chevron {
+  transform: rotate(180deg);
+}

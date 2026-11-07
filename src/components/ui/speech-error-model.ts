@@ -39,6 +39,33 @@ export function describeSpeechError(error: AppError | null): SpeechErrorView {
       primaryRecovery: false,
     };
   }
+  const hosted =
+    error.source === "convex" &&
+    error.metadata?.provider === "notorganic" &&
+    error.metadata?.operation === "speech";
+  // Use reviewed copy selected by structured evidence; never display a raw
+  // gateway body or tell a signed-in writer to repair our provider route.
+  if (hosted && error.status === 402) {
+    return {
+      title: "Narration needs wallet credit",
+      message:
+        "Add credit to your Not Organic wallet, then read this passage again.",
+      recovery: { label: "Add credit", href: "/pricing/" },
+      retry: false,
+      primaryRecovery: true,
+      suggestVoiceChange: false,
+    };
+  }
+  if (hosted && (error.status === 400 || error.status === 404)) {
+    return {
+      title: "Hosted narration is unavailable",
+      message:
+        "Twyne couldn't prepare this voice. Contact support with the reference below so we can check the hosted route.",
+      retry: false,
+      primaryRecovery: false,
+      suggestVoiceChange: false,
+    };
+  }
   const downloadRequired = error.recovery.action === "download-required";
   let recovery: SpeechErrorView["recovery"];
   switch (error.recovery.action) {

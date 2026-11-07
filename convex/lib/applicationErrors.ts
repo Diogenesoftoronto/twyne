@@ -21,7 +21,16 @@ export interface ApplicationErrorData {
   message: string;
   retryable: boolean;
   referenceId?: string;
-  recovery?: "retry" | "sign_in" | "open_settings" | "use_form" | "reload";
+  status?: number;
+  provider?: string;
+  operation?: string;
+  recovery?:
+    | "retry"
+    | "sign_in"
+    | "open_settings"
+    | "use_form"
+    | "reload"
+    | "contact_support";
 }
 
 const EXPECTED: Record<
