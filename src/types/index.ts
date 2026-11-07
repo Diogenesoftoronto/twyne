@@ -980,6 +980,7 @@ export type AiFeature =
   | "interview-turn"
   | "dossier-check"
   | "in-flow-tool"
+  | "alternatives"
   | "scene-image"
   | "scene-reading";
 

@@ -238,6 +238,9 @@ const ManuscriptSelectionPreview = component$<SelectionStoryProps>((props) => {
         </article>
         <SelectionActions
           selection={state.selection}
+          onAlternatives$={() => {
+            state.status = "Alternatives requested for the selected passage";
+          }}
           onSentenceBench$={() => {
             state.status =
               "Compare a revision requested for the selected passage";

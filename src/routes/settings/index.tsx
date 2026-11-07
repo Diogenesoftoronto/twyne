@@ -219,6 +219,7 @@ const FEATURE_LABELS: Record<AiFeature, string> = {
   "interview-turn": "Conversational Interview",
   "dossier-check": "Read My Draft",
   "in-flow-tool": "In-flow Tools",
+  alternatives: "Alternatives",
   "scene-image": "Scene Pictures",
   "scene-reading": "Scene Picture Comparison",
 };
@@ -253,6 +254,8 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
     "Cross-references the dossier against the current draft and surfaces where the draft has outgrown the brief.",
   "in-flow-tool":
     "Fills the small tools that appear in the margin while you write: sentence variants and reader questions.",
+  alternatives:
+    "Writes replacement wordings for a locked word or passage, held to about its length.",
   "scene-image":
     "Draws a selected passage in Scene Bench when you choose your own models under Scene Pictures. Needs a model that outputs images.",
   "scene-reading":
