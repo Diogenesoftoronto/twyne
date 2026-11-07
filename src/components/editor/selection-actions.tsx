@@ -26,6 +26,8 @@ type Menu = "persona" | "more";
 interface SelectionActionsProps {
   selection: SelectionActionState | null;
   disabled?: boolean;
+  /** Lock the selection and browse replacements of about its length. */
+  onAlternatives$?: PropFunction<() => void>;
   onSentenceBench$?: PropFunction<() => void>;
   onHear$?: PropFunction<() => void>;
   onThreads$?: PropFunction<() => void>;
@@ -253,6 +255,21 @@ export const SelectionActions = component$<SelectionActionsProps>((props) => {
       preventdefault:mousedown
     >
       <div class="selection-actions__row">
+        {props.onAlternatives$ && (
+          <button
+            type="button"
+            title={
+              multiWord
+                ? "Lock this passage and browse rewordings of about the same length (Shift+F7)"
+                : "Lock this word and browse synonyms, antonyms and words that fit (Shift+F7)"
+            }
+            aria-keyshortcuts="Shift+F7"
+            onClick$={props.onAlternatives$}
+            disabled={props.disabled}
+          >
+            Alternatives
+          </button>
+        )}
         {props.onSentenceBench$ && (
           <button
             type="button"

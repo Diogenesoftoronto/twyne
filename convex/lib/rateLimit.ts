@@ -166,6 +166,12 @@ export const RATE_LIMITS = {
   agentFeedback: { limit: 30, windowMs: 60_000 },
   /** Suggested rewrite: 30 per minute per user. */
   agentRewrite: { limit: 30, windowMs: 60_000 },
+  /**
+   * Alternatives for a locked span: 40 per minute per user. Browsing asks for
+   * more as the writer scrolls, but each lock caps its own rounds, so this
+   * only stops a runaway loop.
+   */
+  alternatives: { limit: 40, windowMs: 60_000 },
   /** Research / apparatus, Pro tier: 15 per minute per user. */
   research: { limit: 15, windowMs: 60_000 },
   /** Research / apparatus, signed-in free tier: 5 per minute per user. */

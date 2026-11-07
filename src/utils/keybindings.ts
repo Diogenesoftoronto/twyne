@@ -40,6 +40,8 @@ export const EDITOR_KEYBINDINGS = [
   { commandId: "table.delete-row", shortcut: "Mod-Alt-Backspace" },
   { commandId: "table.delete-table", shortcut: "Mod-Alt-Shift-Backspace" },
   { commandId: "review.comment", shortcut: "Mod-Alt-m" },
+  // The thesaurus key in Word and LibreOffice.
+  { commandId: "review.alternatives", shortcut: "Shift-F7" },
   { commandId: "navigate.find", shortcut: "Mod-f" },
   { commandId: "navigate.replace", shortcut: "Mod-h" },
   { commandId: "navigate.outline", shortcut: "Mod-Shift-o" },

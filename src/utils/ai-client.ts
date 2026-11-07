@@ -675,6 +675,9 @@ function defaultTemperature(feature: AiFeature): number {
     case "research-extract":
     case "scene-reading":
       return 0.2;
+    // Alternatives are only useful if they differ from one another.
+    case "alternatives":
+      return 0.8;
     default:
       return 0.4;
   }
@@ -4100,6 +4103,46 @@ export async function runClientSceneReading(
   } catch (error) {
     await settleClientUsage({ ...usageBase, outcome: "failed" });
     reportApplicationDiagnostic("twyne:ai-client:scene-reading", error);
+    return null;
+  }
+}
+
+/**
+ * Alternatives for a locked span, on the writer's own provider. Streams the
+ * model's JSONL so options can appear one by one; parsing and the length
+ * window live in `utils/alternatives.ts`.
+ */
+export async function runClientAlternatives(
+  request: {
+    system: string;
+    prompt: string;
+    scale: string;
+    onText?: (text: string) => void;
+  },
+  settings: AiSettings,
+): Promise<string | null> {
+  const cfg = resolveFeatureConfig(settings, "alternatives");
+  if (!cfg) return null;
+  const model = await createModel(cfg.provider, cfg.model);
+  if (!model) return null;
+  try {
+    return await generateTrackedText({
+      feature: "alternatives",
+      resolved: cfg,
+      model,
+      system: request.system,
+      prompt: request.prompt,
+      spanName: "alternatives",
+      evalSignals: {
+        twyne_alternatives_scale: request.scale,
+        twyne_expected_format: "jsonl_alternatives",
+      },
+      onText: request.onText
+        ? (snapshot) => request.onText!(snapshot.text)
+        : undefined,
+    });
+  } catch (err) {
+    reportApplicationDiagnostic("twyne:ai-client:alternatives", err);
     return null;
   }
 }

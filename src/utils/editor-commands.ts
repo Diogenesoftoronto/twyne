@@ -407,6 +407,24 @@ export const EDITOR_COMMANDS = [
     slash: { group: "Review", order: 10, keywords: ["annotation", "note"] },
   },
   {
+    id: "review.alternatives",
+    label: "Alternatives",
+    description:
+      "Lock the selected words, or the word at the caret, and browse replacements of about the same length: synonyms, antonyms and rewordings.",
+    group: "review",
+    searchTerms: [
+      "thesaurus",
+      "synonym",
+      "antonym",
+      "reword",
+      "rephrase",
+      "rewrite",
+      "another word",
+    ],
+    availability: "editable",
+    surfaces: REFERENCE_ONLY,
+  },
+  {
     id: "review.read-aloud",
     label: "Read aloud",
     description: "Read the selection, or the manuscript, using narration.",

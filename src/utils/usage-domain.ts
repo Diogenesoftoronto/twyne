@@ -48,6 +48,7 @@ export const USAGE_AI_FEATURES = [
   "interview-turn",
   "dossier-check",
   "in-flow-tool",
+  "alternatives",
   "scene-image",
   "scene-reading",
   "other",

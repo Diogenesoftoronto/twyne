@@ -182,6 +182,12 @@ import { MermaidDiagram } from "./extensions/mermaid-node";
 import type { NoteKind } from "./extensions/endnote-node";
 import { InlineNoteNode } from "./extensions/inline-note-popover";
 import { FindReplace } from "./extensions/find-replace";
+import {
+  Alternatives,
+  alternativesController,
+  alternativesSnapshot,
+} from "./extensions/alternatives";
+import { AlternativesPalette } from "./alternatives-palette";
 import { MathExtensions } from "./extensions/math";
 import { SectionReorder } from "./extensions/section-reorder";
 import { WetInk } from "./extensions/wet-ink";
@@ -1326,6 +1332,7 @@ export const TwyneEditor = component$(
             LivingDeskDecorations,
             Indent,
             FindReplace,
+            Alternatives,
             SlashCommand,
             ...MathExtensions,
             SectionReorder,
@@ -1450,7 +1457,11 @@ export const TwyneEditor = component$(
 
         /** Record the finished text range as a durable manuscript action. */
         const refreshSelectionAction = () => {
-          if (nativeTextDragActive || threadInstrumentSnapshot().open) {
+          if (
+            nativeTextDragActive ||
+            threadInstrumentSnapshot().open ||
+            alternativesSnapshot()
+          ) {
             store.selectionAction = null;
             return;
           }
@@ -3829,6 +3840,27 @@ export const TwyneEditor = component$(
       },
     );
 
+    /**
+     * Lock a span for Alternatives: the given range, the selection, or the
+     * word at the caret. A span that cannot be locked says why on the
+     * selection card, or at the caret when there is no card.
+     */
+    const openAlternatives = $(
+      (range: { from: number; to: number } | undefined) => {
+        if (readOnly || !store.editor) return;
+        const result = alternativesController()?.open(range);
+        if (!result) return;
+        if (result.ok) {
+          store.selectionAction = null;
+          return;
+        }
+        const current = store.selectionAction;
+        if (current)
+          store.selectionAction = { ...current, error: result.message };
+        else alternativesController()?.refuse(result.message);
+      },
+    );
+
     const runRegistryCommand = $(async (commandId: EditorCommandId) => {
       const alias = REGISTRY_COMMAND_ALIASES[commandId];
       if (alias) {
@@ -3896,6 +3928,9 @@ export const TwyneEditor = component$(
           break;
         case "review.read-aloud":
           await readAloud();
+          break;
+        case "review.alternatives":
+          openAlternatives(undefined);
           break;
         case "navigate.find":
         case "navigate.replace":
@@ -4337,6 +4372,14 @@ export const TwyneEditor = component$(
           }
           onGetSources$={getSourcesForSelection}
           disabled={readOnly}
+          onAlternatives$={() => {
+            const selection = store.selectionAction;
+            openAlternatives(
+              selection
+                ? { from: selection.from, to: selection.to }
+                : undefined,
+            );
+          }}
           onSentenceBench$={() => {
             const text = store.selectionAction?.text;
             inFlowController()?.openKind("sentence-lab", text);
@@ -4377,6 +4420,8 @@ export const TwyneEditor = component$(
             store.selectionAction = null;
           }}
         />
+
+        <AlternativesPalette />
 
         {store.activeFolioId && (
           <InstrumentDock
