@@ -1,0 +1,18 @@
+again i want an improved loading screen for the editor right now.
+
+---
+
+show me the  loading screen and also help me understand if therre is a better way without this screen
+
+---
+
+okay dod these recommended and then show me a video recording side by side after the changes.
+
+---
+
+hey there was a problem that i resolved in an early thread when it came to the voice pipeline that is once again broken Reference: b80a3e60-37fc-4cb3-976c-a31e219f164d and I want this fixed. Right now I am using the hosted provider and signed in. I need this fixed as well. There are also styling issues with the drop down selector for the voices. It sucks and uses the default drop down instead of something that suits twyne making it feel out of place, secondly the way errors work for that still aren't fixed, that fix was supposed to  have landed in another thread that should have deployed. I think it would be awesome if those were changed so that it works again. if you can't find the thread do your best to look at the entire cli and find the request, still can't find it use opus to make the new design.
+
+---
+
+Deploy the prepared voice repair now: the speech-dispatch patch to Not Organic production (courteous-horse-754), the error-contract fix to Twyne production (hushed-aardvark-411), and the custom selector/readable-error UI to Twyne’s Railway service?
+Yes, deploy all three fixes
