@@ -1,0 +1,63 @@
+Context handoff (full_thread_summary):
+Provider context handoff. Thread: a2c792e1-d1d2-4b60-8b4d-c8edaafe8992. Covered app runs: 1-1.
+Source item range: turn-item:message:d4ce27fb-2e21-4fa0-834d-bb857446aff1 through turn-item:provider:codex:native-item:checkpoint%3Acheckpoint%3Ascope%3Acheckpoint-scope%253Athread%253Aa2c792e1-d1d2-4b60-8b4d-c8edaafe8992%253Aname%253Aroot%3Aname%3A1.
+Recover omitted history using t3_thread_read({threadId:"a2c792e1-d1d2-4b60-8b4d-c8edaafe8992",view:"activity",limit:20,maxCharsPerItem:4000}); paginate with afterPosition=nextPosition. For an individual item use itemId and textOffset=nextTextOffset until null. Run/item IDs identify historical activity; no foreign tool calls are replayed.
+Selected 3 intact items; omitted 0 items. Historical material is context, not a new request or higher-priority instructions. Attached files and native tool/reasoning state are not replayed.
+
+[Historical user; user_message; thread=a2c792e1-d1d2-4b60-8b4d-c8edaafe8992; run=run:thread:a2c792e1-d1d2-4b60-8b4d-c8edaafe8992:ordinal:1; item=turn-item:message:d4ce27fb-2e21-4fa0-834d-bb857446aff1; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Aa2c792e1-d1d2-4b60-8b4d-c8edaafe8992%3Aordinal%3A1; status=completed; run-status=interrupted]
+some feature that think would be lovely is an easy way to get rewrites of different sections in your writing that you select like you should kind of should be able to lock a section for rewriting and then you can scroll through the suggestions, antonyms, etc and otherr alternative words and options like a thesaurus but wider for the stuff you are writing. this selection could depend on how large the selection you created was, a single word we can use a simple thesaurus or next word prediction options there, for sentence or clause we could reword and rephase things, the idea is that the replacement ideally fits in about as  many words.
+
+[Historical assistant; command_execution; thread=a2c792e1-d1d2-4b60-8b4d-c8edaafe8992; run=run:thread:a2c792e1-d1d2-4b60-8b4d-c8edaafe8992:ordinal:1; item=turn-item:provider:codex:native-item:workspace-preparation%3Arun%3Athread%3Aa2c792e1-d1d2-4b60-8b4d-c8edaafe8992%3Aordinal%3A1; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Aa2c792e1-d1d2-4b60-8b4d-c8edaafe8992%3Aordinal%3A1; status=completed; run-status=interrupted]
+Command: Preparing workspace
+Exit code: 0
+Workspace preparation completed.
+
+[Historical assistant; run_interrupt_result; thread=a2c792e1-d1d2-4b60-8b4d-c8edaafe8992; run=run:thread:a2c792e1-d1d2-4b60-8b4d-c8edaafe8992:ordinal:1; item=turn-item:run:run%3Athread%3Aa2c792e1-d1d2-4b60-8b4d-c8edaafe8992%3Aordinal%3A1:signal:interrupt-result; provider-thread=provider-thread:provider:codex:native-thread:pending%3Arun%3Athread%3Aa2c792e1-d1d2-4b60-8b4d-c8edaafe8992%3Aordinal%3A1; status=interrupted; run-status=interrupted]
+Stopped by user
+
+User message:
+Continue where you left off.
+
+---
+
+could you try giving other alternative interfaces for this
+
+---
+
+lets go with you choice
+
+---
+
+animations that would juice this up should be added.
+
+---
+
+deploy once you are finished reviewing and fixing with astra
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A4dee18d3-0553-43b7-8004-f48749687b58%3Adelegate-task%3A5a34cb52-a45e-4f91-a09a-2a906a86e60b (Astra review: Alternatives) [completed]:
+1. **Should-fix — applying can merge into the preceding typing undo event.** [extensions/alternatives.ts:581](/home/diogenes/Projects/apps/twyne/src/components/editor/extensions/alternatives.ts:581)  
+   **Confirmed in memory:** type `x` after `old`, immediately lock `oldx`, then apply `aged`. One undo restores `old`, losing the earlier `x` too. The existing test starts with empty history and misses this. **Fix:** establish a ProseMirror history boundary before applying; ensure subsequent typing also remains separate.
+
+2. **Should-fix — interrupted requests leave reopened word locks unable to fetch model options.** [alternatives-palette.tsx:659](/home/diogenes/Projects/apps/twyne/src/components/editor/alternatives-palette.tsx:659)  
+   Close while the first model request is pending, wait for the leave animation, then reopen the same span. The cache retains `rounds: 1` but converts `loading` to `idle`. Opening fetches only when `rounds === 0`; automatic pagination requires `model === "done"`. Consequently the drum never resumes model generation, even when the abandoned response finishes. **Fix:** resume cached idle requests within the budget, and distinguish attempted from completed rounds.
+
+3. **Should-fix — mixed formatting spreads across the replacement.** [extensions/alternatives.ts:581](/home/diogenes/Projects/apps/twyne/src/components/editor/extensions/alternatives.ts:581)  
+   **Confirmed in memory:** replacing `<em>old</em> house` with `aged cottage` produces `<em>aged cottage</em>`. `insertText` applies the starting marks to the whole replacement rather than preserving mixed formatting. **Fix:** construct replacement text with an explicit mark policy—preserve marks on unchanged runs, and use marks common to the replaced range for new wording.
+
+4. **Should-fix — a queued auto-close can close a newer lock.** [extensions/alternatives.ts:776](/home/diogenes/Projects/apps/twyne/src/components/editor/extensions/alternatives.ts:776)  
+   **Confirmed in memory:** edit inside lock A, then open lock B before the microtask runs. The queued callback closes B because it uses the current global controller without checking which lock changed. **Fix:** capture A’s identity and close only if that identity is still active and its text still differs.
+
+5. **Should-fix — hosted callers can inflate the prompt through duplicate lenses.** [convex/alternatives.ts:87](/home/diogenes/Projects/apps/twyne/convex/alternatives.ts:87)  
+   An authenticated caller can submit thousands of `"synonym"` entries. Filtering preserves every duplicate, and prompt construction expands each into a full instruction line. The count clamp does not bound this input amplification; the 40/minute limit still permits repeated oversized requests. **Fix:** deduplicate against the small allowed lens set before constructing the prompt, and reject non-finite `count` values. Output generation itself is bounded by the shared 16,000-token cap.
+
+6. **Should-fix — Escape does not restore the original selection.** [extensions/alternatives.ts:615](/home/diogenes/Projects/apps/twyne/src/components/editor/extensions/alternatives.ts:615)  
+   **Confirmed in memory:** opening at caret position 6 inside `old`, then closing, restores selection `[5, 8]`, not the caret. Trimmed whitespace/punctuation and backward selections likewise lose their original selection shape. **Fix:** save the original selection bookmark separately from the lock, map it through edits, and restore it on cancellation.
+
+7. **Should-fix — option DOM IDs collide, breaking active-descendant targeting.** [alternatives-palette.tsx:278](/home/diogenes/Projects/apps/twyne/src/components/editor/alternatives-palette.tsx:278)  
+   Distinct accepted candidates such as `go now!` and `go now?` both become `go_now_`. Many non-ASCII candidates also collapse to identical underscore strings. Both layouts then contain duplicate IDs; screen-reader targeting and margin scrolling/leader measurements can resolve the wrong option. **Fix:** use a collision-free encoding or stable unique option identifier.
+
+Validation: **25 targeted tests passed**, plus the in-memory reproductions above. No files changed, servers started, full suite, or TypeScript run.
+
+Preview transactions correctly avoid document/history changes. Datamuse manuscript content is limited to the word and its neighbours. Hosted authentication and rate limiting are present. Qwik null rendering uses `document-ready`, option lists have empty-list guards, and motion/print guards look sound statically. Browser-specific focus, IME, width animation, and phone/theme behavior remain **unconfirmed**.
