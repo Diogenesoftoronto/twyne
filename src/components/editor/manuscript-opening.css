@@ -1,0 +1,74 @@
+.manuscript-opening-shell {
+  min-height: 100%;
+  background: var(--color-editor-bg);
+}
+.manuscript-opening-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 37px;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color-rule);
+  color: var(--color-ink-light);
+  font: 400 0.8125rem/1.25 var(--font-sans);
+}
+.manuscript-opening-nav a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+.manuscript-opening-nav a:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 3px;
+}
+.manuscript-opening {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2rem;
+  color: var(--color-ink-light);
+  font: 400 0.875rem/1.5 var(--font-sans);
+  /* Fast opens remove this before it is ever painted. No minimum wait. */
+  animation: manuscript-opening-reveal 0s 200ms both;
+}
+.manuscript-opening--in-shell {
+  max-width: var(--doc-width, 74rem);
+  margin-inline: auto;
+  padding: var(--doc-pad-y, 2.5rem) var(--doc-pad-left, 3rem);
+}
+.manuscript-opening__ink {
+  width: 2px;
+  height: 1rem;
+  background: var(--color-vermilion);
+}
+@keyframes manuscript-opening-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .manuscript-opening__ink {
+    animation: manuscript-opening-ink 1.8s ease-in-out infinite;
+  }
+}
+@keyframes manuscript-opening-ink {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .manuscript-opening {
+    animation: none;
+  }
+}
+@media (max-width: 480px) {
+  .manuscript-opening--in-shell {
+    padding-inline: 1.5rem;
+  }
+}

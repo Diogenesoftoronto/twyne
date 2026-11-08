@@ -55,6 +55,8 @@ import {
   useAuth,
 } from "../../utils/auth-context";
 import { TwyneEditor } from "../../components/editor/twyne-editor";
+import { ManuscriptOpening } from "../../components/editor/manuscript-opening";
+import { loadEditorRuntime } from "../../utils/editor-runtime";
 import { ShareDialog } from "../../components/collaboration/share-dialog";
 import { PersonasPanel } from "../../components/personas/personas-panel";
 import { RubricPanel } from "../../components/rubric/rubric-panel";
@@ -234,6 +236,7 @@ export default component$(() => {
   // as the ?auth=1 deep link and the local-only nudge flip this open.
   const accountOpen = useSignal(false);
   const manuscriptEditor = useSignal<NoSerialize<Editor>>();
+  const supportingFolioId = useSignal<string | null>(null);
   const sharedOpenGeneration = useSignal(0);
   const opensVersionHistory =
     location.url.searchParams.get("panel") === "history";
@@ -271,12 +274,22 @@ export default component$(() => {
   useVisibleTask$(({ cleanup }) => {
     const lastWordCounts = new Map<string, number>();
     const editedFolios = new Set<string>();
+    let disposed = false;
+    cleanup(() => {
+      disposed = true;
+    });
+    // Download the editing engine concurrently with local workspace recovery.
+    // The editor reports an import failure when it actually needs the engine.
+    void loadEditorRuntime().catch(() => undefined);
 
     (async () => {
       try {
         const legacyBrief = loadProjectBrief();
-        const folios = await loadFoliosFromIdb();
-        const activeFolioId = await loadActiveFolioIdFromIdb();
+        const [folios, activeFolioId] = await Promise.all([
+          loadFoliosFromIdb(),
+          loadActiveFolioIdFromIdb(),
+        ]);
+        if (disposed) return;
         const requestedSharedId = new URLSearchParams(
           window.location.search,
         ).get("shared");
@@ -309,33 +322,46 @@ export default component$(() => {
         } else if (folios.length > 0) {
           store.folios = folios;
           store.activeFolioId = activeFolioId ?? folios[0].id;
-          if (await recoverFolioContentFromCrashMirror(store.activeFolioId)) {
-            markDirty(["folioContent"], store.activeFolioId);
-          }
-          store.editorSeed = await loadFolioContentFromIdb(store.activeFolioId);
         }
 
-        store.brief = await loadProjectBriefForFolio(store.activeFolioId);
-        if (store.activeFolioId) {
-          await migrateLegacyEditorialArtifacts(
-            store.activeFolioId,
+        const openingFolioId = store.activeFolioId;
+        // Recovery must precede reading the manuscript. Independent dossier
+        // reads and ownership migration can run alongside it.
+        const [content, brief] = await Promise.all([
+          (async () => {
+            if (!openingFolioId) return "";
+            if (await recoverFolioContentFromCrashMirror(openingFolioId)) {
+              markDirty(["folioContent"], openingFolioId);
+            }
+            return loadFolioContentFromIdb(openingFolioId);
+          })(),
+          loadProjectBriefForFolio(openingFolioId),
+          openingFolioId
+            ? migrateLegacyEditorialArtifacts(
+                openingFolioId,
             canClaimLegacyEditorialArtifacts(
               store.folios.map((folio) => folio.id),
-              store.activeFolioId,
+                  openingFolioId,
             ),
-          );
-        }
-        const folioDossiers = await loadAllBriefsFromIdb();
+              )
+            : Promise.resolve(),
+        ]);
+        if (disposed) return;
+        store.editorSeed = content;
+        store.brief = brief;
+        // Only legacy fallback needs the complete dossier collection.
+        const folioDossiers =
+          !store.brief && legacyBrief ? await loadAllBriefsFromIdb() : null;
         if (
           !store.brief &&
-          folioDossiers.length === 0 &&
+          folioDossiers?.length === 0 &&
           legacyBrief &&
           store.activeFolioId
         ) {
           await saveProjectBriefForFolio(store.activeFolioId, legacyBrief);
           store.brief = legacyBrief;
         }
-        store.briefEditions = await loadBriefEditions(store.activeFolioId);
+        if (disposed) return;
         store.hydrated = true;
 
         const openedFolio = store.folios.find(
@@ -352,7 +378,11 @@ export default component$(() => {
         // Surface the local-only sign-in nudge unless it was dismissed before.
         const dismissed = await loadMetaFromIdb<boolean>(
           "signin-toast-dismissed",
-        );
+        ).catch((error) => {
+          reportApplicationDiagnostic("twyne:editor:signin-nudge", error);
+          return true;
+        });
+        if (disposed) return;
         store.signInToastDismissed = dismissed === true;
 
         // Arriving from the landing "Sign in" link → open the auth panel.
@@ -360,6 +390,7 @@ export default component$(() => {
           accountOpen.value = true;
         }
       } catch (err) {
+        if (disposed) return;
         reportApplicationDiagnostic("twyne:editor:open-workspace", err, {
           operation: "open-workspace",
         });
@@ -367,7 +398,6 @@ export default component$(() => {
           source: "application",
           metadata: { operation: "open-workspace" },
         });
-        store.hydrated = true;
       }
     })();
 
@@ -817,7 +847,7 @@ export default component$(() => {
       window.removeEventListener(OPEN_FULL_THREAD_EVENT, onOpenFullThread);
       window.removeEventListener("twyne:remote-sync", onRemoteSync);
     });
-  });
+  }, { strategy: "document-ready" });
 
   // A shared link must survive both first-use onboarding and the asynchronous
   // auth bootstrap. Tracking the signed-in user resumes the join as soon as
@@ -898,10 +928,47 @@ export default component$(() => {
   });
 
   // Keep the saved dossier editable while model consumers receive inheritance.
+  // Let the first editable frame paint before mounting supporting panels and
+  // reading history. Never write the seed or remount the editor from this task.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track, cleanup }) => {
+    const editor = track(() => manuscriptEditor.value);
+    const folioId = track(() => store.activeFolioId);
+    supportingFolioId.value = null;
+    if (!editor || !folioId) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const frame = requestAnimationFrame(() => {
+      timer = setTimeout(() => {
+        if (cancelled || store.activeFolioId !== folioId) return;
+        supportingFolioId.value = folioId;
+        void loadBriefEditions(folioId)
+          .then((editions) => {
+            if (!cancelled && store.activeFolioId === folioId)
+              store.briefEditions = editions;
+          })
+          .catch((error) =>
+            reportApplicationDiagnostic(
+              "twyne:editor:load-brief-history",
+              error,
+              { operation: "load-brief-history" },
+            ),
+          );
+      }, 0);
+    });
+    cleanup(() => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    });
+  });
+
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track, cleanup }) => {
     const folioId = track(() => store.activeFolioId);
+    const supporting = track(() => supportingFolioId.value);
     track(() => store.brief);
+    if (!folioId || supporting !== folioId) return;
     let disposed = false;
     let generation = 0;
     const refresh = async () => {
@@ -936,10 +1003,11 @@ export default component$(() => {
     ({ track, cleanup }) => {
       const hydrated = track(() => store.hydrated);
       const folioId = track(() => store.activeFolioId);
+      const supporting = track(() => supportingFolioId.value);
       const client = track(() => clientSig.value);
       track(() => auth.value.user);
       track(() => store.brief);
-      if (hydrated && folioId)
+      if (hydrated && folioId && supporting === folioId)
         cleanup(startLiveReview(client ?? null, folioId));
     },
     { strategy: "document-ready" },
@@ -952,9 +1020,16 @@ export default component$(() => {
   useVisibleTask$(async ({ track, cleanup }) => {
     const hydrated = track(() => store.hydrated);
     const folioId = track(() => store.activeFolioId);
+    const supporting = track(() => supportingFolioId.value);
     const brief = track(() => store.modelBrief);
     const contextFolioId = track(() => store.modelBriefFolioId);
-    if (!hydrated || !folioId || contextFolioId !== folioId) return;
+    if (
+      !hydrated ||
+      !folioId ||
+      supporting !== folioId ||
+      contextFolioId !== folioId
+    )
+      return;
 
     let cancelled = false;
     cleanup(() => {
@@ -1116,27 +1191,6 @@ export default component$(() => {
         ? "Owner · Can edit"
         : "Can edit";
 
-  if (!store.hydrated) {
-    return (
-      <div class="flex h-screen items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">
-        <div class="folio px-6 py-5 text-center press-hydration">
-          <p class="dept-label">Press Room</p>
-          <p
-            class="mt-2 font-display text-lg italic text-[var(--color-ink-light)]"
-            style="font-family: var(--font-display);"
-          >
-            Setting the type…
-          </p>
-          <div class="press-type-slugs" data-ambient aria-hidden="true">
-            <i />
-            <i />
-            <i />
-            <i />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div class="min-h-screen relative">
@@ -1193,6 +1247,7 @@ export default component$(() => {
       <div class="editor-workspace-shell flex h-screen bg-[var(--color-paper)] overflow-hidden">
         {/* ── The Drawer (left sidebar) ──────────────────────── */}
         <aside
+          inert={!store.hydrated}
           data-open={store.leftSidebarOpen ? "true" : "false"}
           class={`press-drawer sidebar-transition flex-shrink-0 border-r-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper-2)] ${
             store.leftSidebarOpen ? "w-72" : "w-0"
@@ -1537,6 +1592,7 @@ export default component$(() => {
         <div class="editor-workspace-main flex-1 flex flex-col min-w-0">
           {/* Masthead */}
           <header
+            inert={!store.hydrated}
             hidden={store.zenActive}
             class="press-masthead border-b-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper)]"
           >
@@ -1782,10 +1838,13 @@ export default component$(() => {
                     ? "/signin/"
                     : undefined
                 }
-                onDismiss$={$(() => {
-                  store.workspaceError = null;
+                onDismiss$={
+                  store.workspaceError
+                    ? undefined
+                    : $(() => {
                   store.joinError = null;
-                })}
+                      })
+                }
               />
             </div>
           )}
@@ -1797,6 +1856,10 @@ export default component$(() => {
           <div class="relative flex flex-1 min-h-0 overflow-hidden">
             {/* Editor */}
             <div class="h-full min-w-0 flex-1 overflow-auto scroll-pb-12 bg-[var(--color-paper-soft)]">
+              {store.hydrated &&
+              !store.workspaceError &&
+              (!location.url.searchParams.has("shared") ||
+                store.sharedLixId) ? (
               <TwyneEditor
                 editorSignal={manuscriptEditor}
                 key={`editor-${store.activeFolioId ?? "none"}-${store.sharedLixId ?? "solo"}-${store.folioKey}`}
@@ -1823,17 +1886,34 @@ export default component$(() => {
                 onManuscriptFocus$={() => {
                   // The Board stays open while writing, except where it
                   // covers the manuscript (same breakpoint as global.css).
-                  if (!window.matchMedia("(max-width: 720px)").matches) return;
+                    if (!window.matchMedia("(max-width: 720px)").matches)
+                      return;
                   store.rightPanelOpen = false;
                   setVisiblePanel(null);
                 }}
               />
+              ) : store.workspaceError ? (
+                <div class="p-6 text-[var(--color-ink-light)]">
+                  <p>Your manuscript could not be opened.</p>
+                  <a
+                    href={location.url.pathname + location.url.search}
+                    class="underline"
+                  >
+                    Try opening it again
+                  </a>
+                </div>
+              ) : (
+                <ManuscriptOpening shell />
+              )}
             </div>
           </div>
         </div>
 
         {/* The Board is a viewport-height sibling of the main column, matching
             the drawer rather than inheriting the shorter manuscript row. */}
+        {store.hydrated &&
+          supportingFolioId.value === store.activeFolioId &&
+          manuscriptEditor.value && (
         <EditorialBoardOverlay
           open={store.rightPanelOpen}
           activeContext={store.rightPanel}
@@ -1856,7 +1936,9 @@ export default component$(() => {
         >
           {/* All panels stay mounted so their event listeners and in-progress
               state survive tab switches and closure. */}
-          <div class={store.rightPanel === "personas" ? "h-full" : "hidden"}>
+              <div
+                class={store.rightPanel === "personas" ? "h-full" : "hidden"}
+              >
             {store.activeFolioId && (
               <PersonasPanel
                 key={`personas-${store.activeFolioId}`}
@@ -1882,7 +1964,9 @@ export default component$(() => {
               />
             )}
           </div>
-          <div class={store.rightPanel === "comments" ? "h-full" : "hidden"}>
+              <div
+                class={store.rightPanel === "comments" ? "h-full" : "hidden"}
+              >
             <CommentsPanel
               key={`comments-${store.activeFolioId ?? "none"}`}
               brief={
@@ -1893,7 +1977,9 @@ export default component$(() => {
               activeFolioId={store.activeFolioId}
             />
           </div>
-          <div class={store.rightPanel === "citations" ? "h-full" : "hidden"}>
+              <div
+                class={store.rightPanel === "citations" ? "h-full" : "hidden"}
+              >
             <CitationsPanel
               key={`citations-${store.activeFolioId ?? "none"}`}
               activeFolio={
@@ -1916,13 +2002,15 @@ export default component$(() => {
                 key={`history-${store.activeFolioId}`}
                 activeFolioId={store.activeFolioId}
                 folioName={
-                  store.folios.find((folio) => folio.id === store.activeFolioId)
-                    ?.name ?? UNTITLED_FOLIO_NAME
+                      store.folios.find(
+                        (folio) => folio.id === store.activeFolioId,
+                      )?.name ?? UNTITLED_FOLIO_NAME
                 }
               />
             )}
           </div>
         </EditorialBoardOverlay>
+          )}
       </div>
     </div>
   );
