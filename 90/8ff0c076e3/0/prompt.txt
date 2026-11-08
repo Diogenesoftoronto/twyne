@@ -1,0 +1,44 @@
+Act as the review sub-agent for this task.
+
+Review a new feature in the Twyne repo at /home/diogenes/Projects/apps/twyne (Qwik 2 + Tiptap/ProseMirror editor, Convex backend). It is about to be deployed to production, so I want real defects, not style notes. REVIEW ONLY: do not edit, stage, commit or format any file. Report findings back to me; I will apply the fixes.
+
+## The feature: Alternatives
+A writer locks a span of the manuscript (selection toolbar "Alternatives" button, or Shift+F7; a bare caret locks the word under it) and browses replacements of about the same word count.
+- Single word: the "drum". The option being looked at stands in for the word in the sentence (a ProseMirror widget decoration, the doc is not changed), with the previous/next option shown faded above/below the word. Up/Down, the mouse wheel over the word, or a vertical swipe on touch step through options; Left/Right jump between kinds (model picks "fits here", dictionary synonyms, slot fillers, antonyms). Word lists come from the Datamuse API in the browser; model picks stream in from the writer's own provider (BYOK) or Twyne's hosted model via a Convex action.
+- Phrase/sentence/paragraph: a column in the page margin with a dashed leader line to the span, filter chips by kind, a "steer" input that asks the model for rewrites toward a direction the writer types, and a fallback "sheet" layout when there is no margin room.
+- Enter applies the option as one undoable replacement (keeps marks), Escape restores the original and the selection, clicking elsewhere closes. Every candidate is held to the original's length window before it is shown.
+- Animations: drum roll, sweep on lock, bump at the ends, applied text "ink" that dries, margin slide in/out with a delayed unmount, staggered options, gliding cursor bar. All motion is meant to be off under prefers-reduced-motion except the colour-only ink fade.
+
+## Files (all part of this feature)
+New:
+- src/utils/alternatives.ts (span sizing, length budget, Datamuse queries/parsing, prompt building, JSONL parsing, merging, drum ordering)
+- src/components/editor/extensions/alternatives.ts (Tiptap extension: lock state, decorations, preview widget and its animation, apply/close, anchor geometry published via window events, wheel/touch stepping)
+- src/components/editor/alternatives-palette.tsx (Qwik component: fetching, caching, keyboard handling, drum and margin rendering, leave animation)
+- convex/alternatives.ts (public hosted action `suggest`)
+- prompts/alternatives-system.md, prompts/alternatives-user.md (compiled into src/generated/prompt-catalog.ts)
+- src/utils/alternatives.test.ts, src/components/editor/extensions/alternatives.test.ts
+Edited for this feature:
+- src/components/editor/twyne-editor.tsx: only the hunks mentioning Alternatives/alternatives (extension registration, openAlternatives, "review.alternatives" command case, onAlternatives$ prop, <AlternativesPalette /> mount, selection card suppressed while a lock is open)
+- src/components/editor/selection-actions.tsx (+ .stories.tsx): the Alternatives button
+- src/global.css: only the block starting at the comment "── Alternatives" (lock/ghost styles, drum, margin, motion keyframes)
+- src/utils/ai-client.ts: runClientAlternatives and the "alternatives" case in defaultTemperature
+- src/utils/editor-commands.ts, src/utils/keybindings.ts: review.alternatives command and Shift-F7
+- src/types/index.ts, src/utils/usage-domain.ts, src/routes/settings/index.tsx: the new "alternatives" AI feature id and labels
+- convex/lib/rateLimit.ts: RATE_LIMITS.alternatives
+
+IMPORTANT: the working tree also has a lot of unrelated uncommitted work by the repo owner (in twyne-editor.tsx, global.css, ai-client.ts, types/index.ts, settings and many other files). Ignore everything that is not part of Alternatives. Use `git diff` with care: in shared files, judge only the Alternatives hunks.
+
+## What to look for, in priority order
+1. Correctness bugs: races between async fetches and a lock that closed or was replaced; stale state after Escape/apply; ProseMirror position mapping of the lock and the applied-text flash through edits; the "locked words changed" auto-close; undo history pollution (previews must not enter history); apply when marks span the edge; keyboard handling conflicts with the editor's own shortcuts or IME composition; the delayed unmount ("leaving") letting input through or leaking timers; cache key collisions.
+2. Security and spend on the hosted path (convex/alternatives.ts): auth, rate limiting, argument bounds (string lengths, array sizes, count), anything a caller can use to make the model do unbounded work, data leakage. Read convex/_generated/ai/guidelines.md first for this repo's Convex rules. Also check the Datamuse requests send only the word and its two neighbours.
+3. Qwik pitfalls: closures captured into useVisibleTask$ vs QRLs, reading store state inside lazily loaded handlers, components rendering null with visible tasks, list keys, the repo's custom lint rules in packages/eslint-plugin-qwik-guards.
+4. Accessibility: listbox/option roles and aria-activedescendant on both layouts, focus moving into the palette and back to the manuscript, screen-reader text for the drum.
+5. Motion: anything that animates under prefers-reduced-motion that should not, layout thrash, animations that can stack or never finish, the width tween on the word preview.
+6. CSS that breaks in dark themes or at phone width, z-index conflicts, print styles.
+
+## Checks you may run
+- Targeted tests (fast): `bun test --conditions=production --preload ./tests/qwik-test-preload.ts src/utils/alternatives.test.ts src/components/editor/extensions/alternatives.test.ts`
+- Do NOT run the full test suite (over 10 minutes) and run `npx tsc --noEmit -p tsconfig.json` at most once. Do not start dev servers.
+
+## Report format
+A ranked list, most severe first. For each finding: severity (blocker / should-fix / nit), file:line, the concrete failure scenario (inputs or sequence → wrong result), and the fix you suggest. Mark anything you could not confirm as "unconfirmed". If an area looks sound, say so in one line rather than padding. Keep nits to five at most.
