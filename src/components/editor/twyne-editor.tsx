@@ -24,6 +24,7 @@ import { TextStyleKit } from "@tiptap/extension-text-style";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import type { Editor } from "@tiptap/core";
+import { loadEditorRuntime } from "../../utils/editor-runtime";
 import { TextSelection } from "@tiptap/pm/state";
 import type {
   CitationInsertionDetail,
@@ -366,6 +367,7 @@ export const TwyneEditor = component$(
     const threadDrafts = useStore<Record<string, string>>({});
     const editorRoot = useSignal<HTMLDivElement>();
     const threadRequest = useSignal(0);
+    const startupFailed = useSignal(false);
     const store = useStore<EditorStore>({
       editor: null,
       meta: {
@@ -932,15 +934,30 @@ export const TwyneEditor = component$(
     });
 
     // eslint-disable-next-line qwik/no-use-visible-task
-    useVisibleTask$(({ cleanup }) => {
-      import("@tiptap/core").then(async ({ Editor }) => {
-        const el = document.getElementById("twyne-editor-mount");
+    useVisibleTask$(
+      ({ cleanup }) => {
+        let disposed = false;
+        cleanup(() => {
+          disposed = true;
+        });
+        const runtime = Promise.all([
+          loadEditorRuntime(),
+          import("../../utils/idb").then(({ loadPersonasFromIdb }) =>
+            loadPersonasFromIdb(),
+          ),
+        ]);
+        const initialize = ([{ Editor }, personas]: Awaited<
+          typeof runtime
+        >) => {
+          if (disposed) return;
+          const el = editorRoot.value?.querySelector<HTMLElement>(
+            "#twyne-editor-mount",
+          );
         if (!el) {
           console.warn("[twyne:editor] #twyne-editor-mount not found in DOM");
           return;
         }
-        const { loadPersonasFromIdb } = await import("../../utils/idb");
-        const anchorCast = (await loadPersonasFromIdb()) ?? [];
+          const anchorCast = personas ?? [];
         const offlineImageAdapter = createImageUploadAdapter({
           mode: "offline",
         });
@@ -2799,8 +2816,18 @@ export const TwyneEditor = component$(
           editor.destroy();
           store.editor = null;
         });
+        };
+        void runtime.then(initialize).catch((error) => {
+          if (disposed) return;
+          startupFailed.value = true;
+          reportApplicationError("twyne:editor:initialize", error, {
+            source: "application",
+            metadata: { operation: "initialize-editor" },
       });
     });
+      },
+      { strategy: "document-ready" },
+    );
 
     const dismissNote = $((id: string) => {
       if (store.editor) removePersonaNote(store.editor, id);
@@ -4347,6 +4374,7 @@ export const TwyneEditor = component$(
             )}
           </div>
           <ManuscriptPanel
+            startupFailed={startupFailed.value}
             store={store}
             readOnly={readOnly}
             pageWidthRem={pageWidthRem()}

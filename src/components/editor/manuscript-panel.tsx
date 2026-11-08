@@ -26,6 +26,7 @@ import {
 import { PageChrome, type PageChromeProps } from "./page-chrome";
 import { PageRuler } from "./page-ruler";
 import { PageBorder } from "./page-border";
+import { ManuscriptOpening } from "./manuscript-opening";
 
 export const MANUSCRIPT_READING_ID = "manuscript";
 
@@ -35,6 +36,7 @@ type PageChromeGeometry = Pick<
 >;
 
 interface ManuscriptPanelProps {
+  startupFailed?: boolean;
   store: EditorStore;
   pageWidthRem: number;
   canvasMinHeight: number;
@@ -221,6 +223,20 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
             {...props.pageChromeGeometry}
           />
 
+          {!store.editor &&
+            (props.startupFailed ? (
+              <div role="alert">
+                <p>
+                  The editor could not start. Your saved draft has not been
+                  replaced.
+                </p>
+                <a href="" class="underline">
+                  Reload the editor
+                </a>
+              </div>
+            ) : (
+              <ManuscriptOpening />
+            ))}
           <div
             id="twyne-editor-mount"
             data-speech-id={MANUSCRIPT_READING_ID}
