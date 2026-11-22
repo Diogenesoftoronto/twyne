@@ -255,7 +255,7 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
   "in-flow-tool":
     "Fills the small tools that appear in the margin while you write: sentence variants and reader questions.",
   alternatives:
-    "Writes replacement wordings for a locked word or passage, held to about its length.",
+    "Writes replacements close to the original length. Hosted sentences and paragraphs use Mercury 2. Choose a local provider here to keep rewriting on this device.",
   "scene-image":
     "Draws a selected passage in Scene Bench when you choose your own models under Scene Pictures. Needs a model that outputs images.",
   "scene-reading":
@@ -3423,6 +3423,31 @@ export default component$(() => {
               value={store.settings.judgement}
               onChange$={setJudgement}
             />
+
+            <section class="folio p-5">
+              <h2 class="mb-2 text-base font-semibold">
+                Manuscript extraction
+              </h2>
+              <label class="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={store.settings.localExtraction === true}
+                  onChange$={(_, input) => {
+                    store.settings = {
+                      ...store.settings,
+                      localExtraction: input.checked,
+                    };
+                    void persist();
+                  }}
+                />
+                Use Liquid LFM2-350M-Extract for on-device quote extraction
+              </label>
+              <p class="mt-2 text-sm text-[var(--color-ink-muted)]">
+                Used in editorial reads with your own prose provider. Requires a
+                local chat server on port 8081 with model alias
+                <code> lfm2-350m-extract</code>.
+              </p>
+            </section>
 
             {/* ── Scene pictures ── */}
             <SceneMediaSettingsPanel

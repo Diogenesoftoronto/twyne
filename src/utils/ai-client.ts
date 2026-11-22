@@ -1,3 +1,4 @@
+import { isLongAlternative, type AlternativeScale } from "./alternatives";
 import {
   currentModelLocale,
   withResponseLanguage,
@@ -1004,6 +1005,7 @@ async function runOnce({
   prompt,
   temperature,
   maxOutputTokens,
+  maxRetries,
   providerOptions,
   tools,
   stopWhen,
@@ -1015,6 +1017,7 @@ async function runOnce({
   temperature: number;
   /** Undefined leaves the ceiling to the provider's model maximum. */
   maxOutputTokens?: number;
+  maxRetries?: number;
   /** Provider-specific knobs — currently the thinking dial. Undefined sends none. */
   providerOptions?: ProviderOptions;
   tools?: ToolSet;
@@ -1033,6 +1036,7 @@ async function runOnce({
       prompt,
       temperature,
       maxOutputTokens,
+      maxRetries,
       ...(providerOptions ? { providerOptions } : {}),
       ...(tools ? { tools, stopWhen } : {}),
     });
@@ -1061,6 +1065,7 @@ async function runOnce({
     prompt,
     temperature,
     maxOutputTokens,
+    maxRetries,
     ...(providerOptions ? { providerOptions } : {}),
     ...(tools ? { tools, stopWhen } : {}),
   });
@@ -1120,6 +1125,7 @@ async function generateTrackedText({
   onTrace,
   reasoningLevel,
   responseRetry,
+  singleBatch,
   onSources,
 }: {
   feature: AiFeature;
@@ -1147,6 +1153,7 @@ async function generateTrackedText({
   responseRetry?: { accepts: (text: string) => boolean; instruction: string };
   /** The URLs the provider's own tools cited for the answer that was kept. */
   onSources?: (sources: GroundedSource[]) => void;
+  singleBatch?: boolean;
 }): Promise<string> {
   system = withResponseLanguage(system, currentModelLocale());
   const start = performance.now();
@@ -1170,6 +1177,7 @@ async function generateTrackedText({
         prompt: userPrompt,
         temperature: resolved.temperature,
         maxOutputTokens: resolved.maxTokens,
+        maxRetries: singleBatch ? 0 : undefined,
         // Keyed by the model actually being used, so a feature that overrides
         // the provider's default model does not inherit a dial set for a
         // different model — thinking is a per-model capability.
@@ -1225,7 +1233,10 @@ async function generateTrackedText({
     // has done nothing wrong, and the thinking is already stripped from what
     // the reader sees. Notes retry only when nothing visible survived;
     // structured readers also retry when the visible answer cannot be parsed.
-    if (responseRetry ? !responseRetry.accepts(cleaned) : !cleaned) {
+    if (
+      !singleBatch &&
+      (responseRetry ? !responseRetry.accepts(cleaned) : !cleaned)
+    ) {
       const retryPrompt = `${prompt}\n\n${responseRetry?.instruction ?? "Close your <think> block, then write the note."}`;
       // The empty attempt may already have painted a thinking state. Reset it
       // so the reader sees a note begin rather than two answers spliced.
@@ -4116,7 +4127,7 @@ export async function runClientAlternatives(
   request: {
     system: string;
     prompt: string;
-    scale: string;
+    scale: AlternativeScale;
     onText?: (text: string) => void;
   },
   settings: AiSettings,
@@ -4133,6 +4144,7 @@ export async function runClientAlternatives(
       system: request.system,
       prompt: request.prompt,
       spanName: "alternatives",
+      singleBatch: isLongAlternative(request.scale),
       evalSignals: {
         twyne_alternatives_scale: request.scale,
         twyne_expected_format: "jsonl_alternatives",

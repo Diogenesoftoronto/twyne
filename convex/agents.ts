@@ -1010,6 +1010,7 @@ interface SecondChanceGeneration {
   prompt: string;
   temperature: number;
   functionId: string;
+  singleBatch?: boolean;
   /** Extra telemetry metadata, such as which persona is judging. */
   metadata?: Record<string, string>;
   /** When set, each attempt is captured as a generation of its own. */
@@ -1048,6 +1049,7 @@ async function generateWithSecondChance<T>(
   );
   const attemptOn = async (provider: ProviderConfig, attempt: 1 | 2) => {
     const start = Date.now();
+    const mercury = provider.modelId === "mercury-2";
     const { text } = await trackedGenerateText(
       { ...capture, provider },
       attempt,
@@ -1055,8 +1057,17 @@ async function generateWithSecondChance<T>(
         model: provider.model,
         system: gen.system,
         prompt: gen.prompt,
-        temperature: gen.temperature,
-        maxOutputTokens: NO_OUTPUT_CEILING,
+        ...(mercury
+          ? {
+              providerOptions: {
+                openai: { reasoningEffort: "low", maxCompletionTokens: 2800 },
+              },
+            }
+          : {
+              temperature: gen.temperature,
+              maxOutputTokens: NO_OUTPUT_CEILING,
+            }),
+        ...(gen.singleBatch ? { maxRetries: 0 } : {}),
         experimental_telemetry: {
           isEnabled: tracingEnabled,
           functionId:
@@ -1091,6 +1102,7 @@ async function generateWithSecondChance<T>(
 
   const first = await attemptOn(gen.provider, 1);
   if (first !== null) return { value: first, provider: gen.provider };
+  if (gen.singleBatch) return null;
 
   const second = notOrganicEnabled()
     ? await pickProvider(gen.ctx, gen.caller, gen.feature, "balanced")

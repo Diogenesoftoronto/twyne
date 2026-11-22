@@ -1173,6 +1173,8 @@ export interface AiSettings {
   showProviderTags: boolean;
   /** Which model answers Twyne's typed judgements. Absent = Twyne's hosted Jev. */
   judgement?: JudgementSettings;
+  /** Use a loopback Liquid model for browser-side manuscript quotation extraction. */
+  localExtraction?: boolean;
   /** Scene Bench pictures. Absent = off: generation spends credit, so it is opt-in. */
   sceneMedia?: SceneMediaSettings;
 }

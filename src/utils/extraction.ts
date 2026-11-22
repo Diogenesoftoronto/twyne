@@ -102,7 +102,7 @@ export interface ExtractionResult {
   answers?: Record<string, ExtractionAnswer>;
   truncated?: boolean;
   usage?: ExtractionUsage;
-  transport?: "notorganic" | "direct" | "none";
+  transport?: "notorganic" | "direct" | "local" | "none";
   error?: string;
   latencyMs?: number;
 }

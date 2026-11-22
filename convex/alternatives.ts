@@ -4,10 +4,9 @@
  * Alternatives on Twyne's hosted model, for writers without their own key.
  *
  * The browser sends the locked span, a window of paragraph context and the
- * wordings already on screen; this asks the model once (with the shared
- * second-chance retry), holds every line to the span's length window and
- * returns the options that pass. The prompt and the parsing are the same
- * ones the bring-your-own-key path uses (`src/utils/alternatives.ts`).
+ * wordings already on screen. The model proposes a batch and only options
+ * inside the span’s length window are returned. Hosted and BYOK generation
+ * share the prompt and parser in `src/utils/alternatives.ts`.
  */
 import { ConvexError, v } from "convex/values";
 import { action } from "./_generated/server";
@@ -20,6 +19,7 @@ import {
   alternativesPrompt,
   checkAlternativeSpan,
   CONTEXT_CHARS,
+  isLongAlternative,
   MAX_ALTERNATIVE_CHARS,
   MAX_DIRECTION_CHARS,
   MODEL_LENSES_FOR,
@@ -116,7 +116,13 @@ export const suggest = action({
       identifier: caller.tokenIdentifier,
       ...RATE_LIMITS.alternatives,
     });
-    const provider = await pickProvider(ctx, caller, "alternatives", "fast");
+    const singleBatch = isLongAlternative(args.scale);
+    const provider = await pickProvider(
+      ctx,
+      caller,
+      "alternatives",
+      singleBatch ? "mercury-2" : "fast",
+    );
     if (!provider)
       throw applicationError("provider_unavailable", {
         recovery: "open_settings",
@@ -133,6 +139,7 @@ export const suggest = action({
           system,
           prompt,
           temperature: 0.8,
+          singleBatch,
           functionId: "alternatives",
           metadata: { scale: args.scale },
         },

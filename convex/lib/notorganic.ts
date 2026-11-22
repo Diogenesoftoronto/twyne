@@ -49,6 +49,7 @@ function tokenBudgetCeiling(accessToken: string): number | undefined {
 
 export const NOTORGANIC_MODEL_ALIASES = [
   "fast",
+  "mercury-2",
   "balanced",
   "reasoning",
   "vision",
@@ -65,6 +66,7 @@ export type NotOrganicModelAlias = (typeof NOTORGANIC_MODEL_ALIASES)[number];
 const NOTORGANIC_ALIAS_CEILINGS_MICROUSD: Record<NotOrganicModelAlias, number> =
   {
     fast: 250_000,
+    "mercury-2": 250_000,
     balanced: 500_000,
     reasoning: 2_000_000,
     vision: 1_000_000,

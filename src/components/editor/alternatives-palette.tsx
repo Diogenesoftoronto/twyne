@@ -40,6 +40,7 @@ import {
   lexiconQueries,
   MAX_DIRECTION_CHARS,
   MAX_MODEL_ROUNDS,
+  isLongAlternative,
   MAX_STEERS,
   mergeOptions,
   MODEL_LENSES_FOR,
@@ -556,7 +557,10 @@ export const AlternativesPalette = component$(() => {
         }
         state.model = "done";
         if (!direction) state.completed++;
-        if (!added && (state.rounds > 1 || direction))
+        if (
+          !added &&
+          (state.rounds > 1 || direction || isLongAlternative(snapshot.scale))
+        )
           state.message = direction
             ? "Nothing new came back for that direction. Try other words."
             : "No new wordings this time.";
@@ -597,7 +601,7 @@ export const AlternativesPalette = component$(() => {
   /** Near the end, ask for more within the lock's budget. */
   const more = $(async (remaining: number) => {
     const snapshot = state.snapshot;
-    if (!snapshot || remaining > 2) return;
+    if (!snapshot || remaining > 2 || isLongAlternative(snapshot.scale)) return;
     if (state.model !== "done" || state.rounds >= MAX_MODEL_ROUNDS) return;
     if (state.filter === "steered") return;
     await fetchModel(
@@ -609,8 +613,13 @@ export const AlternativesPalette = component$(() => {
   });
 
   const choose = $(async (filter: Filter) => {
-    if (selectFilter(state, filter) && state.snapshot)
-      await fetchModel(state.snapshot, [filter as AlternativeLens]);
+    const snapshot = state.snapshot;
+    if (
+      selectFilter(state, filter) &&
+      snapshot &&
+      !isLongAlternative(snapshot.scale)
+    )
+      await fetchModel(snapshot, [filter as AlternativeLens]);
   });
 
   const steer = $(async () => {
@@ -750,7 +759,7 @@ export const AlternativesPalette = component$(() => {
           const tabs = filtersFor(state);
           const at = tabs.indexOf(state.filter);
           const next = tabs[(at + dir + tabs.length) % tabs.length]!;
-          if (selectFilter(state, next))
+          if (selectFilter(state, next) && !isLongAlternative(snapshot.scale))
             void fetchModel(snapshot, [next as AlternativeLens]);
         } else if (key === "Enter" && !target.closest("button")) {
           stop();

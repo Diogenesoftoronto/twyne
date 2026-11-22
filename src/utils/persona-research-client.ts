@@ -2,6 +2,8 @@ import type { ConvexClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
 import type { JudgementSettings } from "../types";
 import { askExtraction } from "./extraction-client";
+import { askLocalExtraction } from "./local-extraction";
+import { loadAiSettingsFromIdb } from "./idb";
 import { backOffExtraction, extractionBackedOff } from "./extraction-budget";
 import { accountKnowledgeSnapshot } from "./account-knowledge";
 import { askJudgement, normalizeEndpointUrl } from "./judgement-client";
@@ -20,7 +22,9 @@ export async function clientPersonaResearch(
   client: ConvexClient | null | undefined,
   settings?: JudgementSettings | null,
 ): Promise<PersonaResearch> {
-  let extraction = false;
+  const localExtraction =
+    (await loadAiSettingsFromIdb())?.localExtraction === true;
+  let extraction = localExtraction;
   let hostedJudge = false;
   let authenticated = false;
   if (client) {
@@ -32,10 +36,12 @@ export async function clientPersonaResearch(
       authenticated = !!linked || !!accountKnowledgeSnapshot().account;
       if (authenticated) {
         const [e, j] = await Promise.all([
-          client.action(api.extraction.isAvailable, {}),
+          localExtraction
+            ? undefined
+            : client.action(api.extraction.isAvailable, {}),
           client.action(api.systemOne.isAvailable, {}),
         ]);
-        extraction = e.available && (e.transport === "direct" || !!linked);
+        extraction ||= !!e?.available && (e.transport === "direct" || !!linked);
         hostedJudge = j.available && (j.transport === "direct" || !!linked);
       }
     } catch {
@@ -70,17 +76,19 @@ export async function clientPersonaResearch(
   return {
     // Share the note cap without spending or checking another service's budget.
     reserve: reserveNote,
-    ...(extraction
-      ? {
-          extract: (request: Parameters<typeof askExtraction>[1]) =>
-            extractionBackedOff()
-              ? Promise.resolve({ ok: false, error: "backing off" })
-              : quietOnFailure(
-                  () => askExtraction(client, request),
-                  () => backOffExtraction(),
-                ),
-        }
-      : {}),
+    ...(localExtraction
+      ? { extract: askLocalExtraction }
+      : extraction
+        ? {
+            extract: (request: Parameters<typeof askExtraction>[1]) =>
+              extractionBackedOff()
+                ? Promise.resolve({ ok: false, error: "backing off" })
+                : quietOnFailure(
+                    () => askExtraction(client, request),
+                    () => backOffExtraction(),
+                  ),
+          }
+        : {}),
     ...(judge
       ? {
           judge: (request: Parameters<typeof askJudgement>[1]) => {

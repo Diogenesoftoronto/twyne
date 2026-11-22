@@ -620,8 +620,13 @@ export function drumOrder(options: AlternativeOption[]): AlternativeOption[] {
     .map(({ option }) => option);
 }
 
+export function isLongAlternative(scale: AlternativeScale): boolean {
+  return scale === "sentence" || scale === "passage";
+}
+
 /** How many to ask for: enough to scroll, few enough to arrive quickly. */
 export function roundSize(scale: AlternativeScale, round: number): number {
+  if (isLongAlternative(scale)) return scale === "passage" ? 6 : 8;
   if (round === 0) return scale === "word" ? 10 : 12;
   return 8;
 }
