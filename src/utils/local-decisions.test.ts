@@ -1,10 +1,16 @@
 import { afterEach, expect, test } from "bun:test";
-import { askJudgement, describeJudgement } from "./judgement-client";
 import {
   LOCAL_DECISION_MODEL,
   LOCAL_DECISION_URL,
   localDecisionStatus,
 } from "./local-decisions";
+
+// Other suites stub the judgement client process-wide. Load the real module
+// under a test-only URL so these transport assertions exercise production code.
+const moduleUrl = "./judgement-client.ts?local-decision-contract";
+const { askJudgement, describeJudgement } = (await import(
+  moduleUrl
+)) as typeof import("./judgement-client");
 
 const originalFetch = globalThis.fetch;
 afterEach(() => {

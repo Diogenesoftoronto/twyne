@@ -3,7 +3,6 @@ import { api } from "../../convex/_generated/api";
 import type { JudgementSettings } from "../types";
 import { askExtraction } from "./extraction-client";
 import { askLocalExtraction } from "./local-extraction";
-import { loadAiSettingsFromIdb } from "./idb";
 import { backOffExtraction, extractionBackedOff } from "./extraction-budget";
 import { accountKnowledgeSnapshot } from "./account-knowledge";
 import { askJudgement, normalizeEndpointUrl } from "./judgement-client";
@@ -21,10 +20,9 @@ import {
 export async function clientPersonaResearch(
   client: ConvexClient | null | undefined,
   settings?: JudgementSettings | null,
+  localExtraction = false,
 ): Promise<PersonaResearch> {
-  const localExtraction =
-    (await loadAiSettingsFromIdb())?.localExtraction === true;
-  let extraction = localExtraction;
+  let extraction = false;
   let hostedJudge = false;
   let authenticated = false;
   if (client) {

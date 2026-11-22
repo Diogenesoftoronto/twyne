@@ -17,7 +17,7 @@ describe("folio dossier wiring", () => {
     expect(source).toContain("const activateFolio = $(");
     expect(source).toContain("loadProjectBriefForFolio(folio.id)");
     expect(source).toContain("store.brief = brief");
-    expect(source).toContain("await activateFolio(folio)");
+    expect(source).toContain("onOpen$={activateFolio}");
   });
 
   test("editorial panels and background services are keyed by active folio", async () => {

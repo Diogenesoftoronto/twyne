@@ -27,7 +27,7 @@ const loop: {
   judge: () => ({ ok: false }),
 };
 
-const realIdb = await import("./idb");
+const realIdb = { ...(await import("./idb")) };
 mock.module("./idb", () => ({
   ...realIdb,
   loadAiSettingsFromIdb: async () =>
@@ -37,7 +37,7 @@ mock.module("./idb", () => ({
       ? { ...DEFAULT_APPARATUS_SETTINGS }
       : realIdb.loadApparatusSettingsFromIdb(),
 }));
-const realBib = await import("./bibliography");
+const realBib = { ...(await import("./bibliography")) };
 mock.module("./bibliography", () => ({
   ...realBib,
   loadBibliography: async () =>
@@ -47,14 +47,17 @@ mock.module("./bibliography", () => ({
     else await realBib.saveBibliography(all);
   },
 }));
-const realJudge = await import("./judgement-client");
+const realJudge = { ...(await import("./judgement-client")) };
 mock.module("./judgement-client", () => ({
   ...realJudge,
   askJudgement: async (
     client: ConvexClient | null,
     request: JudgementRequest,
+    override?: Parameters<typeof realJudge.askJudgement>[2],
   ) =>
-    loop.active ? loop.judge(request) : realJudge.askJudgement(client, request),
+    loop.active
+      ? loop.judge(request)
+      : realJudge.askJudgement(client, request, override),
 }));
 
 const research = await import("./background-research");
@@ -117,6 +120,9 @@ afterAll(() => {
   research.stopBackgroundResearch();
   research.setResearchSignedIn(false);
   loop.active = false;
+  mock.module("./idb", () => realIdb);
+  mock.module("./bibliography", () => realBib);
+  mock.module("./judgement-client", () => realJudge);
 });
 
 describe("research loop", () => {
