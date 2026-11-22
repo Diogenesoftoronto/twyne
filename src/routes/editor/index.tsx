@@ -20,6 +20,7 @@ import type { DocumentHead } from "@qwik.dev/router";
 import { Link, useLocation, useNavigate } from "@qwik.dev/router";
 import { ProjectBriefCard } from "../../components/brief/project-brief-card";
 import { AccountMenu } from "../../components/auth/account-menu";
+import { FolioDrawer } from "../../components/folio/folio-drawer";
 import { FolioMenu } from "../../components/folio/folio-menu";
 import type { ProjectBrief, Folio, DraftContentDetail } from "../../types";
 import {
@@ -1303,31 +1304,11 @@ export default component$(() => {
 
             <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4">
               <div class="space-y-1">
-                {store.folios.map((folio, idx) => {
-                  const active = store.activeFolioId === folio.id;
-                  return (
-                    <button
-                      key={folio.id}
-                      class={`press-folio-row w-full text-left px-3 py-2.5 text-sm focus-ring ${
-                        active
-                          ? "border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] font-medium text-[var(--color-ink)]"
-                          : "border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)]"
-                      }`}
-                      data-active={active ? "true" : "false"}
-                      aria-current={active ? "true" : undefined}
-                      style="font-family: var(--font-serif); border-radius: 2px;"
-                      onClick$={$(async () => {
-                        if (active) return;
-                        await activateFolio(folio);
-                      })}
-                    >
-                      <span class="dept-label block">
-                        Folio {folioNumeral(idx)}
-                      </span>
-                      {folio.name}
-                    </button>
-                  );
-                })}
+                <FolioDrawer
+                  folios={store.folios}
+                  activeFolioId={store.activeFolioId}
+                  onOpen$={activateFolio}
+                />
                 {store.newFolioFormOpen ? (
                   <div class="space-y-2">
                     <input

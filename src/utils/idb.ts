@@ -508,6 +508,44 @@ export async function deleteFolioFromIdb(id: string): Promise<void> {
   }
 }
 
+/** User-requested removal. Unlike sync's low-level helper, failures propagate. */
+export async function removeFolioWorkspaceFromIdb(id: string): Promise<void> {
+  if (!isBrowser()) throw new Error("Local storage is unavailable.");
+  await tx(
+    ["folios", "folio-content", "brief", "meta", "comments", "voice-notes"],
+    "readwrite",
+    async (t) => {
+      t.objectStore("folios").delete(id);
+      t.objectStore("folio-content").delete(id);
+      t.objectStore("brief").delete(id);
+      const meta = t.objectStore("meta");
+      const active = await reqAsPromise<MetaRecord | undefined>(
+        meta.get("active-folio-id"),
+      );
+      if (active?.value === id) meta.delete("active-folio-id");
+      for (const key of [
+        "brief-editions",
+        "rubric-result",
+        "rubric-criteria",
+        "rubric-history",
+        "room-analysis",
+      ]) {
+        meta.delete(`${key}:${id}`);
+      }
+      for (const name of ["comments", "voice-notes"]) {
+        const request = t.objectStore(name).openCursor();
+        request.onsuccess = () => {
+          const cursor = request.result;
+          if (!cursor) return;
+          if (cursor.value.folioId === id) cursor.delete();
+          cursor.continue();
+        };
+      }
+    },
+  );
+  clearCrashMirror(id);
+}
+
 /* ── Folio content (the HTML body) ──────────────────────────────── */
 
 export async function loadFolioContentFromIdb(

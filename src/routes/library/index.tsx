@@ -12,6 +12,7 @@ import {
   loadFolioContentFromIdb,
   saveActiveFolioIdToIdb,
 } from "../../utils/idb";
+import { removeFolio } from "../../utils/folio-removal";
 
 interface FolioCard extends Folio {
   words: number;
@@ -22,6 +23,8 @@ interface LibraryStore {
   cards: FolioCard[];
   sort: "recent" | "name";
   loaded: boolean;
+  deletingId: string | null;
+  error: string;
 }
 
 function stripHtml(html: string): string {
@@ -59,6 +62,8 @@ export default component$(() => {
     cards: [],
     sort: "recent",
     loaded: false,
+    deletingId: null,
+    error: "",
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -124,6 +129,28 @@ export default component$(() => {
   const open = $(async (id: string) => {
     await saveActiveFolioIdToIdb(id);
     await nav("/editor/");
+  });
+
+  const remove = $(async (id: string) => {
+    if (store.deletingId) return;
+    const folio = store.cards.find((card) => card.id === id);
+    if (
+      !folio ||
+      !window.confirm(
+        `Delete “${folio.name || "Untitled"}”?\n\nThis removes the folio, its draft and dossier from your Library and synced account. You cannot undo this. Published copies and revision history are kept separately. Export a backup first if you want to keep the draft.`,
+      )
+    )
+      return;
+    store.deletingId = id;
+    store.error = "";
+    try {
+      await removeFolio(id);
+      store.cards = store.cards.filter((card) => card.id !== id);
+    } catch {
+      store.error = "Could not finish deleting the folio. Please try again.";
+    } finally {
+      store.deletingId = null;
+    }
   });
 
   const sorted = [...store.cards].sort((a, b) =>
@@ -199,40 +226,61 @@ export default component$(() => {
           </div>
         )}
 
-        <div class="doc-grid">
+        {store.error && (
+          <p role="alert" class="mb-4 text-sm text-[var(--color-vermilion)]">
+            {store.error}
+          </p>
+        )}
+        <div class="doc-grid" aria-busy={store.deletingId !== null}>
           {sorted.map((c) => (
-            <button key={c.id} class="doc-card" onClick$={() => open(c.id)}>
-              <div class="flex items-center justify-between mb-2">
-                <span
-                  class="dept-label text-[0.6rem]"
-                  style={{
-                    fontFamily: "var(--font-typewriter)",
-                    color: "var(--color-vermilion)",
-                  }}
+            <article key={c.id} class="doc-card">
+              <button
+                type="button"
+                class="flex w-full flex-1 flex-col text-left focus-ring"
+                disabled={store.deletingId !== null}
+                onClick$={() => open(c.id)}
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span
+                    class="dept-label text-[0.6rem]"
+                    style={{
+                      fontFamily: "var(--font-typewriter)",
+                      color: "var(--color-vermilion)",
+                    }}
+                  >
+                    {TYPE_LABEL[c.type] ?? "Draft"}
+                  </span>
+                  <span
+                    class="text-[0.65rem] text-[var(--color-ink-muted)]"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    {relativeTime(c.updatedAt)}
+                  </span>
+                </div>
+                <h3
+                  class="text-base font-semibold mb-1"
+                  style={{ fontFamily: "var(--font-display)" }}
                 >
-                  {TYPE_LABEL[c.type] ?? "Draft"}
-                </span>
-                <span
-                  class="text-[0.65rem] text-[var(--color-ink-muted)]"
+                  {c.name || "Untitled"}
+                </h3>
+                <p class="doc-preview">{c.preview || "Empty draft."}</p>
+                <p
+                  class="text-[0.65rem] text-[var(--color-ink-muted)] mt-2"
                   style={{ fontFamily: "var(--font-typewriter)" }}
                 >
-                  {relativeTime(c.updatedAt)}
-                </span>
-              </div>
-              <h3
-                class="text-base font-semibold mb-1"
-                style={{ fontFamily: "var(--font-display)" }}
+                  {c.words.toLocaleString()} word{c.words === 1 ? "" : "s"}
+                </p>
+              </button>
+              <button
+                type="button"
+                class="mt-3 self-start text-xs text-[var(--color-vermilion)] underline underline-offset-4 focus-ring disabled:opacity-50"
+                aria-label={`Delete folio: ${c.name || "Untitled"}`}
+                disabled={store.deletingId !== null}
+                onClick$={() => remove(c.id)}
               >
-                {c.name || "Untitled"}
-              </h3>
-              <p class="doc-preview">{c.preview || "Empty draft."}</p>
-              <p
-                class="text-[0.65rem] text-[var(--color-ink-muted)] mt-2"
-                style={{ fontFamily: "var(--font-typewriter)" }}
-              >
-                {c.words.toLocaleString()} word{c.words === 1 ? "" : "s"}
-              </p>
-            </button>
+                {store.deletingId === c.id ? "Deleting…" : "Delete folio"}
+              </button>
+            </article>
           ))}
         </div>
       </div>

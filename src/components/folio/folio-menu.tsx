@@ -840,6 +840,13 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               shareNotice.value = null;
             }}
           />
+          <hr class="my-1 border-[var(--color-paper-3)]" />
+          <Link
+            href="/library/"
+            class="flex w-full items-center gap-2 px-3 py-1.5 text-[13px] text-[var(--color-ink)] hover:bg-[var(--color-paper-soft)] focus-ring"
+          >
+            <Icon name="page" /> Manage folios…
+          </Link>
           {fileError.value && (
             <div class="px-2 pt-2">
               <ApplicationNotice
