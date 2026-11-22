@@ -101,6 +101,7 @@
     "entities": "^8.0.0",
     "eslint": "9.32.0",
     "eslint-plugin-qwik": "2.0.0-rc.4",
+    "eslint-plugin-qwik-guards": "workspace:*",
     "globals": "16.4.0",
     "gt": "^2.21.3",
     "gt-qwik": "workspace:*",
@@ -198,6 +199,7 @@
     "zod": "^4.4.3"
   },
   "workspaces": [
-    "packages/gt-qwik"
+    "packages/gt-qwik",
+    "packages/eslint-plugin-qwik-guards"
   ]
 }

@@ -1,0 +1,35 @@
+{
+  "name": "eslint-plugin-qwik-guards",
+  "version": "0.1.0",
+  "description": "ESLint guardrails for Qwik reconciliation and input focus regressions",
+  "type": "module",
+  "license": "UNLICENSED",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js test/packed.smoke.js"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0"
+  },
+  "devDependencies": {
+    "eslint": "9.32.0",
+    "typescript": "5.4.5",
+    "typescript-eslint": "8.38.0"
+  }
+}
