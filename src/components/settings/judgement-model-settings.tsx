@@ -9,6 +9,12 @@
 import { $, component$, useStore, type PropFunction } from "@qwik.dev/core";
 import type { JudgementSettings } from "../../types";
 import { useConvexClient } from "../../utils/convex-context";
+import { LocalDecisionSettings } from "./local-decision-settings";
+import {
+  isLocalDecision,
+  LOCAL_DECISION_MODEL,
+  LOCAL_DECISION_URL,
+} from "../../utils/local-decisions";
 import {
   DEFAULT_ENDPOINT_MODEL,
   DEFAULT_TYPESAFE_MODEL,
@@ -18,7 +24,7 @@ import {
 } from "../../utils/judgement-client";
 
 const SOURCES: Array<{
-  id: JudgementSettings["source"];
+  id: JudgementSettings["source"] | "local";
   title: string;
   body: string;
 }> = [
@@ -31,6 +37,11 @@ const SOURCES: Array<{
     id: "typesafe",
     title: "Jev, your key",
     body: "Your own TypeSafe key and usage. Twyne's server passes each request on and never stores the key.",
+  },
+  {
+    id: "local",
+    title: "Local decisions",
+    body: "Download Liquid d1-2B. Runs on this computer, including offline.",
   },
   {
     id: "endpoint",
@@ -50,6 +61,7 @@ export const JudgementModelSettings = component$<{
 }>((props) => {
   const clientSig = useConvexClient();
   const current: JudgementSettings = props.value ?? { source: "twyne" };
+  const local = isLocalDecision(current);
   const state = useStore({
     testing: false,
     result: "" as string,
@@ -106,16 +118,41 @@ export const JudgementModelSettings = component$<{
         a probability for each answer.
       </p>
 
-      <div class="grid gap-2 sm:grid-cols-3" role="radiogroup">
+      <div
+        class="grid gap-2 sm:grid-cols-2"
+        role="radiogroup"
+        aria-label="Judgement model source"
+      >
         {SOURCES.map((source) => {
-          const on = current.source === source.id;
+          const on =
+            source.id === "local"
+              ? local
+              : current.source === source.id && !local;
           return (
             <button
               key={source.id}
               type="button"
               role="radio"
               aria-checked={on}
-              onClick$={() => set({ source: source.id })}
+              onClick$={() =>
+                source.id === "local"
+                  ? set({
+                      source: "endpoint",
+                      endpointUrl: LOCAL_DECISION_URL,
+                      endpointModel: LOCAL_DECISION_MODEL,
+                      endpointKey: "",
+                    })
+                  : set({
+                      source: source.id,
+                      ...(source.id === "endpoint" && local
+                        ? {
+                            endpointUrl: "",
+                            endpointModel: "",
+                            endpointKey: "",
+                          }
+                        : {}),
+                    })
+              }
               class={[
                 "text-left border p-3 focus-ring",
                 on
@@ -179,7 +216,9 @@ export const JudgementModelSettings = component$<{
         </div>
       )}
 
-      {current.source === "endpoint" && (
+      {local && <LocalDecisionSettings />}
+
+      {current.source === "endpoint" && !local && (
         <div class="mt-4 space-y-3">
           <div class="grid gap-3 sm:grid-cols-[2fr_1fr]">
             <div>

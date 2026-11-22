@@ -16,6 +16,7 @@
  */
 import { BrowserWindow } from "electrobun/bun";
 import { startLocalAiServer } from "./litert-server";
+import { startDecisionServer } from "./decision-server";
 
 const BASE_URL = process.env.TWYNE_DESKTOP_URL ?? "https://twyne.love";
 
@@ -27,6 +28,7 @@ function withParams(base: string, params: Record<string, string>): string {
 }
 
 const local = await startLocalAiServer();
+const decisions = startDecisionServer(new URL(BASE_URL).origin);
 
 const url = local
   ? withParams(BASE_URL, { localAi: "1", localPort: String(local.port) })
@@ -45,8 +47,11 @@ const win = new BrowserWindow({
 });
 
 // Tear the local model server down with the app.
-if (local) {
-  const shutdown = () => local.stop();
+if (local || decisions) {
+  const shutdown = () => {
+    local?.stop();
+    decisions?.stop();
+  };
   process.on("exit", shutdown);
   process.on("SIGINT", () => {
     shutdown();

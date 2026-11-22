@@ -45,10 +45,22 @@ export default {
         ),
       },
     },
-    copy: localAiEnabled ? localAiCopy : undefined,
-    asarUnpack: localAiEnabled
-      ? ["bin/**", "models/**", "*.node", "*.dll", "*.dylib", "*.so"]
-      : undefined,
+    copy: {
+      ...localAiCopy,
+      "desktop/decision/server.py": "decision/server.py",
+      "desktop/decision/worker.py": "decision/worker.py",
+      "desktop/decision/worker.py.lock": "decision/worker.py.lock",
+      "desktop/decision/model.json": "decision/model.json",
+    },
+    asarUnpack: [
+      "decision/**",
+      "bin/**",
+      "models/**",
+      "*.node",
+      "*.dll",
+      "*.dylib",
+      "*.so",
+    ],
     mac: {
       defaultRenderer: "native",
       // Add `icons: "icon.iconset"` + a real .iconset before notarized

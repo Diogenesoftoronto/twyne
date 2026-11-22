@@ -24,6 +24,7 @@ import {
 } from "../../convex/lib/judgementContract";
 import type { JudgementSettings } from "../types";
 import { loadAiSettingsFromIdb } from "./idb";
+import { isLocalDecision, LOCAL_DECISION_MODEL } from "./local-decisions";
 
 export interface JudgementRequest {
   state: Record<string, string>;
@@ -82,6 +83,7 @@ export function normalizeEndpointUrl(value: string | undefined): string | null {
 /** Short, human description of where judgements go, for status lines. */
 export function describeJudgement(settings: JudgementSettings | null): string {
   if (!settings || settings.source === "twyne") return "Jev, through Twyne";
+  if (isLocalDecision(settings)) return "Liquid d1-2B, on this computer";
   if (settings.source === "typesafe")
     return `${settings.typesafeModel || DEFAULT_TYPESAFE_MODEL} on your TypeSafe key`;
   const url = normalizeEndpointUrl(settings.endpointUrl);
@@ -114,8 +116,10 @@ async function askEndpoint(
           : {}),
       },
       body: JSON.stringify({
-        model:
-          request.model ?? (settings.endpointModel || DEFAULT_ENDPOINT_MODEL),
+        model: isLocalDecision(settings)
+          ? LOCAL_DECISION_MODEL
+          : (request.model ??
+            (settings.endpointModel || DEFAULT_ENDPOINT_MODEL)),
         state: request.state,
         questions,
       }),
