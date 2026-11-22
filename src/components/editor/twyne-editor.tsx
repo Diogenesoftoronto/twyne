@@ -934,30 +934,26 @@ export const TwyneEditor = component$(
     });
 
     // eslint-disable-next-line qwik/no-use-visible-task
-    useVisibleTask$(
-      ({ cleanup }) => {
-        let disposed = false;
-        cleanup(() => {
-          disposed = true;
-        });
-        const runtime = Promise.all([
-          loadEditorRuntime(),
-          import("../../utils/idb").then(({ loadPersonasFromIdb }) =>
-            loadPersonasFromIdb(),
-          ),
-        ]);
-        const initialize = ([{ Editor }, personas]: Awaited<
-          typeof runtime
-        >) => {
-          if (disposed) return;
-          const el = editorRoot.value?.querySelector<HTMLElement>(
-            "#twyne-editor-mount",
-          );
+    useVisibleTask$(({ cleanup }) => {
+      let disposed = false;
+      cleanup(() => {
+        disposed = true;
+      });
+      const runtime = Promise.all([
+        loadEditorRuntime(),
+        import("../../utils/idb").then(({ loadPersonasFromIdb }) =>
+          loadPersonasFromIdb(),
+        ),
+      ]);
+      const initialize = ([{ Editor }, personas]: Awaited<typeof runtime>) => {
+        if (disposed) return;
+        const el = editorRoot.value?.querySelector<HTMLElement>(
+          "#twyne-editor-mount",
+        );
         if (!el) {
-          console.warn("[twyne:editor] #twyne-editor-mount not found in DOM");
-          return;
+          throw new Error("Editor mount is missing");
         }
-          const anchorCast = personas ?? [];
+        const anchorCast = personas ?? [];
         const offlineImageAdapter = createImageUploadAdapter({
           mode: "offline",
         });
@@ -2816,18 +2812,16 @@ export const TwyneEditor = component$(
           editor.destroy();
           store.editor = null;
         });
-        };
-        void runtime.then(initialize).catch((error) => {
-          if (disposed) return;
-          startupFailed.value = true;
-          reportApplicationError("twyne:editor:initialize", error, {
-            source: "application",
-            metadata: { operation: "initialize-editor" },
+      };
+      void runtime.then(initialize).catch((error) => {
+        if (disposed) return;
+        startupFailed.value = true;
+        reportApplicationError("twyne:editor:initialize", error, {
+          source: "application",
+          metadata: { operation: "initialize-editor" },
+        });
       });
-    });
-      },
-      { strategy: "document-ready" },
-    );
+    }, { strategy: "document-ready" });
 
     const dismissNote = $((id: string) => {
       if (store.editor) removePersonaNote(store.editor, id);

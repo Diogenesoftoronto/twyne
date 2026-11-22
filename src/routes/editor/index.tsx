@@ -339,10 +339,10 @@ export default component$(() => {
           openingFolioId
             ? migrateLegacyEditorialArtifacts(
                 openingFolioId,
-            canClaimLegacyEditorialArtifacts(
-              store.folios.map((folio) => folio.id),
+                canClaimLegacyEditorialArtifacts(
+                  store.folios.map((folio) => folio.id),
                   openingFolioId,
-            ),
+                ),
               )
             : Promise.resolve(),
         ]);
@@ -927,7 +927,6 @@ export default component$(() => {
     }
   });
 
-  // Keep the saved dossier editable while model consumers receive inheritance.
   // Let the first editable frame paint before mounting supporting panels and
   // reading history. Never write the seed or remount the editor from this task.
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -963,6 +962,7 @@ export default component$(() => {
     });
   });
 
+  // Keep the saved dossier editable while model consumers receive inheritance.
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track, cleanup }) => {
     const folioId = track(() => store.activeFolioId);
@@ -1842,7 +1842,7 @@ export default component$(() => {
                   store.workspaceError
                     ? undefined
                     : $(() => {
-                  store.joinError = null;
+                        store.joinError = null;
                       })
                 }
               />
@@ -1860,38 +1860,38 @@ export default component$(() => {
               !store.workspaceError &&
               (!location.url.searchParams.has("shared") ||
                 store.sharedLixId) ? (
-              <TwyneEditor
-                editorSignal={manuscriptEditor}
-                key={`editor-${store.activeFolioId ?? "none"}-${store.sharedLixId ?? "solo"}-${store.folioKey}`}
-                initialContent={store.editorSeed}
-                activeFolioId={store.activeFolioId ?? undefined}
-                activeFolio={
-                  store.folios.find(
-                    (folio) => folio.id === store.activeFolioId,
-                  ) ?? null
-                }
-                brief={store.brief}
-                sharedLixId={store.sharedLixId ?? undefined}
-                readOnly={store.sharedRole === "commenter"}
-                onEditorialContext$={(panel) => {
-                  store.rightPanel = panel;
-                  store.rightPanelOpen = true;
-                  setVisiblePanel(panel);
-                  if (panel === "history") {
-                    window.dispatchEvent(
-                      new CustomEvent("twyne:version-history-opened"),
-                    );
+                <TwyneEditor
+                  editorSignal={manuscriptEditor}
+                  key={`editor-${store.activeFolioId ?? "none"}-${store.sharedLixId ?? "solo"}-${store.folioKey}`}
+                  initialContent={store.editorSeed}
+                  activeFolioId={store.activeFolioId ?? undefined}
+                  activeFolio={
+                    store.folios.find(
+                      (folio) => folio.id === store.activeFolioId,
+                    ) ?? null
                   }
-                }}
-                onManuscriptFocus$={() => {
-                  // The Board stays open while writing, except where it
-                  // covers the manuscript (same breakpoint as global.css).
+                  brief={store.brief}
+                  sharedLixId={store.sharedLixId ?? undefined}
+                  readOnly={store.sharedRole === "commenter"}
+                  onEditorialContext$={(panel) => {
+                    store.rightPanel = panel;
+                    store.rightPanelOpen = true;
+                    setVisiblePanel(panel);
+                    if (panel === "history") {
+                      window.dispatchEvent(
+                        new CustomEvent("twyne:version-history-opened"),
+                      );
+                    }
+                  }}
+                  onManuscriptFocus$={() => {
+                    // The Board stays open while writing, except where it
+                    // covers the manuscript (same breakpoint as global.css).
                     if (!window.matchMedia("(max-width: 720px)").matches)
                       return;
-                  store.rightPanelOpen = false;
-                  setVisiblePanel(null);
-                }}
-              />
+                    store.rightPanelOpen = false;
+                    setVisiblePanel(null);
+                  }}
+                />
               ) : store.workspaceError ? (
                 <div class="p-6 text-[var(--color-ink-light)]">
                   <p>Your manuscript could not be opened.</p>
@@ -1914,102 +1914,102 @@ export default component$(() => {
         {store.hydrated &&
           supportingFolioId.value === store.activeFolioId &&
           manuscriptEditor.value && (
-        <EditorialBoardOverlay
-          open={store.rightPanelOpen}
-          activeContext={store.rightPanel}
-          activity={store.activity}
-          tabs={panelTabs}
-          onClose$={() => {
-            store.rightPanelOpen = false;
-            setVisiblePanel(null);
-          }}
-          onContext$={(panel) => {
-            store.rightPanel = panel;
-            store.rightPanelOpen = true;
-            setVisiblePanel(panel);
-            if (panel === "history") {
-              window.dispatchEvent(
-                new CustomEvent("twyne:version-history-opened"),
-              );
-            }
-          }}
-        >
-          {/* All panels stay mounted so their event listeners and in-progress
+            <EditorialBoardOverlay
+              open={store.rightPanelOpen}
+              activeContext={store.rightPanel}
+              activity={store.activity}
+              tabs={panelTabs}
+              onClose$={() => {
+                store.rightPanelOpen = false;
+                setVisiblePanel(null);
+              }}
+              onContext$={(panel) => {
+                store.rightPanel = panel;
+                store.rightPanelOpen = true;
+                setVisiblePanel(panel);
+                if (panel === "history") {
+                  window.dispatchEvent(
+                    new CustomEvent("twyne:version-history-opened"),
+                  );
+                }
+              }}
+            >
+              {/* All panels stay mounted so their event listeners and in-progress
               state survive tab switches and closure. */}
               <div
                 class={store.rightPanel === "personas" ? "h-full" : "hidden"}
               >
-            {store.activeFolioId && (
-              <PersonasPanel
-                key={`personas-${store.activeFolioId}`}
-                brief={
-                  store.modelBriefFolioId === store.activeFolioId
-                    ? store.modelBrief
-                    : null
-                }
-                activeFolioId={store.activeFolioId}
-              />
-            )}
-          </div>
-          <div class={store.rightPanel === "rubric" ? "h-full" : "hidden"}>
-            {store.activeFolioId && (
-              <RubricPanel
-                key={`rubric-${store.activeFolioId}`}
-                brief={
-                  store.modelBriefFolioId === store.activeFolioId
-                    ? store.modelBrief
-                    : null
-                }
-                activeFolioId={store.activeFolioId}
-              />
-            )}
-          </div>
+                {store.activeFolioId && (
+                  <PersonasPanel
+                    key={`personas-${store.activeFolioId}`}
+                    brief={
+                      store.modelBriefFolioId === store.activeFolioId
+                        ? store.modelBrief
+                        : null
+                    }
+                    activeFolioId={store.activeFolioId}
+                  />
+                )}
+              </div>
+              <div class={store.rightPanel === "rubric" ? "h-full" : "hidden"}>
+                {store.activeFolioId && (
+                  <RubricPanel
+                    key={`rubric-${store.activeFolioId}`}
+                    brief={
+                      store.modelBriefFolioId === store.activeFolioId
+                        ? store.modelBrief
+                        : null
+                    }
+                    activeFolioId={store.activeFolioId}
+                  />
+                )}
+              </div>
               <div
                 class={store.rightPanel === "comments" ? "h-full" : "hidden"}
               >
-            <CommentsPanel
-              key={`comments-${store.activeFolioId ?? "none"}`}
-              brief={
-                store.modelBriefFolioId === store.activeFolioId
-                  ? store.modelBrief
-                  : null
-              }
-              activeFolioId={store.activeFolioId}
-            />
-          </div>
+                <CommentsPanel
+                  key={`comments-${store.activeFolioId ?? "none"}`}
+                  brief={
+                    store.modelBriefFolioId === store.activeFolioId
+                      ? store.modelBrief
+                      : null
+                  }
+                  activeFolioId={store.activeFolioId}
+                />
+              </div>
               <div
                 class={store.rightPanel === "citations" ? "h-full" : "hidden"}
               >
-            <CitationsPanel
-              key={`citations-${store.activeFolioId ?? "none"}`}
-              activeFolio={
-                store.folios.find(
-                  (folio) => folio.id === store.activeFolioId,
-                ) ?? null
-              }
-            />
-          </div>
-          <div class={store.rightPanel === "tools" ? "h-full" : "hidden"}>
-            <WritingToolsPanel
-              active={store.rightPanelOpen && store.rightPanel === "tools"}
-              editor={manuscriptEditor.value ?? null}
-              readOnly={store.sharedRole === "commenter"}
-            />
-          </div>
-          <div class={store.rightPanel === "history" ? "h-full" : "hidden"}>
-            {store.activeFolioId && (
-              <VersionHistoryPanel
-                key={`history-${store.activeFolioId}`}
-                activeFolioId={store.activeFolioId}
-                folioName={
+                <CitationsPanel
+                  key={`citations-${store.activeFolioId ?? "none"}`}
+                  activeFolio={
+                    store.folios.find(
+                      (folio) => folio.id === store.activeFolioId,
+                    ) ?? null
+                  }
+                />
+              </div>
+              <div class={store.rightPanel === "tools" ? "h-full" : "hidden"}>
+                <WritingToolsPanel
+                  active={store.rightPanelOpen && store.rightPanel === "tools"}
+                  editor={manuscriptEditor.value ?? null}
+                  readOnly={store.sharedRole === "commenter"}
+                />
+              </div>
+              <div class={store.rightPanel === "history" ? "h-full" : "hidden"}>
+                {store.activeFolioId && (
+                  <VersionHistoryPanel
+                    key={`history-${store.activeFolioId}`}
+                    activeFolioId={store.activeFolioId}
+                    folioName={
                       store.folios.find(
                         (folio) => folio.id === store.activeFolioId,
                       )?.name ?? UNTITLED_FOLIO_NAME
-                }
-              />
-            )}
-          </div>
-        </EditorialBoardOverlay>
+                    }
+                  />
+                )}
+              </div>
+            </EditorialBoardOverlay>
           )}
       </div>
     </div>
