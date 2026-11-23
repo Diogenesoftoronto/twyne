@@ -74,21 +74,21 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Twyne — An Editorial Room for Writers",
+  title: "Twyne · From first draft to published work",
   meta: [
     {
       name: "description",
       content:
-        "Twyne is an anti-tabula-rasa writing workspace. Start with an interview; a room of editors reads from the brief you build.",
+        "Twyne is a writing desk that starts from a brief and reads every draft with a room of editors. Publishing to your own domain, team review and book packages are in development.",
     },
     {
       property: "og:title",
-      content: "Twyne — Draft with a room full of editors",
+      content: "Twyne · Finished in March. Still not published.",
     },
     {
       property: "og:description",
       content:
-        "Start with a brief. Shape your draft with five editorial personas, rubric review, and a citation desk.",
+        "Start with a brief and write with five editorial personas, rubric review and a citation desk. Twyne Publishing, in development, carries the piece to your domain, your team's review, or a book package.",
     },
   ],
   scripts: [
