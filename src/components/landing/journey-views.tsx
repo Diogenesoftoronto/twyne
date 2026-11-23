@@ -90,7 +90,6 @@ export const FieldnoteArrival = component$<JourneyViewProps>(
       <div class="jv">
         <Bar crumbs={["Publishing"]} who="maya@fieldnote.app" />
         <div class="jv-body">
-          <p class="jv-kicker">{t("view.f1.kicker")}</p>
           <p class="jv-title">{t("view.f1.title")}</p>
           <p class="jv-sub">{t("view.f1.sub")}</p>
           <fieldset class="jv-slip">
@@ -145,7 +144,7 @@ export const FieldnoteArrival = component$<JourneyViewProps>(
   },
 );
 
-export const FieldnoteDesk = component$<JourneyViewProps>(() => {
+export const FieldnoteDesk = component$<JourneyViewProps>(({ onAdvance$ }) => {
   const t = useTranslate();
   const active = useSignal(false);
   return (
@@ -153,15 +152,15 @@ export const FieldnoteDesk = component$<JourneyViewProps>(() => {
       <Bar crumbs={["Fieldnote", "Fieldnote Journal"]} who="ML" />
       <div class="jv-body jv-split">
         <div>
-          <p class="jv-kicker">{t("view.f2.eyebrow")}</p>
           <div class="jv-row-between">
             <p class="jv-title">Fieldnote Journal</p>
-            <span
-              class="jv-btn jv-btn--primary jv-btn--static"
-              aria-hidden="true"
+            <button
+              type="button"
+              class="jv-btn jv-btn--primary"
+              onClick$={onAdvance$}
             >
               {t("view.f2.newPost")}
-            </span>
+            </button>
           </div>
           <p class="jv-kicker jv-mt">{t("view.f2.posts")}</p>
           <ul class="jv-list">
@@ -275,7 +274,6 @@ export const FieldnoteReleaseCheck = component$<JourneyViewProps>(
         <Bar crumbs={["Fieldnote Journal", "What’s new in November"]} />
         <div class="jv-body jv-split jv-split--check">
           <aside class="jv-panel">
-            <p class="jv-kicker">{t("view.f3.heading")}</p>
             <p class="jv-count" aria-live="polite">
               {left > 0
                 ? t("view.f3.toFix", { count: left })
@@ -636,7 +634,6 @@ export const MarshReview = component$<JourneyViewProps>(() => {
       />
       <div class="jv-body jv-split jv-split--check">
         <aside class="jv-panel">
-          <p class="jv-kicker">{t("view.m2.review")}</p>
           <p class="jv-title jv-title--sm">{t("view.m2.asks")}</p>
           <p class="jv-quote" lang="en">
             “Dates confirmed with the township this morning.”
@@ -722,6 +719,7 @@ export const MarshReview = component$<JourneyViewProps>(() => {
 export const MarshPublications = component$<JourneyViewProps>(() => {
   const t = useTranslate();
   const live = useSignal(false);
+  const paused = useSignal(false);
   return (
     <div class="jv">
       <Bar
@@ -764,8 +762,18 @@ export const MarshPublications = component$<JourneyViewProps>(() => {
                 Annual Report · Ada Brennan · {t("view.m3.approvedBy")}
               </span>
             </span>
-            <span class="jv-btn jv-btn--static" aria-hidden="true">
-              {t("view.m3.publish")}
+            <span aria-live="polite">
+              {paused.value ? (
+                <Chip tone="warn">{t("view.m3.paused")}</Chip>
+              ) : (
+                <button
+                  type="button"
+                  class="jv-btn"
+                  onClick$={() => (paused.value = true)}
+                >
+                  {t("view.m3.publish")}
+                </button>
+              )}
             </span>
           </li>
         </ul>
@@ -891,7 +899,9 @@ export const MarshDomain = component$<JourneyViewProps>(() => {
               disabled={state.value === "checking"}
               onClick$={check}
             >
-              {state.value === "checking" ? "…" : t("view.m4.checkNow")}
+              {state.value === "checking"
+                ? t("view.m4.checking")
+                : t("view.m4.checkNow")}
             </button>
           )}
         </div>
@@ -1025,9 +1035,8 @@ export const OrchardReaders = component$<JourneyViewProps>(() => {
               <li>{t("view.i2.q2")}</li>
               <li>{t("view.i2.q3")}</li>
             </ol>
-            <p class="jv-segmented" aria-hidden="true">
-              <span class="is-on">{t("view.i2.excerpts")}</span>
-              <span class="is-proposed">{t("view.i2.wholeBook")}</span>
+            <p class="jv-fine">
+              {t("view.i2.excerpts")} · {t("view.i2.wholeBook")}
             </p>
             <p class="jv-fine">{t("view.i2.excerptNote")}</p>
           </section>
@@ -1059,7 +1068,6 @@ export const OrchardReaders = component$<JourneyViewProps>(() => {
                 <span class="jv-option__note">{t("view.i2.panelNote")}</span>
               </span>
             </label>
-            <p class="jv-kicker jv-mt">3</p>
             <label class="jv-option">
               <input
                 type="checkbox"
@@ -1113,7 +1121,6 @@ export const OrchardReaderNotes = component$<JourneyViewProps>(() => {
     <div class="jv">
       <Bar crumbs={["The Orchard at Low Water", "Test readers"]} who="IC" />
       <div class="jv-body">
-        <p class="jv-kicker">{t("view.i3.from")}</p>
         <div class="jv-row-between">
           <p class="jv-title">{t("view.i3.title")}</p>
           <span class="jv-pair">
@@ -1239,7 +1246,6 @@ export const OrchardKdp = component$<JourneyViewProps>(() => {
       <Bar crumbs={["The Orchard at Low Water", "Amazon KDP"]} who="IC" />
       <div class="jv-body jv-split">
         <div>
-          <p class="jv-kicker">{t("view.i4.kicker")}</p>
           <p class="jv-title">{t("view.i4.title")}</p>
           <ul class="jv-steps-done">
             {rows.map(([label, value]) => (
@@ -1255,7 +1261,6 @@ export const OrchardKdp = component$<JourneyViewProps>(() => {
           <div class="jv-package">
             <div class="jv-row-between">
               <p class="jv-title jv-title--sm">{t("view.i4.ready")}</p>
-              <Chip tone="ok">{t("view.i4.ready")}</Chip>
             </div>
             <ul class="jv-files" lang="en">
               {files.map(([name, size]) => (

@@ -8,22 +8,12 @@
     "startWriting": "Start writing"
   },
   "hero": {
-    "kicker": "From first draft to published work",
     "h0": "Finished in March. Still not published.",
-    "d0": "The draft lives in one app, the style guide in a PDF, the blog in a CMS and the book in a self-publishing dashboard. Between them, good writing stalls, or goes out sounding like somebody else.",
-    "h1Lead": "Start from ",
-    "h1Strike": "a blank page",
-    "h1Replace": " a brief.",
-    "d1": "Twyne begins with a ten-minute interview. Five editors, a rubric and a citation desk read every draft against the brief it produces.",
-    "h2Lead": "Published ",
-    "h2Strike": "someday",
-    "h2Replace": " where it belongs.",
-    "d2": "Twyne Publishing, now in development, will take the finished piece to your own domain, through your organization’s review, or into a book package for Amazon KDP.",
+    "d0": "Good writing stalls between the draft and the place it should be published, or goes out sounding like somebody else.",
     "ctaStart": "Start your brief →",
     "ctaWalk": "See the walkthroughs"
   },
   "problem": {
-    "kicker": "Where good writing stalls",
     "title": "The writing was done. Getting it out was not.",
     "lede": "The draft is the part people plan for. A finished piece stalls in the hand-offs: from the doc to the editor, from the editor to the style guide, from the style guide to wherever the piece is meant to live.",
     "slip1Label": "The doc",
@@ -34,12 +24,10 @@
     "slip3Body": "Pasted into the CMS. Headings lost, links broken, posted under the wrong name.",
     "slip4Label": "The book",
     "slip4Body": "Trim size, bleed, spine width, keywords. The manuscript waits while its author learns a printer’s vocabulary.",
-    "caseKicker": "An example",
     "caseBody": "Marsh Lane Land Trust has four people and three publications. June drafts a notice that the boardwalk reopens on December 6. Tomás marks it up from his memory of the style guide. Sam copies it into the website by hand. It goes out a day late, with the trust’s name spelled “Marshlane”.",
     "caseNote": "Marsh Lane is fictional. You can follow it through Twyne in the walkthroughs below."
   },
   "turn": {
-    "kicker": "So Twyne is growing",
     "title": "One desk for the whole journey.",
     "lede": "Twyne began as a draft room full of editors. It is becoming the place a piece travels from its first answer to published work, with the same brief, the same house rules and the same editors at every step.",
     "ledgerLabel": "The journey, and what you can use today",
@@ -59,34 +47,27 @@
     "s6Body": "Your address and your look, with feeds and a standard.site proof that the publication is yours.",
     "s7Title": "Readers, then the book",
     "s7Body": "Test readers through VoxQ, then a KDP package or a submission kit for agents.",
-    "filmNote": "Start with the room as it is today: one minute, with captions."
+    "filmNote": "Step into the room as it is today: one minute, with captions."
   },
   "audiences": {
-    "kicker": "Who it is for",
     "title": "Three kinds of writer, one desk.",
     "a1Kicker": "Solo writers and essayists",
-    "a1Title": "Write it well, then put it out.",
     "a1Body": "Start from a brief, draft with editors who argue with you, and share the piece as a Twyne link or in your own ATProto repository. Publishing on your own domain, in your own voice, comes next.",
     "a1Status": "Writing room open today",
     "a1Link": "Follow Fieldnote’s blog",
     "a2Kicker": "Organizations and teams",
-    "a2Title": "Every publication sounds like you.",
     "a2Body": "One style book for the whole organization. Each piece is checked against it, approved by an editor and released by a publisher on your own domain, in your own look.",
     "a2Status": "In development",
     "a2Link": "Follow Marsh Lane’s annual report",
     "a3Kicker": "Authors with a book",
-    "a3Title": "From manuscript to readers to the shelf.",
-    "a3Body": "Freeze a manuscript, learn where test readers lost the thread, and leave with a KDP package or a submission kit. Twyne prepares the files; you upload and send them yourself.",
+    "a3Body": "Freeze a manuscript, learn where test readers got confused, and leave with a KDP package or a submission kit. Twyne prepares the files; you upload and send them yourself.",
     "a3Status": "In development",
     "a3Link": "Follow Ines Calder’s novel"
   },
   "walk": {
-    "kicker": "Walkthroughs",
-    "title": "Follow a piece out the door.",
+    "title": "Follow three pieces from draft to published work.",
     "lede": "Three examples, one step at a time. The buttons inside each screen work.",
-    "note": "Example only. The people and organizations are fictional, and nothing you do here is saved or sent.",
-    "comingLabel": "In development",
-    "comingNote": "These screens come from Twyne Publishing designs. They show where Twyne is going, not what you can use today.",
+    "note": "Example screens from Twyne Publishing, which is in development. The people are fictional, and nothing you do here is saved or sent.",
     "tabsLabel": "Choose a walkthrough",
     "stepCounter": "Step {current} of {total}",
     "stepsLabel": "Steps in this walkthrough",
@@ -95,7 +76,6 @@
     "next": "Next",
     "restart": "Start again",
     "nextJourney": "Next: {name}",
-    "frameStamp": "Example · in development",
     "viewLabel": "Show the screen as",
     "desktop": "Desktop",
     "mobile": "Mobile",
@@ -104,48 +84,36 @@
     "fieldnote": {
       "tab": "Fieldnote",
       "tabSub": "From an app builder to a blog",
-      "s1Kicker": "From the app builder",
       "s1Title": "Arrive with the blog already set up",
       "s1Body": "Maya built Fieldnote in the Not Organic app builder and published one post there. Twyne opens on the same account with the app, the blog at fieldnote.app/blog, the verified address and that first post carried over. She can untick anything she does not want brought across.",
-      "s2Kicker": "The publishing desk",
       "s2Title": "Write the second post from a template",
       "s2Body": "Fieldnote Journal sits beside her drafts. The voice she chose in the builder, Plain Speaker, arrives as a draft rule. Nothing is checked against it until she switches it on.",
-      "s3Kicker": "Before publishing",
       "s3Title": "Fix what breaks the house style",
       "s3Body": "The release check names the rule and the passage for each finding. A must-fix finding holds the post back until it is fixed or kept on purpose. Try the buttons: the passage, the count and the Publish button change together.",
-      "s4Kicker": "Publish",
       "s4Title": "Publish to fieldnote.app",
       "s4Body": "The release sheet shows the page as readers will see it, its address, the feed and whether reader apps may list it. Twyne checks the live page before it calls the post published."
     },
     "marsh": {
       "tab": "Marsh Lane",
       "tabSub": "House style, review and a domain",
-      "s1Kicker": "House style",
       "s1Title": "Learn the style from what is already published",
       "s1Body": "Tomás, the trust’s editor, asks Twyne to read up to ten published pieces. It proposes rules, each with an example from the trust’s own writing. Nothing is switched on until he accepts it.",
-      "s2Kicker": "Review",
       "s2Title": "June asks, Tomás approves",
       "s2Body": "June’s notice passed the release check. Tomás sees the revision, the rules it was checked against and where it will go, then approves it or asks for changes. Editing an approved piece needs a fresh approval.",
-      "s3Kicker": "Publications",
       "s3Title": "Three publications, one organization",
       "s3Body": "Sam, the publisher, sees what is approved and waiting, each publication’s address, and which style book version it uses. A different accent colour on Press is flagged, in case it is not on purpose.",
-      "s4Kicker": "Your own domain",
       "s4Title": "The annual report on reports.marshlane.org",
       "s4Body": "Connecting a domain is four separate checks, each with its own fix: the trust controls the domain, HTTPS works, the pages reach Twyne, and the standard.site proof matches."
     },
     "orchard": {
       "tab": "Ines Calder",
       "tabSub": "A novel, test readers and KDP",
-      "s1Kicker": "The manuscript",
       "s1Title": "Check the book is ready for readers",
       "s1Body": "Ines marks her 24 chapters as a book. Twyne lists what is worth a look before anyone reads it: chapter order, length against her target, a name spelled two ways, open margin notes. None of it stops her.",
-      "s2Kicker": "Test readers",
       "s2Title": "Ask readers where they stopped",
       "s2Body": "She chooses the questions and who reads: people she invites, a paid panel through Prolific, or both. VoxQ runs the study. Readers see the excerpts she approves inside each question.",
-      "s3Kicker": "Reader notes",
       "s3Title": "Answers come back to the margin",
       "s3Body": "When the study closes, answers arrive as margin notes on the passages readers quoted, with how many said so and how many answered. Simulated pilot answers are kept apart and never counted as readers.",
-      "s4Kicker": "Distribution",
       "s4Title": "Leave with a KDP package",
       "s4Body": "Twyne builds the print PDF, the cover template, the EPUB and a sheet of details to paste. Ines uploads to KDP herself and tells Twyne when the book is submitted. A submission kit for agents is the other route."
     }
@@ -162,7 +130,6 @@
     "keptOnPurpose": "Kept on purpose",
     "fixed": "Fixed",
     "f1": {
-      "kicker": "From the app builder",
       "title": "Fieldnote Journal is ready to keep writing",
       "sub": "You are signed in with the same Not Organic account. Untick anything you do not want here.",
       "slip": "Carried from the fieldnote.app setup",
@@ -180,7 +147,6 @@
       "carried": "{count} of 6 items carried over"
     },
     "f2": {
-      "eyebrow": "Publication · fieldnote.app/blog",
       "newPost": "New post",
       "posts": "Posts",
       "changelogMeta": "Changelog · 212 words",
@@ -197,7 +163,6 @@
       "templateList": "Blog post · Changelog"
     },
     "f3": {
-      "heading": "Before publishing",
       "toFix": "{count, plural, one {# to fix} other {# to fix}}",
       "ready": "Ready to publish",
       "toFixSub": "Fix these, or keep them on purpose, to publish.",
@@ -221,7 +186,6 @@
     "f4": {
       "title": "Publish to fieldnote.app",
       "address": "Address",
-      "summary": "Summary for feeds and link previews",
       "checked": "Checked against",
       "checkedValue": "Style book v1 · Changelog template v1",
       "checkedNote": "2 findings fixed. 1 suggestion left as written.",
@@ -257,7 +221,6 @@
     },
     "m2": {
       "who": "Tomás · editor",
-      "review": "Review",
       "asks": "June asks for review",
       "revision": "Revision",
       "goesTo": "Goes to",
@@ -282,7 +245,8 @@
       "styleBook": "Style book",
       "connecting": "Connecting",
       "pressRules": "v1 + 2 press rules",
-      "accent": "Press uses a red accent instead of the trust’s green. That may be on purpose."
+      "accent": "Press uses a red accent instead of the trust’s green. That may be on purpose.",
+      "paused": "Paused: reports.marshlane.org is still connecting"
     },
     "m4": {
       "title": "Connect reports.marshlane.org",
@@ -299,7 +263,8 @@
       "c4Ok": "The proof address returns the Annual Report record.",
       "checkNow": "Check now",
       "waiting": "Waiting for DNS",
-      "linkedNote": "Linked. The Annual Report 2026 foreword can be published here."
+      "linkedNote": "Linked. The Annual Report 2026 foreword can be published here.",
+      "checking": "Checking…"
     },
     "i1": {
       "meta": "Book · literary novel · 24 chapters",
@@ -347,7 +312,6 @@
     },
     "i3": {
       "title": "What readers said",
-      "from": "From VoxQ · study closed Dec 14",
       "readers": "12 readers",
       "simulated": "5 simulated",
       "keepReading": "Wanted to keep reading",
@@ -367,7 +331,6 @@
       "kept": "Kept as written. Twyne will not raise it again for this passage."
     },
     "i4": {
-      "kicker": "Distribution · Amazon KDP",
       "title": "KDP package",
       "format": "Format",
       "formatValue": "5.5 × 8.5 in, cream · ebook",
@@ -391,7 +354,6 @@
     }
   },
   "room": {
-    "kicker": "Open today",
     "title": "The room, working",
     "lede": "Click around a copy of the editing room. Every stop on this tour is part of Twyne you can use now.",
     "platesTitle": "How a piece moves through the room",
@@ -406,7 +368,6 @@
   },
   "close": {
     "title": "The room is open.",
-    "subtitle": "Publishing is on its way.",
     "body": "Start with the interview today. Publishing is being built into the same desk you write in, not as a separate app.",
     "ctaStart": "Start your brief →",
     "ctaSkip": "Skip to the editor",

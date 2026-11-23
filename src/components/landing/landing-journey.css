@@ -17,65 +17,23 @@
   --warn-ink: color-mix(in srgb, var(--color-mustard) 55%, var(--color-ink));
 }
 
-/* ── Hero additions ── */
-.landing-hero__kicker {
-  font-family: var(--font-typewriter);
-  font-size: 0.72rem;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--hero-ink-soft);
-  margin-bottom: 1.1rem;
-}
-/* The headline reserves the height of the longest finished line in the
-   current language: every headline sits invisibly in the same grid cell as
-   the one being typed. */
-.landing-rotator-line--stacked {
-  min-height: 0 !important;
-}
-.landing-rotator-stack {
-  display: grid;
-}
-.landing-rotator-stack > * {
-  grid-area: 1 / 1;
-}
-.landing-rotator-sizer {
-  visibility: hidden;
-}
-/* Same for the deck: all three decks share one cell, only the current one
-   shows, so the CTAs never move. */
-.landing-deck-stack {
-  display: grid;
-}
-.landing-deck-stack > .landing-deck {
-  grid-area: 1 / 1;
-  visibility: hidden;
-}
-.landing-deck-stack > .landing-deck.is-current {
-  visibility: visible;
-}
-.landing-deck-stack > .landing-rotator-deck {
-  min-height: 0;
-}
-
 /* ── Section heads ── */
 .landing-section-head {
   max-width: 46rem;
 }
-.landing-section-head .dept-label,
-.landing-case .dept-label {
-  color: var(--color-ink-light);
-}
 .landing-h2 {
-  margin-top: 0.75rem;
+  text-wrap: balance;
   font-size: clamp(1.85rem, 4.2vw, 2.75rem);
   line-height: 1.12;
 }
 .landing-lede {
+  max-width: 65ch;
   margin-top: 1rem;
   font-size: 1.0625rem;
 }
 @media (min-width: 640px) {
   .landing-lede {
+    max-width: 65ch;
     font-size: 1.125rem;
   }
 }
@@ -106,20 +64,6 @@
   box-shadow: 0 10px 22px -18px
     color-mix(in srgb, var(--shade) 45%, transparent);
   transform: rotate(calc((var(--n) - 2.5) * 0.45deg));
-}
-.landing-slip::after {
-  /* the struck-through status every slip ends on */
-  content: "";
-  position: absolute;
-  left: 1.15rem;
-  right: 1.15rem;
-  bottom: 0.6rem;
-  height: 1px;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--color-paper-3) 0 6px,
-    transparent 6px 10px
-  );
 }
 .landing-slip__label {
   font-family: var(--font-typewriter);
@@ -153,7 +97,7 @@
   font-size: 1.125rem;
   line-height: 1.65;
   color: var(--color-ink);
-  max-width: 48rem;
+  max-width: 65ch;
 }
 .landing-case__note {
   margin-top: 0.9rem;
@@ -222,7 +166,7 @@
 .landing-status {
   display: inline-block;
   font-family: var(--font-typewriter);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   padding: 0.2rem 0.5rem;
@@ -269,17 +213,8 @@
   border-top: 3px solid var(--color-ink);
   border-radius: 2px;
 }
-.landing-audience__kicker {
-  font-family: var(--font-typewriter);
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-ink-light);
-}
-.landing-audience__kicker span {
-  color: var(--color-vermilion);
-}
 .landing-audience__title {
+  text-wrap: balance;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 1.35rem;
@@ -313,36 +248,6 @@
 .landing-nav-link:focus-visible {
   outline: 2px solid var(--color-vermilion);
   outline-offset: 3px;
-}
-
-/* ── "In development" banner above the walkthroughs ── */
-.landing-coming {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.6rem 0.9rem;
-  margin-top: 1.25rem;
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: var(--color-ink-light);
-}
-.landing-coming__stamp {
-  font-family: var(--font-typewriter);
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--coming-ink);
-  border: 2px solid currentColor;
-  padding: 0.3rem 0.6rem;
-  transform: rotate(-2deg);
-}
-.landing-close__subtitle {
-  margin-top: 0.4rem;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.25rem;
-  color: var(--color-ink-light);
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -480,24 +385,13 @@
 .jw-step:not(.is-active) {
   visibility: hidden;
 }
-.jw-step.is-active {
-  animation: jw-in 0.28s ease-out both;
-}
-.jw-step__meta {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-}
-.jw-step__meta .dept-label {
-  color: var(--color-ink-light);
-}
 .jw-step__numeral {
   font-family: var(--font-display);
   font-size: 1.4rem;
   color: var(--color-vermilion);
 }
 .jw-step__title {
-  margin-top: 0.5rem;
+  text-wrap: balance;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 1.4rem;
@@ -514,8 +408,8 @@
 .jw-nav {
   display: grid;
   gap: 0.85rem;
-  border-top: 1px solid var(--color-paper-3);
-  padding-top: 1rem;
+  border-bottom: 1px solid var(--color-paper-3);
+  padding-bottom: 1rem;
 }
 .jw-counter {
   font-family: var(--font-typewriter);
@@ -585,33 +479,6 @@
   box-shadow: 0 30px 60px -40px
     color-mix(in srgb, var(--shade) 55%, transparent);
 }
-.jw-frame__chrome {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.2rem 0.6rem 0.45rem;
-}
-.jw-frame__dots {
-  display: inline-flex;
-  gap: 0.3rem;
-}
-.jw-frame__dots i {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: var(--color-paper-3);
-}
-.jw-frame__stamp {
-  font-family: var(--font-typewriter);
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--coming-ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 .jw-screen {
   position: relative;
   height: 34rem;
@@ -641,16 +508,12 @@
   position: absolute;
   inset: 0;
   overflow: auto;
-  overscroll-behavior: contain;
 }
 .jw-view:not(.is-active) {
   visibility: hidden;
 }
-.jw-view.is-active {
-  animation: jw-in 0.3s ease-out both;
-}
 .jw-note {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   font-family: var(--font-sans);
   font-size: 0.88rem;
   color: var(--color-ink-light);
@@ -1553,5 +1416,21 @@
   }
   .landing-slip {
     transform: none;
+  }
+}
+
+/* Phones: the active screen sets the frame's height, so nothing scrolls
+   inside it. The step controls sit above the frame, so the height change
+   never moves what the visitor just pressed. */
+@media (max-width: 767px) {
+  .jw-screen {
+    height: auto;
+  }
+  .jw-view {
+    position: static;
+    overflow: visible;
+  }
+  .jw-view:not(.is-active) {
+    display: none;
   }
 }

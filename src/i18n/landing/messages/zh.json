@@ -8,22 +8,12 @@
     "startWriting": "开始写作"
   },
   "hero": {
-    "kicker": "从初稿到发表",
     "h0": "三月就写完了，至今还没发表。",
-    "d0": "草稿在一个应用里，风格指南在一份 PDF 里，博客在 CMS 里，书在自助出版后台里。好文章就卡在它们之间，或者发出去时读起来已经像别人写的。",
-    "h1Lead": "从",
-    "h1Strike": "一张白纸",
-    "h1Replace": "一份简报开始。",
-    "d1": "Twyne 从一场十分钟的访谈开始。五位编辑、一份评分标准和一个引文台，会对照访谈生成的简报审读每一稿。",
-    "h2Lead": "发表",
-    "h2Strike": "遥遥无期",
-    "h2Replace": "到它该去的地方。",
-    "d2": "Twyne Publishing 目前正在开发中，将把完成的作品发布到你自己的域名，送进你所在机构的审核流程，或打包成适用于 Amazon KDP 的图书文件。",
+    "d0": "好文章常常卡在草稿和它该发表的地方之间，或者发出去时读起来已经像别人写的。",
     "ctaStart": "开始写简报 →",
     "ctaWalk": "查看演示"
   },
   "problem": {
-    "kicker": "好文章卡在哪里",
     "title": "稿子写完了，却没能发出去。",
     "lede": "人们会为写草稿做计划。完成的作品却卡在交接环节：从文档到编辑，从编辑到风格指南，再从风格指南到它最终该发布的地方。",
     "slip1Label": "文档",
@@ -34,12 +24,10 @@
     "slip3Body": "粘贴进 CMS 后，小标题丢了，链接断了，署名也错了。",
     "slip4Label": "书",
     "slip4Body": "开本、出血、书脊宽度、关键词。作者忙着学印刷厂的术语，书稿只能等着。",
-    "caseKicker": "一个例子",
     "caseBody": "Marsh Lane Land Trust 有四个人，三份刊物。June 起草了一则通知：木栈道将于 12 月 6 日重新开放。Tomás 凭自己对风格指南的记忆做了修改。Sam 手动把它复制到网站上。通知晚了一天才发出，机构名称还被拼成了“Marshlane”。",
     "caseNote": "Marsh Lane 是虚构的。你可以在下面的演示中跟着它走完 Twyne 的流程。"
   },
   "turn": {
-    "kicker": "所以 Twyne 在成长",
     "title": "一张编辑台，走完全程。",
     "lede": "Twyne 最初是一间坐满编辑的草稿室。它正在变成一篇作品从第一个回答走到发表的地方，每一步都用同一份简报、同一套本社规范和同一批编辑。",
     "ledgerLabel": "完整流程，以及今天能用的部分",
@@ -59,34 +47,27 @@
     "s6Body": "你的网址，你的外观，附带订阅源和一份 standard.site 证明，证明这份刊物属于你。",
     "s7Title": "先找读者，再出书",
     "s7Body": "通过 VoxQ 找试读读者，然后生成 KDP 文件包，或一套投给文学经纪人的投稿材料。",
-    "filmNote": "先看看现在的写作室：一分钟，带字幕。"
+    "filmNote": "走进今天的写作室：一分钟，带字幕。"
   },
   "audiences": {
-    "kicker": "适合谁",
     "title": "三类写作者，一张编辑台。",
     "a1Kicker": "独立写作者与随笔作者",
-    "a1Title": "写好，然后发出去。",
     "a1Body": "从简报开始，和会跟你争论的编辑一起起草，再以 Twyne 链接或在你自己的 ATProto 仓库中分享作品。下一步是用你自己的声音，在你自己的域名上发布。",
     "a1Status": "写作室已开放",
     "a1Link": "看 Fieldnote 的博客",
     "a2Kicker": "机构与团队",
-    "a2Title": "每份刊物都是你们的声音。",
     "a2Body": "整个机构共用一本风格手册。每篇作品都会对照它检查，由编辑批准，再由发布者以你们自己的外观发布到你们自己的域名。",
     "a2Status": "开发中",
     "a2Link": "看 Marsh Lane 的年度报告",
     "a3Kicker": "有书要出的作者",
-    "a3Title": "从书稿到读者，再到书架。",
-    "a3Body": "冻结书稿，了解试读读者在哪里跟丢了线索，最后带走一个 KDP 文件包或一套投稿材料。Twyne 准备文件；上传和发送由你自己完成。",
+    "a3Body": "冻结书稿，了解试读读者在哪里感到困惑，最后带走一个 KDP 文件包或一套投稿材料。Twyne 准备文件；上传和发送由你自己完成。",
     "a3Status": "开发中",
     "a3Link": "看 Ines Calder 的小说"
   },
   "walk": {
-    "kicker": "演示",
-    "title": "跟着一篇作品走出门。",
+    "title": "跟着三篇作品，从草稿走到发表。",
     "lede": "三个例子，一步一步来。每个界面里的按钮都能点。",
-    "note": "仅为示例。人物和机构均为虚构，你在这里的任何操作都不会被保存或发送。",
-    "comingLabel": "开发中",
-    "comingNote": "这些界面来自 Twyne Publishing 的设计稿。它们展示的是 Twyne 的方向，而不是你今天能用的功能。",
+    "note": "以下是 Twyne Publishing 的示例界面，该功能仍在开发中。人物均为虚构，你在这里的任何操作都不会被保存或发送。",
     "tabsLabel": "选择一个演示",
     "stepCounter": "第 {current} 步，共 {total} 步",
     "stepsLabel": "本演示的步骤",
@@ -95,7 +76,6 @@
     "next": "下一步",
     "restart": "重新开始",
     "nextJourney": "下一个：{name}",
-    "frameStamp": "示例 · 开发中",
     "viewLabel": "界面显示为",
     "desktop": "桌面",
     "mobile": "手机",
@@ -104,48 +84,36 @@
     "fieldnote": {
       "tab": "Fieldnote",
       "tabSub": "从应用构建器到博客",
-      "s1Kicker": "来自应用构建器",
       "s1Title": "进来时博客已经设好",
       "s1Body": "Maya 在 Not Organic 应用构建器里搭建了 Fieldnote，并在那里发布了一篇文章。Twyne 以同一个账户打开，应用、位于 fieldnote.app/blog 的博客、已验证的地址和那第一篇文章都已带过来。不想带过来的，她可以取消勾选。",
-      "s2Kicker": "发布台",
       "s2Title": "用模板写第二篇文章",
       "s2Body": "Fieldnote Journal 就在她的草稿旁边。她在构建器里选的语气 Plain Speaker 作为一条草稿规则带了过来。在她启用之前，不会有任何内容按它检查。",
-      "s3Kicker": "发布前",
       "s3Title": "修正违反本社风格的地方",
       "s3Body": "发布检查会为每个问题标出对应的规则和段落。必须修正的问题会挡住文章，直到它被修正或被有意保留。试试这些按钮：段落、计数和“发布”按钮会一起变化。",
-      "s4Kicker": "发布",
       "s4Title": "发布到 fieldnote.app",
       "s4Body": "发布单会显示读者将看到的页面、它的地址、订阅源，以及阅读应用是否可以收录它。Twyne 会先检查线上页面，再把文章标记为已发布。"
     },
     "marsh": {
       "tab": "Marsh Lane",
       "tabSub": "本社风格、审核和域名",
-      "s1Kicker": "本社风格",
       "s1Title": "从已发表的内容中学习风格",
       "s1Body": "机构的编辑 Tomás 请 Twyne 阅读最多十篇已发表的作品。Twyne 会提出规则，每条都附有一个出自机构自己文字的例子。在他接受之前，什么都不会启用。",
-      "s2Kicker": "审核",
       "s2Title": "June 申请，Tomás 批准",
       "s2Body": "June 的通知通过了发布检查。Tomás 能看到这一版修订、检查所依据的规则以及它要发布到哪里，然后批准或要求修改。修改已批准的作品需要重新批准。",
-      "s3Kicker": "刊物",
       "s3Title": "三份刊物，一个机构",
       "s3Body": "发布者 Sam 能看到哪些已批准、正在等待，每份刊物的地址，以及各自使用哪个版本的风格手册。Press 用了不同的强调色，系统会标出来，以防这不是有意为之。",
-      "s4Kicker": "你自己的域名",
       "s4Title": "reports.marshlane.org 上的年度报告",
       "s4Body": "连接域名分为四项独立检查，每项都有各自的修复方法：机构控制该域名，HTTPS 可用，页面能到达 Twyne，以及 standard.site 证明匹配。"
     },
     "orchard": {
       "tab": "Ines Calder",
       "tabSub": "一部小说、试读读者和 KDP",
-      "s1Kicker": "书稿",
       "s1Title": "检查这本书能否交给读者",
       "s1Body": "Ines 把她的 24 章标记为一本书。在任何人阅读之前，Twyne 会列出值得一看的地方：章节顺序、篇幅与她的目标对比、一个有两种拼法的名字、未处理的页边批注。这些都不会拦住她。",
-      "s2Kicker": "试读读者",
       "s2Title": "问读者在哪里停下了",
       "s2Body": "她来选择问题和读者：她邀请的人、通过 Prolific 招募的付费读者小组，或两者都要。VoxQ 负责运行这项调研。读者在每个问题里看到的是她批准的节选。",
-      "s3Kicker": "读者批注",
       "s3Title": "回答回到页边",
       "s3Body": "调研结束后，回答会以页边批注的形式出现在读者引用的段落旁，并注明有多少人这样说、多少人作答。模拟试读的回答单独存放，绝不计入读者。",
-      "s4Kicker": "发行",
       "s4Title": "带走一个 KDP 文件包",
       "s4Body": "Twyne 会生成印刷版 PDF、封面模板、EPUB，以及一页可直接粘贴的信息。Ines 自己上传到 KDP，并在提交后告诉 Twyne。另一条路是一套投给文学经纪人的投稿材料。"
     }
@@ -162,7 +130,6 @@
     "keptOnPurpose": "已有意保留",
     "fixed": "已修正",
     "f1": {
-      "kicker": "来自应用构建器",
       "title": "Fieldnote Journal 已准备好继续写作",
       "sub": "你已用同一个 Not Organic 账户登录。不想带到这里的，可以取消勾选。",
       "slip": "从 fieldnote.app 的设置中带来",
@@ -180,7 +147,6 @@
       "carried": "6 项中已带过来 {count} 项"
     },
     "f2": {
-      "eyebrow": "刊物 · fieldnote.app/blog",
       "newPost": "新文章",
       "posts": "文章",
       "changelogMeta": "更新日志 · 212 词",
@@ -197,7 +163,6 @@
       "templateList": "博客文章 · 更新日志"
     },
     "f3": {
-      "heading": "发布前",
       "toFix": "{count, plural, one {# 项待修正} other {# 项待修正}}",
       "ready": "可以发布",
       "toFixSub": "修正这些问题，或有意保留，才能发布。",
@@ -221,7 +186,6 @@
     "f4": {
       "title": "发布到 fieldnote.app",
       "address": "地址",
-      "summary": "用于订阅源和链接预览的摘要",
       "checked": "检查依据",
       "checkedValue": "风格手册 v1 · 更新日志模板 v1",
       "checkedNote": "已修正 2 个问题。1 条建议保持原样。",
@@ -257,7 +221,6 @@
     },
     "m2": {
       "who": "Tomás · 编辑",
-      "review": "审核",
       "asks": "June 申请审核",
       "revision": "修订版",
       "goesTo": "发布到",
@@ -282,7 +245,8 @@
       "styleBook": "风格手册",
       "connecting": "正在连接",
       "pressRules": "v1 + 2 条 Press 专属规则",
-      "accent": "Press 用的是红色强调色，而不是机构的绿色。这可能是有意为之。"
+      "accent": "Press 用的是红色强调色，而不是机构的绿色。这可能是有意为之。",
+      "paused": "已暂停：reports.marshlane.org 仍在连接中"
     },
     "m4": {
       "title": "连接 reports.marshlane.org",
@@ -299,7 +263,8 @@
       "c4Ok": "证明地址返回了 Annual Report 记录。",
       "checkNow": "立即检查",
       "waiting": "等待 DNS",
-      "linkedNote": "已连接。Annual Report 2026 的前言可以在这里发布。"
+      "linkedNote": "已连接。Annual Report 2026 的前言可以在这里发布。",
+      "checking": "正在检查…"
     },
     "i1": {
       "meta": "图书 · 文学小说 · 24 章",
@@ -347,7 +312,6 @@
     },
     "i3": {
       "title": "读者怎么说",
-      "from": "来自 VoxQ · 调研于 12 月 14 日结束",
       "readers": "12 位读者",
       "simulated": "5 位模拟读者",
       "keepReading": "想继续读下去",
@@ -367,7 +331,6 @@
       "kept": "保持原样。Twyne 不会再就这段提出这个问题。"
     },
     "i4": {
-      "kicker": "发行 · Amazon KDP",
       "title": "KDP 文件包",
       "format": "开本",
       "formatValue": "5.5 × 8.5 英寸，米白纸 · 电子书",
@@ -391,7 +354,6 @@
     }
   },
   "room": {
-    "kicker": "已开放",
     "title": "正在运转的写作室",
     "lede": "在写作室的副本里随便点点。这趟导览的每一站，都是你现在就能用的 Twyne 功能。",
     "platesTitle": "一篇作品如何走过写作室",
@@ -406,7 +368,6 @@
   },
   "close": {
     "title": "写作室已开放。",
-    "subtitle": "发布功能正在路上。",
     "body": "今天就从访谈开始。发布功能正被内置到你写作的同一张编辑台中，而不是一个单独的应用。",
     "ctaStart": "开始写简报 →",
     "ctaSkip": "直接进入编辑器",

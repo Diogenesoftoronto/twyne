@@ -33,105 +33,6 @@ interface LandingPageProps {
 const DESKTOP_DOWNLOAD_URL = "/downloads/";
 
 /**
- * The hero headline types itself out, then a copy-editor strikes a word and
- * writes the correction after it — the gesture the whole product is about.
- *
- * `lead` types first. If a `strike` is given it types too, sits for a beat,
- * takes the rule through it, and then `replacement` is typed after the
- * correction. Headline 0 carries no correction on purpose: it is what the
- * server renders and what crawlers and screen readers get, so it has to read
- * as a clean sentence. It names the problem; the other two answer it.
- */
-interface Headline {
-  lead: string;
-  strike?: string;
-  replacement?: string;
-  deck: string;
-}
-
-interface HeadlineRun {
-  text: string;
-  struck: boolean;
-}
-interface HeadlineFrame {
-  runs: HeadlineRun[];
-  hold: number;
-  leaving: boolean;
-  headline: number;
-}
-
-const TYPE_MS = 46; // one keystroke
-const SETTLE_MS = 700; // the beat before the editor's mark lands
-const STRIKE_MS = 900; // the rule drawn through the struck words
-const READ_MS = 3400; // the finished line, held to be read
-const LEAVE_MS = 620; // the line pulled up out of the carriage
-
-/**
- * Every state of the headline, precomputed. Playing it back is then just
- * "advance an index on a timer", which keeps the component free of nested
- * timeouts and makes the whole sequence deterministic. Pure, so the render
- * and the playback task can each build it from the same translated lines.
- */
-const buildFrames = (headlines: Headline[]) => {
-  const frames: HeadlineFrame[] = [];
-  let initial = 0;
-
-  headlines.forEach((headline, index) => {
-    const push = (runs: HeadlineRun[], hold: number, leaving = false) =>
-      frames.push({
-        runs: runs.filter((run) => run.text.length > 0),
-        hold,
-        leaving,
-        headline: index,
-      });
-
-    const leadChars = [...headline.lead];
-    for (let i = 1; i <= leadChars.length; i++) {
-      push([{ text: leadChars.slice(0, i).join(""), struck: false }], TYPE_MS);
-    }
-
-    const lead = { text: headline.lead, struck: false };
-    if (headline.strike && headline.replacement) {
-      const strike = [...headline.strike];
-      const replacement = [...headline.replacement];
-      for (let i = 1; i <= strike.length; i++) {
-        push(
-          [lead, { text: strike.slice(0, i).join(""), struck: false }],
-          TYPE_MS,
-        );
-      }
-      const struck = { text: headline.strike, struck: true };
-      push([lead, { text: headline.strike, struck: false }], SETTLE_MS);
-      push([lead, struck], STRIKE_MS);
-      for (let i = 1; i <= replacement.length; i++) {
-        push(
-          [
-            lead,
-            struck,
-            { text: replacement.slice(0, i).join(""), struck: false },
-          ],
-          TYPE_MS,
-        );
-      }
-      push(
-        [lead, struck, { text: headline.replacement, struck: false }],
-        READ_MS,
-      );
-    } else {
-      push([lead], READ_MS);
-    }
-
-    // The completed first headline is what the server renders, and where the
-    // loop starts — so the first paint never flickers or retypes itself.
-    if (index === 0) initial = frames.length - 1;
-
-    push(frames[frames.length - 1].runs, LEAVE_MS, true);
-  });
-
-  return { frames, initial };
-};
-
-/**
  * Split text into per-word, per-character spans for the CSS keystroke reveal
  * used by the section headings. Words are what wrap, so a line break never
  * lands mid-word, and the spaces stay real text nodes so the heading still
@@ -223,9 +124,9 @@ const STAGES = [
 
 /** One card per audience; each opens the walkthrough that follows it. */
 const AUDIENCES = [
-  { copy: "a1", walk: "fieldnote", today: true, mark: "♠" },
-  { copy: "a2", walk: "marsh-lane", today: false, mark: "♦" },
-  { copy: "a3", walk: "orchard", today: false, mark: "♥" },
+  { copy: "a1", walk: "fieldnote", today: true },
+  { copy: "a2", walk: "marsh-lane", today: false },
+  { copy: "a3", walk: "orchard", today: false },
 ];
 
 export const LandingPage = component$<LandingPageProps>((props) => (
@@ -240,46 +141,6 @@ const LandingContent = component$<LandingPageProps>(
     const auth = useAuth();
     const signedIn = !!auth.value.user;
     const root = useSignal<HTMLElement>();
-
-    const headlines: Headline[] = [
-      { lead: t("hero.h0"), deck: t("hero.d0") },
-      {
-        lead: t("hero.h1Lead"),
-        strike: t("hero.h1Strike"),
-        replacement: t("hero.h1Replace"),
-        deck: t("hero.d1"),
-      },
-      {
-        lead: t("hero.h2Lead"),
-        strike: t("hero.h2Strike"),
-        replacement: t("hero.h2Replace"),
-        deck: t("hero.d2"),
-      },
-    ];
-    const { frames, initial } = buildFrames(headlines);
-    // Starts on the completed first headline, so SSR, hydration and the first
-    // paint all agree and nothing retypes itself on load.
-    const heroFrame = useSignal(initial);
-    const currentFrame = frames[heroFrame.value] ?? frames[initial];
-
-    // Play the headline. Each frame carries its own hold, so this is a single
-    // self-rescheduling timer rather than a pile of nested timeouts.
-    // eslint-disable-next-line qwik/no-use-visible-task
-    useVisibleTask$(({ cleanup }) => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      const holds = buildFrames(headlines).frames.map((frame) => frame.hold);
-
-      let timer: ReturnType<typeof setTimeout>;
-      const tick = () => {
-        timer = setTimeout(() => {
-          heroFrame.value = (heroFrame.value + 1) % holds.length;
-          tick();
-        }, holds[heroFrame.value]);
-      };
-      tick();
-
-      cleanup(() => clearTimeout(timer));
-    });
 
     // Scroll reveal for the photo essay.
     //
@@ -322,9 +183,6 @@ const LandingContent = component$<LandingPageProps>(
 
       cleanup(() => observer.disconnect());
     });
-
-    const fullHeadline = (headline: Headline) =>
-      `${headline.lead}${headline.strike ?? ""}${headline.replacement ?? ""}`;
 
     return (
       <div class="landing-page" ref={root}>
@@ -382,53 +240,12 @@ const LandingContent = component$<LandingPageProps>(
               decoding="async"
             />
             <div class="landing-hero__inner mx-auto max-w-3xl text-center">
-              <p class="landing-hero__kicker">{t("hero.kicker")}</p>
-              <h1
-                class="landing-title ink-bleed landing-rotator-line landing-rotator-line--stacked"
-                aria-label={headlines[0].lead}
-              >
-                <span class="landing-rotator-stack" aria-hidden="true">
-                  {/* Every finished headline, invisible, so the line keeps the
-                      height of the longest one in this language. */}
-                  {headlines.map((headline, index) => (
-                    <span key={index} class="landing-rotator-sizer">
-                      {fullHeadline(headline)}
-                      <span class="landing-rotator__caret" />
-                    </span>
-                  ))}
-                  <span
-                    class={[
-                      "landing-rotator",
-                      currentFrame.leaving ? "is-leaving" : "",
-                    ]}
-                  >
-                    {currentFrame.runs.map((run, runIndex) => (
-                      <span
-                        key={runIndex}
-                        class={run.struck ? "landing-rotator__struck" : ""}
-                      >
-                        {run.text}
-                      </span>
-                    ))}
-                    <span class="landing-rotator__caret" />
-                  </span>
-                </span>
+              <h1 class="landing-title ink-bleed landing-hero__title">
+                {t("hero.h0")}
               </h1>
-              <div class="landing-deck-stack mx-auto mt-6 max-w-2xl">
-                {headlines.map((headline, index) => (
-                  <p
-                    key={index}
-                    class={[
-                      "landing-deck text-base sm:text-lg",
-                      index === currentFrame.headline
-                        ? "landing-rotator-deck is-current"
-                        : "",
-                    ]}
-                  >
-                    {headline.deck}
-                  </p>
-                ))}
-              </div>
+              <p class="landing-deck mx-auto mt-6 max-w-2xl text-base sm:text-lg">
+                {t("hero.d0")}
+              </p>
               <div class="landing-rise-3 mt-9 flex flex-wrap items-center justify-center gap-3">
                 <button
                   onClick$={() => onStartBrief$("hero")}
@@ -450,7 +267,6 @@ const LandingContent = component$<LandingPageProps>(
             aria-labelledby="problem-title"
           >
             <div class="landing-section-head" data-reveal>
-              <p class="dept-label">{t("problem.kicker")}</p>
               <h2 id="problem-title" class="landing-title landing-h2">
                 {t("problem.title")}
               </h2>
@@ -467,7 +283,6 @@ const LandingContent = component$<LandingPageProps>(
               ))}
             </ul>
             <figure class="landing-case paper-sheet" data-reveal>
-              <p class="dept-label">{t("problem.caseKicker")}</p>
               <blockquote class="landing-case__body">
                 {t("problem.caseBody")}
               </blockquote>
@@ -492,7 +307,6 @@ const LandingContent = component$<LandingPageProps>(
             aria-labelledby="journey-title"
           >
             <div class="landing-section-head" data-reveal>
-              <p class="dept-label">{t("turn.kicker")}</p>
               <h2
                 id="journey-title"
                 class="landing-title ink-bleed landing-typed-reveal landing-h2"
@@ -535,7 +349,7 @@ const LandingContent = component$<LandingPageProps>(
                 ))}
               </ol>
               <div class="landing-turn__film">
-                <LaunchFilm />
+                <LaunchFilm minimal />
                 <p class="landing-turn__film-note">{t("turn.filmNote")}</p>
               </div>
             </div>
@@ -548,8 +362,7 @@ const LandingContent = component$<LandingPageProps>(
             aria-labelledby="audiences-title"
           >
             <div class="landing-section-head" data-reveal>
-              <p class="dept-label">{t("audiences.kicker")}</p>
-              <h2 id="audiences-title" class="landing-title landing-h2">
+              <h2 id="audiences-title" class="sr-only">
                 {t("audiences.title")}
               </h2>
             </div>
@@ -561,12 +374,8 @@ const LandingContent = component$<LandingPageProps>(
                   data-reveal
                   style={`--reveal-delay: ${index * 90}ms`}
                 >
-                  <p class="landing-audience__kicker">
-                    <span aria-hidden="true">{audience.mark}</span>{" "}
-                    {t(`audiences.${audience.copy}Kicker`)}
-                  </p>
                   <h3 class="landing-audience__title">
-                    {t(`audiences.${audience.copy}Title`)}
+                    {t(`audiences.${audience.copy}Kicker`)}
                   </h3>
                   <p class="landing-audience__body">
                     {t(`audiences.${audience.copy}Body`)}
@@ -583,7 +392,8 @@ const LandingContent = component$<LandingPageProps>(
                     class="landing-audience__link"
                     href={`#walk-${audience.walk}`}
                   >
-                    {t(`audiences.${audience.copy}Link`)} →
+                    {t(`audiences.${audience.copy}Link`)}{" "}
+                    <span aria-hidden="true">→</span>
                   </a>
                 </li>
               ))}
@@ -598,17 +408,10 @@ const LandingContent = component$<LandingPageProps>(
           >
             <div class="mx-auto max-w-6xl">
               <div class="landing-section-head">
-                <p class="dept-label">{t("walk.kicker")}</p>
                 <h2 id="walkthroughs-title" class="landing-title landing-h2">
                   {t("walk.title")}
                 </h2>
                 <p class="landing-deck landing-lede">{t("walk.lede")}</p>
-                <p class="landing-coming">
-                  <span class="landing-coming__stamp">
-                    {t("walk.comingLabel")}
-                  </span>
-                  <span>{t("walk.comingNote")}</span>
-                </p>
               </div>
             </div>
             <div class="mx-auto mt-10 max-w-6xl">
@@ -632,11 +435,6 @@ const LandingContent = component$<LandingPageProps>(
           >
             <div class="mx-auto max-w-6xl">
               <div class="landing-section-head">
-                <p class="dept-label">
-                  <span class="landing-status is-today">
-                    {t("room.kicker")}
-                  </span>
-                </p>
                 <h2 id="room-title" class="landing-title landing-h2">
                   {t("room.title")}
                 </h2>
@@ -735,7 +533,6 @@ const LandingContent = component$<LandingPageProps>(
                 >
                   {typedSpans(t("close.title"))}
                 </h2>
-                <p class="landing-close__subtitle">{t("close.subtitle")}</p>
                 <p class="landing-deck mx-auto mt-4 max-w-md text-base">
                   {t("close.body")}
                 </p>

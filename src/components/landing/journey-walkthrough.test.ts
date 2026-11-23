@@ -15,7 +15,7 @@ const ENGLISH = Object.fromEntries(entries(english as Tree));
 
 /**
  * The walkthrough reads its narration by convention
- * (`walk.<copy>.s<n>Kicker|Title|Body`). A view added without copy, or copy
+ * (`walk.<copy>.s<n>Title|Body`). A view added without copy, or copy
  * left behind after a view is removed, should fail here rather than render a
  * thrown id on the landing page.
  */
@@ -29,7 +29,7 @@ describe("landing walkthroughs", () => {
         .filter(Boolean).length;
       expect(steps).toBe(journey.views.length);
       for (let n = 1; n <= journey.views.length; n++) {
-        for (const part of ["Kicker", "Title", "Body"]) {
+        for (const part of ["Title", "Body"]) {
           expect(ENGLISH[`walk.${journey.copy}.s${n}${part}`]).toBeString();
         }
       }

@@ -39,7 +39,7 @@ export interface Journey {
 
 /**
  * The three walkthroughs, one per audience. Each step's narration lives at
- * `walk.<copy>.s<n>Kicker|Title|Body`; the view at the same index is the
+ * `walk.<copy>.s<n>Title|Body`; the view at the same index is the
  * product screen for that step.
  */
 export const JOURNEYS: Journey[] = [
@@ -178,6 +178,8 @@ export const JourneyWalkthrough = component$(() => {
         </div>
       </div>
 
+      <p class="jw-note">{t("walk.note")}</p>
+
       <div class="jw-stage">
         {JOURNEYS.map((journey, ji) => {
           const active = ji === journeyIndex.value;
@@ -195,30 +197,6 @@ export const JourneyWalkthrough = component$(() => {
               inert={!active}
             >
               <div class="jw-narration">
-                <div class="jw-stack">
-                  {journey.views.map((_, si) => (
-                    <div
-                      key={si}
-                      class={["jw-step", si === current ? "is-active" : ""]}
-                      inert={si !== current}
-                    >
-                      <p class="jw-step__meta">
-                        <span class="jw-step__numeral">
-                          {["I", "II", "III", "IV", "V", "VI"][si]}
-                        </span>
-                        <span class="dept-label">
-                          {t(`walk.${journey.copy}.s${si + 1}Kicker`)}
-                        </span>
-                      </p>
-                      <h3 class="jw-step__title">
-                        {t(`walk.${journey.copy}.s${si + 1}Title`)}
-                      </h3>
-                      <p class="jw-step__body">
-                        {t(`walk.${journey.copy}.s${si + 1}Body`)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
                 <div class="jw-nav">
                   <p class="jw-counter">
                     {t("walk.stepCounter", { current: current + 1, total })}
@@ -246,7 +224,7 @@ export const JourneyWalkthrough = component$(() => {
                       disabled={current === 0}
                       onClick$={() => goToStep(ji, current - 1)}
                     >
-                      ← {t("walk.back")}
+                      <span aria-hidden="true">←</span> {t("walk.back")}
                     </button>
                     {!last ? (
                       <button
@@ -254,7 +232,7 @@ export const JourneyWalkthrough = component$(() => {
                         class="broadsheet-cta jw-button"
                         onClick$={() => goToStep(ji, current + 1)}
                       >
-                        {t("walk.next")} →
+                        {t("walk.next")} <span aria-hidden="true">→</span>
                       </button>
                     ) : nextJourney ? (
                       <button
@@ -265,7 +243,7 @@ export const JourneyWalkthrough = component$(() => {
                         {t("walk.nextJourney", {
                           name: t(`walk.${nextJourney.copy}.tab`),
                         })}{" "}
-                        →
+                        <span aria-hidden="true">→</span>
                       </button>
                     ) : (
                       <button
@@ -278,18 +256,29 @@ export const JourneyWalkthrough = component$(() => {
                     )}
                   </div>
                 </div>
+                <div class="jw-stack">
+                  {journey.views.map((_, si) => (
+                    <div
+                      key={si}
+                      class={["jw-step", si === current ? "is-active" : ""]}
+                      inert={si !== current}
+                    >
+                      <h3 class="jw-step__title">
+                        <span class="jw-step__numeral" aria-hidden="true">
+                          {["I", "II", "III", "IV", "V", "VI"][si]}
+                        </span>{" "}
+                        {t(`walk.${journey.copy}.s${si + 1}Title`)}
+                      </h3>
+                      <p class="jw-step__body">
+                        {t(`walk.${journey.copy}.s${si + 1}Body`)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div class="jw-product">
                 <div class="jw-frame">
-                  <div class="jw-frame__chrome" aria-hidden="true">
-                    <span class="jw-frame__dots">
-                      <i />
-                      <i />
-                      <i />
-                    </span>
-                    <span class="jw-frame__stamp">{t("walk.frameStamp")}</span>
-                  </div>
                   <div class="jw-screen">
                     {journey.views.map((View, si) => {
                       const shown = si === current;
@@ -322,7 +311,6 @@ export const JourneyWalkthrough = component$(() => {
         })}
       </div>
 
-      <p class="jw-note">{t("walk.note")}</p>
       <p class="sr-only" aria-live="polite">
         {announcement.value}
       </p>

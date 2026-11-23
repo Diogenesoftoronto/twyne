@@ -8,22 +8,12 @@
     "startWriting": "Commencer à écrire"
   },
   "hero": {
-    "kicker": "Du premier jet au texte publié",
     "h0": "Fini en mars. Toujours pas publié.",
-    "d0": "Le brouillon vit dans une application, le guide de style dans un PDF, le blog dans un CMS et le livre dans un tableau de bord d’autoédition. Entre les deux, un bon texte s’enlise, ou sort avec la voix de quelqu’un d’autre.",
-    "h1Lead": "Commencez par ",
-    "h1Strike": "une page blanche",
-    "h1Replace": " un dossier.",
-    "d1": "Twyne commence par un entretien de dix minutes. Cinq éditeurs, une grille d’évaluation et un service des sources lisent chaque brouillon à la lumière du dossier qui en sort.",
-    "h2Lead": "Publié ",
-    "h2Strike": "un jour",
-    "h2Replace": " là où il doit l’être.",
-    "d2": "Twyne Publishing, en cours de développement, mènera le texte fini vers votre propre domaine, par la relecture de votre organisation, ou dans un paquet de livre pour Amazon KDP.",
+    "d0": "Un bon texte reste bloqué entre le brouillon et l’endroit où il devrait paraître, ou sort avec la voix de quelqu’un d’autre.",
     "ctaStart": "Commencer votre dossier →",
     "ctaWalk": "Voir les démonstrations"
   },
   "problem": {
-    "kicker": "Là où un bon texte s’enlise",
     "title": "Le texte était écrit. Restait à le sortir.",
     "lede": "Le brouillon, c’est la partie que l’on prévoit. Un texte fini s’enlise dans les passages de main : du document à l’éditeur, de l’éditeur au guide de style, du guide de style à l’endroit où le texte doit vivre.",
     "slip1Label": "Le document",
@@ -34,12 +24,10 @@
     "slip3Body": "Collé dans le CMS. Intertitres perdus, liens cassés, publié sous le mauvais nom.",
     "slip4Label": "Le livre",
     "slip4Body": "Format, fond perdu, largeur du dos, mots-clés. Le manuscrit attend pendant que son auteur apprend le vocabulaire de l’imprimeur.",
-    "caseKicker": "Un exemple",
     "caseBody": "Marsh Lane Land Trust compte quatre personnes et trois publications. June rédige un avis annonçant la réouverture de la passerelle le 6 décembre. Tomás l’annote de mémoire, d’après le guide de style. Sam le recopie à la main sur le site web. L’avis sort avec un jour de retard, et le nom de l’association écrit « Marshlane ».",
     "caseNote": "Marsh Lane est fictive. Vous pouvez la suivre dans Twyne grâce aux démonstrations ci-dessous."
   },
   "turn": {
-    "kicker": "Alors Twyne s’agrandit",
     "title": "Un seul bureau pour tout le parcours.",
     "lede": "Twyne a commencé comme un atelier d’écriture rempli d’éditeurs. Il devient l’endroit où un texte va de sa première réponse jusqu’à la publication, avec le même dossier, les mêmes règles maison et les mêmes éditeurs à chaque étape.",
     "ledgerLabel": "Le parcours, et ce que vous pouvez utiliser aujourd’hui",
@@ -59,34 +47,27 @@
     "s6Body": "Votre adresse et votre apparence, avec des flux et une preuve standard.site que la publication vous appartient.",
     "s7Title": "Les lecteurs, puis le livre",
     "s7Body": "Des lecteurs test via VoxQ, puis un paquet KDP ou un dossier de soumission pour les agents.",
-    "filmNote": "Commencez par l’atelier tel qu’il est aujourd’hui : une minute, sous-titrée."
+    "filmNote": "Entrez dans l’atelier tel qu’il est aujourd’hui : une minute, sous-titrée."
   },
   "audiences": {
-    "kicker": "Pour qui",
     "title": "Trois sortes d’auteurs, un seul bureau.",
     "a1Kicker": "Auteurs indépendants et essayistes",
-    "a1Title": "Bien l’écrire, puis le publier.",
     "a1Body": "Partez d’un dossier, écrivez avec des éditeurs qui vous contredisent, et partagez le texte par un lien Twyne ou dans votre propre dépôt ATProto. La publication sur votre propre domaine, avec votre propre voix, vient ensuite.",
     "a1Status": "Atelier ouvert aujourd’hui",
     "a1Link": "Suivre le blog de Fieldnote",
     "a2Kicker": "Organisations et équipes",
-    "a2Title": "Chaque publication vous ressemble.",
     "a2Body": "Une seule charte de style pour toute l’organisation. Chaque texte est vérifié selon elle, approuvé par un éditeur et publié par un éditeur responsable sur votre propre domaine, avec votre propre apparence.",
     "a2Status": "En développement",
     "a2Link": "Suivre le rapport annuel de Marsh Lane",
     "a3Kicker": "Auteurs avec un livre",
-    "a3Title": "Du manuscrit aux lecteurs, puis en rayon.",
-    "a3Body": "Figez un manuscrit, découvrez où les lecteurs test ont perdu le fil, et repartez avec un paquet KDP ou un dossier de soumission. Twyne prépare les fichiers ; c’est vous qui les téléversez et les envoyez.",
+    "a3Body": "Figez un manuscrit, découvrez ce qui a dérouté les lecteurs test, et repartez avec un paquet KDP ou un dossier de soumission. Twyne prépare les fichiers ; c’est vous qui les téléversez et les envoyez.",
     "a3Status": "En développement",
     "a3Link": "Suivre le roman d’Ines Calder"
   },
   "walk": {
-    "kicker": "Démonstrations",
-    "title": "Suivez un texte jusqu’à sa sortie.",
+    "title": "Suivez trois textes du brouillon à la publication.",
     "lede": "Trois exemples, une étape à la fois. Les boutons de chaque écran fonctionnent.",
-    "note": "Exemple seulement. Les personnes et les organisations sont fictives, et rien de ce que vous faites ici n’est enregistré ni envoyé.",
-    "comingLabel": "En développement",
-    "comingNote": "Ces écrans viennent des maquettes de Twyne Publishing. Ils montrent où va Twyne, pas ce que vous pouvez utiliser aujourd’hui.",
+    "note": "Exemples d’écrans de Twyne Publishing, encore en développement. Les personnes sont fictives, et rien de ce que vous faites ici n’est enregistré ni envoyé.",
     "tabsLabel": "Choisir une démonstration",
     "stepCounter": "Étape {current} sur {total}",
     "stepsLabel": "Étapes de cette démonstration",
@@ -95,7 +76,6 @@
     "next": "Suivant",
     "restart": "Recommencer",
     "nextJourney": "Ensuite : {name}",
-    "frameStamp": "Exemple · en développement",
     "viewLabel": "Afficher l’écran en version",
     "desktop": "Ordinateur",
     "mobile": "Mobile",
@@ -104,48 +84,36 @@
     "fieldnote": {
       "tab": "Fieldnote",
       "tabSub": "D’un créateur d’applications à un blog",
-      "s1Kicker": "Depuis le créateur d’applications",
       "s1Title": "Arriver avec le blog déjà prêt",
       "s1Body": "Maya a créé Fieldnote dans le créateur d’applications de Not Organic et y a publié un billet. Twyne s’ouvre sur le même compte, avec l’application, le blog à fieldnote.app/blog, l’adresse vérifiée et ce premier billet repris. Elle peut décocher tout ce qu’elle ne veut pas importer.",
-      "s2Kicker": "Le bureau de publication",
       "s2Title": "Écrire le deuxième billet à partir d’un modèle",
       "s2Body": "Fieldnote Journal se trouve à côté de ses brouillons. La voix choisie dans le créateur, Plain Speaker, arrive comme une règle en brouillon. Rien n’est vérifié selon elle tant qu’elle ne l’active pas.",
-      "s3Kicker": "Avant publication",
       "s3Title": "Corriger ce qui enfreint le style maison",
       "s3Body": "Le contrôle avant publication indique la règle et le passage de chaque remarque. Une remarque à corriger impérativement bloque le billet jusqu’à ce qu’elle soit corrigée ou conservée volontairement. Essayez les boutons : le passage, le compteur et le bouton Publier changent ensemble.",
-      "s4Kicker": "Publier",
       "s4Title": "Publier sur fieldnote.app",
       "s4Body": "La fiche de publication montre la page telle que les lecteurs la verront, son adresse, le flux et si les applications de lecture peuvent la référencer. Twyne vérifie la page en ligne avant de déclarer le billet publié."
     },
     "marsh": {
       "tab": "Marsh Lane",
       "tabSub": "Style maison, relecture et domaine",
-      "s1Kicker": "Style maison",
       "s1Title": "Apprendre le style à partir de ce qui est déjà publié",
       "s1Body": "Tomás, l’éditeur de l’association, demande à Twyne de lire jusqu’à dix textes publiés. Twyne propose des règles, chacune avec un exemple tiré des écrits de l’association. Rien n’est activé tant qu’il ne l’a pas accepté.",
-      "s2Kicker": "Relecture",
       "s2Title": "June demande, Tomás approuve",
       "s2Body": "L’avis de June a passé le contrôle avant publication. Tomás voit la révision, les règles appliquées et sa destination, puis l’approuve ou demande des modifications. Modifier un texte approuvé exige une nouvelle approbation.",
-      "s3Kicker": "Publications",
       "s3Title": "Trois publications, une organisation",
       "s3Body": "Sam, l’éditeur responsable, voit ce qui est approuvé et en attente, l’adresse de chaque publication et la version de la charte de style qu’elle utilise. Une couleur d’accent différente sur Press est signalée, au cas où ce ne serait pas voulu.",
-      "s4Kicker": "Votre propre domaine",
       "s4Title": "Le rapport annuel sur reports.marshlane.org",
       "s4Body": "Connecter un domaine, c’est quatre vérifications distinctes, chacune avec sa propre correction : l’association contrôle le domaine, HTTPS fonctionne, les pages atteignent Twyne, et la preuve standard.site correspond."
     },
     "orchard": {
       "tab": "Ines Calder",
       "tabSub": "Un roman, des lecteurs test et KDP",
-      "s1Kicker": "Le manuscrit",
       "s1Title": "Vérifier que le livre est prêt pour les lecteurs",
       "s1Body": "Ines déclare ses 24 chapitres comme un livre. Twyne liste ce qui mérite un coup d’œil avant que quiconque le lise : l’ordre des chapitres, la longueur par rapport à son objectif, un nom écrit de deux façons, les notes en marge ouvertes. Rien de tout cela ne la bloque.",
-      "s2Kicker": "Lecteurs test",
       "s2Title": "Demander aux lecteurs où ils se sont arrêtés",
       "s2Body": "Elle choisit les questions et les lecteurs : des personnes qu’elle invite, un panel rémunéré via Prolific, ou les deux. VoxQ mène l’étude. Les lecteurs voient, dans chaque question, les extraits qu’elle a approuvés.",
-      "s3Kicker": "Notes des lecteurs",
       "s3Title": "Les réponses reviennent dans la marge",
       "s3Body": "À la clôture de l’étude, les réponses arrivent sous forme de notes en marge sur les passages cités par les lecteurs, avec le nombre de personnes qui l’ont dit et le nombre de répondants. Les réponses pilotes simulées sont tenues à part et jamais comptées comme des lecteurs.",
-      "s4Kicker": "Diffusion",
       "s4Title": "Repartir avec un paquet KDP",
       "s4Body": "Twyne produit le PDF d’impression, le gabarit de couverture, l’EPUB et une fiche d’informations à coller. Ines téléverse elle-même sur KDP et indique à Twyne quand le livre est soumis. Un dossier de soumission pour les agents est l’autre voie."
     }
@@ -162,7 +130,6 @@
     "keptOnPurpose": "Conservé volontairement",
     "fixed": "Corrigé",
     "f1": {
-      "kicker": "Depuis le créateur d’applications",
       "title": "Fieldnote Journal est prêt pour la suite",
       "sub": "Vous êtes connecté avec le même compte Not Organic. Décochez tout ce que vous ne voulez pas ici.",
       "slip": "Repris de la configuration de fieldnote.app",
@@ -180,7 +147,6 @@
       "carried": "{count} éléments sur 6 repris"
     },
     "f2": {
-      "eyebrow": "Publication · fieldnote.app/blog",
       "newPost": "Nouveau billet",
       "posts": "Billets",
       "changelogMeta": "Journal des modifications · 212 mots",
@@ -197,7 +163,6 @@
       "templateList": "Billet de blog · Journal des modifications"
     },
     "f3": {
-      "heading": "Avant publication",
       "toFix": "{count, plural, one {# à corriger} other {# à corriger}}",
       "ready": "Prêt à publier",
       "toFixSub": "Corrigez-les, ou conservez-les volontairement, pour publier.",
@@ -221,7 +186,6 @@
     "f4": {
       "title": "Publier sur fieldnote.app",
       "address": "Adresse",
-      "summary": "Résumé pour les flux et les aperçus de liens",
       "checked": "Vérifié selon",
       "checkedValue": "Charte de style v1 · Modèle Journal des modifications v1",
       "checkedNote": "2 remarques corrigées. 1 suggestion laissée telle quelle.",
@@ -257,7 +221,6 @@
     },
     "m2": {
       "who": "Tomás · éditeur",
-      "review": "Relecture",
       "asks": "June demande une relecture",
       "revision": "Révision",
       "goesTo": "Destination",
@@ -282,7 +245,8 @@
       "styleBook": "Charte de style",
       "connecting": "Connexion en cours",
       "pressRules": "v1 + 2 règles presse",
-      "accent": "Press utilise un accent rouge au lieu du vert de l’association. C’est peut-être voulu."
+      "accent": "Press utilise un accent rouge au lieu du vert de l’association. C’est peut-être voulu.",
+      "paused": "En pause : reports.marshlane.org est encore en cours de connexion"
     },
     "m4": {
       "title": "Connecter reports.marshlane.org",
@@ -299,7 +263,8 @@
       "c4Ok": "L’adresse de preuve renvoie l’enregistrement de l’Annual Report.",
       "checkNow": "Vérifier",
       "waiting": "En attente du DNS",
-      "linkedNote": "Relié. L’avant-propos de l’Annual Report 2026 peut être publié ici."
+      "linkedNote": "Relié. L’avant-propos de l’Annual Report 2026 peut être publié ici.",
+      "checking": "Vérification…"
     },
     "i1": {
       "meta": "Livre · roman littéraire · 24 chapitres",
@@ -347,7 +312,6 @@
     },
     "i3": {
       "title": "Ce qu’ont dit les lecteurs",
-      "from": "Depuis VoxQ · étude close le 14 déc.",
       "readers": "12 lecteurs",
       "simulated": "5 simulés",
       "keepReading": "Envie de continuer à lire",
@@ -367,7 +331,6 @@
       "kept": "Conservé tel quel. Twyne ne le signalera plus pour ce passage."
     },
     "i4": {
-      "kicker": "Diffusion · Amazon KDP",
       "title": "Paquet KDP",
       "format": "Format",
       "formatValue": "5,5 × 8,5 po, crème · ebook",
@@ -391,7 +354,6 @@
     }
   },
   "room": {
-    "kicker": "Disponible",
     "title": "L’atelier, au travail",
     "lede": "Explorez une copie de l’atelier d’écriture. Chaque étape de cette visite fait partie de ce que vous pouvez utiliser dans Twyne dès maintenant.",
     "platesTitle": "Comment un texte traverse l’atelier",
@@ -406,7 +368,6 @@
   },
   "close": {
     "title": "L’atelier est ouvert.",
-    "subtitle": "La publication arrive.",
     "body": "Commencez par l’entretien dès aujourd’hui. La publication se construit dans le bureau même où vous écrivez, pas dans une application séparée.",
     "ctaStart": "Commencer votre dossier →",
     "ctaSkip": "Passer à l’éditeur",
