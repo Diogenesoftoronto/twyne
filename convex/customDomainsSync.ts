@@ -88,7 +88,10 @@ export const unregister = internalAction({
         providerDomainId,
       });
     } catch (error) {
-      console.error(`custom domain removal failed (${providerDomainId})`, error);
+      console.error(
+        `custom domain removal failed (${providerDomainId})`,
+        error,
+      );
       if (attempt + 1 < UNREGISTER_MAX_ATTEMPTS) {
         await ctx.scheduler.runAfter(
           UNREGISTER_RETRY_MS,

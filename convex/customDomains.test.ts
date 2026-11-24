@@ -372,7 +372,9 @@ describe("provider mapping", () => {
       const body = JSON.parse(String(init.body)) as { query: string };
       calls.push(body.query.includes("customDomainCreate") ? "create" : "list");
       if (body.query.includes("customDomainCreate")) {
-        return Response.json({ errors: [{ message: "Domain already exists" }] });
+        return Response.json({
+          errors: [{ message: "Domain already exists" }],
+        });
       }
       return Response.json({
         data: { domains: { customDomains: [railway] } },

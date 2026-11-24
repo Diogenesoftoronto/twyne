@@ -293,7 +293,10 @@ export async function routeCustomDomain(req, res, options) {
   const hostname = hostFromHeader(req.headers.host);
   if (isTwyneHost(hostname, options.appHosts)) return false;
 
-  const sendPlain = (/** @type {number} */ status, /** @type {string} */ body) => {
+  const sendPlain = (
+    /** @type {number} */ status,
+    /** @type {string} */ body,
+  ) => {
     res.writeHead(status, {
       "Content-Type": "text/plain; charset=utf-8",
       "Content-Length": Buffer.byteLength(body),
@@ -309,7 +312,10 @@ export async function routeCustomDomain(req, res, options) {
     handle = await options.resolve(hostname);
   } catch (error) {
     options.log?.(`custom domain lookup failed for ${hostname}`, error);
-    return sendPlain(503, "This page is unavailable right now. Try again soon.\n");
+    return sendPlain(
+      503,
+      "This page is unavailable right now. Try again soon.\n",
+    );
   }
   if (!handle) return sendPlain(404, "Not found\n");
 

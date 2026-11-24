@@ -26,7 +26,10 @@ describe("custom domain hostnames", () => {
   });
 
   test("tells bare domains from subdomains", () => {
-    expect(ok("myfrens.us")).toMatchObject({ kind: "apex", zone: "myfrens.us" });
+    expect(ok("myfrens.us")).toMatchObject({
+      kind: "apex",
+      zone: "myfrens.us",
+    });
     expect(ok("pages.myfrens.us")).toMatchObject({
       kind: "subdomain",
       zone: "myfrens.us",

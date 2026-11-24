@@ -408,11 +408,11 @@ export const recordProviderState = internalMutation({
           providerDomainId: state.id,
           updatedAt: now,
         });
-        await ctx.scheduler.runAfter(
-          0,
-          internal.customDomainsSync.unregister,
-          { domainId, providerDomainId: state.id, attempt: 0 },
-        );
+        await ctx.scheduler.runAfter(0, internal.customDomainsSync.unregister, {
+          domainId,
+          providerDomainId: state.id,
+          attempt: 0,
+        });
       }
       return null;
     }
@@ -550,7 +550,9 @@ export const scheduleDueChecks = internalMutation({
         )
         .take(25);
       for (const row of due) {
-        await ctx.db.patch("customDomains", row._id, { nextCheckAt: now + SYNC_LEASE_MS });
+        await ctx.db.patch("customDomains", row._id, {
+          nextCheckAt: now + SYNC_LEASE_MS,
+        });
         await ctx.scheduler.runAfter(0, internal.customDomainsSync.sync, {
           domainId: row._id,
         });
