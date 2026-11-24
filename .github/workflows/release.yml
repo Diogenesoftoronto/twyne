@@ -31,6 +31,14 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Restore media from bucket
+        run: bun scripts/media.ts pull public/assets/ src/assets/
+        env:
+          TWYNE_MEDIA_ENDPOINT: ${{ secrets.TWYNE_MEDIA_ENDPOINT }}
+          TWYNE_MEDIA_BUCKET: ${{ secrets.TWYNE_MEDIA_BUCKET }}
+          TWYNE_MEDIA_ACCESS_KEY_ID: ${{ secrets.TWYNE_MEDIA_ACCESS_KEY_ID }}
+          TWYNE_MEDIA_SECRET_ACCESS_KEY: ${{ secrets.TWYNE_MEDIA_SECRET_ACCESS_KEY }}
+
       - name: Build
         run: bun run build
 
