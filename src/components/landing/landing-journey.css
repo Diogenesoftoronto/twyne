@@ -269,15 +269,21 @@
 .jw-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 1rem;
   flex: 1 1 32rem;
   min-width: 0;
 }
+/* No inline padding: the tab text sits on the section's leading edge, the
+   same edge as the step text and the note below it. */
 .jw-tab {
   display: grid;
-  gap: 0.15rem;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 0.6rem;
+  row-gap: 0.15rem;
+  align-items: center;
   min-width: 0;
-  padding: 0.7rem 0.6rem 0.8rem;
-  text-align: left;
+  padding: 0.7rem 0 0.8rem;
+  text-align: start;
   background: transparent;
   border: 0;
   border-bottom: 3px solid transparent;
@@ -288,17 +294,26 @@
 .jw-tab[aria-selected="true"] {
   color: var(--color-ink);
   border-bottom-color: var(--color-vermilion);
-  background: color-mix(in srgb, var(--color-paper-soft) 70%, transparent);
 }
-.jw-tab:hover {
-  color: var(--color-ink);
+.jw-tab[aria-selected="true"] .jw-tab__icon {
+  color: var(--color-vermilion);
+}
+@media (hover: hover) {
+  .jw-tab:hover {
+    color: var(--color-ink);
+  }
 }
 .jw-tab:focus-visible,
 .jw-dot:focus-visible,
 .jw-device__option:focus-visible,
+.jw-button:focus-visible,
 .jw-view:focus-visible {
   outline: 2px solid var(--color-vermilion);
   outline-offset: 2px;
+}
+.jw-tab__icon {
+  display: none;
+  grid-row: 1 / span 2;
 }
 .jw-tab__name {
   font-family: var(--font-display);
@@ -312,8 +327,14 @@
   font-size: 0.78rem;
 }
 @media (min-width: 640px) {
+  .jw-tabs {
+    column-gap: 1.5rem;
+  }
   .jw-tab {
-    padding-inline: 1rem;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .jw-tab__icon {
+    display: inline-flex;
   }
   .jw-tab__name {
     font-size: 1.15rem;
@@ -325,8 +346,10 @@
 .jw-device {
   display: none;
   margin-bottom: 0.6rem;
-  border: 1px solid var(--color-ink);
-  border-radius: 2px;
+  padding: 2px;
+  gap: 2px;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 6px;
 }
 @media (min-width: 768px) {
   .jw-device {
@@ -334,15 +357,23 @@
   }
 }
 .jw-device__option {
-  padding: 0.45rem 0.85rem;
-  font-family: var(--font-typewriter);
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  padding: 0.3rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
   background: transparent;
-  color: var(--color-ink);
+  color: var(--color-ink-light);
   border: 0;
+  border-radius: 4px;
   cursor: pointer;
+}
+@media (hover: hover) {
+  .jw-device__option:hover {
+    color: var(--color-ink);
+  }
 }
 .jw-device__option[aria-pressed="true"] {
   background: var(--color-ink);
@@ -374,7 +405,7 @@
 .jw-narration {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 .jw-stack {
   display: grid;
@@ -405,27 +436,25 @@
   line-height: 1.65;
   color: var(--color-ink-light);
 }
+/* The step controls trail the narration: read the step, then move on. The
+   stack above is as tall as the longest step, so this row never moves. */
 .jw-nav {
-  display: grid;
-  gap: 0.85rem;
-  border-bottom: 1px solid var(--color-paper-3);
-  padding-bottom: 1rem;
-}
-.jw-counter {
-  font-family: var(--font-typewriter);
-  font-size: 0.75rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--color-ink-light);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
 }
 .jw-dots {
   display: flex;
-  gap: 0.25rem;
+  /* The first square's visible edge sits on the text edge; its hit area
+     reaches into the gutter. */
+  margin-inline-start: -0.4rem;
 }
 .jw-dot {
   /* 24px hit area around a small folio square */
   position: relative;
-  width: 1.75rem;
+  width: 1.5rem;
   height: 1.5rem;
   background: transparent;
   border: 0;
@@ -444,21 +473,51 @@
 }
 .jw-buttons {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
 .jw-button {
-  padding: 0.7rem 1.1rem;
-  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  /* 2px less on the icon side, so the label looks centred. */
+  padding-block: 0.5rem;
+  padding-inline: 1rem 0.85rem;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-ink);
+  background: transparent;
+  border: 1px solid var(--color-ink);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.jw-button--icon {
+  width: 2.5rem;
+  padding: 0;
+}
+.jw-button--primary {
+  color: var(--color-paper);
+  background: var(--color-ink);
+}
+@media (hover: hover) {
+  .jw-button:hover:not(:disabled) {
+    border-color: var(--color-vermilion);
+    color: var(--color-vermilion);
+  }
+  .jw-button--primary:hover:not(:disabled) {
+    color: var(--color-paper);
+    background: var(--color-vermilion);
+  }
 }
 .jw-button:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
-.jw-button:disabled:hover {
-  background: transparent;
-  color: var(--color-ink);
-  border-color: var(--color-ink);
+[dir="rtl"] .jw-button svg {
+  scale: -1 1;
 }
 
 /* The frame: a browser on desktop, a phone in Mobile view and on small
@@ -513,11 +572,19 @@
   visibility: hidden;
 }
 .jw-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
   margin-top: 1rem;
+  max-width: 65ch;
   font-family: var(--font-sans);
-  font-size: 0.88rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
   color: var(--color-ink-light);
-  text-align: center;
+}
+.jw-note > :first-child {
+  /* Centre the 16px icon on the first line of text. */
+  margin-top: 0.08rem;
 }
 @keyframes jw-in {
   from {
@@ -702,6 +769,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.35rem;
   min-height: 2.25rem;
   padding: 0.4rem 0.8rem;
   font-family: var(--font-sans);
@@ -737,10 +805,8 @@
 }
 .jv-btn--inline {
   min-height: 1.75rem;
-  margin-left: 0.5rem;
   padding: 0.15rem 0.5rem;
   font-size: 0.74rem;
-  vertical-align: middle;
 }
 .jv-link {
   padding: 0.4rem 0.2rem;
@@ -781,10 +847,21 @@
   color: var(--warn-ink);
   border-color: color-mix(in srgb, var(--warn-ink) 45%, transparent);
 }
+.jv-status,
+.jv-done {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
 .jv-status {
   font-size: 0.8rem;
   line-height: 1.4;
   overflow-wrap: anywhere;
+}
+/* A 14px icon centred on the first line of a status. */
+.jv-status > span:has(> svg),
+.jv-done > span:has(> svg) {
+  margin-top: 0.12em;
 }
 .jv-status--ok {
   color: var(--ok-ink);
@@ -1245,7 +1322,6 @@
 }
 .is-waiting > .jv-checks__mark {
   color: var(--warn-ink);
-  border: 1px dashed var(--warn-ink);
 }
 .jv-checks__title {
   display: block;
@@ -1266,30 +1342,50 @@
 }
 .jv-ready li {
   display: grid;
-  gap: 0.15rem;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  align-items: start;
+  column-gap: 0.6rem;
+  row-gap: 0.2rem;
   padding: 0.55rem 0;
   font-family: var(--font-serif);
   font-size: 0.84rem;
   border-bottom: 1px solid var(--color-paper-3);
 }
-@container (min-width: 40rem) {
-  .jv-ready li {
-    grid-template-columns: 11rem minmax(0, 1fr);
-    gap: 0.75rem;
-  }
+.jv-ready__mark {
+  grid-row: 1 / span 3;
+  margin-top: 0.1rem;
+}
+.jv-ready li.is-ok .jv-ready__mark {
+  color: var(--ok-ink);
+}
+.jv-ready li.is-look .jv-ready__mark {
+  color: var(--warn-ink);
 }
 .jv-ready__label {
   font-family: var(--font-sans);
   font-weight: 600;
   font-size: 0.8rem;
 }
-.jv-ready li.is-ok .jv-ready__label::before {
-  content: "✓ ";
-  color: var(--ok-ink);
+.jv-ready .jv-btn {
+  justify-self: start;
+  margin-top: 0.2rem;
 }
-.jv-ready li.is-look .jv-ready__label::before {
-  content: "• ";
-  color: var(--warn-ink);
+/* Wide screens: mark, label, value, and the fix trailing the row. */
+@container (min-width: 40rem) {
+  .jv-ready li {
+    grid-template-columns: 1rem 10rem minmax(0, 1fr) auto;
+    align-items: center;
+  }
+  .jv-ready__mark {
+    grid-row: auto;
+    margin-top: 0;
+  }
+  .jv-ready__value:last-child {
+    grid-column: 3 / -1;
+  }
+  .jv-ready .jv-btn {
+    margin-top: 0;
+  }
 }
 
 /* Test readers */

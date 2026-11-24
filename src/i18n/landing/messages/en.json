@@ -69,7 +69,6 @@
     "lede": "Three examples, one step at a time. The buttons inside each screen work.",
     "note": "Example screens from Twyne Publishing, which is in development. The people are fictional, and nothing you do here is saved or sent.",
     "tabsLabel": "Choose a walkthrough",
-    "stepCounter": "Step {current} of {total}",
     "stepsLabel": "Steps in this walkthrough",
     "stepButton": "Step {number}: {title}",
     "back": "Back",

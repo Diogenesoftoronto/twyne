@@ -69,7 +69,6 @@
     "lede": "Tres ejemplos, paso a paso. Los botones de cada pantalla funcionan.",
     "note": "Pantallas de ejemplo de Twyne Publishing, que está en desarrollo. Las personas son ficticias, y nada de lo que hagas aquí se guarda ni se envía.",
     "tabsLabel": "Elige un recorrido",
-    "stepCounter": "Paso {current} de {total}",
     "stepsLabel": "Pasos de este recorrido",
     "stepButton": "Paso {number}: {title}",
     "back": "Atrás",

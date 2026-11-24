@@ -64,6 +64,15 @@ import FileUp from "reicon/icons/FileUp";
 import DocumentText from "reicon/icons/DocumentText";
 import CloseCircle from "reicon/icons/CloseCircle";
 import Share from "reicon/icons/Share";
+import AlertCircle from "reicon/icons/AlertCircle";
+import Buildings2 from "reicon/icons/Buildings2";
+import CheckCircle from "reicon/icons/CheckCircle";
+import ClockCircle from "reicon/icons/ClockCircle";
+import Feather from "reicon/icons/Feather";
+import InfoCircle from "reicon/icons/InfoCircle";
+import Mobile from "reicon/icons/Mobile";
+import Monitor from "reicon/icons/Monitor";
+import Refresh from "reicon/icons/Refresh";
 import type { IconFunction, IconWeight } from "reicon/createIcon";
 
 const TWYNE_ICONS = {
@@ -88,6 +97,15 @@ const TWYNE_ICONS = {
   "document-text": DocumentText,
   "close-circle": CloseCircle,
   share: Share,
+  "alert-circle": AlertCircle,
+  buildings: Buildings2,
+  "check-circle": CheckCircle,
+  "clock-circle": ClockCircle,
+  feather: Feather,
+  "info-circle": InfoCircle,
+  mobile: Mobile,
+  monitor: Monitor,
+  refresh: Refresh,
   add: Add,
   "align-horizontal-spacing": AlignHSpacing,
   "arrow-down": ArrowDown,

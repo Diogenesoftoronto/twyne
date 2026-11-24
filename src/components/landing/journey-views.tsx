@@ -1,5 +1,6 @@
 import { $, component$, useSignal, type QRL } from "@qwik.dev/core";
 import { useTranslate } from "gt-qwik";
+import { Icon } from "../ui/icon";
 
 /**
  * Product views for the landing walkthroughs. They are drawn from the Twyne
@@ -97,7 +98,7 @@ export const FieldnoteArrival = component$<JourneyViewProps>(
             {locked.map((row) => (
               <div key={row.label} class="jv-slip__row">
                 <span class="jv-check is-locked" aria-hidden="true">
-                  ✓
+                  <Icon name="check" size={12} />
                 </span>
                 <span>
                   <span class="jv-slip__label">
@@ -159,6 +160,7 @@ export const FieldnoteDesk = component$<JourneyViewProps>(({ onAdvance$ }) => {
               class="jv-btn jv-btn--primary"
               onClick$={onAdvance$}
             >
+              <Icon name="add" />
               {t("view.f2.newPost")}
             </button>
           </div>
@@ -262,8 +264,9 @@ export const FieldnoteReleaseCheck = component$<JourneyViewProps>(
             </div>
           </>
         ) : (
-          <p class="jv-finding__body">
-            ✓ {state === "fixed" ? t("view.fixed") : t("view.keptOnPurpose")}
+          <p class="jv-finding__body jv-done">
+            <Icon name="check-circle" size={14} />
+            {state === "fixed" ? t("view.fixed") : t("view.keptOnPurpose")}
           </p>
         )}
       </div>
@@ -560,10 +563,15 @@ export const MarshStyleBook = component$<JourneyViewProps>(() => {
                     </button>
                   </div>
                 ) : (
-                  <p class="jv-muted">
-                    {rule.state.value === "kept"
-                      ? `✓ ${t("view.m1.kept")}`
-                      : t("view.m1.dropped")}
+                  <p class="jv-muted jv-done">
+                    {rule.state.value === "kept" ? (
+                      <>
+                        <Icon name="check-circle" size={14} />
+                        {t("view.m1.kept")}
+                      </>
+                    ) : (
+                      t("view.m1.dropped")
+                    )}
                   </p>
                 )}
               </div>
@@ -604,7 +612,8 @@ export const MarshStyleBook = component$<JourneyViewProps>(() => {
         <div class="jv-actions" aria-live="polite">
           {active.value ? (
             <span class="jv-status jv-status--ok">
-              ✓ {t("view.m1.activated")}
+              <Icon name="check-circle" size={14} />
+              {t("view.m1.activated")}
             </span>
           ) : (
             <button
@@ -683,9 +692,14 @@ export const MarshReview = component$<JourneyViewProps>(() => {
                     : "jv-status--warn",
                 ]}
               >
-                {state.value === "approved"
-                  ? `✓ ${t("view.m2.approved")}`
-                  : t("view.m2.changes")}
+                {state.value === "approved" ? (
+                  <>
+                    <Icon name="check-circle" size={14} />
+                    {t("view.m2.approved")}
+                  </>
+                ) : (
+                  t("view.m2.changes")
+                )}
               </p>
             )}
           </div>
@@ -875,7 +889,10 @@ export const MarshDomain = component$<JourneyViewProps>(() => {
           {rows.map((row, index) => (
             <li key={index} class={row.ok ? "is-ok" : "is-waiting"}>
               <span class="jv-checks__mark" aria-hidden="true">
-                {row.ok ? "✓" : "…"}
+                <Icon
+                  name={row.ok ? "check" : "clock-circle"}
+                  size={row.ok ? 12 : 22}
+                />
               </span>
               <span>
                 <span class="jv-checks__title">{row.title}</span>
@@ -890,7 +907,8 @@ export const MarshDomain = component$<JourneyViewProps>(() => {
         <div class="jv-actions" aria-live="polite">
           {linked ? (
             <span class="jv-status jv-status--ok">
-              ✓ {t("view.m4.linkedNote")}
+              <Icon name="check-circle" size={14} />
+              {t("view.m4.linkedNote")}
             </span>
           ) : (
             <button
@@ -899,6 +917,7 @@ export const MarshDomain = component$<JourneyViewProps>(() => {
               disabled={state.value === "checking"}
               onClick$={check}
             >
+              {state.value !== "checking" && <Icon name="refresh" />}
               {state.value === "checking"
                 ? t("view.m4.checking")
                 : t("view.m4.checkNow")}
@@ -933,67 +952,79 @@ export const OrchardReadiness = component$<JourneyViewProps>(
             {t("view.i1.lookReady", { count: ready })}
           </p>
           <ul class="jv-ready">
-            <li class="is-ok">
-              <span class="jv-ready__label">{t("view.i1.chapters")}</span>
-              <span>{t("view.i1.chaptersValue")}</span>
-            </li>
-            <li class="is-ok">
-              <span class="jv-ready__label">{t("view.i1.length")}</span>
-              <span>{t("view.i1.lengthValue")}</span>
-            </li>
-            <li class={names.value ? "is-ok" : "is-look"}>
-              <span class="jv-ready__label">{t("view.i1.names")}</span>
-              <span>
-                {names.value
+            {[
+              {
+                ok: true,
+                label: t("view.i1.chapters"),
+                value: t("view.i1.chaptersValue"),
+              },
+              {
+                ok: true,
+                label: t("view.i1.length"),
+                value: t("view.i1.lengthValue"),
+              },
+              {
+                ok: names.value,
+                label: t("view.i1.names"),
+                value: names.value
                   ? t("view.i1.namesFixed")
-                  : t("view.i1.namesValue")}
-                {!names.value && (
-                  <button
-                    type="button"
-                    class="jv-btn jv-btn--inline"
-                    disabled={frozen.value}
-                    onClick$={() => (names.value = true)}
-                  >
-                    {t("view.i1.namesFix")}
-                  </button>
-                )}
-              </span>
-            </li>
-            <li class="is-look">
-              <span class="jv-ready__label">{t("view.i1.notes")}</span>
-              <span>{t("view.i1.notesValue")}</span>
-            </li>
-            <li class="is-ok">
-              <span class="jv-ready__label">{t("view.i1.proof")}</span>
-              <span>{t("view.i1.proofValue")}</span>
-            </li>
-            <li class={front.value ? "is-ok" : "is-look"}>
-              <span class="jv-ready__label">{t("view.i1.front")}</span>
-              <span>
-                {front.value
+                  : t("view.i1.namesValue"),
+                fix: t("view.i1.namesFix"),
+                onFix: $(() => {
+                  names.value = true;
+                }),
+              },
+              {
+                ok: false,
+                label: t("view.i1.notes"),
+                value: t("view.i1.notesValue"),
+              },
+              {
+                ok: true,
+                label: t("view.i1.proof"),
+                value: t("view.i1.proofValue"),
+              },
+              {
+                ok: front.value,
+                label: t("view.i1.front"),
+                value: front.value
                   ? t("view.i1.frontFixed")
-                  : t("view.i1.frontValue")}
-                {!front.value && (
+                  : t("view.i1.frontValue"),
+                fix: t("view.i1.frontFix"),
+                onFix: $(() => {
+                  front.value = true;
+                }),
+              },
+            ].map((row) => (
+              <li key={row.label} class={row.ok ? "is-ok" : "is-look"}>
+                <span class="jv-ready__mark">
+                  <Icon name={row.ok ? "check-circle" : "alert-circle"} />
+                </span>
+                <span class="jv-ready__label">{row.label}</span>
+                <span class="jv-ready__value">{row.value}</span>
+                {!row.ok && row.onFix && (
                   <button
                     type="button"
                     class="jv-btn jv-btn--inline"
                     disabled={frozen.value}
-                    onClick$={() => (front.value = true)}
+                    onClick$={row.onFix}
                   >
-                    {t("view.i1.frontFix")}
+                    {row.fix}
                   </button>
                 )}
-              </span>
-            </li>
+              </li>
+            ))}
           </ul>
           <div class="jv-actions" aria-live="polite">
             {frozen.value ? (
               <>
                 <span class="jv-status jv-status--ok">
-                  ✓ {t("view.i1.frozen")}
+                  <Icon name="check-circle" size={14} />
+                  {t("view.i1.frozen")}
                 </span>
                 <button type="button" class="jv-btn" onClick$={onAdvance$}>
-                  {t("walk.next")} →
+                  {t("walk.next")}
+                  <Icon name="arrow-right" />
                 </button>
               </>
             ) : (
@@ -1086,7 +1117,8 @@ export const OrchardReaders = component$<JourneyViewProps>(() => {
         <div class="jv-actions" aria-live="polite">
           {created.value ? (
             <span class="jv-status jv-status--ok">
-              ✓ {t("view.i2.created")}
+              <Icon name="check-circle" size={14} />
+              {t("view.i2.created")}
             </span>
           ) : (
             <button
@@ -1209,7 +1241,7 @@ export const OrchardReaderNotes = component$<JourneyViewProps>(() => {
                   </div>
                 ) : (
                   <p class="jv-status jv-status--ok">
-                    ✓{" "}
+                    <Icon name="check-circle" size={14} />
                     {decision.value === "revised"
                       ? t("view.i3.revised")
                       : t("view.i3.kept")}
@@ -1251,7 +1283,7 @@ export const OrchardKdp = component$<JourneyViewProps>(() => {
             {rows.map(([label, value]) => (
               <li key={label}>
                 <span class="jv-checks__mark" aria-hidden="true">
-                  ✓
+                  <Icon name="check" size={12} />
                 </span>
                 <span class="jv-steps-done__label">{label}</span>
                 <span class="jv-steps-done__value">{value}</span>

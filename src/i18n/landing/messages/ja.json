@@ -69,7 +69,6 @@
     "lede": "3つの例を、1ステップずつ。各画面のボタンは実際に動きます。",
     "note": "開発中の Twyne Publishing の画面例です。人物は架空で、ここでの操作は保存も送信もされません。",
     "tabsLabel": "ウォークスルーを選ぶ",
-    "stepCounter": "ステップ {current} / {total}",
     "stepsLabel": "このウォークスルーのステップ",
     "stepButton": "ステップ {number}：{title}",
     "back": "戻る",

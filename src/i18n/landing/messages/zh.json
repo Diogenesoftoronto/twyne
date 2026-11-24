@@ -69,7 +69,6 @@
     "lede": "三个例子，一步一步来。每个界面里的按钮都能点。",
     "note": "以下是 Twyne Publishing 的示例界面，该功能仍在开发中。人物均为虚构，你在这里的任何操作都不会被保存或发送。",
     "tabsLabel": "选择一个演示",
-    "stepCounter": "第 {current} 步，共 {total} 步",
     "stepsLabel": "本演示的步骤",
     "stepButton": "第 {number} 步：{title}",
     "back": "上一步",

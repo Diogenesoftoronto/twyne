@@ -69,7 +69,6 @@
     "lede": "Trois exemples, une étape à la fois. Les boutons de chaque écran fonctionnent.",
     "note": "Exemples d’écrans de Twyne Publishing, encore en développement. Les personnes sont fictives, et rien de ce que vous faites ici n’est enregistré ni envoyé.",
     "tabsLabel": "Choisir une démonstration",
-    "stepCounter": "Étape {current} sur {total}",
     "stepsLabel": "Étapes de cette démonstration",
     "stepButton": "Étape {number} : {title}",
     "back": "Retour",

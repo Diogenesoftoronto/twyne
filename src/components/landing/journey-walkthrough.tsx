@@ -7,6 +7,8 @@ import {
 } from "@qwik.dev/core";
 import { useGT, useTranslate } from "gt-qwik";
 import { translate } from "gt-qwik/runtime";
+import type { TwyneIconName } from "../../utils/icon-system";
+import { Icon } from "../ui/icon";
 import {
   FieldnoteArrival,
   FieldnoteDesk,
@@ -34,6 +36,8 @@ export interface Journey {
    * is Twyne Publishing work from the publishing lab, so all are "coming".
    */
   availability: "today" | "coming";
+  /** Marks the tab, and the audience card that links to it. */
+  icon: TwyneIconName;
   views: Component<JourneyViewProps>[];
 }
 
@@ -47,6 +51,7 @@ export const JOURNEYS: Journey[] = [
     id: "fieldnote",
     copy: "fieldnote",
     availability: "coming",
+    icon: "feather",
     views: [
       FieldnoteArrival,
       FieldnoteDesk,
@@ -58,12 +63,14 @@ export const JOURNEYS: Journey[] = [
     id: "marsh-lane",
     copy: "marsh",
     availability: "coming",
+    icon: "buildings",
     views: [MarshStyleBook, MarshReview, MarshPublications, MarshDomain],
   },
   {
     id: "orchard",
     copy: "orchard",
     availability: "coming",
+    icon: "book-open",
     views: [OrchardReadiness, OrchardReaders, OrchardReaderNotes, OrchardKdp],
   },
 ];
@@ -153,6 +160,13 @@ export const JourneyWalkthrough = component$(() => {
                     selectJourney(JOURNEYS.length - 1, true);
                 }}
               >
+                <span class="jw-tab__icon">
+                  <Icon
+                    name={journey.icon}
+                    size={20}
+                    weight={selected ? "Filled" : "Outline"}
+                  />
+                </span>
                 <span class="jw-tab__name">
                   {t(`walk.${journey.copy}.tab`)}
                 </span>
@@ -172,13 +186,17 @@ export const JourneyWalkthrough = component$(() => {
               aria-pressed={device.value === option}
               onClick$={() => (device.value = option)}
             >
+              <Icon name={option === "desktop" ? "monitor" : "mobile"} />
               {t(`walk.${option}`)}
             </button>
           ))}
         </div>
       </div>
 
-      <p class="jw-note">{t("walk.note")}</p>
+      <p class="jw-note">
+        <Icon name="info-circle" />
+        <span>{t("walk.note")}</span>
+      </p>
 
       <div class="jw-stage">
         {JOURNEYS.map((journey, ji) => {
@@ -197,10 +215,26 @@ export const JourneyWalkthrough = component$(() => {
               inert={!active}
             >
               <div class="jw-narration">
+                <div class="jw-stack">
+                  {journey.views.map((_, si) => (
+                    <div
+                      key={si}
+                      class={["jw-step", si === current ? "is-active" : ""]}
+                      inert={si !== current}
+                    >
+                      <h3 class="jw-step__title">
+                        <span class="jw-step__numeral" aria-hidden="true">
+                          {["I", "II", "III", "IV", "V", "VI"][si]}
+                        </span>{" "}
+                        {t(`walk.${journey.copy}.s${si + 1}Title`)}
+                      </h3>
+                      <p class="jw-step__body">
+                        {t(`walk.${journey.copy}.s${si + 1}Body`)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
                 <div class="jw-nav">
-                  <p class="jw-counter">
-                    {t("walk.stepCounter", { current: current + 1, total })}
-                  </p>
                   <ol class="jw-dots" aria-label={t("walk.stepsLabel")}>
                     {journey.views.map((_, si) => (
                       <li key={si}>
@@ -220,60 +254,44 @@ export const JourneyWalkthrough = component$(() => {
                   <div class="jw-buttons">
                     <button
                       type="button"
-                      class="broadsheet-cta secondary jw-button"
+                      class="jw-button jw-button--icon"
+                      aria-label={t("walk.back")}
                       disabled={current === 0}
                       onClick$={() => goToStep(ji, current - 1)}
                     >
-                      <span aria-hidden="true">←</span> {t("walk.back")}
+                      <Icon name="arrow-left" size={18} />
                     </button>
                     {!last ? (
                       <button
                         type="button"
-                        class="broadsheet-cta jw-button"
+                        class="jw-button jw-button--primary"
                         onClick$={() => goToStep(ji, current + 1)}
                       >
-                        {t("walk.next")} <span aria-hidden="true">→</span>
+                        {t("walk.next")}
+                        <Icon name="arrow-right" size={18} />
                       </button>
                     ) : nextJourney ? (
                       <button
                         type="button"
-                        class="broadsheet-cta jw-button"
+                        class="jw-button jw-button--primary"
                         onClick$={() => selectJourney(ji + 1, true)}
                       >
                         {t("walk.nextJourney", {
                           name: t(`walk.${nextJourney.copy}.tab`),
-                        })}{" "}
-                        <span aria-hidden="true">→</span>
+                        })}
+                        <Icon name="arrow-right" size={18} />
                       </button>
                     ) : (
                       <button
                         type="button"
-                        class="broadsheet-cta jw-button"
+                        class="jw-button jw-button--primary"
                         onClick$={() => goToStep(ji, 0)}
                       >
+                        <Icon name="refresh" size={18} />
                         {t("walk.restart")}
                       </button>
                     )}
                   </div>
-                </div>
-                <div class="jw-stack">
-                  {journey.views.map((_, si) => (
-                    <div
-                      key={si}
-                      class={["jw-step", si === current ? "is-active" : ""]}
-                      inert={si !== current}
-                    >
-                      <h3 class="jw-step__title">
-                        <span class="jw-step__numeral" aria-hidden="true">
-                          {["I", "II", "III", "IV", "V", "VI"][si]}
-                        </span>{" "}
-                        {t(`walk.${journey.copy}.s${si + 1}Title`)}
-                      </h3>
-                      <p class="jw-step__body">
-                        {t(`walk.${journey.copy}.s${si + 1}Body`)}
-                      </p>
-                    </div>
-                  ))}
                 </div>
               </div>
 
