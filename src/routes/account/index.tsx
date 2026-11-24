@@ -8,6 +8,7 @@ import { $, component$, useSignal, useVisibleTask$ } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
 import { api } from "../../../convex/_generated/api";
 import { WriterProfileSettings } from "../../components/account/writer-profile-settings";
+import { CustomDomainSettings } from "../../components/account/custom-domain-settings";
 import { NotOrganicAchievements } from "../../components/account/notorganic-achievements";
 import { DeveloperAccess } from "../../components/account/developer-access";
 import { DeleteAccount } from "../../components/account/delete-account";
@@ -22,6 +23,7 @@ import { createUsageRange } from "../../utils/usage-domain";
 const SECTIONS = [
   { id: "address", label: "Address" },
   { id: "profile", label: "Profile" },
+  { id: "domains", label: "Domains" },
   { id: "notorganic", label: "Not Organic" },
   { id: "data", label: "Your data" },
   { id: "developer", label: "CLI & MCP" },
@@ -141,6 +143,7 @@ export default component$(() => {
 
             <div class="space-y-8">
               <WriterProfileSettings />
+              <CustomDomainSettings />
 
               <section id="notorganic" class="folio p-5 scroll-mt-6">
                 <h2
