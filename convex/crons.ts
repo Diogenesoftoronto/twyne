@@ -31,4 +31,13 @@ crons.interval(
   {},
 );
 
+// Writers' custom domains waiting on DNS or a certificate. Each run is one
+// indexed read per status; domains back off on their own (`nextCheckAt`).
+crons.interval(
+  "check pending custom domains",
+  { minutes: 1 },
+  internal.customDomains.scheduleDueChecks,
+  {},
+);
+
 export default crons;

@@ -205,4 +205,6 @@ export const RATE_LIMITS = {
   avatarUpload: { limit: 10, windowMs: 60_000 },
   /** Writing-activity heartbeat: 10 per minute per user. */
   writingActivity: { limit: 10, windowMs: 60_000 },
+  /** Custom domain add / check / remove: 10 per minute per user. */
+  customDomain: { limit: 10, windowMs: 60_000 },
 } as const;

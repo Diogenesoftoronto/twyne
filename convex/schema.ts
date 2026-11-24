@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { taskFields } from "./instrumentTaskValidators";
 import { charterExceptionValidator } from "./lib/charterExceptionValidator";
 import { preferenceKind } from "./preferenceValidators";
+import { customDomainDnsRecordValidator } from "./lib/customDomainProvider";
 
 /**
  * One item of a per-user collection.
@@ -615,6 +616,47 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"])
     .index("by_userId_and_handle", ["userId", "handle"]),
+
+  // ── Writers' custom domains (`example.com`, `reports.example.com`) that
+  // serve their public page. One row per hostname, ever: removing a domain
+  // marks the row `removed`, and a later claim reuses it, so `by_hostname`
+  // stays unique. Lifecycle and rules live in convex/customDomains.ts. ──
+  customDomains: defineTable({
+    /** Lowercase ASCII (punycode) hostname, no port or trailing dot. */
+    hostname: v.string(),
+    kind: v.union(v.literal("apex"), v.literal("subdomain")),
+    /** The writer's tokenIdentifier, as in `handles.userId`. */
+    ownerId: v.string(),
+    /** Reserved for domains owned by a Not Organic organization later. */
+    notorganicOrgId: v.optional(v.string()),
+    /** Which of the owner's handles the domain serves. */
+    handle: v.string(),
+    status: v.union(
+      v.literal("pending_dns"),
+      v.literal("issuing_certificate"),
+      v.literal("active"),
+      v.literal("failed"),
+      v.literal("removed"),
+    ),
+    provider: v.literal("railway"),
+    providerDomainId: v.optional(v.string()),
+    /** The records the writer creates. A handful at most. */
+    dnsRecords: v.array(customDomainDnsRecordValidator),
+    /** Start of the current wait for DNS; checks give up 72 hours later. */
+    pendingSince: v.number(),
+    checkCount: v.number(),
+    lastCheckedAt: v.optional(v.number()),
+    /** When the cron should look again; unset when nothing is due. */
+    nextCheckAt: v.optional(v.number()),
+    lastError: v.optional(v.string()),
+    activatedAt: v.optional(v.number()),
+    removedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_hostname", ["hostname"])
+    .index("by_ownerId_and_status", ["ownerId", "status"])
+    .index("by_status_and_nextCheckAt", ["status", "nextCheckAt"]),
 
   // ── Writer-authored inline comments (margin notes, with threads). ──
   // The CommentMark in the manuscript holds the id; the body, replies,
