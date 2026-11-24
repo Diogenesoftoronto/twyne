@@ -1,0 +1,11 @@
+{
+ "version": 1,
+ "bucket": "twyne-media",
+ "objects": "objects/",
+ "files": {
+  "public/assets/hero-glow.png": {
+   "oid": "dea2ffcb5b9527d7acca3f33ecc56111501e66e7",
+   "size": 241029
+  }
+ }
+}

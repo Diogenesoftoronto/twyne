@@ -57,3 +57,7 @@ lerna-debug.log*
 # Dagger CI — generated SDK + exported artifacts
 .dagger/sdk/
 /build-output/
+
+# >>> twyne-media: paths stored in the twyne-media bucket (managed by scripts/media.ts)
+/public/assets/hero-glow.png
+# <<< twyne-media
