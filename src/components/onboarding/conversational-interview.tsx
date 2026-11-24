@@ -105,6 +105,12 @@ interface ConversationalInterviewProps {
    */
   initialMaterial?: string;
   /**
+   * The writer's answer to the opening question, given on the landing page
+   * before the interview opened. It is sent as the first turn, so the room
+   * replies to it instead of asking the same question again.
+   */
+  openingAnswer?: string;
+  /**
    * Route chrome, filed into the folio's top edge. Same five values the form
    * takes, because the two surfaces are now the same folio and the writer
    * should not be able to tell which one is drawing the bar.
@@ -508,6 +514,21 @@ export const ConversationalInterview = component$(
       store.activeProbe = null;
       store.draft = "";
       await runTurn(text);
+    });
+
+    /**
+     * An answer given on the landing page goes in as the first turn once the
+     * opening question is on the thread. If that turn fails, the writer sees
+     * their words and the usual retry, the same as a turn typed here.
+     */
+    const openingSent = useSignal(false);
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ track }) => {
+      const count = track(() => store.messages.length);
+      const answer = props.openingAnswer?.trim();
+      if (!answer || openingSent.value || count !== 1) return;
+      openingSent.value = true;
+      void runTurn(answer);
     });
 
     /**

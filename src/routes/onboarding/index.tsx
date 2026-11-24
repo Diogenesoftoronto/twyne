@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@qwik.dev/router";
 import type { DocumentHead } from "@qwik.dev/router";
 import { AuthPanel } from "../../components/auth/auth-panel";
 import { loadProjectBrief } from "../../utils/anti-tabula-rasa";
+import { hasBriefOpening, sessionStore } from "../../utils/brief-opening";
 import { useAuth } from "../../utils/auth-context";
 import type { ApparatusCitationStyle, InterviewStyle } from "../../types";
 import {
@@ -69,9 +70,18 @@ export default component$(() => {
     const userId = track(() => auth.value.user?.id);
     if (loading) return;
 
-    // Already filed a brief → the writer belongs at the desk, not here.
+    // Already filed a brief → the writer belongs at the desk, not here,
+    // unless they just answered the landing page's first question: that is a
+    // new piece, and its interview is waiting.
     if (loadProjectBrief()) {
-      void nav("/editor/");
+      const storage = sessionStore();
+      let opening = false;
+      try {
+        opening = storage ? hasBriefOpening(storage) : false;
+      } catch {
+        opening = false;
+      }
+      void nav(opening ? "/dossier/create/" : "/editor/");
       return;
     }
 

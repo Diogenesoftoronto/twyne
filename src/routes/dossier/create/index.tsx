@@ -57,6 +57,7 @@ import {
   clearBriefFormDraft,
   moveBriefFormDraft,
 } from "../../../utils/brief-form-draft";
+import { sessionStore, takeBriefOpening } from "../../../utils/brief-opening";
 
 interface OnboardingStore {
   hydrated: boolean;
@@ -69,6 +70,8 @@ interface OnboardingStore {
   folioId: string | null;
   folioName: string;
   initialMaterial: string;
+  /** The answer to the first question, given on the landing page. */
+  openingAnswer: string;
 }
 
 /**
@@ -102,26 +105,52 @@ export default component$(() => {
     folioId: null,
     folioName: "",
     initialMaterial: "",
+    openingAnswer: "",
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
+    // An answer from the landing page means the conversation has already
+    // begun: continue it there, whatever surface the writer usually uses.
+    let opening: string | null = null;
+    try {
+      const storage = sessionStore();
+      opening = storage ? takeBriefOpening(storage) : null;
+    } catch {
+      opening = null;
+    }
     const requestedFolioId = new URLSearchParams(window.location.search).get(
       "folio",
     );
     // Usually already in flight from hovering "Create dossier".
-    const {
-      writer,
-      folio,
-      brief: savedBrief,
-    } = await takeDossierCreate(requestedFolioId);
+    const taken = await takeDossierCreate(requestedFolioId);
+    const { writer, folio } = taken;
+    let savedBrief = taken.brief;
     store.style = writer.interviewStyle;
+    if (opening) {
+      store.style = "conversational";
+      store.openingAnswer = opening;
+    }
     store.folioId = folio?.id ?? null;
     store.draftScope = `create:${store.folioId ?? "new"}`;
     store.folioName = folio?.name ?? "";
     // A folio named in the editor already has a title; start the brief there.
     const folioTitle = briefTitleFromFolioName(store.folioName);
     if (folioTitle) store.formAnswers = { workingTitle: folioTitle };
+    const filed =
+      !!savedBrief &&
+      (Object.values(savedBrief.answers).some((value) => value.trim()) ||
+        savedBrief.attachments.length > 0 ||
+        (savedBrief.probes?.length ?? 0) > 0);
+    if (opening && filed) {
+      // The active folio already has its brief, so the landing answer is a
+      // new piece: interview for a new folio rather than reopening that one.
+      store.folioId = null;
+      store.folioName = "";
+      store.draftScope = "create:new";
+      store.formAnswers = null;
+      savedBrief = null;
+    }
     store.draftBase = String(savedBrief?.updatedAt ?? 0);
     if (savedBrief) {
       store.formAnswers = savedBrief.answers;
@@ -325,6 +354,7 @@ export default component$(() => {
             rememberInterviewStyle("form");
           })}
           initialMaterial={store.initialMaterial}
+          openingAnswer={store.openingAnswer || undefined}
           onComplete$={({ answers, attachments, probes }) =>
             completeOnboarding$(
               answers,
