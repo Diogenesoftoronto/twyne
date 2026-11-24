@@ -1,0 +1,1975 @@
+{
+ "version": 1,
+ "bucket": "twyne-media",
+ "objects": "objects/",
+ "files": {
+  "desktop/gpui/assets/public/assets/hero-glow.png": {
+   "oid": "dea2ffcb5b9527d7acca3f33ecc56111501e66e7",
+   "size": 241029
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/a-alt.webp": {
+   "oid": "f9f9d042bee06c1ae050535b189287fea1a2add4",
+   "size": 920606
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/a.webp": {
+   "oid": "dc1fd0791c42a48d43344017fad88ac50af2837b",
+   "size": 895748
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/b-alt.webp": {
+   "oid": "ed1229071647215b6e40c6ac533c5837d5041126",
+   "size": 806972
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/b.webp": {
+   "oid": "66625786f0bc383d37327b7f0c0fdd465f88d5f7",
+   "size": 910888
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/c-alt.webp": {
+   "oid": "35e5aa5dae70fe59295564a1952c70ee9b02056f",
+   "size": 666942
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/c.webp": {
+   "oid": "ca543a34a8ca87bb69f367b0631472e7c113e15c",
+   "size": 891826
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/d-alt.webp": {
+   "oid": "cd19ae470bf84cb337f06bba02399606e057019e",
+   "size": 752662
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/d.webp": {
+   "oid": "c829c5e8c667aaf8b37fb423f5c25a5f3842bb9d",
+   "size": 941492
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/e-alt.webp": {
+   "oid": "d0b67a8905335fdcbc7ae5b7928b1ee8d02aaa8e",
+   "size": 735354
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/e.webp": {
+   "oid": "7e2896976860c3937fd9b0b080ad79a7b2214932",
+   "size": 822488
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/f-alt.webp": {
+   "oid": "f6bc7d3ff349e1df06793a39114c897815965ae8",
+   "size": 714658
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/f.webp": {
+   "oid": "32c6a6a3d7c8cdd1b46574d1e298421c3e06ee0e",
+   "size": 850916
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/g-alt.webp": {
+   "oid": "6c3916115d38837bb71595749511a4b918707a45",
+   "size": 756838
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/g.webp": {
+   "oid": "b2a560941829618862b72c6ca92c294186efdcdc",
+   "size": 908008
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/h-alt.webp": {
+   "oid": "50d4beb4d782c548d6fbbb9668a8cf148fc3ac56",
+   "size": 782478
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/h.webp": {
+   "oid": "25b3bbdff6108e910b2b0fa14ca594471dc32a58",
+   "size": 861948
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/i-alt.webp": {
+   "oid": "cfd2bb4358d77cfea25c849b67a73392175850e1",
+   "size": 684048
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/i.webp": {
+   "oid": "483af9342922e4c9597c00dab3612f766981c1bf",
+   "size": 709752
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/j-alt.webp": {
+   "oid": "626387212c697036c747110031c66ae008954669",
+   "size": 675644
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/j.webp": {
+   "oid": "f6a88262c4e7f71ebb88cb56d2d7f1326b4da66b",
+   "size": 727490
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/k-alt.webp": {
+   "oid": "c4c9d1f7fd2d268b98a3624d686e0bb576c2bff9",
+   "size": 850212
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/k.webp": {
+   "oid": "1a4131f384079be7b9350f91acc375035a129b92",
+   "size": 948180
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/l-alt.webp": {
+   "oid": "6e52c96459de167af5ff551e4228aa6388e9cce3",
+   "size": 625610
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/l.webp": {
+   "oid": "190523f6cb8e3434e50be3e959ecba06fe9c5912",
+   "size": 680568
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/m-alt.webp": {
+   "oid": "05cb71317661fb96a551ff19c6dd48991a4a4b90",
+   "size": 824428
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/m.webp": {
+   "oid": "4810ed4f1d8ce19dbc301eb7b7bb11ba884b1e03",
+   "size": 978834
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/n-alt.webp": {
+   "oid": "16294db6085aedcdf1073e15ebb3273191f616eb",
+   "size": 918130
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/n.webp": {
+   "oid": "8901afb405152418833d9c4a3e1aa2cfaeeaaf5e",
+   "size": 976394
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/o-alt.webp": {
+   "oid": "dab4d1449379cc3d32986639a827418becb0a80f",
+   "size": 1004082
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/o.webp": {
+   "oid": "51d7c73f6eb8c0b8604fe88dd3e395d9856f5b2c",
+   "size": 917410
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/p-alt.webp": {
+   "oid": "a0e869af209b1d8881c8441b121ae44c19f2883e",
+   "size": 953416
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/p.webp": {
+   "oid": "1959bc15bcbb7b44666b86cff169c0c48aa343e2",
+   "size": 923806
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/q-alt.webp": {
+   "oid": "5ea05ece58bcec843780331612503f0e7d01d151",
+   "size": 1000654
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/q.webp": {
+   "oid": "49b7f0823261c7fb8b39f6d848cf04d32e4e4493",
+   "size": 891626
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/r-alt.webp": {
+   "oid": "0e5ffd653f90527f0b8cb3bc245440c38f4e95ae",
+   "size": 932288
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/r.webp": {
+   "oid": "2c44a2f7956d30cff653a2934bfd3b3073d1a112",
+   "size": 1006342
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/s-alt.webp": {
+   "oid": "a8cc6a5b84e9be8d55eb8b1b7d54e03022666156",
+   "size": 981710
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/s.webp": {
+   "oid": "04ac379ce1fedb142769ae5918de99967584e885",
+   "size": 1027560
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/t-alt.webp": {
+   "oid": "b39c2b0dd652371171a27c84cb9670713c1797f7",
+   "size": 763514
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/t.webp": {
+   "oid": "75685f53b97ea67576708f97e44dd72e3213277e",
+   "size": 858342
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/u-alt.webp": {
+   "oid": "a70d5534c8f29aaf7e670792a92602b8b7503dec",
+   "size": 906318
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/u.webp": {
+   "oid": "4e36f1cf7f7f42cf4eea1a1c9e035da032f86634",
+   "size": 902526
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/v-alt.webp": {
+   "oid": "61cb6e6ed3beca4b72cfb56243ded36fe8cbf213",
+   "size": 979632
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/v.webp": {
+   "oid": "c6ec1bc6c1f3dbcec3ae1d56dbae0f6d11f71980",
+   "size": 911584
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/w-alt.webp": {
+   "oid": "b7b564be43be5e5b8b5c178c40762685a3aee01f",
+   "size": 972868
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/w.webp": {
+   "oid": "d59bf57485288baedb82512747379d9b93884363",
+   "size": 1082012
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/x-alt.webp": {
+   "oid": "4a088a039037c7c47d903ba3da8dfa02c41dc6ce",
+   "size": 984886
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/x.webp": {
+   "oid": "b5d983254dc3d110553da297cfc79f88d6f78604",
+   "size": 973596
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/y-alt.webp": {
+   "oid": "afcfca4453c4831b95e3a05bac27a2ac93dbc674",
+   "size": 816248
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/y.webp": {
+   "oid": "de843e5f59a7cf8e1af75bcddf2d8c305ce221cd",
+   "size": 852840
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/z-alt.webp": {
+   "oid": "05e447d6afe14f05ec399befcef095582a61d364",
+   "size": 832948
+  },
+  "desktop/gpui/assets/public/assets/illuminated-initials/z.webp": {
+   "oid": "bec1d68359ed9c5b34fc070fed2eb1bb90cb9052",
+   "size": 703586
+  },
+  "desktop/gpui/assets/public/assets/manual/editors/angel-transparent-480.webp": {
+   "oid": "5a07e64d89a0131d48c070f1e42b280dc607a2ad",
+   "size": 333776
+  },
+  "desktop/gpui/assets/public/assets/manual/editors/angel-transparent.webp": {
+   "oid": "948b709bd0ea57fb776139df675ae9640bd8912a",
+   "size": 1668442
+  },
+  "desktop/gpui/assets/public/assets/manual/editors/devil-transparent-480.webp": {
+   "oid": "83d5301bd9913a1c73ac7bdee0732200358370e3",
+   "size": 281502
+  },
+  "desktop/gpui/assets/public/assets/manual/editors/devil-transparent.webp": {
+   "oid": "14cdafd6dede4f4157621fc3b967ff4d2b8f2003",
+   "size": 1420890
+  },
+  "desktop/gpui/assets/public/assets/manual/editors/editor-transparent-480.webp": {
+   "oid": "7ad63097e0bc1fbb078fea9c513c57359d51500b",
+   "size": 278072
+  },
+  "desktop/gpui/assets/public/assets/manual/editors/editor-transparent.webp": {
+   "oid": "8123cecadae6bf94a98c4e93f815b6c97cb5b7d8",
+   "size": 1410130
+  },
+  "desktop/gpui/assets/public/assets/manual/editors/reader-transparent-480.webp": {
+   "oid": "666e23d07c7faa6756ceb6d86a00f2dde3035f29",
+   "size": 304098
+  },
+  "desktop/gpui/assets/public/assets/manual/editors/reader-transparent.webp": {
+   "oid": "ab0da3eeceb7aabab471c40a03a5cde9f9e3d551",
+   "size": 1582514
+  },
+  "desktop/gpui/assets/public/assets/manual/editors/scholar-transparent-480.webp": {
+   "oid": "f103a7673b8166bec6088932a3f483a070ecea4a",
+   "size": 354238
+  },
+  "desktop/gpui/assets/public/assets/manual/editors/scholar-transparent.webp": {
+   "oid": "8e7cb015e1f0720fa5bcebe7d68427f018d5b449",
+   "size": 1746042
+  },
+  "desktop/gpui/assets/public/assets/page-borders/botanical.webp": {
+   "oid": "cff69396def303495ef7a53df6120627a4534db7",
+   "size": 1463376
+  },
+  "desktop/gpui/assets/public/assets/page-borders/engraved.webp": {
+   "oid": "8b9b49cbc3343ae6f3d03641548730cc81c6883b",
+   "size": 1086462
+  },
+  "desktop/gpui/assets/public/assets/page-borders/illuminated.webp": {
+   "oid": "a221bd48a33f3e2102c062229ca89aac5e5f7b17",
+   "size": 1210528
+  },
+  "desktop/gpui/assets/public/assets/page-borders/paper-preview.webp": {
+   "oid": "1dee3a4a063b934a218700908381532719b74a0c",
+   "size": 725480
+  },
+  "desktop/gpui/assets/public/assets/page-borders/slices/botanical-e.webp": {
+   "oid": "f0432cdd3d09cdaa126864203600eef26413ca6e",
+   "size": 291192
+  },
+  "desktop/gpui/assets/public/assets/page-borders/slices/botanical-w.webp": {
+   "oid": "14610f1d4398e26104988b57478f5b52a5277436",
+   "size": 290838
+  },
+  "desktop/gpui/assets/public/assets/page-borders/slices/engraved-e.webp": {
+   "oid": "68e21cba63ef11d7a2be92a7197796486e64bdec",
+   "size": 212310
+  },
+  "desktop/gpui/assets/public/assets/page-borders/slices/engraved-w.webp": {
+   "oid": "6b241315b75be15873881bf226012699891f25ed",
+   "size": 217228
+  },
+  "desktop/gpui/assets/public/assets/page-borders/slices/illuminated-e.webp": {
+   "oid": "c4d61d2a849085939282cc8c9613796c6c5ffd42",
+   "size": 214164
+  },
+  "desktop/gpui/assets/public/assets/page-borders/slices/illuminated-w.webp": {
+   "oid": "10ec108c81232fc96ec014b1ee45c26ce77ced93",
+   "size": 215560
+  },
+  "desktop/gpui/assets/public/assets/rubric-proof-fibers.png": {
+   "oid": "f7785706ae3c23ee6bbbfd8d674cc0c2741cf7e2",
+   "size": 239566
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-a-minus.png": {
+   "oid": "f850c4c9d3637b07838f3d13de7caa7a7f5f87ba",
+   "size": 1299138
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-a-plus.png": {
+   "oid": "153b379ae5a645548a5ac556923515901bbcae55",
+   "size": 1768690
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-a.png": {
+   "oid": "6cb229625465981a92ed47c8ddc3f151f37cea84",
+   "size": 1283818
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-b-minus.png": {
+   "oid": "3dd2682c776ee5ea42c11ed8cc92558d4d837438",
+   "size": 844831
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-b-plus.png": {
+   "oid": "77346e811fd9f1ae6f5c23dec2dd31605af6eb74",
+   "size": 816010
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-b.png": {
+   "oid": "a6201426055e95bb9998bf3612e9abb8c339089d",
+   "size": 690530
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-c-minus.png": {
+   "oid": "ff34cfdbfe691fe4a033e5f37393d10e4a577fdf",
+   "size": 792264
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-c-plus.png": {
+   "oid": "63ed3bf30d24bc7bfd94860d20977b010b243da1",
+   "size": 812392
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-c.png": {
+   "oid": "572e29cbc22defdf883616bf2327eeb8c46796e1",
+   "size": 886027
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-d-minus.png": {
+   "oid": "ba219fc0b8a480c59d838e4d2d0687c9cd3bd31b",
+   "size": 965962
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-d-plus.png": {
+   "oid": "8898cfcd18804f32058d6948eab213542f282844",
+   "size": 1092692
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-d.png": {
+   "oid": "2168fbe64fd4e1b213efc7c5b756cdd8018ab405",
+   "size": 1013186
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-f.png": {
+   "oid": "85be6d352ea47c9f3062f7299b3e3eac4a884ddb",
+   "size": 1037701
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-filed.png": {
+   "oid": "8dc565359176504bb17fb323adaba4f29e105c73",
+   "size": 526845
+  },
+  "desktop/gpui/assets/public/assets/rubric-stamps/sunburst-revised.png": {
+   "oid": "139af13d048d2b32d478fdae7ee1edb5cfa6604e",
+   "size": 595072
+  },
+  "desktop/gpui/fixtures/dossier-paper/raster/broadsheet-1280.png": {
+   "oid": "987a2681e786bffc6c3c77d6fa59082f304a2030",
+   "size": 567349
+  },
+  "desktop/gpui/fixtures/dossier-paper/raster/broadsheet-620.png": {
+   "oid": "271ae54669dc9874cc83260a1b2a297805b383fb",
+   "size": 272703
+  },
+  "desktop/gpui/fixtures/dossier-paper/raster/editorial-1280.png": {
+   "oid": "bd60e4dc7ec1fdc3f668c672ed6c240322eb3c37",
+   "size": 1088417
+  },
+  "desktop/gpui/fixtures/dossier-paper/raster/editorial-620.png": {
+   "oid": "1d4d9397c7211317dc398de161933eff7ee7f208",
+   "size": 541748
+  },
+  "desktop/gpui/fixtures/dossier-paper/raster/foolscap-1280.png": {
+   "oid": "07408343f1fb3dac01d685c1f8c487a1e396ae21",
+   "size": 1038416
+  },
+  "desktop/gpui/fixtures/dossier-paper/raster/foolscap-620.png": {
+   "oid": "1aac765d15a233ea5906805ba0c654b15f4af03b",
+   "size": 508231
+  },
+  "desktop/gpui/fixtures/dossier-paper/raster/nightpress-1280.png": {
+   "oid": "39c8e265d2f76adcdc7216c8c26c80b075299a84",
+   "size": 916835
+  },
+  "desktop/gpui/fixtures/dossier-paper/raster/nightpress-620.png": {
+   "oid": "99fdee16b019699464def53da0e1c4d76bd70ac4",
+   "size": 458536
+  },
+  "desktop/gpui/fixtures/editor/notes/native-note-popup.png": {
+   "oid": "d0b126c4bf61304ba9a3a3c8c6ba6a1c2b26b4a0",
+   "size": 213384
+  },
+  "desktop/gpui/fixtures/host-rubric/visual/failed-write.png": {
+   "oid": "97ebf5bce956dd13997361be20a01630a7589ab5",
+   "size": 219286
+  },
+  "desktop/gpui/fixtures/host-rubric/visual/galley.png": {
+   "oid": "7e47a8f38c3af3a7b45e6b60e63e570cb06ed4b5",
+   "size": 245363
+  },
+  "desktop/gpui/fixtures/host-rubric/visual/held-form-before-quit.png": {
+   "oid": "428e4c482df20f3f801d331d10d2032d91b169ef",
+   "size": 215305
+  },
+  "desktop/gpui/fixtures/paper-grain/native-nightpress-custom.png": {
+   "oid": "987bd279925d80b66bec21f1451a971036410654",
+   "size": 208480
+  },
+  "desktop/gpui/fixtures/rubric-view/screenshots/galley-1280.png": {
+   "oid": "d0e6afe274ef4253b15814f7ec903222ed44833e",
+   "size": 208098
+  },
+  "desktop/gpui/fixtures/source_view/native-after-ascii/native-broadsheet.png": {
+   "oid": "95b0bf34b00c5103eed5644b67a03486bb0781d0",
+   "size": 229383
+  },
+  "desktop/gpui/fixtures/source_view/native-after-ascii/native-editorial.png": {
+   "oid": "64d9ddaec06839010f3bf8148b71a33e4a02507d",
+   "size": 256149
+  },
+  "desktop/gpui/fixtures/source_view/native-after-ascii/native-foolscap.png": {
+   "oid": "276854031c5e31fd0c6598ab1932868d710abbc4",
+   "size": 228113
+  },
+  "desktop/gpui/fixtures/source_view/native-after-ascii/native-nightpress.png": {
+   "oid": "9783b21eec344c810fc23c8975068761cf9aa883",
+   "size": 215436
+  },
+  "desktop/gpui/fixtures/source_view/native-after-ascii/native-readonly.png": {
+   "oid": "7369864f8b6da13991a277eacba22dcc524f5447",
+   "size": 226143
+  },
+  "desktop/gpui/fixtures/source_view/native-after-ascii/native-scrolled.png": {
+   "oid": "1537e271f54815a095c11cd7f45a105d0ce98f12",
+   "size": 380409
+  },
+  "desktop/gpui/fixtures/source_view/native-after-ascii/native-split.png": {
+   "oid": "7369864f8b6da13991a277eacba22dcc524f5447",
+   "size": 226143
+  },
+  "desktop/gpui/fixtures/source_view/native-broadsheet.png": {
+   "oid": "367592b1fb7d675522513e95fca44640cbb50db2",
+   "size": 211268
+  },
+  "desktop/gpui/fixtures/source_view/native-editorial.png": {
+   "oid": "e4f05cfcab3f905d18019b8fca76d2779263d265",
+   "size": 238812
+  },
+  "desktop/gpui/fixtures/source_view/native-foolscap.png": {
+   "oid": "4629293546956a6474efe670bea0ed293af22f35",
+   "size": 210628
+  },
+  "desktop/gpui/fixtures/source_view/native-nightpress.png": {
+   "oid": "3e75aef98cd06985cec08904e7941c82f1fd30da",
+   "size": 200441
+  },
+  "desktop/gpui/fixtures/source_view/native-readonly.png": {
+   "oid": "af20ccb3ea31b66516571846c36366016aeed3a5",
+   "size": 208733
+  },
+  "desktop/gpui/fixtures/source_view/native-scrolled.png": {
+   "oid": "d76dfc880967bb1f29cd75cd15158d9fbd755751",
+   "size": 347506
+  },
+  "desktop/gpui/fixtures/source_view/native-split.png": {
+   "oid": "af20ccb3ea31b66516571846c36366016aeed3a5",
+   "size": 208733
+  },
+  "desktop/gpui/fixtures/source_view/native-wrapped/native-editorial.png": {
+   "oid": "64d9ddaec06839010f3bf8148b71a33e4a02507d",
+   "size": 256149
+  },
+  "desktop/gpui/fixtures/source_view/native-wrapped/native-narrow.png": {
+   "oid": "fbf865b632650ee2020c6bf43cb35d00323a4339",
+   "size": 208188
+  },
+  "desktop/gpui/fixtures/source_view/native-wrapped/native-scrolled.png": {
+   "oid": "1537e271f54815a095c11cd7f45a105d0ce98f12",
+   "size": 380409
+  },
+  "desktop/gpui/fixtures/source_view/native-wrapped/native-split.png": {
+   "oid": "7369864f8b6da13991a277eacba22dcc524f5447",
+   "size": 226143
+  },
+  "desktop/gpui/vendor/gpui-pre/examples/image/black-cat-typing.gif": {
+   "oid": "671a102d224c3c1b12f3c768f8532894433780a6",
+   "size": 4471092
+  },
+  "docs/assets/my-desk-direction-b-distilled.png": {
+   "oid": "e002b9215fe2d614641bedde367a3ace17d688db",
+   "size": 2102747
+  },
+  "docs/assets/my-desk-direction-b.png": {
+   "oid": "7d1370439d17a13d122ce79bbe48c16e765c86b8",
+   "size": 2328967
+  },
+  "docs/design/comments-and-passage-connections-2026-10-27/images/01-margin-portrait-card.png": {
+   "oid": "6753dee0d61004ee7c7b98a8095475dd3be4411d",
+   "size": 2281262
+  },
+  "docs/design/comments-and-passage-connections-2026-10-27/images/02-inline-editorial-interlude.png": {
+   "oid": "0d7952470b670fffeb5a345fc4f72e750469c216",
+   "size": 1743171
+  },
+  "docs/design/comments-and-passage-connections-2026-10-27/images/03-expanded-reading-sidebar.png": {
+   "oid": "a875707f5ca5a960680e64b76872588952c69c97",
+   "size": 2092747
+  },
+  "docs/design/comments-and-passage-connections-2026-10-27/images/04-bottom-review-dock.png": {
+   "oid": "56aabdcf50cf5502e612f9c731b4cc7aff886c02",
+   "size": 1913363
+  },
+  "docs/design/comments-and-passage-connections-2026-10-27/images/05-editorial-board.png": {
+   "oid": "e76257cc51c60585815dce0632c41d7dfcb46d9f",
+   "size": 1936932
+  },
+  "docs/design/comments-and-passage-connections-2026-10-27/images/06-focus-review.png": {
+   "oid": "ed177ba7b99fea4615207e99d291118f2b05c337",
+   "size": 1584552
+  },
+  "docs/design/comments-and-passage-connections-2026-10-27/images/07-split-revision-workspace.png": {
+   "oid": "6d4748bdaab5b5d4ef8cc20256456ff9350fd95f",
+   "size": 1841409
+  },
+  "docs/design/comments-and-passage-connections-2026-10-27/images/08-mobile-reading-sheet.png": {
+   "oid": "7f7e59e65aafa88f0a6193706b74a047bf305e5d",
+   "size": 1741895
+  },
+  "docs/design/comments-and-passage-connections-2026-10-27/images/09-linked-passages-dossier.png": {
+   "oid": "1572aa1b3d9ae7db74e60a5c8cfb5fd0b197c46b",
+   "size": 2069990
+  },
+  "docs/design/comments-and-passage-connections-2026-10-27/images/10-long-conversation-journal.png": {
+   "oid": "f021eda4e31b9b62f1c44d8e6399bb53a9b17989",
+   "size": 1721268
+  },
+  "docs/design/comments-and-passage-connections-2026-10-27/images/early-01-rich-compact-comments.png": {
+   "oid": "7fad741c25faff9c22b4c54078ce35a1c6ff17aa",
+   "size": 1352283
+  },
+  "docs/design/comments-and-passage-connections-2026-10-27/images/early-02-connection-explanation.png": {
+   "oid": "4f5c9e7bdbb643ffa73210ac905e91e5a833f397",
+   "size": 1396928
+  },
+  "evals/instruments/browser/voice-fixture.wav": {
+   "oid": "ce583a21552649dcdd0bac7f052dde2034d1bc92",
+   "size": 144906
+  },
+  "launch-videos/01-the-room/assets/audio/hero-01.wav": {
+   "oid": "259d69a7996639b34a39ff710d8932533902cdec",
+   "size": 311118
+  },
+  "launch-videos/01-the-room/assets/audio/hero-02.wav": {
+   "oid": "888fb6dbcc287407d644e2266a4f6f21ff6a8b4f",
+   "size": 387918
+  },
+  "launch-videos/01-the-room/assets/audio/hero-03.wav": {
+   "oid": "b1a5b27f8e532975a3cc952c35d9c3661752ab52",
+   "size": 752718
+  },
+  "launch-videos/01-the-room/assets/audio/hero-04.wav": {
+   "oid": "9d5da3684ae3a72e93556292f3782c29261b870f",
+   "size": 253518
+  },
+  "launch-videos/01-the-room/assets/audio/hero-05.wav": {
+   "oid": "6e7a7f39ac8fc625108e51952d7443ee2602ebf5",
+   "size": 1493838
+  },
+  "launch-videos/01-the-room/assets/audio/hero-06.wav": {
+   "oid": "63fd2d9b762d57b241daeecc8c4ce5704278afd3",
+   "size": 518478
+  },
+  "launch-videos/01-the-room/assets/audio/hero-07.wav": {
+   "oid": "00925457d149dd79749d13514ce5602b7250480d",
+   "size": 495438
+  },
+  "launch-videos/01-the-room/assets/audio/hero-08.wav": {
+   "oid": "840dae7736384c45fd4cd57c0bb06b3232c2dce0",
+   "size": 414798
+  },
+  "launch-videos/01-the-room/assets/audio/m-room.wav": {
+   "oid": "3288d05492999634f3e3a436a2ec14759f7544c1",
+   "size": 13807778
+  },
+  "launch-videos/01-the-room/assets/img/paper-texture.jpg": {
+   "oid": "c15c01083cec4f174aa69463b6d1f838dcde62cf",
+   "size": 438525
+  },
+  "launch-videos/01-the-room/assets/sfx/click.mp3": {
+   "oid": "2706b1d2ea64721d1888d15fee2fcc98f0609570",
+   "size": 11702
+  },
+  "launch-videos/01-the-room/assets/sfx/impact-bass-1.mp3": {
+   "oid": "ecfe0c48a672e77c98afac6810fd4c446dde94b0",
+   "size": 67709
+  },
+  "launch-videos/01-the-room/assets/sfx/typing.mp3": {
+   "oid": "ff69cc04200bb1af6e0785a801ca4d77281b4fce",
+   "size": 26852
+  },
+  "launch-videos/01-the-room/assets/sfx/whoosh-short.mp3": {
+   "oid": "e23e513d273009fbf48e8bcd44f65953e38bc3b0",
+   "size": 18390
+  },
+  "launch-videos/01-the-room/assets/video/v-athenaeum.mp4": {
+   "oid": "99f89afddb7bda9323720e342f97e133478f7d63",
+   "size": 2519726
+  },
+  "launch-videos/01-the-room/assets/video/v-bullpen.mp4": {
+   "oid": "7d7b49940fb5fd8968d6ee140284811958706cdf",
+   "size": 19812774
+  },
+  "launch-videos/01-the-room/assets/video/v-desk.mp4": {
+   "oid": "a09ac874c7e5984d1c2fdd22579cbb0fa76e8c2a",
+   "size": 12144914
+  },
+  "launch-videos/01-the-room/assets/video/v-encourageante.mp4": {
+   "oid": "8009c1127f75bd428a95d8bf219f03f03ebfa940",
+   "size": 2492169
+  },
+  "launch-videos/01-the-room/assets/video/v-lecteur.mp4": {
+   "oid": "f5846d634379c4cd2854742649305c75f1162dcd",
+   "size": 4980447
+  },
+  "launch-videos/01-the-room/assets/video/v-lestylo.mp4": {
+   "oid": "45680ab899702c104e73ca0347b8a504f7a1294b",
+   "size": 3028752
+  },
+  "launch-videos/01-the-room/assets/video/v-manuscript.mp4": {
+   "oid": "4da176d6676a0487c23456cfce6638929cee4049",
+   "size": 10332922
+  },
+  "launch-videos/01-the-room/assets/video/v-sceptique.mp4": {
+   "oid": "b915748a99c34cc0d977f5ad87cfa6b46ec46b8e",
+   "size": 5031150
+  },
+  "launch-videos/01-the-room/snapshots/r1/contact-sheet.jpg": {
+   "oid": "4431b1566cccbbae6902cf3ec2c4b225fae041f1",
+   "size": 376595
+  },
+  "launch-videos/01-the-room/snapshots/r1/frame-00-at-3s.png": {
+   "oid": "19a6540f002f15bb2785ec95bb0be253ce4ca2eb",
+   "size": 1289176
+  },
+  "launch-videos/01-the-room/snapshots/r1/frame-01-at-12.5s.png": {
+   "oid": "4d78be1fe65bb9d8a5bd6a7ee8c4fbba2eb6ec59",
+   "size": 1838114
+  },
+  "launch-videos/01-the-room/snapshots/r1/frame-02-at-15.2s.png": {
+   "oid": "b0092920ba2026c4d7e4a710ba95d60c9dad17cf",
+   "size": 1728096
+  },
+  "launch-videos/01-the-room/snapshots/r1/frame-03-at-20.5s.png": {
+   "oid": "dbed3185908de22bb8daa3262490fcc0842ec26e",
+   "size": 2032428
+  },
+  "launch-videos/01-the-room/snapshots/r1/frame-04-at-24.3s.png": {
+   "oid": "676120ea89ab95a83a98ed4e5bd5145b3ad36a28",
+   "size": 1727678
+  },
+  "launch-videos/01-the-room/snapshots/r1/frame-05-at-31.5s.png": {
+   "oid": "e016168de9ea71d2e3f9ab5f24b5f992a76fa3e5",
+   "size": 1825151
+  },
+  "launch-videos/01-the-room/snapshots/r1/frame-06-at-40.8s.png": {
+   "oid": "de988d7ab3dee8a2b5bbb26c49860424e2fe044a",
+   "size": 1683668
+  },
+  "launch-videos/01-the-room/snapshots/r1/frame-07-at-46.5s.png": {
+   "oid": "1f743839c4273e0814e563e2f9a9156f832328aa",
+   "size": 1933552
+  },
+  "launch-videos/01-the-room/snapshots/r1/frame-08-at-55.5s.png": {
+   "oid": "726abf3932072d7813237f3adc4c5027802f8679",
+   "size": 2152469
+  },
+  "launch-videos/01-the-room/snapshots/r2/frame-00-at-14.8s.png": {
+   "oid": "a5a0b02cd6c5cf23864709c5ab7f9cb86b7464fb",
+   "size": 1786096
+  },
+  "launch-videos/01-the-room/snapshots/r2/frame-01-at-20.9s.png": {
+   "oid": "059986c67ab378e4ad704b396a73643f7ec3f7ab",
+   "size": 2004057
+  },
+  "launch-videos/01-the-room/snapshots/r2/frame-02-at-41s.png": {
+   "oid": "7f73d76a3a2ab889053457bc221ef5b0f11b3287",
+   "size": 1700854
+  },
+  "launch-videos/01-the-room/snapshots/r2/frame-03-at-58.6s.png": {
+   "oid": "6214a8483edda0a2910bcd32541d5011919e39eb",
+   "size": 2150228
+  },
+  "launch-videos/02-roll-call/assets/audio/m-rollcall.wav": {
+   "oid": "6ae00fd0b53eadc6c57b9c160e855b2fd1649934",
+   "size": 11480582
+  },
+  "launch-videos/02-roll-call/assets/audio/rc-athenaeum.wav": {
+   "oid": "50016ac35856a1615613bbb27af959a999b995f9",
+   "size": 729678
+  },
+  "launch-videos/02-roll-call/assets/audio/rc-encourageante.wav": {
+   "oid": "609032c6511937523edacff8e02aca64895c17a3",
+   "size": 725838
+  },
+  "launch-videos/02-roll-call/assets/audio/rc-end.wav": {
+   "oid": "ff6cd6dd213f49f0d18c83582d2e48b4ddc738f9",
+   "size": 384078
+  },
+  "launch-videos/02-roll-call/assets/audio/rc-lecteur.wav": {
+   "oid": "c4a368864fed983491c19c02cc34543e3ffa55d5",
+   "size": 545358
+  },
+  "launch-videos/02-roll-call/assets/audio/rc-lestylo.wav": {
+   "oid": "26bdb83699e8b91de629cf9eef77143c943701e6",
+   "size": 798798
+  },
+  "launch-videos/02-roll-call/assets/audio/rc-sceptique.wav": {
+   "oid": "f1ad42d1e6fae1079ae982805aa892d774251412",
+   "size": 549198
+  },
+  "launch-videos/02-roll-call/assets/img/paper-texture.jpg": {
+   "oid": "c15c01083cec4f174aa69463b6d1f838dcde62cf",
+   "size": 438525
+  },
+  "launch-videos/02-roll-call/assets/sfx/click.mp3": {
+   "oid": "2706b1d2ea64721d1888d15fee2fcc98f0609570",
+   "size": 11702
+  },
+  "launch-videos/02-roll-call/assets/sfx/pop.mp3": {
+   "oid": "e3ed16fef09641bbd7c0d53f508c71d6af863efb",
+   "size": 23040
+  },
+  "launch-videos/02-roll-call/assets/sfx/typing.mp3": {
+   "oid": "ff69cc04200bb1af6e0785a801ca4d77281b4fce",
+   "size": 26852
+  },
+  "launch-videos/02-roll-call/assets/video/v-athenaeum.mp4": {
+   "oid": "99f89afddb7bda9323720e342f97e133478f7d63",
+   "size": 2519726
+  },
+  "launch-videos/02-roll-call/assets/video/v-bullpen.mp4": {
+   "oid": "7d7b49940fb5fd8968d6ee140284811958706cdf",
+   "size": 19812774
+  },
+  "launch-videos/02-roll-call/assets/video/v-encourageante.mp4": {
+   "oid": "8009c1127f75bd428a95d8bf219f03f03ebfa940",
+   "size": 2492169
+  },
+  "launch-videos/02-roll-call/assets/video/v-lecteur.mp4": {
+   "oid": "f5846d634379c4cd2854742649305c75f1162dcd",
+   "size": 4980447
+  },
+  "launch-videos/02-roll-call/assets/video/v-lestylo.mp4": {
+   "oid": "45680ab899702c104e73ca0347b8a504f7a1294b",
+   "size": 3028752
+  },
+  "launch-videos/02-roll-call/assets/video/v-sceptique.mp4": {
+   "oid": "b915748a99c34cc0d977f5ad87cfa6b46ec46b8e",
+   "size": 5031150
+  },
+  "launch-videos/02-roll-call/snapshots/r1/contact-sheet.jpg": {
+   "oid": "3a5ae0a81c88d5fcbe8b06406a1e3161a0d6b6bf",
+   "size": 362816
+  },
+  "launch-videos/02-roll-call/snapshots/r1/frame-00-at-1.8s.png": {
+   "oid": "a2ca42a9161107ab88e396cdd3d0d5063d5aa46f",
+   "size": 2139643
+  },
+  "launch-videos/02-roll-call/snapshots/r1/frame-01-at-5.5s.png": {
+   "oid": "d40bdf5bae86063ba7eb0a2ce62e978e327289a7",
+   "size": 2130740
+  },
+  "launch-videos/02-roll-call/snapshots/r1/frame-02-at-13.5s.png": {
+   "oid": "aef158d72191fd216e403060d76239ff59efa3b8",
+   "size": 2348405
+  },
+  "launch-videos/02-roll-call/snapshots/r1/frame-03-at-20s.png": {
+   "oid": "bcddb04984c3b54eebb9a4c54374c256bb079998",
+   "size": 2129135
+  },
+  "launch-videos/02-roll-call/snapshots/r1/frame-04-at-29.5s.png": {
+   "oid": "204ff9bf3a484258e6992486570d67f304202077",
+   "size": 2123699
+  },
+  "launch-videos/02-roll-call/snapshots/r1/frame-05-at-35.5s.png": {
+   "oid": "8ab7254a547bb7ece2a6e5c070fe1fd5985fdd12",
+   "size": 2240329
+  },
+  "launch-videos/02-roll-call/snapshots/r1/frame-06-at-39.5s.png": {
+   "oid": "c219f39ccb38cca34f561804e7887687e9e597b2",
+   "size": 2047725
+  },
+  "launch-videos/02-roll-call/snapshots/r1/frame-07-at-44s.png": {
+   "oid": "5560f706a953744a84774e3568748d4f6fcd684a",
+   "size": 2143348
+  },
+  "launch-videos/03-edited/assets/audio/ed-athenaeum.wav": {
+   "oid": "5881f5d5b26fd9080a564039d5a08e3351faaa16",
+   "size": 702798
+  },
+  "launch-videos/03-edited/assets/audio/ed-encourageante.wav": {
+   "oid": "048433e7a84dad89f12bf01ef37dbf99260b74f7",
+   "size": 633678
+  },
+  "launch-videos/03-edited/assets/audio/ed-lecteur.wav": {
+   "oid": "6c0130681738d5e9b7cabd967aa04648f07f6ac1",
+   "size": 272718
+  },
+  "launch-videos/03-edited/assets/audio/ed-lestylo.wav": {
+   "oid": "278d3480edc38bdac77cfaa6024634ef5b15cb2e",
+   "size": 791118
+  },
+  "launch-videos/03-edited/assets/audio/ed-sceptique.wav": {
+   "oid": "f4ad7141306f1e480e657fd0b41ed8daf8569d8b",
+   "size": 641358
+  },
+  "launch-videos/03-edited/assets/audio/hero-08.wav": {
+   "oid": "840dae7736384c45fd4cd57c0bb06b3232c2dce0",
+   "size": 414798
+  },
+  "launch-videos/03-edited/assets/audio/m-edited.wav": {
+   "oid": "a3e23750872f4b963d134c9fe1df0d7a577dcb4a",
+   "size": 12709382
+  },
+  "launch-videos/03-edited/assets/img/paper-texture.jpg": {
+   "oid": "c15c01083cec4f174aa69463b6d1f838dcde62cf",
+   "size": 438525
+  },
+  "launch-videos/03-edited/assets/sfx/click.mp3": {
+   "oid": "2706b1d2ea64721d1888d15fee2fcc98f0609570",
+   "size": 11702
+  },
+  "launch-videos/03-edited/assets/sfx/key-press.mp3": {
+   "oid": "d669006e01071d57b3ee7c8ada064a2bf6b7dddc",
+   "size": 3909
+  },
+  "launch-videos/03-edited/assets/sfx/pop.mp3": {
+   "oid": "e3ed16fef09641bbd7c0d53f508c71d6af863efb",
+   "size": 23040
+  },
+  "launch-videos/03-edited/assets/sfx/typing.mp3": {
+   "oid": "ff69cc04200bb1af6e0785a801ca4d77281b4fce",
+   "size": 26852
+  },
+  "launch-videos/03-edited/assets/sfx/whoosh-short.mp3": {
+   "oid": "e23e513d273009fbf48e8bcd44f65953e38bc3b0",
+   "size": 18390
+  },
+  "launch-videos/03-edited/snapshots/final/contact-sheet.jpg": {
+   "oid": "f2d7a5ae9ae9846ab655a216406d5f4f4a5e8210",
+   "size": 291216
+  },
+  "launch-videos/03-edited/snapshots/final/frame-00-at-2s.png": {
+   "oid": "c229bd0de19e1f4a959f1f54a4315b3f9bced9a1",
+   "size": 2129601
+  },
+  "launch-videos/03-edited/snapshots/final/frame-01-at-8s.png": {
+   "oid": "acfb5bb1fbd027f8fe0d5cc571ed684a7800c1c2",
+   "size": 2167783
+  },
+  "launch-videos/03-edited/snapshots/final/frame-02-at-22s.png": {
+   "oid": "b4ee3b32ad2a22ca1accde886479067c66684139",
+   "size": 2186589
+  },
+  "launch-videos/03-edited/snapshots/final/frame-03-at-33s.png": {
+   "oid": "fb3846922ddf3be5c8d995c2ac20cf7de98c3819",
+   "size": 2197466
+  },
+  "launch-videos/03-edited/snapshots/final/frame-04-at-39s.png": {
+   "oid": "300e69ba6bf0f7fc64288b3dab3acbd76e943647",
+   "size": 2162217
+  },
+  "launch-videos/03-edited/snapshots/final/frame-05-at-44s.png": {
+   "oid": "eb984a85b1db9a4b8643c67dfb4fee6cd61ba13a",
+   "size": 2149354
+  },
+  "launch-videos/03-edited/snapshots/final/frame-06-at-44.62s.png": {
+   "oid": "eb984a85b1db9a4b8643c67dfb4fee6cd61ba13a",
+   "size": 2149354
+  },
+  "launch-videos/04-newsreel/assets/audio/m-newsreel-cut.wav": {
+   "oid": "39e1ba597d505239e6b41658555e5095e0547a5b",
+   "size": 6528086
+  },
+  "launch-videos/04-newsreel/assets/audio/m-newsreel.wav": {
+   "oid": "21a6e5e6b7db5b7bb609beea9285cbf355aeab21",
+   "size": 11721326
+  },
+  "launch-videos/04-newsreel/assets/audio/nr-01.wav": {
+   "oid": "7cec79bb788d233596e7650161e86a118cc69a37",
+   "size": 291918
+  },
+  "launch-videos/04-newsreel/assets/audio/nr-02.wav": {
+   "oid": "051733a4c7e990ce689280908a8fcc4beb3490bc",
+   "size": 480078
+  },
+  "launch-videos/04-newsreel/assets/audio/nr-03.wav": {
+   "oid": "92838a09618083371a12d8783a85c31fe92f977a",
+   "size": 787278
+  },
+  "launch-videos/04-newsreel/assets/audio/nr-04.wav": {
+   "oid": "a275a9a5f6a9185ed719123c23acc9937696d909",
+   "size": 437838
+  },
+  "launch-videos/04-newsreel/assets/audio/nr-05.wav": {
+   "oid": "c726aeb9a0620d93d4606a45ec0e26f7a675185e",
+   "size": 595278
+  },
+  "launch-videos/04-newsreel/assets/img/paper-texture.jpg": {
+   "oid": "c15c01083cec4f174aa69463b6d1f838dcde62cf",
+   "size": 438525
+  },
+  "launch-videos/04-newsreel/assets/video/v-bullpen.mp4": {
+   "oid": "7d7b49940fb5fd8968d6ee140284811958706cdf",
+   "size": 19812774
+  },
+  "launch-videos/04-newsreel/assets/video/v-desk.mp4": {
+   "oid": "a09ac874c7e5984d1c2fdd22579cbb0fa76e8c2a",
+   "size": 12144914
+  },
+  "launch-videos/04-newsreel/assets/video/v-press.mp4": {
+   "oid": "2a535a570c71f4c4967df11fea5f67495ddccfec",
+   "size": 8403328
+  },
+  "launch-videos/04-newsreel/snapshots/final/frame-01-at-6s.png": {
+   "oid": "82428783e497da6f6c8d6b375886d88b03ea3957",
+   "size": 640886
+  },
+  "launch-videos/04-newsreel/snapshots/final/frame-02-at-14s.png": {
+   "oid": "a6a444e3306838ebca77c105f473af0b95f0c629",
+   "size": 272383
+  },
+  "launch-videos/04-newsreel/snapshots/final/frame-03-at-21s.png": {
+   "oid": "26b014ff24d1aa81e9e2d32d04f130aace1b4157",
+   "size": 392829
+  },
+  "launch-videos/05-the-strike/assets/audio/m-strike-cut.wav": {
+   "oid": "890f3fd21035848f95ab8fd9b5c98edd47f83fd7",
+   "size": 2880086
+  },
+  "launch-videos/05-the-strike/assets/audio/m-strike.wav": {
+   "oid": "4a993c0b94f4b6143c86728b0cdb330e3e097249",
+   "size": 11861762
+  },
+  "launch-videos/05-the-strike/assets/img/paper-texture.jpg": {
+   "oid": "c15c01083cec4f174aa69463b6d1f838dcde62cf",
+   "size": 438525
+  },
+  "launch-videos/05-the-strike/assets/sfx/typing.mp3": {
+   "oid": "ff69cc04200bb1af6e0785a801ca4d77281b4fce",
+   "size": 26852
+  },
+  "launch-videos/05-the-strike/assets/sfx/whoosh-short.mp3": {
+   "oid": "e23e513d273009fbf48e8bcd44f65953e38bc3b0",
+   "size": 18390
+  },
+  "launch-videos/05-the-strike/assets/video/v-blank-vertical.mp4": {
+   "oid": "9fb12e1d6eb35ff483070443ed744bc2ff75b553",
+   "size": 6945774
+  },
+  "launch-videos/05-the-strike/snapshots/final/contact-sheet.jpg": {
+   "oid": "8dc408e4a47fc53b951cf404ba6efc2ccef66b2a",
+   "size": 241275
+  },
+  "launch-videos/05-the-strike/snapshots/final/frame-00-at-1s.png": {
+   "oid": "24581e6d15ae2ea1058073792cb1129702adc35c",
+   "size": 470084
+  },
+  "launch-videos/05-the-strike/snapshots/final/frame-01-at-4s.png": {
+   "oid": "de4c065f1fd9e6cc0c9a5d8833109cfa925341fe",
+   "size": 574243
+  },
+  "launch-videos/05-the-strike/snapshots/final/frame-02-at-8s.png": {
+   "oid": "d2020cf5ac2d2e7f0a0eda46b60767c637a0ebe8",
+   "size": 549873
+  },
+  "launch-videos/06-sting/assets/audio/m-sting-cut.wav": {
+   "oid": "67dd842127dd3c043a7acd92831a9a0e92547116",
+   "size": 1152094
+  },
+  "launch-videos/06-sting/assets/audio/m-sting.wav": {
+   "oid": "394a1f12834724d73011d29be1aca76c972c6ec2",
+   "size": 10337046
+  },
+  "launch-videos/06-sting/assets/img/paper-texture.jpg": {
+   "oid": "c15c01083cec4f174aa69463b6d1f838dcde62cf",
+   "size": 438525
+  },
+  "launch-videos/06-sting/snapshots/final/frame-00-at-0.5s.png": {
+   "oid": "2bf44c71d3d8e5c482d4c02c8160e2fe3a494811",
+   "size": 2136138
+  },
+  "launch-videos/06-sting/snapshots/final/frame-01-at-2s.png": {
+   "oid": "45ed70c17a3a53dbc6078572f5032f183ae2dd8c",
+   "size": 2142675
+  },
+  "launch-videos/06-sting/snapshots/final/frame-02-at-3.5s.png": {
+   "oid": "5072d128f3840230795587253d36341efff9aefd",
+   "size": 2147547
+  },
+  "launch-videos/06-sting/snapshots/final/frame-03-at-5.5s.png": {
+   "oid": "5072d128f3840230795587253d36341efff9aefd",
+   "size": 2147547
+  },
+  "launch-videos/06-sting/snapshots/final/frame-04-at-5.82s.png": {
+   "oid": "5072d128f3840230795587253d36341efff9aefd",
+   "size": 2147547
+  },
+  "launch-videos/_gen/audio/music/m-edited.mp3": {
+   "oid": "da0f659c5899692cb402b063250338dbca9ac7ab",
+   "size": 1594736
+  },
+  "launch-videos/_gen/audio/music/m-newsreel.mp3": {
+   "oid": "0ba2eae5a06d3fb685e76070399fefdfa80c20de",
+   "size": 1471230
+  },
+  "launch-videos/_gen/audio/music/m-rollcall.mp3": {
+   "oid": "0587f48a76cfb6ceff1170e456860c9a1e5fd862",
+   "size": 1441136
+  },
+  "launch-videos/_gen/audio/music/m-room.mp3": {
+   "oid": "01ccd142200ed8e7d23e608b4e2c5419e5b2e74b",
+   "size": 1732036
+  },
+  "launch-videos/_gen/audio/music/m-sting.mp3": {
+   "oid": "8b9ed2b33198b3fbbe35def8687e0864050fcb42",
+   "size": 1298194
+  },
+  "launch-videos/_gen/audio/music/m-strike.mp3": {
+   "oid": "2c2a0e7e670fbabf127a76527310a8bf412049a4",
+   "size": 1488784
+  },
+  "launch-videos/_gen/audio/sfx/chime.mp3": {
+   "oid": "12da953a356a49458d03e09185336d81f4b92f81",
+   "size": 27309
+  },
+  "launch-videos/_gen/audio/sfx/click.mp3": {
+   "oid": "2706b1d2ea64721d1888d15fee2fcc98f0609570",
+   "size": 11702
+  },
+  "launch-videos/_gen/audio/sfx/impact-bass-1.mp3": {
+   "oid": "ecfe0c48a672e77c98afac6810fd4c446dde94b0",
+   "size": 67709
+  },
+  "launch-videos/_gen/audio/sfx/key-press.mp3": {
+   "oid": "d669006e01071d57b3ee7c8ada064a2bf6b7dddc",
+   "size": 3909
+  },
+  "launch-videos/_gen/audio/sfx/pop.mp3": {
+   "oid": "e3ed16fef09641bbd7c0d53f508c71d6af863efb",
+   "size": 23040
+  },
+  "launch-videos/_gen/audio/sfx/riser.mp3": {
+   "oid": "0cea32c08dc8524cd592d6779165157115cb6dc2",
+   "size": 321024
+  },
+  "launch-videos/_gen/audio/sfx/typing.mp3": {
+   "oid": "ff69cc04200bb1af6e0785a801ca4d77281b4fce",
+   "size": 26852
+  },
+  "launch-videos/_gen/audio/sfx/whoosh-cinematic.mp3": {
+   "oid": "93b721800780ac4fe5e1847bb58dc60248db2402",
+   "size": 177408
+  },
+  "launch-videos/_gen/audio/sfx/whoosh-short.mp3": {
+   "oid": "e23e513d273009fbf48e8bcd44f65953e38bc3b0",
+   "size": 18390
+  },
+  "launch-videos/_gen/audio/vo/ed-athenaeum.wav": {
+   "oid": "dcf3b36afee7e80bae507589072bcabfa6ebb154",
+   "size": 357424
+  },
+  "launch-videos/_gen/audio/vo/ed-encourageante.wav": {
+   "oid": "bf6f6818289c58bc92850956391d289b62ba3c98",
+   "size": 322864
+  },
+  "launch-videos/_gen/audio/vo/ed-lecteur.wav": {
+   "oid": "4514d1167684d3d1c3fdb37f3cc24a19c7bf672e",
+   "size": 142384
+  },
+  "launch-videos/_gen/audio/vo/ed-lestylo.wav": {
+   "oid": "8500c975d15b56bc393766cc91263ebf7840cf92",
+   "size": 401584
+  },
+  "launch-videos/_gen/audio/vo/ed-sceptique.wav": {
+   "oid": "24f3843279a398f7200735cfdfaaa437b80f8322",
+   "size": 326704
+  },
+  "launch-videos/_gen/audio/vo/hero-01.wav": {
+   "oid": "f4f27540264542494cb5ab336da17ad9c4c1de8d",
+   "size": 161584
+  },
+  "launch-videos/_gen/audio/vo/hero-02.wav": {
+   "oid": "f89a7b686147536f3b218698a2196f40e46d2f64",
+   "size": 199984
+  },
+  "launch-videos/_gen/audio/vo/hero-03.wav": {
+   "oid": "c6bba105ff036c10f4479d90497583c5ad59ce92",
+   "size": 382384
+  },
+  "launch-videos/_gen/audio/vo/hero-04.wav": {
+   "oid": "4b7f39243c58e7e0d6f359bd8a8a59ef8f662da9",
+   "size": 132784
+  },
+  "launch-videos/_gen/audio/vo/hero-05.wav": {
+   "oid": "8b6da2d03e84d3a94af532deefa8747fd8db35a0",
+   "size": 752944
+  },
+  "launch-videos/_gen/audio/vo/hero-06.wav": {
+   "oid": "d6a7541b6385351702a065f451ac473d8e866421",
+   "size": 265264
+  },
+  "launch-videos/_gen/audio/vo/hero-07.wav": {
+   "oid": "e70c2b013322a3a7ae8b7c6a70f3427762c6e84f",
+   "size": 253744
+  },
+  "launch-videos/_gen/audio/vo/hero-08.wav": {
+   "oid": "fad10fd605900913e4efebf5a2e80ebf7f4e61b2",
+   "size": 213424
+  },
+  "launch-videos/_gen/audio/vo/nr-01.wav": {
+   "oid": "047f5bbe08dc6b3e623db7ed7e6555444b7c7c24",
+   "size": 151984
+  },
+  "launch-videos/_gen/audio/vo/nr-02.wav": {
+   "oid": "13ec0c47c6f8811a531e0642c8f346f4d4c086c1",
+   "size": 246064
+  },
+  "launch-videos/_gen/audio/vo/nr-03.wav": {
+   "oid": "7a2076f365172ebf04fd4f5d1ed73267cdcc66c0",
+   "size": 399664
+  },
+  "launch-videos/_gen/audio/vo/nr-04.wav": {
+   "oid": "74316651a56eb1b4adc625daa3514636d7cf5436",
+   "size": 224944
+  },
+  "launch-videos/_gen/audio/vo/nr-05.wav": {
+   "oid": "d7f25e20be76a739ade178a1395d989ed8c450bc",
+   "size": 303664
+  },
+  "launch-videos/_gen/audio/vo/rc-athenaeum.wav": {
+   "oid": "806d1d7624c49978548106015bafcb59b247dbc8",
+   "size": 370864
+  },
+  "launch-videos/_gen/audio/vo/rc-encourageante.wav": {
+   "oid": "c896ef76adc275e913725ed367e72ad5dae52f1b",
+   "size": 368944
+  },
+  "launch-videos/_gen/audio/vo/rc-end.wav": {
+   "oid": "cadb9777334f4fd0211b29907d7d2786d13f746b",
+   "size": 198064
+  },
+  "launch-videos/_gen/audio/vo/rc-lecteur.wav": {
+   "oid": "af3758f8b470560a879ec9beb51aa514b781f750",
+   "size": 278704
+  },
+  "launch-videos/_gen/audio/vo/rc-lestylo.wav": {
+   "oid": "c4b75b1662deafaf51f8ea907828ed3d69ad511a",
+   "size": 405424
+  },
+  "launch-videos/_gen/audio/vo/rc-sceptique.wav": {
+   "oid": "d59fd9f604cdbc5f6720230515db7b88cf1e1ac6",
+   "size": 280624
+  },
+  "launch-videos/_gen/images/.blank-page-vertical.jpg": {
+   "oid": "929334edd35fd977388218521bbb4d2d68b3c1c6",
+   "size": 453939
+  },
+  "launch-videos/_gen/images/.bullpen.jpg": {
+   "oid": "444b1df1001ee20f8e1f12013a1708a14af8f8fd",
+   "size": 474180
+  },
+  "launch-videos/_gen/images/.desk-typewriter.jpg": {
+   "oid": "c6c3474ec384c53d4daefc1dd7d3d84535234b80",
+   "size": 277139
+  },
+  "launch-videos/_gen/images/.finished-manuscript.jpg": {
+   "oid": "c5c8190d57ef325eb1f7357764b74c43b4fd598b",
+   "size": 428287
+  },
+  "launch-videos/_gen/images/.persona-athenaeum.jpg": {
+   "oid": "fec6796886ec9aae2770fed805f11def76f19f17",
+   "size": 377863
+  },
+  "launch-videos/_gen/images/.persona-encourageante.jpg": {
+   "oid": "6932852d00a0c183218449e6d3f39ad890c1637c",
+   "size": 383041
+  },
+  "launch-videos/_gen/images/.persona-lecteur.jpg": {
+   "oid": "4f75f3c4e09efb113cba108864719adde3ced200",
+   "size": 371624
+  },
+  "launch-videos/_gen/images/.persona-lestylo.jpg": {
+   "oid": "c3596992468415f22a1581e75b05a6b8b906474d",
+   "size": 348672
+  },
+  "launch-videos/_gen/images/.persona-sceptique.jpg": {
+   "oid": "a5b1eed62c836fa28d2350097e7f27c3476e2678",
+   "size": 403412
+  },
+  "launch-videos/_gen/images/.press.jpg": {
+   "oid": "c3d4d7cf0152e271e4031be628c0f1118701d0be",
+   "size": 511867
+  },
+  "launch-videos/_gen/images/blank-page-vertical.png": {
+   "oid": "db00775574de7050a2bd6d5d6bb319b380afb1e4",
+   "size": 3430972
+  },
+  "launch-videos/_gen/images/bullpen.png": {
+   "oid": "863357878153870df4a4f6d24a49edd4bc48a7a3",
+   "size": 3202518
+  },
+  "launch-videos/_gen/images/desk-typewriter.png": {
+   "oid": "9c87c4b88a40362812f26b9755a28ff2c4703fdd",
+   "size": 2669837
+  },
+  "launch-videos/_gen/images/finished-manuscript.png": {
+   "oid": "4fbfb528ad2c591f5b8302115099e80febfb538e",
+   "size": 3185788
+  },
+  "launch-videos/_gen/images/paper-on-desk.png": {
+   "oid": "f5110774dd1641dd295c565a2812e4decacebda3",
+   "size": 5635020
+  },
+  "launch-videos/_gen/images/paper-texture.png": {
+   "oid": "ecde40485acb210671fd2e240518edf8fee221d0",
+   "size": 3848219
+  },
+  "launch-videos/_gen/images/persona-athenaeum.png": {
+   "oid": "64f624bda67ebd5ba3e483d31af074ca5ebb3d3e",
+   "size": 2976408
+  },
+  "launch-videos/_gen/images/persona-encourageante.png": {
+   "oid": "6dbf35e82244d8b63ea840e3a9b7faa3015dd366",
+   "size": 2891104
+  },
+  "launch-videos/_gen/images/persona-lecteur.png": {
+   "oid": "3edba8c5d8d0365058cd75b9871af994d9dd7bb4",
+   "size": 2930711
+  },
+  "launch-videos/_gen/images/persona-lestylo.png": {
+   "oid": "c0bb95af1e37ed78c2aec97800f1d7f2ac0bc1c5",
+   "size": 2862560
+  },
+  "launch-videos/_gen/images/persona-sceptique.png": {
+   "oid": "5671f4122109a87b64d00ffc11af2c3df161b5fc",
+   "size": 3311225
+  },
+  "launch-videos/_gen/images/press.png": {
+   "oid": "0f053162505978be63e89c02c09cd761e9d43349",
+   "size": 3564139
+  },
+  "launch-videos/_gen/video/v-athenaeum.mp4": {
+   "oid": "99f89afddb7bda9323720e342f97e133478f7d63",
+   "size": 2519726
+  },
+  "launch-videos/_gen/video/v-blank-vertical.mp4": {
+   "oid": "9fb12e1d6eb35ff483070443ed744bc2ff75b553",
+   "size": 6945774
+  },
+  "launch-videos/_gen/video/v-bullpen.mp4": {
+   "oid": "7d7b49940fb5fd8968d6ee140284811958706cdf",
+   "size": 19812774
+  },
+  "launch-videos/_gen/video/v-desk.mp4": {
+   "oid": "a09ac874c7e5984d1c2fdd22579cbb0fa76e8c2a",
+   "size": 12144914
+  },
+  "launch-videos/_gen/video/v-encourageante.mp4": {
+   "oid": "8009c1127f75bd428a95d8bf219f03f03ebfa940",
+   "size": 2492169
+  },
+  "launch-videos/_gen/video/v-lecteur.mp4": {
+   "oid": "f5846d634379c4cd2854742649305c75f1162dcd",
+   "size": 4980447
+  },
+  "launch-videos/_gen/video/v-lestylo.mp4": {
+   "oid": "45680ab899702c104e73ca0347b8a504f7a1294b",
+   "size": 3028752
+  },
+  "launch-videos/_gen/video/v-manuscript.mp4": {
+   "oid": "4da176d6676a0487c23456cfce6638929cee4049",
+   "size": 10332922
+  },
+  "launch-videos/_gen/video/v-press.mp4": {
+   "oid": "2a535a570c71f4c4967df11fea5f67495ddccfec",
+   "size": 8403328
+  },
+  "launch-videos/_gen/video/v-sceptique.mp4": {
+   "oid": "b915748a99c34cc0d977f5ad87cfa6b46ec46b8e",
+   "size": 5031150
+  },
+  "launch-videos/local-fr/project/assets/audio/hero-01.wav": {
+   "oid": "922fd8200447df9ae46557a02d2b83e50a317db1",
+   "size": 103032
+  },
+  "launch-videos/local-fr/project/assets/audio/hero-02.wav": {
+   "oid": "623a15760e1edd100943fbd45fa42c472c864294",
+   "size": 126030
+  },
+  "launch-videos/local-fr/project/assets/audio/hero-03.wav": {
+   "oid": "283f309d2e14f4662ba305d038e43f27103afe43",
+   "size": 283004
+  },
+  "launch-videos/local-fr/project/assets/audio/hero-04.wav": {
+   "oid": "900a4aae3df308606214b93d5ff56e97424723b0",
+   "size": 88624
+  },
+  "launch-videos/local-fr/project/assets/audio/hero-05.wav": {
+   "oid": "d0478d0a9a4c9cb87468b4bb89a6c6ad95a67bad",
+   "size": 710820
+  },
+  "launch-videos/local-fr/project/assets/audio/hero-06.wav": {
+   "oid": "c47a2740deebd93104dfdb2cf543167a538bff3d",
+   "size": 196166
+  },
+  "launch-videos/local-fr/project/assets/audio/hero-07.wav": {
+   "oid": "c2bc51824e0d32128b207613c794fcc13dd93bd1",
+   "size": 204610
+  },
+  "launch-videos/local-fr/project/assets/audio/hero-08.wav": {
+   "oid": "8739d9d41b21c7a84875134d4dc950950e40d528",
+   "size": 170062
+  },
+  "launch-videos/local-fr/project/assets/audio/m-room.wav": {
+   "oid": "3288d05492999634f3e3a436a2ec14759f7544c1",
+   "size": 13807778
+  },
+  "launch-videos/local-fr/project/assets/img/paper-texture.jpg": {
+   "oid": "c15c01083cec4f174aa69463b6d1f838dcde62cf",
+   "size": 438525
+  },
+  "launch-videos/local-fr/project/assets/sfx/click.mp3": {
+   "oid": "2706b1d2ea64721d1888d15fee2fcc98f0609570",
+   "size": 11702
+  },
+  "launch-videos/local-fr/project/assets/sfx/impact-bass-1.mp3": {
+   "oid": "ecfe0c48a672e77c98afac6810fd4c446dde94b0",
+   "size": 67709
+  },
+  "launch-videos/local-fr/project/assets/sfx/typing.mp3": {
+   "oid": "ff69cc04200bb1af6e0785a801ca4d77281b4fce",
+   "size": 26852
+  },
+  "launch-videos/local-fr/project/assets/sfx/whoosh-short.mp3": {
+   "oid": "e23e513d273009fbf48e8bcd44f65953e38bc3b0",
+   "size": 18390
+  },
+  "launch-videos/local-fr/project/assets/video/v-athenaeum.mp4": {
+   "oid": "99f89afddb7bda9323720e342f97e133478f7d63",
+   "size": 2519726
+  },
+  "launch-videos/local-fr/project/assets/video/v-bullpen.mp4": {
+   "oid": "7d7b49940fb5fd8968d6ee140284811958706cdf",
+   "size": 19812774
+  },
+  "launch-videos/local-fr/project/assets/video/v-desk.mp4": {
+   "oid": "a09ac874c7e5984d1c2fdd22579cbb0fa76e8c2a",
+   "size": 12144914
+  },
+  "launch-videos/local-fr/project/assets/video/v-encourageante.mp4": {
+   "oid": "8009c1127f75bd428a95d8bf219f03f03ebfa940",
+   "size": 2492169
+  },
+  "launch-videos/local-fr/project/assets/video/v-lecteur.mp4": {
+   "oid": "f5846d634379c4cd2854742649305c75f1162dcd",
+   "size": 4980447
+  },
+  "launch-videos/local-fr/project/assets/video/v-lestylo.mp4": {
+   "oid": "45680ab899702c104e73ca0347b8a504f7a1294b",
+   "size": 3028752
+  },
+  "launch-videos/local-fr/project/assets/video/v-manuscript.mp4": {
+   "oid": "4da176d6676a0487c23456cfce6638929cee4049",
+   "size": 10332922
+  },
+  "launch-videos/local-fr/project/assets/video/v-sceptique.mp4": {
+   "oid": "b915748a99c34cc0d977f5ad87cfa6b46ec46b8e",
+   "size": 5031150
+  },
+  "launch-videos/local-fr/project/snapshots/frame-00-at-3.3s.png": {
+   "oid": "5d5755962f4b85ff911c04418a8ee7028a15182c",
+   "size": 1408265
+  },
+  "launch-videos/local-fr/project/snapshots/frame-01-at-16.7s.png": {
+   "oid": "58fb2389f821d347adbe51bb380e8962efb9e8c6",
+   "size": 2191941
+  },
+  "launch-videos/local-fr/project/snapshots/frame-02-at-30.0s.png": {
+   "oid": "8c3badf71cca01f45aa097b32ec4232cbdeeb98c",
+   "size": 1756771
+  },
+  "launch-videos/local-fr/project/snapshots/frame-03-at-43.3s.png": {
+   "oid": "74a17407c8d580d2d1f30b7888995598b4f10d09",
+   "size": 2003758
+  },
+  "launch-videos/local-fr/project/snapshots/frame-04-at-56.7s.png": {
+   "oid": "15201fe11548c2c66308ce20a650f246fd52fe51",
+   "size": 2149134
+  },
+  "launch-videos/local-fr/project/snapshots/r1/contact-sheet.jpg": {
+   "oid": "4431b1566cccbbae6902cf3ec2c4b225fae041f1",
+   "size": 376595
+  },
+  "launch-videos/local-fr/project/snapshots/r1/frame-00-at-3s.png": {
+   "oid": "19a6540f002f15bb2785ec95bb0be253ce4ca2eb",
+   "size": 1289176
+  },
+  "launch-videos/local-fr/project/snapshots/r1/frame-01-at-12.5s.png": {
+   "oid": "4d78be1fe65bb9d8a5bd6a7ee8c4fbba2eb6ec59",
+   "size": 1838114
+  },
+  "launch-videos/local-fr/project/snapshots/r1/frame-02-at-15.2s.png": {
+   "oid": "b0092920ba2026c4d7e4a710ba95d60c9dad17cf",
+   "size": 1728096
+  },
+  "launch-videos/local-fr/project/snapshots/r1/frame-03-at-20.5s.png": {
+   "oid": "dbed3185908de22bb8daa3262490fcc0842ec26e",
+   "size": 2032428
+  },
+  "launch-videos/local-fr/project/snapshots/r1/frame-04-at-24.3s.png": {
+   "oid": "676120ea89ab95a83a98ed4e5bd5145b3ad36a28",
+   "size": 1727678
+  },
+  "launch-videos/local-fr/project/snapshots/r1/frame-05-at-31.5s.png": {
+   "oid": "e016168de9ea71d2e3f9ab5f24b5f992a76fa3e5",
+   "size": 1825151
+  },
+  "launch-videos/local-fr/project/snapshots/r1/frame-06-at-40.8s.png": {
+   "oid": "de988d7ab3dee8a2b5bbb26c49860424e2fe044a",
+   "size": 1683668
+  },
+  "launch-videos/local-fr/project/snapshots/r1/frame-07-at-46.5s.png": {
+   "oid": "1f743839c4273e0814e563e2f9a9156f832328aa",
+   "size": 1933552
+  },
+  "launch-videos/local-fr/project/snapshots/r1/frame-08-at-55.5s.png": {
+   "oid": "726abf3932072d7813237f3adc4c5027802f8679",
+   "size": 2152469
+  },
+  "launch-videos/local-fr/project/snapshots/r2/frame-00-at-14.8s.png": {
+   "oid": "a5a0b02cd6c5cf23864709c5ab7f9cb86b7464fb",
+   "size": 1786096
+  },
+  "launch-videos/local-fr/project/snapshots/r2/frame-01-at-20.9s.png": {
+   "oid": "059986c67ab378e4ad704b396a73643f7ec3f7ab",
+   "size": 2004057
+  },
+  "launch-videos/local-fr/project/snapshots/r2/frame-02-at-41s.png": {
+   "oid": "7f73d76a3a2ab889053457bc221ef5b0f11b3287",
+   "size": 1700854
+  },
+  "launch-videos/local-fr/project/snapshots/r2/frame-03-at-58.6s.png": {
+   "oid": "6214a8483edda0a2910bcd32541d5011919e39eb",
+   "size": 2150228
+  },
+  "launch-videos/local-fr/raw-01.wav": {
+   "oid": "09681aa2416e7cabbe4cefc329a2880dd9ef694d",
+   "size": 134444
+  },
+  "launch-videos/local-fr/raw-02.wav": {
+   "oid": "84aede02a1d43d043c8df39a6e347a7b19a9ef77",
+   "size": 156044
+  },
+  "launch-videos/local-fr/raw-03.wav": {
+   "oid": "cbc34b20f99f178a5ecac8f1f2a75e07f14b4991",
+   "size": 309644
+  },
+  "launch-videos/local-fr/raw-04.wav": {
+   "oid": "27f19aa651231d6e4ae9858e89ef3717deec7418",
+   "size": 108044
+  },
+  "launch-videos/local-fr/raw-05.wav": {
+   "oid": "e336fbd09c15ab877a3d70218d744d6d3b3edb22",
+   "size": 852044
+  },
+  "launch-videos/local-fr/raw-06.wav": {
+   "oid": "bb9bdc61eff5ebd7b88b910b3d5ec09a24ebff08",
+   "size": 237644
+  },
+  "launch-videos/local-fr/raw-07.wav": {
+   "oid": "3c808523baadded0c01527afb7bc142da72c6e1e",
+   "size": 240044
+  },
+  "launch-videos/local-fr/raw-08.wav": {
+   "oid": "9ecba6ec9fa47a6c62a2c3a5ee233efb7ec0dc76",
+   "size": 192044
+  },
+  "launch-videos/local-fr/the-room-fr-master.mp4": {
+   "oid": "889f7023acd7fda6c608da7a5170c0f2d0ec57c2",
+   "size": 65370062
+  },
+  "launch-videos/local-fr/trim-01.wav": {
+   "oid": "3e69802066a98ca4c87a2c4c364535a28a9469dc",
+   "size": 103390
+  },
+  "launch-videos/local-fr/trim-02.wav": {
+   "oid": "4a3c2d6fc0a34e7a248530b65cb4e6d1d5a9345e",
+   "size": 126264
+  },
+  "launch-videos/local-fr/trim-03.wav": {
+   "oid": "b21d0c20e2f9ca856865f6ef346ebbc85e8c9551",
+   "size": 283174
+  },
+  "launch-videos/local-fr/trim-04.wav": {
+   "oid": "02fc85c3d3b8872c03b0611535eeaf2ca5022f18",
+   "size": 88958
+  },
+  "launch-videos/local-fr/trim-05.wav": {
+   "oid": "cc4fb39e336d925f0615054d0b19600a97653304",
+   "size": 710960
+  },
+  "launch-videos/local-fr/trim-06.wav": {
+   "oid": "3627eecefd431431d2ab319b1929b98656e51a68",
+   "size": 196166
+  },
+  "launch-videos/local-fr/trim-07.wav": {
+   "oid": "c3d80c56987866d692c079372cac0f28481be0ec",
+   "size": 204846
+  },
+  "launch-videos/local-fr/trim-08.wav": {
+   "oid": "51e22f231fe8a89866dafad90e90a0d3fa332926",
+   "size": 170182
+  },
+  "launch-videos/renders/01-the-room.mp4": {
+   "oid": "33964efab17ae4b5e7755e26bbb464a1c18dd6bd",
+   "size": 63777776
+  },
+  "launch-videos/renders/02-roll-call.mp4": {
+   "oid": "4a0762e40c04fcfbcd88378df56d4669eb1e1ce0",
+   "size": 51595941
+  },
+  "launch-videos/renders/03-edited.mp4": {
+   "oid": "5ae03e01d54ca21a62e48565ab93455a0f4a6f2d",
+   "size": 7207737
+  },
+  "launch-videos/renders/04-newsreel.mp4": {
+   "oid": "889976da391c7eb12f01c41429fc014b5f5f2d5a",
+   "size": 14043128
+  },
+  "launch-videos/renders/05-the-strike.mp4": {
+   "oid": "10f7d718092ddc3383084e4f2a4d93183de0bf08",
+   "size": 7592801
+  },
+  "launch-videos/renders/06-sting.mp4": {
+   "oid": "e18ab77d6d524925cfaf17fd7bb386bc2a739c8d",
+   "size": 1163628
+  },
+  "public/assets/avatars/engraved-2026-09/fox-source.png": {
+   "oid": "eb881418da2e6a300f238f031ab011c908ecf1fd",
+   "size": 3150750
+  },
+  "public/assets/avatars/engraved-2026-09/hare-source.png": {
+   "oid": "0d2009abb252eccec2f722e6136dccaaff2c0b52",
+   "size": 2446377
+  },
+  "public/assets/avatars/engraved-2026-09/owl-source.png": {
+   "oid": "91f9424e24f9965c697c05748c59c4a01233c183",
+   "size": 3147124
+  },
+  "public/assets/avatars/engraved-2026-09/raven-source.png": {
+   "oid": "4fd143992b79a325ca2d3afdc2aec81e237384c0",
+   "size": 2444594
+  },
+  "public/assets/hero-glow.png": {
+   "oid": "dea2ffcb5b9527d7acca3f33ecc56111501e66e7",
+   "size": 241029
+  },
+  "public/assets/illuminated-initials/alternates-contact-sheet.avif": {
+   "oid": "6f160ef91714430f817ba1b525ca9c3c79186ee9",
+   "size": 234340
+  },
+  "public/assets/illuminated-initials/contact-sheet.avif": {
+   "oid": "e8afee1209578e1c4ca02437603f5976c2c85b86",
+   "size": 481065
+  },
+  "public/assets/illuminated-initials/k.avif": {
+   "oid": "5471118077a36de770de3948fd798fd651b07d81",
+   "size": 200748
+  },
+  "public/assets/illuminated-initials/m.avif": {
+   "oid": "ab3265c9c8b6c385087236d2a79aa59f4fd70142",
+   "size": 208295
+  },
+  "public/assets/illuminated-initials/n.avif": {
+   "oid": "2bf3c7cb1cde857611d405c938a7cd84803aa665",
+   "size": 207014
+  },
+  "public/assets/illuminated-initials/o-alt.avif": {
+   "oid": "0f3f4b015edeefa85bfd0bb9b82d22fb53158f9c",
+   "size": 217230
+  },
+  "public/assets/illuminated-initials/p-alt.avif": {
+   "oid": "875e30e3143b4bdd63fa877fc4df0092e7613822",
+   "size": 210614
+  },
+  "public/assets/illuminated-initials/q-alt.avif": {
+   "oid": "50c80ad9b340b390e93ba6578e30e5fdd8195f6b",
+   "size": 214404
+  },
+  "public/assets/illuminated-initials/r.avif": {
+   "oid": "e11a0d6e2bb690ff2f3587e53bbb7811de0eafd9",
+   "size": 216498
+  },
+  "public/assets/illuminated-initials/s-alt.avif": {
+   "oid": "a077121b90fbda56eb188ed9adcea7e53f2c3023",
+   "size": 205614
+  },
+  "public/assets/illuminated-initials/s.avif": {
+   "oid": "bc671b077304c14cffacdc9d80a156723903ade7",
+   "size": 215150
+  },
+  "public/assets/illuminated-initials/v-alt.avif": {
+   "oid": "9a43e2e8c9bb593d39fb77abf69d00647d0ed3d6",
+   "size": 201706
+  },
+  "public/assets/illuminated-initials/w-alt.avif": {
+   "oid": "d6922265cbd6a1742643a477061fdc5afdb320f1",
+   "size": 205352
+  },
+  "public/assets/illuminated-initials/w.avif": {
+   "oid": "e05f416ea1c7458a556804480a40298f1fdde56e",
+   "size": 230110
+  },
+  "public/assets/illuminated-initials/x-alt.avif": {
+   "oid": "f3b1512e03dc67f5a3353d0319e8b865600bc161",
+   "size": 205116
+  },
+  "public/assets/illuminated-initials/x.avif": {
+   "oid": "00e580b193318e2ea69ab870a838cc21fa0e1b96",
+   "size": 211904
+  },
+  "public/assets/instruments/direction-study-v1.png": {
+   "oid": "b9a74a8840dd3750c522fa41fbba246d1c509ed0",
+   "size": 1463408
+  },
+  "public/assets/instruments/motion-study-v1.mp4": {
+   "oid": "200faf882052982ba5ecdc30c843fc7c08864db1",
+   "size": 370137
+  },
+  "public/assets/instruments/research-source-v1.png": {
+   "oid": "8f04a7665c44b29c53c0c3a04a4dd2dcae872223",
+   "size": 2442255
+  },
+  "public/assets/instruments/review-compact-v1.png": {
+   "oid": "4f932db20700d28ed271833a47a8f237a568144d",
+   "size": 224866
+  },
+  "public/assets/instruments/review-editorial-v1.png": {
+   "oid": "1465a06da5e5bf5a35d1c33ca133b7783378f7b3",
+   "size": 225486
+  },
+  "public/assets/instruments/review-nightpress-v1.png": {
+   "oid": "0c61c947858e1137dcbff3281b3b24c53ebeec12",
+   "size": 214533
+  },
+  "public/assets/instruments/scene-bench-offline-v1.mp4": {
+   "oid": "593199317f9a56dba61a1d3b2a6614883dec1859",
+   "size": 536766
+  },
+  "public/assets/instruments/scene-source-v1.png": {
+   "oid": "4781940f509da1ade74558772816af17df111bc5",
+   "size": 2596737
+  },
+  "public/assets/instruments/sentence-bench-source-v1.png": {
+   "oid": "5554b734d6188e805c8b67e0ef2dd2fabfa33184",
+   "size": 2267578
+  },
+  "public/assets/instruments/threads-source-v1.png": {
+   "oid": "16b3829cffa67ad55c84758bd2b52b768963b51a",
+   "size": 1320130
+  },
+  "public/assets/landing/options-2026-09/option-03-1536.avif": {
+   "oid": "418482c48b25ac88905482042f9624df4637f891",
+   "size": 254439
+  },
+  "public/assets/landing/plate-3-notes-lg.webp": {
+   "oid": "28ef89cf827fbe14130e0c0374a1837484f8e4e0",
+   "size": 228520
+  },
+  "public/assets/launch/the-room-en.mp4": {
+   "oid": "b4dd305f96577c9eda0222195ddd6dafebff6e3e",
+   "size": 5924070
+  },
+  "public/assets/launch/the-room-fr.mp4": {
+   "oid": "6739f683d3d92e0a5edd7a4816e01c5c89af1bf7",
+   "size": 5893237
+  },
+  "public/assets/manual/edited.mp4": {
+   "oid": "936a247fa86eaeeef3ec922b1695e178b77af48a",
+   "size": 2058101
+  },
+  "public/assets/manual/editors/angel-transparent-480.webp": {
+   "oid": "5a07e64d89a0131d48c070f1e42b280dc607a2ad",
+   "size": 333776
+  },
+  "public/assets/manual/editors/angel-transparent.webp": {
+   "oid": "948b709bd0ea57fb776139df675ae9640bd8912a",
+   "size": 1668442
+  },
+  "public/assets/manual/editors/devil-transparent-480.webp": {
+   "oid": "83d5301bd9913a1c73ac7bdee0732200358370e3",
+   "size": 281502
+  },
+  "public/assets/manual/editors/devil-transparent.webp": {
+   "oid": "14cdafd6dede4f4157621fc3b967ff4d2b8f2003",
+   "size": 1420890
+  },
+  "public/assets/manual/editors/editor-transparent-480.webp": {
+   "oid": "7ad63097e0bc1fbb078fea9c513c57359d51500b",
+   "size": 278072
+  },
+  "public/assets/manual/editors/editor-transparent.webp": {
+   "oid": "8123cecadae6bf94a98c4e93f815b6c97cb5b7d8",
+   "size": 1410130
+  },
+  "public/assets/manual/editors/reader-transparent-480.webp": {
+   "oid": "666e23d07c7faa6756ceb6d86a00f2dde3035f29",
+   "size": 304098
+  },
+  "public/assets/manual/editors/reader-transparent.webp": {
+   "oid": "ab0da3eeceb7aabab471c40a03a5cde9f9e3d551",
+   "size": 1582514
+  },
+  "public/assets/manual/editors/scholar-transparent-480.webp": {
+   "oid": "f103a7673b8166bec6088932a3f483a070ecea4a",
+   "size": 354238
+  },
+  "public/assets/manual/editors/scholar-transparent.webp": {
+   "oid": "8e7cb015e1f0720fa5bcebe7d68427f018d5b449",
+   "size": 1746042
+  },
+  "public/assets/manual/house-context.mp4": {
+   "oid": "7bd7031abcbac537afcfb04cee75d5609a194710",
+   "size": 598991
+  },
+  "public/assets/manual/living-desk.jpg": {
+   "oid": "b4e5f257763eb66f7b8a8118b82208f164243717",
+   "size": 265591
+  },
+  "public/assets/manual/living-desk.mp4": {
+   "oid": "582e2ba26de2eb8ca903ece2739536ceff78418d",
+   "size": 1426662
+  },
+  "public/assets/manual/narration/account-and-live.m4a": {
+   "oid": "8d6e3edbf81455df48c5e2d53f44498169d0d4ae",
+   "size": 336990
+  },
+  "public/assets/manual/narration/apparatus.m4a": {
+   "oid": "0f1984eff4a49b2eb0508eef40844a9582b00e1c",
+   "size": 504637
+  },
+  "public/assets/manual/narration/byok.m4a": {
+   "oid": "c37b233193b5a5335ef74a7a42e5f5fe0337ba21",
+   "size": 258260
+  },
+  "public/assets/manual/narration/dossier.m4a": {
+   "oid": "f1541c1d0feb0a5a4f836f5adc6fe26f9df7dc7c",
+   "size": 551192
+  },
+  "public/assets/manual/narration/flow.m4a": {
+   "oid": "9ee68357610a7cf78a7b2fbcf492ecb071fa2ad4",
+   "size": 584634
+  },
+  "public/assets/manual/narration/folios.m4a": {
+   "oid": "b284ed7a2dd44e310843632318be395b1667c80e",
+   "size": 562252
+  },
+  "public/assets/manual/narration/getting-started.m4a": {
+   "oid": "e29cd608820ee8427e58ae6324f5542f8c32daae",
+   "size": 443562
+  },
+  "public/assets/manual/narration/house.m4a": {
+   "oid": "99b70c8ccc367d661727917c8168566e46124b52",
+   "size": 533808
+  },
+  "public/assets/manual/narration/manuscript-tools.m4a": {
+   "oid": "7831a301b14f9a3d124ff10594d4aa1826c3c633",
+   "size": 416696
+  },
+  "public/assets/manual/narration/marginalia.m4a": {
+   "oid": "84bd7492796b920c38d17fb6943a1f6da1351a8e",
+   "size": 333635
+  },
+  "public/assets/manual/narration/privacy.m4a": {
+   "oid": "93164c7e702614db632bbf974ffccd9c8e1f894f",
+   "size": 340245
+  },
+  "public/assets/manual/narration/room.m4a": {
+   "oid": "abf1e8816056e6613f34333a00bfc0d01d8ec68f",
+   "size": 648022
+  },
+  "public/assets/manual/narration/rubric.m4a": {
+   "oid": "8421c63c99136ec05cb51dd1555ab99d72b3867c",
+   "size": 498626
+  },
+  "public/assets/manual/narration/the-piece.m4a": {
+   "oid": "916a1ee60f3e3807f9a69865b976d7e07aa5ce2a",
+   "size": 511624
+  },
+  "public/assets/manual/narration/writing-instruments.m4a": {
+   "oid": "1af3c514e1cd4867109ea5d21570ca4775637894",
+   "size": 612777
+  },
+  "public/assets/manual/newsreel.mp4": {
+   "oid": "ead72804c8396706c5873e6cd17536f5e4f9e051",
+   "size": 1962859
+  },
+  "public/assets/manual/roll-call.mp4": {
+   "oid": "844442c472acb1daa0fe9eca6502dba4b5633b2c",
+   "size": 4953054
+  },
+  "public/assets/manual/source-workspace.mp4": {
+   "oid": "c1673a158253a5f18307c7b40366d2fbd73d0c78",
+   "size": 350146
+  },
+  "public/assets/manual/sting.mp4": {
+   "oid": "7ac6f5fab3ab987e27dfd320b2d8fdc2fb72bf16",
+   "size": 274778
+  },
+  "public/assets/manual/the-strike.mp4": {
+   "oid": "5f4b61e08634cdf305ba1eb77af125ee4a23a2b6",
+   "size": 807150
+  },
+  "public/assets/manual/writing-instruments.mp4": {
+   "oid": "75b41868ffd2f216f72faf4f3288bd533f3db7b9",
+   "size": 531579
+  },
+  "public/assets/page-borders/botanical.avif": {
+   "oid": "1f500861db72d077a3b1bcdd22d31cdd2e8ab24a",
+   "size": 344893
+  },
+  "public/assets/page-borders/engraved.avif": {
+   "oid": "e1b5d246c2403644d2ad498094cee9022b65faba",
+   "size": 278327
+  },
+  "public/assets/page-borders/illuminated.avif": {
+   "oid": "c4ca1393206da36081d5b94e54b69087d67d6a82",
+   "size": 223610
+  },
+  "public/assets/page-borders/paper-preview.avif": {
+   "oid": "d3b9e73c20eb789d8815a1ade52d2bdf20e4aa9d",
+   "size": 215913
+  },
+  "public/assets/rubric-proof-fibers.png": {
+   "oid": "f7785706ae3c23ee6bbbfd8d674cc0c2741cf7e2",
+   "size": 239566
+  },
+  "public/assets/rubric-stamps/sunburst-a-minus.png": {
+   "oid": "f850c4c9d3637b07838f3d13de7caa7a7f5f87ba",
+   "size": 1299138
+  },
+  "public/assets/rubric-stamps/sunburst-a-plus.png": {
+   "oid": "153b379ae5a645548a5ac556923515901bbcae55",
+   "size": 1768690
+  },
+  "public/assets/rubric-stamps/sunburst-a.png": {
+   "oid": "6cb229625465981a92ed47c8ddc3f151f37cea84",
+   "size": 1283818
+  },
+  "public/assets/rubric-stamps/sunburst-b-minus.png": {
+   "oid": "3dd2682c776ee5ea42c11ed8cc92558d4d837438",
+   "size": 844831
+  },
+  "public/assets/rubric-stamps/sunburst-b-plus.png": {
+   "oid": "77346e811fd9f1ae6f5c23dec2dd31605af6eb74",
+   "size": 816010
+  },
+  "public/assets/rubric-stamps/sunburst-b.png": {
+   "oid": "a6201426055e95bb9998bf3612e9abb8c339089d",
+   "size": 690530
+  },
+  "public/assets/rubric-stamps/sunburst-c-minus.png": {
+   "oid": "ff34cfdbfe691fe4a033e5f37393d10e4a577fdf",
+   "size": 792264
+  },
+  "public/assets/rubric-stamps/sunburst-c-plus.png": {
+   "oid": "63ed3bf30d24bc7bfd94860d20977b010b243da1",
+   "size": 812392
+  },
+  "public/assets/rubric-stamps/sunburst-c.png": {
+   "oid": "572e29cbc22defdf883616bf2327eeb8c46796e1",
+   "size": 886027
+  },
+  "public/assets/rubric-stamps/sunburst-d-minus.png": {
+   "oid": "ba219fc0b8a480c59d838e4d2d0687c9cd3bd31b",
+   "size": 965962
+  },
+  "public/assets/rubric-stamps/sunburst-d-plus.png": {
+   "oid": "8898cfcd18804f32058d6948eab213542f282844",
+   "size": 1092692
+  },
+  "public/assets/rubric-stamps/sunburst-d.png": {
+   "oid": "2168fbe64fd4e1b213efc7c5b756cdd8018ab405",
+   "size": 1013186
+  },
+  "public/assets/rubric-stamps/sunburst-f.png": {
+   "oid": "85be6d352ea47c9f3062f7299b3e3eac4a884ddb",
+   "size": 1037701
+  },
+  "public/assets/rubric-stamps/sunburst-filed.png": {
+   "oid": "8dc565359176504bb17fb323adaba4f29e105c73",
+   "size": 526845
+  },
+  "public/assets/rubric-stamps/sunburst-revised.png": {
+   "oid": "139af13d048d2b32d478fdae7ee1edb5cfa6604e",
+   "size": 595072
+  },
+  "public/assets/social/twyne-editorial-collage-option.jpg": {
+   "oid": "929ed8779441d8a903a0d054526fdc84adabaf66",
+   "size": 299392
+  },
+  "public/assets/social/twyne-editorial-v2.jpg": {
+   "oid": "169006c5923fd15ae9ff46133549572895ad10fe",
+   "size": 328181
+  },
+  "public/assets/social/twyne-writers-desk-background-v1.jpg": {
+   "oid": "9bd26cbe5b9c570be6873dee17f45fce0f6d4fe8",
+   "size": 281594
+  },
+  "public/assets/social/twyne-writers-desk-loop-v1.mp4": {
+   "oid": "2ec39c0e3d10ded254b21e8f9cb1cd5815bb1542",
+   "size": 5236114
+  },
+  "public/assets/social/twyne-writers-desk-option.jpg": {
+   "oid": "5b3decac72bbb30746f6358201d77e894596b599",
+   "size": 241733
+  },
+  "public/assets/social/twyne-writers-desk-v1.jpg": {
+   "oid": "5b3decac72bbb30746f6358201d77e894596b599",
+   "size": 241733
+  },
+  "public/assets/social/twyne-writers-desk-v2.jpg": {
+   "oid": "4f278177312d5a4ee4747467751847c4893ae3fe",
+   "size": 283724
+  },
+  "public/assets/social/twyne-writers-desk-v2.png": {
+   "oid": "8224c97a70007b994cf54ebe5c7499000484c0c5",
+   "size": 1345810
+  },
+  "social-preview-video/assets/desk-background.jpg": {
+   "oid": "9bd26cbe5b9c570be6873dee17f45fce0f6d4fe8",
+   "size": 281594
+  },
+  "social-preview-video/snapshots/frame-00-at-0.0s.png": {
+   "oid": "59ccc17517a9fac9bbc3b78cf6317d298a259e34",
+   "size": 1096600
+  },
+  "social-preview-video/snapshots/frame-01-at-1.5s.png": {
+   "oid": "6e76f37cd92e49ea7f18a233ea1a46f06c212f2d",
+   "size": 1020945
+  },
+  "social-preview-video/snapshots/frame-02-at-3.0s.png": {
+   "oid": "97866d67515cc9daf9f6f6f92589518e8c4fa64a",
+   "size": 1015181
+  },
+  "social-preview-video/snapshots/frame-03-at-4.5s.png": {
+   "oid": "6e76f37cd92e49ea7f18a233ea1a46f06c212f2d",
+   "size": 1020945
+  },
+  "social-preview-video/snapshots/frame-04-at-5.9s.png": {
+   "oid": "83d4bce7b2bdd8d753c01be604bd65d6f14a3b8f",
+   "size": 1094468
+  },
+  "src/assets/live-voice-benchmark.wav": {
+   "oid": "1e3e4cfd1b86e72908722bbb00fc90a86e3872d2",
+   "size": 46746
+  }
+ }
+}
