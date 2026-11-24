@@ -8,6 +8,12 @@
 
 set -euo pipefail
 
+# Media (video/audio/large images) lives in the twyne-media bucket, not git.
+# Vite copies public/ into dist/, and src/utils/live-voice-local-benchmark.ts
+# imports src/assets/live-voice-benchmark.wav?inline, so restore both first.
+echo "==> Restoring media from bucket"
+bun scripts/media.ts pull public/assets/ src/assets/
+
 if [ -n "${CONVEX_DEPLOY_KEY:-}" ]; then
   echo "==> Deploying Convex backend"
   # 1.46 fixes index-removal review with deploy-only keys. Keep CI deployment
