@@ -10,7 +10,10 @@
   "hero": {
     "h0": "Terminado en marzo. Todavía sin publicar.",
     "d0": "La buena escritura se estanca entre el borrador y el lugar donde debería publicarse, o sale sonando como otra persona.",
-    "ctaStart": "Empieza tu brief →",
+    "askQuestion": "Cuéntame la pieza en una frase, como se la describirías a un amigo durante la comida.",
+    "askPlaceholder": "Una guía para criar abejas en una azotea de la ciudad, para quienes viven de alquiler.",
+    "askSend": "Enviar",
+    "askNote": "Twyne continúa a partir de tu respuesta y te pregunta lo que aún le falta al brief.",
     "ctaWalk": "Ver los recorridos"
   },
   "problem": {

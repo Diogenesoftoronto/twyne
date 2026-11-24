@@ -1,4 +1,5 @@
 import {
+  $,
   component$,
   useSignal,
   useVisibleTask$,
@@ -10,6 +11,7 @@ import { WorkspaceTour } from "./workspace-tour";
 import { LaunchFilm } from "./launch-film";
 import { JourneyWalkthrough } from "./journey-walkthrough";
 import { LandingI18n } from "./landing-i18n";
+import { ChatComposer } from "../ui/chat-composer";
 import "./landing-artwork.css";
 import "./landing-journey.css";
 import {
@@ -25,7 +27,13 @@ import ImgApprovalStamp from "~/media/approval-stamp.svg?jsx";
 import type { LandingCtaLocation } from "../../utils/product-analytics";
 
 interface LandingPageProps {
-  onStartBrief$: PropFunction<(location: LandingCtaLocation) => void>;
+  /**
+   * Opens the brief. `opening` is the visitor's answer to the interview's
+   * first question, asked in the hero; the interview continues from it.
+   */
+  onStartBrief$: PropFunction<
+    (location: LandingCtaLocation, opening?: string) => void
+  >;
   onSkipToEditor$?: PropFunction<(location: LandingCtaLocation) => void>;
 }
 
@@ -141,6 +149,11 @@ const LandingContent = component$<LandingPageProps>(
     const auth = useAuth();
     const signedIn = !!auth.value.user;
     const root = useSignal<HTMLElement>();
+    const opening = useSignal("");
+    const sendOpening = $(() => {
+      const text = opening.value.trim();
+      if (text) void onStartBrief$("hero", text);
+    });
 
     // Scroll reveal for the photo essay.
     //
@@ -250,18 +263,39 @@ const LandingContent = component$<LandingPageProps>(
               <p class="landing-deck mx-auto mt-6 max-w-2xl text-base sm:text-lg">
                 {t("hero.d0")}
               </p>
-              <div class="landing-rise-3 mt-9 flex flex-wrap items-center justify-center gap-3">
-                <button
-                  onClick$={() => onStartBrief$("hero")}
-                  class="broadsheet-cta"
-                >
-                  {t("hero.ctaStart")}
-                </button>
-                <a href="#walkthroughs" class="broadsheet-cta secondary">
-                  {t("hero.ctaWalk")}
-                </a>
+              {/* The interview's first question, asked here. The answer
+                  goes with the visitor into the brief, which replies to it. */}
+              <div class="landing-rise-3 landing-opener">
+                <p class="landing-opener__question">
+                  <ImgGriffinMark
+                    class="landing-opener__mark"
+                    aria-hidden="true"
+                  />
+                  <span>{t("hero.askQuestion")}</span>
+                </p>
+                <ChatComposer
+                  value={opening.value}
+                  onValueChange$={$((value: string) => {
+                    opening.value = value;
+                  })}
+                  onSend$={sendOpening}
+                  allowVoice={false}
+                  label={t("hero.askQuestion")}
+                  placeholder={t("hero.askPlaceholder")}
+                  sendLabel={t("hero.askSend")}
+                />
+                <p class="landing-opener__note">{t("hero.askNote")}</p>
               </div>
+              <a href="#walkthroughs" class="landing-hero__alt">
+                {t("hero.ctaWalk")} <span aria-hidden="true">→</span>
+              </a>
             </div>
+          </section>
+
+          {/* ── The film, straight after the question ── */}
+          <section class="landing-film mx-auto mt-14 max-w-4xl md:mt-20">
+            <LaunchFilm minimal />
+            <p class="landing-turn__film-note">{t("turn.filmNote")}</p>
           </section>
 
           {/* ── The problem, in the visitor's terms ── */}
@@ -352,10 +386,6 @@ const LandingContent = component$<LandingPageProps>(
                   </li>
                 ))}
               </ol>
-              <div class="landing-turn__film">
-                <LaunchFilm minimal />
-                <p class="landing-turn__film-note">{t("turn.filmNote")}</p>
-              </div>
             </div>
           </section>
 

@@ -108,18 +108,12 @@
 
 /* ── The turn: the journey ledger beside the film ── */
 .landing-turn__grid {
-  display: grid;
-  gap: 2.5rem;
   margin-top: 2.5rem;
-  grid-template-columns: minmax(0, 1fr);
 }
-@media (min-width: 1024px) {
-  .landing-turn__grid {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-    align-items: start;
-  }
-}
+/* On its own now the film has moved up; capped so a row's title, body and
+   stamp still read as one line of a ledger. */
 .landing-ledger {
+  max-width: 52rem;
   border-top: 2px solid var(--color-ink);
 }
 .landing-ledger__row {
@@ -181,7 +175,7 @@
   color: var(--coming-ink);
   border-style: dashed;
 }
-.landing-turn__film .launch-film {
+.landing-film .launch-film {
   margin: 0;
 }
 .landing-turn__film-note {
@@ -190,6 +184,70 @@
   font-size: 0.92rem;
   font-style: italic;
   color: var(--color-ink-light);
+}
+
+/* ── Hero: the interview's first question ── */
+.landing-opener {
+  max-width: 36rem;
+  margin: 2.25rem auto 0;
+  padding: 1rem 1rem 0.85rem;
+  text-align: start;
+  color: var(--color-ink);
+  background: var(--color-paper);
+  border-radius: 4px;
+  box-shadow: 0 28px 60px -32px rgb(0 0 0 / 0.75);
+}
+.landing-opener__question {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+.landing-opener__mark {
+  flex: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  margin-top: 0.1rem;
+}
+.landing-opener .composer-input {
+  min-height: 3.4rem;
+  font-size: 1rem;
+}
+.landing-opener__note {
+  margin-top: 0.65rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--color-ink-light);
+}
+.landing-hero__alt {
+  display: inline-block;
+  margin-top: 1.25rem;
+  padding-block: 0.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--hero-ink-soft);
+  text-decoration: underline;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--hero-ink-soft) 50%,
+    transparent
+  );
+  text-underline-offset: 4px;
+}
+@media (hover: hover) {
+  .landing-hero__alt:hover {
+    color: var(--hero-ink);
+    text-decoration-color: currentColor;
+  }
+}
+.landing-hero__alt:focus-visible {
+  outline: 2px solid var(--hero-ink);
+  outline-offset: 3px;
 }
 
 /* ── Audiences ── */

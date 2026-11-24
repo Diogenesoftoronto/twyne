@@ -10,7 +10,10 @@
   "hero": {
     "h0": "Finished in March. Still not published.",
     "d0": "Good writing stalls between the draft and the place it should be published, or goes out sounding like somebody else.",
-    "ctaStart": "Start your brief →",
+    "askQuestion": "Tell me the piece in one sentence, the way you’d describe it to a friend at lunch.",
+    "askPlaceholder": "A guide to keeping bees on a city rooftop, for people who rent.",
+    "askSend": "Send",
+    "askNote": "Twyne carries on from your answer and asks what it still needs for the brief.",
     "ctaWalk": "See the walkthroughs"
   },
   "problem": {

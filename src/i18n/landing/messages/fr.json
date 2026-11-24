@@ -10,7 +10,10 @@
   "hero": {
     "h0": "Fini en mars. Toujours pas publié.",
     "d0": "Un bon texte reste bloqué entre le brouillon et l’endroit où il devrait paraître, ou sort avec la voix de quelqu’un d’autre.",
-    "ctaStart": "Commencer votre dossier →",
+    "askQuestion": "Racontez-moi votre texte en une phrase, comme vous le décririez à un ami au déjeuner.",
+    "askPlaceholder": "Un guide pour élever des abeilles sur un toit en ville, pour les locataires.",
+    "askSend": "Envoyer",
+    "askNote": "Twyne reprend à partir de votre réponse et vous demande ce qui manque encore au dossier.",
     "ctaWalk": "Voir les démonstrations"
   },
   "problem": {

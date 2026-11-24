@@ -13,14 +13,17 @@ import {
   captureProductEvent,
   type LandingCtaLocation,
 } from "../utils/product-analytics";
+import { saveBriefOpening, sessionStore } from "../utils/brief-opening";
 import { TWYNE_HOME_STRUCTURED_DATA } from "../utils/seo";
 
 /**
  * The landing page. Twyne-style: a magazine broadsheet the writer
- * unfolds before the first interview. Nobody is redirected off it:
- * "Start your brief" sends first-time local writers to /onboarding and
- * signed-in writers to /dossier/create, and returning writers take the
- * header link to the desk when they want it.
+ * unfolds before the first interview. Nobody is redirected off it.
+ * The hero asks the interview's first question in place; answering it (or
+ * any "Start writing" button) sends first-time local writers to /onboarding
+ * and signed-in writers to /dossier/create, and the answer travels with them
+ * as the interview's first turn. Returning writers take the header link to
+ * the desk when they want it.
  */
 export default component$(() => {
   const nav = useNavigate();
@@ -31,8 +34,16 @@ export default component$(() => {
   // page — and every link on it — unreachable for anyone who had ever written
   // anything. The desk is one click away in the header instead.
 
-  const startBrief = $((location: LandingCtaLocation) => {
+  const startBrief = $((location: LandingCtaLocation, opening?: string) => {
     const signedIn = Boolean(auth.value.user);
+    const storage = sessionStore();
+    if (storage && opening !== undefined) {
+      try {
+        saveBriefOpening(storage, opening);
+      } catch {
+        /* storage refused: the interview simply asks again */
+      }
+    }
     void captureProductEvent("landing_cta_clicked", {
       location,
       destination: signedIn ? "dossier" : "onboarding",
