@@ -15,7 +15,7 @@ export const RouterHead = component$(() => {
   const loc = useLocation();
 
   const ogImage = TWYNE_SOCIAL_IMAGE;
-  const pageUrl = canonicalUrl(loc.url);
+  const pageUrl = canonicalUrl(loc.url, loc.params.handle);
 
   // Keys (name or property) a route already declared — render site-wide
   // social defaults only when the route hasn't overridden them.

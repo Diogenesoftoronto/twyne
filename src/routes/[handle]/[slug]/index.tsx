@@ -19,6 +19,11 @@ import {
   Link,
   routeLoader$,
 } from "@qwik.dev/router";
+import { TWYNE_SITE_ORIGIN } from "../../../utils/seo";
+import {
+  isCustomDomainUrl,
+  writerPagePath,
+} from "../../../utils/writer-page-urls";
 import { useConvexClient } from "../../../utils/convex-context";
 import { api } from "../../../../convex/_generated/api";
 import {
@@ -77,6 +82,10 @@ export default component$(() => {
   );
   const isLoading = useSignal(loadedPiece.value.status === "unavailable");
   const errored = useSignal<AppError | null>(null);
+  // On a writer's own domain, links are plain page loads: client routing
+  // would match "/{slug}/" against the profile route.
+  const onCustomDomain = isCustomDomainUrl(loc.url);
+  const WriterLink = onCustomDomain ? "a" : Link;
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
@@ -125,13 +134,13 @@ export default component$(() => {
         <div class="mx-auto max-w-2xl px-6 pt-10 pb-6">
           <p class="text-center">
             {ownerHandle.value && (
-              <Link
-                href={`/${ownerHandle.value}/`}
+              <WriterLink
+                href={writerPagePath(loc.url, ownerHandle.value)}
                 class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
                 style="font-family: var(--font-typewriter);"
               >
                 ← @{ownerHandle.value}
-              </Link>
+              </WriterLink>
             )}
           </p>
         </div>
@@ -167,13 +176,13 @@ export default component$(() => {
               It may have been unpublished, or the handle may have changed.
             </p>
             <p class="mt-4">
-              <Link
-                href="/"
+              <WriterLink
+                href={onCustomDomain ? `${TWYNE_SITE_ORIGIN}/` : "/"}
                 class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-vermilion)] hover:underline"
                 style="font-family: var(--font-typewriter);"
               >
                 Back to Twyne
-              </Link>
+              </WriterLink>
             </p>
           </div>
         )}
@@ -212,13 +221,13 @@ export default component$(() => {
             />
             {ownerHandle.value && (
               <p class="mt-12 pt-6 border-t border-dashed border-[var(--color-paper-3)]">
-                <Link
-                  href={`/${ownerHandle.value}/`}
+                <WriterLink
+                  href={writerPagePath(loc.url, ownerHandle.value)}
                   class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
                   style="font-family: var(--font-typewriter);"
                 >
                   More from @{ownerHandle.value} →
-                </Link>
+                </WriterLink>
               </p>
             )}
           </article>

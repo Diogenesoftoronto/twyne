@@ -21,6 +21,25 @@ describe("Twyne search metadata", () => {
     );
   });
 
+  test("a writer's page on their own domain is canonical there", () => {
+    expect(
+      canonicalUrl(new URL("https://myfrens.us/mara/on-salt/?utm=x"), "mara"),
+    ).toBe("https://myfrens.us/on-salt/");
+    expect(
+      canonicalUrl(new URL("https://pages.myfrens.us/mara/"), "mara"),
+    ).toBe("https://pages.myfrens.us/");
+    // On Twyne hosts the handle stays in the path.
+    expect(
+      canonicalUrl(new URL("https://twyne.love/mara/on-salt/"), "mara"),
+    ).toBe(`${TWYNE_SITE_ORIGIN}/mara/on-salt/`);
+    expect(
+      canonicalUrl(
+        new URL("https://twyne-production.up.railway.app/mara/"),
+        "mara",
+      ),
+    ).toBe(`${TWYNE_SITE_ORIGIN}/mara/`);
+  });
+
   test("marks workspace and authentication routes as private", () => {
     for (const path of [
       "/editor/",

@@ -18,6 +18,11 @@ import {
   Link,
   routeLoader$,
 } from "@qwik.dev/router";
+import { TWYNE_SITE_ORIGIN } from "../../utils/seo";
+import {
+  isCustomDomainUrl,
+  writerPagePath,
+} from "../../utils/writer-page-urls";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import {
@@ -131,6 +136,10 @@ export default component$(() => {
   });
 
   const handle = (loc.params.handle ?? "").toLowerCase();
+  // On a writer's own domain, links are plain page loads: client routing
+  // would match "/{slug}/" against this route.
+  const onCustomDomain = isCustomDomainUrl(loc.url);
+  const WriterLink = onCustomDomain ? "a" : Link;
 
   return (
     <main class="min-h-screen bg-[var(--color-paper)] text-[var(--color-ink)]">
@@ -140,9 +149,12 @@ export default component$(() => {
             class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] mb-2"
             style="font-family: var(--font-typewriter);"
           >
-            <Link href="/" class="hover:text-[var(--color-vermilion)]">
+            <WriterLink
+              href={onCustomDomain ? `${TWYNE_SITE_ORIGIN}/` : "/"}
+              class="hover:text-[var(--color-vermilion)]"
+            >
               ← Twyne
-            </Link>
+            </WriterLink>
           </p>
           {isLoading.value && (
             <p
@@ -318,12 +330,12 @@ export default component$(() => {
                   class="mt-1 text-2xl text-[var(--color-ink)]"
                   style="font-family: var(--font-display); font-weight: 700;"
                 >
-                  <Link
-                    href={`/${handle}/${post.slug}/`}
+                  <WriterLink
+                    href={writerPagePath(loc.url, handle, post.slug)}
                     class="hover:text-[var(--color-vermilion)]"
                   >
                     {post.title}
-                  </Link>
+                  </WriterLink>
                 </h2>
                 {post.briefSummary && (
                   <p

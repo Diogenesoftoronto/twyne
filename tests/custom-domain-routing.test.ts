@@ -328,3 +328,19 @@ describe("custom domain request hook", () => {
     });
   });
 });
+
+describe("writer page links", () => {
+  test("drop the handle on a custom domain and keep it on Twyne", async () => {
+    const { writerPagePath, stripHandlePrefix } = await import(
+      "../src/utils/writer-page-urls"
+    );
+    const custom = new URL("https://myfrens.us/mara/");
+    const twyne = new URL("https://twyne.love/mara/");
+    expect(writerPagePath(custom, "mara")).toBe("/");
+    expect(writerPagePath(custom, "mara", "on-salt")).toBe("/on-salt/");
+    expect(writerPagePath(twyne, "mara")).toBe("/mara/");
+    expect(writerPagePath(twyne, "mara", "on-salt")).toBe("/mara/on-salt/");
+    expect(stripHandlePrefix("/mara/on-salt/", "Mara")).toBe("/on-salt/");
+    expect(stripHandlePrefix("/marabou/", "mara")).toBe("/marabou/");
+  });
+});

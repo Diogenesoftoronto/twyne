@@ -1,3 +1,5 @@
+import { isCustomDomainUrl, stripHandlePrefix } from "./writer-page-urls";
+
 export const TWYNE_SITE_ORIGIN = "https://twyne.love";
 export const TWYNE_SOCIAL_IMAGE = `${TWYNE_SITE_ORIGIN}/assets/social/twyne-writers-desk-v2.jpg`;
 export const TWYNE_SOCIAL_IMAGE_ALT =
@@ -20,10 +22,17 @@ const PRIVATE_ROUTE_ROOTS = new Set([
   "signin",
 ]);
 
-/** Canonicals always identify the public origin and never preserve tracking. */
-export function canonicalUrl(url: URL): string {
+/**
+ * Canonicals always identify the public origin and never preserve tracking.
+ * A writer's page served on their own domain is canonical there, at the
+ * path without the handle (pass the route's handle param).
+ */
+export function canonicalUrl(url: URL, handle?: string): string {
   const path =
     url.pathname === "/" ? "/" : `${url.pathname.replace(/\/+$/, "")}/`;
+  if (handle && isCustomDomainUrl(url)) {
+    return new URL(stripHandlePrefix(path, handle), url.origin).href;
+  }
   return new URL(path, TWYNE_SITE_ORIGIN).href;
 }
 
