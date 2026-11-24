@@ -6,6 +6,12 @@ import { fileURLToPath } from "node:url";
 import { installLiveVoiceRelay } from "./scripts/live-voice-relay.mjs";
 import { redirectCanonicalHost } from "./scripts/canonical-host.mjs";
 import { rejectMissingBuildAsset } from "./scripts/static-miss.mjs";
+import {
+  TWYNE_PUBLIC_ORIGIN,
+  convexHostLookup,
+  createHostResolver,
+  routeCustomDomain,
+} from "./scripts/custom-domain-routing.mjs";
 
 // Railway terminates TLS at its edge. Let Qwik validate browser origins using
 // the edge's protocol rather than the container's internal HTTP connection.
@@ -115,12 +121,25 @@ async function serveRootStaticFile(req, res, next) {
   }
 }
 
+// Writers' custom domains resolve through Convex. Without a Convex URL every
+// non-Twyne host is a plain 404, which is also what unknown hosts get.
+const convexUrl = process.env.PUBLIC_CONVEX_URL ?? process.env.VITE_CONVEX_URL;
+const customDomainOptions = {
+  resolve: convexUrl
+    ? createHostResolver({ lookup: convexHostLookup(convexUrl) })
+    : null,
+  appHosts: (process.env.TWYNE_APP_HOSTS ?? "").split(",").filter(Boolean),
+  twyneOrigin: process.env.TWYNE_PUBLIC_ORIGIN ?? TWYNE_PUBLIC_ORIGIN,
+  log: (message, error) => console.error(message, error),
+};
+
 async function main() {
   try {
     const mod = await import("./server/entry.preview.js");
     const { router, notFound, staticFile } = mod.default ? mod.default : mod;
 
-    const server = createServer((req, res) => {
+    const server = createServer(async (req, res) => {
+      if (await routeCustomDomain(req, res, customDomainOptions)) return;
       if (redirectCanonicalHost(req, res)) return;
       serveRootStaticFile(req, res, (rootStaticError) => {
         if (rootStaticError) {
