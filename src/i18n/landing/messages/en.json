@@ -272,6 +272,8 @@
       "meta": "Book · literary novel · 24 chapters",
       "intro": "Before readers see it, a few things are worth a look. None of them stop you.",
       "lookReady": "{count} of 6 look ready",
+      "groupLook": "Worth a look",
+      "groupReady": "Ready",
       "chapters": "Chapters in order",
       "chaptersValue": "24, no gaps",
       "length": "Length",

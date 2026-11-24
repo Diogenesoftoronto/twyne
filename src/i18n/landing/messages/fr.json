@@ -272,6 +272,8 @@
       "meta": "Livre · roman littéraire · 24 chapitres",
       "intro": "Avant que les lecteurs le voient, quelques points méritent un coup d’œil. Aucun ne vous bloque.",
       "lookReady": "{count} sur 6 semblent prêts",
+      "groupLook": "À regarder",
+      "groupReady": "Prêt",
       "chapters": "Chapitres dans l’ordre",
       "chaptersValue": "24, sans trou",
       "length": "Longueur",

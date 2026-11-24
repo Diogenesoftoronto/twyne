@@ -1392,57 +1392,110 @@
   color: var(--color-ink-light);
 }
 
-/* Readiness */
+/* Readiness: what is worth a look first, tinted, then what is ready. */
 .jv-ready {
-  margin-top: 0.5rem;
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 0.75rem;
+}
+.jv-ready ul {
+  margin: 0;
   padding: 0;
   list-style: none;
 }
+/* Both groups take the same inset, so every mark sits on one edge. */
+.jv-ready__group {
+  padding: 0.55rem 0.75rem 0.15rem;
+  border: 1px solid transparent;
+  border-inline-start-width: 3px;
+  border-radius: 2px;
+}
+.jv-ready__group.is-look {
+  background: color-mix(in srgb, var(--warn-ink) 8%, var(--color-paper));
+  border-color: color-mix(in srgb, var(--warn-ink) 25%, transparent);
+  border-inline-start-color: var(--warn-ink);
+}
+.jv-ready__head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-ink-light);
+}
+.is-look > .jv-ready__head {
+  color: var(--warn-ink);
+}
+.is-ok > .jv-ready__head {
+  color: var(--ok-ink);
+}
+.jv-ready__tally {
+  min-width: 1.15rem;
+  padding: 0 0.3rem;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
 .jv-ready li {
   display: grid;
-  grid-template-columns: 1rem minmax(0, 1fr);
-  align-items: start;
+  grid-template-columns: 1rem minmax(0, 1fr) auto;
+  align-items: center;
   column-gap: 0.6rem;
-  row-gap: 0.2rem;
-  padding: 0.55rem 0;
+  row-gap: 0.4rem;
+  padding: 0.5rem 0;
   font-family: var(--font-serif);
   font-size: 0.84rem;
   border-bottom: 1px solid var(--color-paper-3);
 }
+.jv-ready li:last-child {
+  border-bottom: 0;
+}
+.is-look li {
+  border-bottom-color: color-mix(in srgb, var(--warn-ink) 18%, transparent);
+}
 .jv-ready__mark {
-  grid-row: 1 / span 3;
+  align-self: start;
   margin-top: 0.1rem;
 }
-.jv-ready li.is-ok .jv-ready__mark {
+.is-ok .jv-ready__mark {
   color: var(--ok-ink);
 }
-.jv-ready li.is-look .jv-ready__mark {
+.is-look .jv-ready__mark {
   color: var(--warn-ink);
+}
+.jv-ready__text {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
 }
 .jv-ready__label {
   font-family: var(--font-sans);
   font-weight: 600;
   font-size: 0.8rem;
 }
+/* The fix trails the row on the right. */
 .jv-ready .jv-btn {
-  justify-self: start;
-  margin-top: 0.2rem;
+  justify-self: end;
+  background: var(--color-paper);
 }
-/* Wide screens: mark, label, value, and the fix trailing the row. */
-@container (min-width: 40rem) {
+/* Very narrow screens: the fix drops under its text, still on the right. */
+@container (max-width: 24rem) {
   .jv-ready li {
-    grid-template-columns: 1rem 10rem minmax(0, 1fr) auto;
-    align-items: center;
-  }
-  .jv-ready__mark {
-    grid-row: auto;
-    margin-top: 0;
-  }
-  .jv-ready__value:last-child {
-    grid-column: 3 / -1;
+    grid-template-columns: 1rem minmax(0, 1fr);
   }
   .jv-ready .jv-btn {
-    margin-top: 0;
+    grid-column: 2;
+  }
+}
+/* Wide screens: label and value side by side, like a ledger. */
+@container (min-width: 40rem) {
+  .jv-ready__text {
+    grid-template-columns: 10rem minmax(0, 1fr);
+    column-gap: 0.75rem;
+    align-items: baseline;
   }
 }
 

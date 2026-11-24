@@ -937,7 +937,61 @@ export const OrchardReadiness = component$<JourneyViewProps>(
     const names = useSignal(false);
     const front = useSignal(false);
     const frozen = useSignal(false);
-    const ready = 4 + Number(names.value) + Number(front.value);
+
+    const rows = [
+      {
+        ok: true,
+        label: t("view.i1.chapters"),
+        value: t("view.i1.chaptersValue"),
+      },
+      {
+        ok: true,
+        label: t("view.i1.length"),
+        value: t("view.i1.lengthValue"),
+      },
+      {
+        ok: names.value,
+        label: t("view.i1.names"),
+        value: names.value ? t("view.i1.namesFixed") : t("view.i1.namesValue"),
+        fix: t("view.i1.namesFix"),
+        onFix: $(() => {
+          names.value = true;
+        }),
+      },
+      {
+        ok: false,
+        label: t("view.i1.notes"),
+        value: t("view.i1.notesValue"),
+      },
+      {
+        ok: true,
+        label: t("view.i1.proof"),
+        value: t("view.i1.proofValue"),
+      },
+      {
+        ok: front.value,
+        label: t("view.i1.front"),
+        value: front.value ? t("view.i1.frontFixed") : t("view.i1.frontValue"),
+        fix: t("view.i1.frontFix"),
+        onFix: $(() => {
+          front.value = true;
+        }),
+      },
+    ];
+    const groups = [
+      {
+        key: "look",
+        label: t("view.i1.groupLook"),
+        rows: rows.filter((row) => !row.ok),
+      },
+      {
+        key: "ok",
+        label: t("view.i1.groupReady"),
+        rows: rows.filter((row) => row.ok),
+      },
+    ].filter((group) => group.rows.length > 0);
+    // The header counts the Ready group, so the two never disagree.
+    const ready = rows.filter((row) => row.ok).length;
 
     return (
       <div class="jv">
@@ -951,70 +1005,43 @@ export const OrchardReadiness = component$<JourneyViewProps>(
           <p class="jv-count jv-count--sm" aria-live="polite">
             {t("view.i1.lookReady", { count: ready })}
           </p>
-          <ul class="jv-ready">
-            {[
-              {
-                ok: true,
-                label: t("view.i1.chapters"),
-                value: t("view.i1.chaptersValue"),
-              },
-              {
-                ok: true,
-                label: t("view.i1.length"),
-                value: t("view.i1.lengthValue"),
-              },
-              {
-                ok: names.value,
-                label: t("view.i1.names"),
-                value: names.value
-                  ? t("view.i1.namesFixed")
-                  : t("view.i1.namesValue"),
-                fix: t("view.i1.namesFix"),
-                onFix: $(() => {
-                  names.value = true;
-                }),
-              },
-              {
-                ok: false,
-                label: t("view.i1.notes"),
-                value: t("view.i1.notesValue"),
-              },
-              {
-                ok: true,
-                label: t("view.i1.proof"),
-                value: t("view.i1.proofValue"),
-              },
-              {
-                ok: front.value,
-                label: t("view.i1.front"),
-                value: front.value
-                  ? t("view.i1.frontFixed")
-                  : t("view.i1.frontValue"),
-                fix: t("view.i1.frontFix"),
-                onFix: $(() => {
-                  front.value = true;
-                }),
-              },
-            ].map((row) => (
-              <li key={row.label} class={row.ok ? "is-ok" : "is-look"}>
-                <span class="jv-ready__mark">
-                  <Icon name={row.ok ? "check-circle" : "alert-circle"} />
-                </span>
-                <span class="jv-ready__label">{row.label}</span>
-                <span class="jv-ready__value">{row.value}</span>
-                {!row.ok && row.onFix && (
-                  <button
-                    type="button"
-                    class="jv-btn jv-btn--inline"
-                    disabled={frozen.value}
-                    onClick$={row.onFix}
-                  >
-                    {row.fix}
-                  </button>
-                )}
-              </li>
+          <div class="jv-ready">
+            {groups.map((group) => (
+              <div
+                key={group.key}
+                class={["jv-ready__group", `is-${group.key}`]}
+              >
+                <p class="jv-ready__head" id={`ready-${group.key}`}>
+                  {group.label}
+                  <span class="jv-ready__tally">{group.rows.length}</span>
+                </p>
+                <ul aria-labelledby={`ready-${group.key}`}>
+                  {group.rows.map((row) => (
+                    <li key={row.label}>
+                      <span class="jv-ready__mark">
+                        <Icon name={row.ok ? "check-circle" : "alert-circle"} />
+                      </span>
+                      <span class="jv-ready__text">
+                        <span class="jv-ready__label">{row.label}</span>
+                        <span class="jv-ready__value">{row.value}</span>
+                      </span>
+                      {!row.ok && row.onFix && (
+                        <button
+                          type="button"
+                          class="jv-btn jv-btn--inline"
+                          disabled={frozen.value}
+                          onClick$={row.onFix}
+                        >
+                          {row.fix}
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
+
           <div class="jv-actions" aria-live="polite">
             {frozen.value ? (
               <>

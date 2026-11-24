@@ -272,6 +272,8 @@
       "meta": "图书 · 文学小说 · 24 章",
       "intro": "在读者看到之前，有几处值得一看。它们都不会拦住你。",
       "lookReady": "6 项中 {count} 项看起来已就绪",
+      "groupLook": "值得一看",
+      "groupReady": "已就绪",
       "chapters": "章节顺序",
       "chaptersValue": "24 章，没有缺漏",
       "length": "篇幅",

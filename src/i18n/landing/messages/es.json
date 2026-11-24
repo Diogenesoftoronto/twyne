@@ -272,6 +272,8 @@
       "meta": "Libro · novela literaria · 24 capítulos",
       "intro": "Antes de que lo vean los lectores, conviene revisar algunas cosas. Ninguna te detiene.",
       "lookReady": "{count} de 6 parecen listos",
+      "groupLook": "Para revisar",
+      "groupReady": "Listo",
       "chapters": "Capítulos en orden",
       "chaptersValue": "24, sin huecos",
       "length": "Extensión",
