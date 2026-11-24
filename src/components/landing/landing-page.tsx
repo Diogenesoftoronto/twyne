@@ -188,8 +188,12 @@ const LandingContent = component$<LandingPageProps>(
       <div class="landing-page" ref={root}>
         <div class="landing-shell pb-20">
           {/* ── Masthead ── */}
-          <header class="grid items-center gap-x-4 gap-y-3 border-b border-[rgba(31,27,22,0.16)] py-5 max-sm:justify-items-center sm:grid-cols-[1fr_auto_1fr]">
-            <nav class="hidden items-center gap-6 sm:flex">
+          {/* Phones: wordmark above the actions, centred. Wider: wordmark on
+              the leading edge, actions on the trailing edge. From 72.5rem (1160px) the
+              links fit beside a centred wordmark in every language (French
+              is the longest), so they appear there. */}
+          <header class="grid items-center gap-x-6 gap-y-3 border-b border-[rgba(31,27,22,0.16)] py-5 max-sm:justify-items-center sm:grid-cols-[auto_1fr] min-[72.5rem]:grid-cols-[1fr_auto_1fr]">
+            <nav class="hidden items-center gap-6 whitespace-nowrap min-[72.5rem]:flex">
               <a class="landing-nav-link" href="#walkthroughs">
                 {t("nav.walkthroughs")}
               </a>
@@ -204,7 +208,7 @@ const LandingContent = component$<LandingPageProps>(
               <ImgGriffinMark class="h-8 w-8" aria-hidden="true" />
               <span class="landing-masthead ink-bleed">TWYNE</span>
             </div>
-            <div class="flex flex-wrap items-center justify-end gap-4 max-sm:justify-center">
+            <div class="flex flex-wrap items-center justify-end gap-x-5 gap-y-3 whitespace-nowrap max-sm:justify-center sm:flex-nowrap">
               {signedIn ? (
                 <AccountMenu />
               ) : (
