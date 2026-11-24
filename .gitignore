@@ -95,3 +95,50 @@ stryker.log
 
 # Local Popmelt annotations, screenshots, threads, and project memory
 .popmelt/
+
+# >>> twyne-media: paths stored in the twyne-media bucket (managed by scripts/media.ts)
+/docs/assets/my-desk-direction-b-distilled.png
+/docs/assets/my-desk-direction-b.png
+/public/assets/hero-glow.png
+/public/assets/illuminated-initials/alternates-contact-sheet.avif
+/public/assets/illuminated-initials/contact-sheet.avif
+/public/assets/illuminated-initials/k.avif
+/public/assets/illuminated-initials/m.avif
+/public/assets/illuminated-initials/n.avif
+/public/assets/illuminated-initials/o-alt.avif
+/public/assets/illuminated-initials/p-alt.avif
+/public/assets/illuminated-initials/q-alt.avif
+/public/assets/illuminated-initials/r.avif
+/public/assets/illuminated-initials/s-alt.avif
+/public/assets/illuminated-initials/s.avif
+/public/assets/illuminated-initials/v-alt.avif
+/public/assets/illuminated-initials/w-alt.avif
+/public/assets/illuminated-initials/w.avif
+/public/assets/illuminated-initials/x-alt.avif
+/public/assets/illuminated-initials/x.avif
+/public/assets/landing/options-2026-09/option-03-1536.avif
+/public/assets/landing/plate-3-notes-lg.webp
+/public/assets/launch/the-room-en.mp4
+/public/assets/launch/the-room-fr.mp4
+/public/assets/page-borders/botanical.avif
+/public/assets/page-borders/engraved.avif
+/public/assets/page-borders/illuminated.avif
+/public/assets/page-borders/paper-preview.avif
+/public/assets/rubric-proof-fibers.png
+/public/assets/rubric-stamps/sunburst-a-minus.png
+/public/assets/rubric-stamps/sunburst-a-plus.png
+/public/assets/rubric-stamps/sunburst-a.png
+/public/assets/rubric-stamps/sunburst-b-minus.png
+/public/assets/rubric-stamps/sunburst-b-plus.png
+/public/assets/rubric-stamps/sunburst-b.png
+/public/assets/rubric-stamps/sunburst-c-minus.png
+/public/assets/rubric-stamps/sunburst-c-plus.png
+/public/assets/rubric-stamps/sunburst-c.png
+/public/assets/rubric-stamps/sunburst-d-minus.png
+/public/assets/rubric-stamps/sunburst-d-plus.png
+/public/assets/rubric-stamps/sunburst-d.png
+/public/assets/rubric-stamps/sunburst-f.png
+/public/assets/rubric-stamps/sunburst-filed.png
+/public/assets/rubric-stamps/sunburst-revised.png
+/public/assets/social/twyne-writers-desk-v2.jpg
+# <<< twyne-media

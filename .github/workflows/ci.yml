@@ -19,6 +19,19 @@ jobs:
 
       # Runs the same pipeline as `dagger call all` locally. The Dagger engine
       # is provisioned by the action; results are cached across runs.
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.6"
+
+      - name: Restore media from bucket
+        run: bun scripts/media.ts pull public/assets/ src/assets/
+        env:
+          TWYNE_MEDIA_ENDPOINT: ${{ secrets.TWYNE_MEDIA_ENDPOINT }}
+          TWYNE_MEDIA_BUCKET: ${{ secrets.TWYNE_MEDIA_BUCKET }}
+          TWYNE_MEDIA_ACCESS_KEY_ID: ${{ secrets.TWYNE_MEDIA_ACCESS_KEY_ID }}
+          TWYNE_MEDIA_SECRET_ACCESS_KEY: ${{ secrets.TWYNE_MEDIA_SECRET_ACCESS_KEY }}
+
       - name: Run CI pipeline
         uses: dagger/dagger-for-github@8.0.0
         with:

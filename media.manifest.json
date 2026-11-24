@@ -1,0 +1,183 @@
+{
+ "version": 1,
+ "bucket": "twyne-media",
+ "objects": "objects/",
+ "files": {
+  "docs/assets/my-desk-direction-b-distilled.png": {
+   "oid": "e002b9215fe2d614641bedde367a3ace17d688db",
+   "size": 2102747
+  },
+  "docs/assets/my-desk-direction-b.png": {
+   "oid": "7d1370439d17a13d122ce79bbe48c16e765c86b8",
+   "size": 2328967
+  },
+  "public/assets/hero-glow.png": {
+   "oid": "dea2ffcb5b9527d7acca3f33ecc56111501e66e7",
+   "size": 241029
+  },
+  "public/assets/illuminated-initials/alternates-contact-sheet.avif": {
+   "oid": "6f160ef91714430f817ba1b525ca9c3c79186ee9",
+   "size": 234340
+  },
+  "public/assets/illuminated-initials/contact-sheet.avif": {
+   "oid": "e8afee1209578e1c4ca02437603f5976c2c85b86",
+   "size": 481065
+  },
+  "public/assets/illuminated-initials/k.avif": {
+   "oid": "5471118077a36de770de3948fd798fd651b07d81",
+   "size": 200748
+  },
+  "public/assets/illuminated-initials/m.avif": {
+   "oid": "ab3265c9c8b6c385087236d2a79aa59f4fd70142",
+   "size": 208295
+  },
+  "public/assets/illuminated-initials/n.avif": {
+   "oid": "2bf3c7cb1cde857611d405c938a7cd84803aa665",
+   "size": 207014
+  },
+  "public/assets/illuminated-initials/o-alt.avif": {
+   "oid": "0f3f4b015edeefa85bfd0bb9b82d22fb53158f9c",
+   "size": 217230
+  },
+  "public/assets/illuminated-initials/p-alt.avif": {
+   "oid": "875e30e3143b4bdd63fa877fc4df0092e7613822",
+   "size": 210614
+  },
+  "public/assets/illuminated-initials/q-alt.avif": {
+   "oid": "50c80ad9b340b390e93ba6578e30e5fdd8195f6b",
+   "size": 214404
+  },
+  "public/assets/illuminated-initials/r.avif": {
+   "oid": "e11a0d6e2bb690ff2f3587e53bbb7811de0eafd9",
+   "size": 216498
+  },
+  "public/assets/illuminated-initials/s-alt.avif": {
+   "oid": "a077121b90fbda56eb188ed9adcea7e53f2c3023",
+   "size": 205614
+  },
+  "public/assets/illuminated-initials/s.avif": {
+   "oid": "bc671b077304c14cffacdc9d80a156723903ade7",
+   "size": 215150
+  },
+  "public/assets/illuminated-initials/v-alt.avif": {
+   "oid": "9a43e2e8c9bb593d39fb77abf69d00647d0ed3d6",
+   "size": 201706
+  },
+  "public/assets/illuminated-initials/w-alt.avif": {
+   "oid": "d6922265cbd6a1742643a477061fdc5afdb320f1",
+   "size": 205352
+  },
+  "public/assets/illuminated-initials/w.avif": {
+   "oid": "e05f416ea1c7458a556804480a40298f1fdde56e",
+   "size": 230110
+  },
+  "public/assets/illuminated-initials/x-alt.avif": {
+   "oid": "f3b1512e03dc67f5a3353d0319e8b865600bc161",
+   "size": 205116
+  },
+  "public/assets/illuminated-initials/x.avif": {
+   "oid": "00e580b193318e2ea69ab870a838cc21fa0e1b96",
+   "size": 211904
+  },
+  "public/assets/landing/options-2026-09/option-03-1536.avif": {
+   "oid": "418482c48b25ac88905482042f9624df4637f891",
+   "size": 254439
+  },
+  "public/assets/landing/plate-3-notes-lg.webp": {
+   "oid": "28ef89cf827fbe14130e0c0374a1837484f8e4e0",
+   "size": 228520
+  },
+  "public/assets/launch/the-room-en.mp4": {
+   "oid": "b4dd305f96577c9eda0222195ddd6dafebff6e3e",
+   "size": 5924070
+  },
+  "public/assets/launch/the-room-fr.mp4": {
+   "oid": "6739f683d3d92e0a5edd7a4816e01c5c89af1bf7",
+   "size": 5893237
+  },
+  "public/assets/page-borders/botanical.avif": {
+   "oid": "1f500861db72d077a3b1bcdd22d31cdd2e8ab24a",
+   "size": 344893
+  },
+  "public/assets/page-borders/engraved.avif": {
+   "oid": "e1b5d246c2403644d2ad498094cee9022b65faba",
+   "size": 278327
+  },
+  "public/assets/page-borders/illuminated.avif": {
+   "oid": "c4ca1393206da36081d5b94e54b69087d67d6a82",
+   "size": 223610
+  },
+  "public/assets/page-borders/paper-preview.avif": {
+   "oid": "d3b9e73c20eb789d8815a1ade52d2bdf20e4aa9d",
+   "size": 215913
+  },
+  "public/assets/rubric-proof-fibers.png": {
+   "oid": "f7785706ae3c23ee6bbbfd8d674cc0c2741cf7e2",
+   "size": 239566
+  },
+  "public/assets/rubric-stamps/sunburst-a-minus.png": {
+   "oid": "f850c4c9d3637b07838f3d13de7caa7a7f5f87ba",
+   "size": 1299138
+  },
+  "public/assets/rubric-stamps/sunburst-a-plus.png": {
+   "oid": "153b379ae5a645548a5ac556923515901bbcae55",
+   "size": 1768690
+  },
+  "public/assets/rubric-stamps/sunburst-a.png": {
+   "oid": "6cb229625465981a92ed47c8ddc3f151f37cea84",
+   "size": 1283818
+  },
+  "public/assets/rubric-stamps/sunburst-b-minus.png": {
+   "oid": "3dd2682c776ee5ea42c11ed8cc92558d4d837438",
+   "size": 844831
+  },
+  "public/assets/rubric-stamps/sunburst-b-plus.png": {
+   "oid": "77346e811fd9f1ae6f5c23dec2dd31605af6eb74",
+   "size": 816010
+  },
+  "public/assets/rubric-stamps/sunburst-b.png": {
+   "oid": "a6201426055e95bb9998bf3612e9abb8c339089d",
+   "size": 690530
+  },
+  "public/assets/rubric-stamps/sunburst-c-minus.png": {
+   "oid": "ff34cfdbfe691fe4a033e5f37393d10e4a577fdf",
+   "size": 792264
+  },
+  "public/assets/rubric-stamps/sunburst-c-plus.png": {
+   "oid": "63ed3bf30d24bc7bfd94860d20977b010b243da1",
+   "size": 812392
+  },
+  "public/assets/rubric-stamps/sunburst-c.png": {
+   "oid": "572e29cbc22defdf883616bf2327eeb8c46796e1",
+   "size": 886027
+  },
+  "public/assets/rubric-stamps/sunburst-d-minus.png": {
+   "oid": "ba219fc0b8a480c59d838e4d2d0687c9cd3bd31b",
+   "size": 965962
+  },
+  "public/assets/rubric-stamps/sunburst-d-plus.png": {
+   "oid": "8898cfcd18804f32058d6948eab213542f282844",
+   "size": 1092692
+  },
+  "public/assets/rubric-stamps/sunburst-d.png": {
+   "oid": "2168fbe64fd4e1b213efc7c5b756cdd8018ab405",
+   "size": 1013186
+  },
+  "public/assets/rubric-stamps/sunburst-f.png": {
+   "oid": "85be6d352ea47c9f3062f7299b3e3eac4a884ddb",
+   "size": 1037701
+  },
+  "public/assets/rubric-stamps/sunburst-filed.png": {
+   "oid": "8dc565359176504bb17fb323adaba4f29e105c73",
+   "size": 526845
+  },
+  "public/assets/rubric-stamps/sunburst-revised.png": {
+   "oid": "139af13d048d2b32d478fdae7ee1edb5cfa6604e",
+   "size": 595072
+  },
+  "public/assets/social/twyne-writers-desk-v2.jpg": {
+   "oid": "4f278177312d5a4ee4747467751847c4893ae3fe",
+   "size": 283724
+  }
+ }
+}
