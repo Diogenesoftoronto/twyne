@@ -47,6 +47,13 @@ jobs:
         run: |
           rtk proxy bun run desktop.gpui.build-helper
           rtk proxy bun test desktop/gpui/tools/semantic-worker.test.ts
+      - name: Restore native app media from bucket
+        run: rtk proxy bun scripts/media.ts pull desktop/gpui/assets/public/assets/
+        env:
+          TWYNE_MEDIA_ENDPOINT: ${{ secrets.TWYNE_MEDIA_ENDPOINT }}
+          TWYNE_MEDIA_BUCKET: ${{ secrets.TWYNE_MEDIA_BUCKET }}
+          TWYNE_MEDIA_ACCESS_KEY_ID: ${{ secrets.TWYNE_MEDIA_ACCESS_KEY_ID }}
+          TWYNE_MEDIA_SECRET_ACCESS_KEY: ${{ secrets.TWYNE_MEDIA_SECRET_ACCESS_KEY }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
