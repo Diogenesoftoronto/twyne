@@ -14,7 +14,19 @@
   },
   "customDomains": {
     "title": "独自ドメイン",
-    "description": "example.com や pages.example.com のような、あなたが所有するドメインで Twyne のページを公開できます。追加料金はかかりません。最大 {limit} 件のドメインを接続できます。",
+    "description": "あなたのページと作品は Twyne のアドレスで公開されています。example.com や pages.example.com のような独自ドメインでのページは近日公開予定で、追加料金はかかりません。",
+    "addressIntro": "あなたのページ：",
+    "addressPieces": "各作品にはその下に専用のアドレスがあります（例：{example}）。",
+    "waitlistTitle": "独自ドメインを使う",
+    "waitlistBody": "独自ドメインは少人数ずつ順番に開放しています。ウェイトリストに登録すると、空きが出たときに一緒に設定します。まだドメインがなくても大丈夫です。",
+    "waitlistInputLabel": "使いたいドメイン（任意）",
+    "waitlistJoin": "ウェイトリストに登録",
+    "waitlistUpdate": "ドメインを更新",
+    "waitlistSaving": "保存しています…",
+    "waitlistJoined": "ウェイトリストに登録済みです",
+    "waitlistJoinedFor": "空きが出たら {hostname} を一緒に設定します。それまでは Twyne のアドレスがそのまま使えます。",
+    "waitlistJoinedNoDomain": "空きが出たらご連絡します。ドメインが決まったらいつでも入力してください。",
+    "waitlistLeave": "ウェイトリストから外れる",
     "needsHandle": "まず上で Twyne のアドレスを取得してください。ドメインにはそのアドレスのページが表示されます。",
     "inputLabel": "ドメイン",
     "inputPlaceholder": "pages.example.com",
@@ -63,7 +75,8 @@
       "CUSTOM_DOMAIN_NEEDS_HANDLE": "まず Twyne のアドレスを取得してください。独自ドメインにはそのアドレスのページが表示されます。",
       "CUSTOM_DOMAIN_REMOVING": "このドメインはまだ削除処理中です。1 分後にもう一度お試しください。",
       "RATE_LIMITED": "変更が多すぎます。1 分待ってからもう一度お試しください。",
-      "generic": "うまくいきませんでした。もう一度お試しください。"
+      "generic": "うまくいきませんでした。もう一度お試しください。",
+      "CUSTOM_DOMAIN_WAITLIST": "独自ドメインはまだ公開していません。ウェイトリストに登録すると、空きが出たときに設定します。"
     }
   }
 }

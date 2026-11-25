@@ -14,7 +14,19 @@
   },
   "customDomains": {
     "title": "Your own domain",
-    "description": "Show your Twyne page at a domain you own, like example.com or pages.example.com. There's no extra charge. You can connect up to {limit} domains.",
+    "description": "Your page and pieces live at your Twyne address. Pages on a domain you own, like example.com or pages.example.com, are coming. There's no extra charge for them.",
+    "addressIntro": "Your page:",
+    "addressPieces": "Each piece gets its own address under it, like {example}.",
+    "waitlistTitle": "Use your own domain",
+    "waitlistBody": "We're opening custom domains a few writers at a time. Join the waitlist and we'll set yours up with you when there's room. You don't need a domain yet.",
+    "waitlistInputLabel": "Domain you'd use (optional)",
+    "waitlistJoin": "Join the waitlist",
+    "waitlistUpdate": "Update domain",
+    "waitlistSaving": "Saving…",
+    "waitlistJoined": "You're on the waitlist",
+    "waitlistJoinedFor": "We'll set up {hostname} with you when there's room. Your Twyne address keeps working in the meantime.",
+    "waitlistJoinedNoDomain": "We'll get in touch when there's room. Add the domain you'd use whenever you have one.",
+    "waitlistLeave": "Leave the waitlist",
     "needsHandle": "Claim your Twyne address above first. Your domain will show the page at that address.",
     "inputLabel": "Domain",
     "inputPlaceholder": "pages.example.com",
@@ -63,7 +75,8 @@
       "CUSTOM_DOMAIN_NEEDS_HANDLE": "Claim your Twyne address first. A custom domain shows the page at that address.",
       "CUSTOM_DOMAIN_REMOVING": "That domain is still being removed. Try again in a minute.",
       "RATE_LIMITED": "Too many changes at once. Wait a minute and try again.",
-      "generic": "That didn't work. Try again."
+      "generic": "That didn't work. Try again.",
+      "CUSTOM_DOMAIN_WAITLIST": "Custom domains aren't open yet. Join the waitlist and we'll set yours up when there's room."
     }
   }
 }

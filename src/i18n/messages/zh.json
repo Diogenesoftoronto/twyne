@@ -14,7 +14,19 @@
   },
   "customDomains": {
     "title": "你自己的域名",
-    "description": "在你拥有的域名上展示你的 Twyne 页面，例如 example.com 或 pages.example.com。不额外收费。最多可连接 {limit} 个域名。",
+    "description": "你的主页和作品都在你的 Twyne 地址上。使用你自己的域名（例如 example.com 或 pages.example.com）的页面即将推出，不额外收费。",
+    "addressIntro": "你的主页：",
+    "addressPieces": "每篇作品在其下都有自己的地址，例如 {example}。",
+    "waitlistTitle": "使用你自己的域名",
+    "waitlistBody": "我们正在分批向作者开放自定义域名。加入候补名单，有名额时我们会和你一起设置。现在还不需要有域名。",
+    "waitlistInputLabel": "你想用的域名（可选）",
+    "waitlistJoin": "加入候补名单",
+    "waitlistUpdate": "更新域名",
+    "waitlistSaving": "正在保存…",
+    "waitlistJoined": "你已在候补名单上",
+    "waitlistJoinedFor": "有名额时我们会和你一起设置 {hostname}。在此期间，你的 Twyne 地址照常可用。",
+    "waitlistJoinedNoDomain": "有名额时我们会联系你。有了域名后随时填写。",
+    "waitlistLeave": "退出候补名单",
     "needsHandle": "请先在上方认领你的 Twyne 地址。你的域名将展示该地址的页面。",
     "inputLabel": "域名",
     "inputPlaceholder": "pages.example.com",
@@ -63,7 +75,8 @@
       "CUSTOM_DOMAIN_NEEDS_HANDLE": "请先认领你的 Twyne 地址。自定义域名会展示该地址的页面。",
       "CUSTOM_DOMAIN_REMOVING": "这个域名仍在移除中。请一分钟后再试。",
       "RATE_LIMITED": "更改太频繁了。请等一分钟再试。",
-      "generic": "操作没有成功。请再试一次。"
+      "generic": "操作没有成功。请再试一次。",
+      "CUSTOM_DOMAIN_WAITLIST": "自定义域名尚未开放。加入候补名单，有名额时我们会为你设置。"
     }
   }
 }

@@ -14,7 +14,19 @@
   },
   "customDomains": {
     "title": "Votre propre domaine",
-    "description": "Affichez votre page Twyne sur un domaine qui vous appartient, comme example.com ou pages.example.com. Sans frais supplémentaires. Vous pouvez connecter jusqu’à {limit} domaines.",
+    "description": "Votre page et vos textes sont à votre adresse Twyne. Les pages sur un domaine à vous, comme example.com ou pages.example.com, arrivent bientôt, sans frais supplémentaires.",
+    "addressIntro": "Votre page :",
+    "addressPieces": "Chaque texte a sa propre adresse en dessous, par exemple {example}.",
+    "waitlistTitle": "Utiliser votre propre domaine",
+    "waitlistBody": "Nous ouvrons les domaines personnalisés à quelques auteurs à la fois. Inscrivez-vous sur la liste d’attente et nous configurerons le vôtre avec vous dès qu’une place se libère. Pas besoin d’avoir déjà un domaine.",
+    "waitlistInputLabel": "Domaine envisagé (facultatif)",
+    "waitlistJoin": "Rejoindre la liste d’attente",
+    "waitlistUpdate": "Mettre à jour le domaine",
+    "waitlistSaving": "Enregistrement…",
+    "waitlistJoined": "Vous êtes sur la liste d’attente",
+    "waitlistJoinedFor": "Nous configurerons {hostname} avec vous dès qu’une place se libère. Votre adresse Twyne continue de fonctionner d’ici là.",
+    "waitlistJoinedNoDomain": "Nous vous contacterons dès qu’une place se libère. Ajoutez le domaine envisagé quand vous en aurez un.",
+    "waitlistLeave": "Quitter la liste d’attente",
     "needsHandle": "Réservez d’abord votre adresse Twyne ci-dessus. Votre domaine affichera la page de cette adresse.",
     "inputLabel": "Domaine",
     "inputPlaceholder": "pages.example.com",
@@ -63,7 +75,8 @@
       "CUSTOM_DOMAIN_NEEDS_HANDLE": "Réservez d’abord votre adresse Twyne. Un domaine personnalisé affiche la page de cette adresse.",
       "CUSTOM_DOMAIN_REMOVING": "Ce domaine est encore en cours de retrait. Réessayez dans une minute.",
       "RATE_LIMITED": "Trop de changements à la fois. Attendez une minute et réessayez.",
-      "generic": "Cela n’a pas fonctionné. Réessayez."
+      "generic": "Cela n’a pas fonctionné. Réessayez.",
+      "CUSTOM_DOMAIN_WAITLIST": "Les domaines personnalisés ne sont pas encore ouverts. Inscrivez-vous sur la liste d’attente et nous configurerons le vôtre dès qu’une place se libère."
     }
   }
 }

@@ -45,10 +45,20 @@ interface CustomDomain {
   createdAt: number;
 }
 
+interface WaitlistEntry {
+  hostname: string | null;
+  status: "waiting" | "connected";
+  joinedAt: number;
+}
+
 interface CustomDomainStore {
   loaded: boolean;
   domains: CustomDomain[];
   handles: string[];
+  /** Connecting domains directly is team-only while they're waitlisted. */
+  isAdmin: boolean;
+  waitlist: WaitlistEntry | null;
+  waitlistDraft: string;
   draft: string;
   draftHandle: string;
   busy: string | null;
@@ -71,6 +81,7 @@ const ERROR_CODES = new Set([
   "CUSTOM_DOMAIN_LIMIT",
   "CUSTOM_DOMAIN_NEEDS_HANDLE",
   "CUSTOM_DOMAIN_REMOVING",
+  "CUSTOM_DOMAIN_WAITLIST",
   "RATE_LIMITED",
 ]);
 
@@ -93,8 +104,11 @@ function errorCode(error: unknown): { code?: string; message?: string } {
 }
 
 /**
- * The writer's own domains for their public page: add one, see the DNS
- * records to create, watch it go live, check again, remove.
+ * The writer's own domain for their public page. Domains aren't self-serve
+ * yet (the hosting provider allows only a few), so writers see their Twyne
+ * address and can join a waitlist; the team connects domains from it, and
+ * admins can add one directly. A connected domain shows its DNS records,
+ * status, a re-check and remove here as usual.
  */
 export const CustomDomainSettings = component$(() => {
   const gt = useGT();
@@ -106,6 +120,9 @@ export const CustomDomainSettings = component$(() => {
     loaded: false,
     domains: [],
     handles: [],
+    isAdmin: false,
+    waitlist: null,
+    waitlistDraft: "",
     draft: "",
     draftHandle: "",
     busy: null,
@@ -123,6 +140,8 @@ export const CustomDomainSettings = component$(() => {
     store.loaded = false;
     store.domains = [];
     store.handles = [];
+    store.isAdmin = false;
+    store.waitlist = null;
     if (!identity || !client) {
       store.loaded = true;
       return;
@@ -140,6 +159,25 @@ export const CustomDomainSettings = component$(() => {
         store.draftHandle = store.handles[0] ?? "";
       })
       .catch(() => undefined);
+    void client
+      .query(api.admins.isCurrentUserAdmin, {})
+      .then((admin) => {
+        if (!cancelled) store.isAdmin = admin === true;
+      })
+      .catch(() => undefined);
+    cleanup(
+      client.onUpdate(
+        api.customDomains.myWaitlist,
+        {},
+        (entry) => {
+          store.waitlist = entry as WaitlistEntry | null;
+          if (entry?.hostname && !store.waitlistDraft) {
+            store.waitlistDraft = entry.hostname;
+          }
+        },
+        () => undefined,
+      ),
+    );
     cleanup(
       client.onUpdate(
         api.customDomains.listMine,
@@ -195,6 +233,45 @@ export const CustomDomainSettings = component$(() => {
     }
   });
 
+  const joinWaitlist = $(async () => {
+    const client = convex.value;
+    if (!client || store.busy) return;
+    store.error = null;
+    const draft = store.waitlistDraft.trim();
+    let hostname: string | undefined;
+    if (draft) {
+      const parsed = normalizeCustomHostname(draft);
+      if (!parsed.ok) {
+        store.error = translate(gt, `customDomains.errors.${parsed.code}`);
+        return;
+      }
+      hostname = parsed.hostname;
+    }
+    store.busy = "waitlist";
+    try {
+      await client.mutation(api.customDomains.joinWaitlist, { hostname });
+    } catch (error) {
+      await showError(error, "waitlist");
+    } finally {
+      store.busy = null;
+    }
+  });
+
+  const leaveWaitlist = $(async () => {
+    const client = convex.value;
+    if (!client || store.busy) return;
+    store.error = null;
+    store.busy = "waitlist";
+    try {
+      await client.mutation(api.customDomains.leaveWaitlist, {});
+      store.waitlistDraft = "";
+    } catch (error) {
+      await showError(error, "waitlist");
+    } finally {
+      store.busy = null;
+    }
+  });
+
   const recheck = $(async (domainId: Id<"customDomains">) => {
     const client = convex.value;
     if (!client || store.busy) return;
@@ -240,6 +317,8 @@ export const CustomDomainSettings = component$(() => {
   if (!signedIn) return null;
   const atLimit = store.domains.length >= CUSTOM_DOMAIN_LIMIT;
   const needsHandle = store.loaded && store.handles.length === 0;
+  const handle = store.handles[0];
+  const waiting = store.waitlist?.status === "waiting";
   const label =
     "text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)]";
 
@@ -257,8 +336,24 @@ export const CustomDomainSettings = component$(() => {
         {t("title")}
       </h2>
       <p class="text-xs text-[var(--color-ink-light)] mb-4 max-w-2xl">
-        {t("description", { limit: CUSTOM_DOMAIN_LIMIT })}
+        {t("description")}
       </p>
+
+      {handle && (
+        <p class="mb-4 text-sm">
+          {t("addressIntro")}{" "}
+          <a
+            href={`/${handle}/`}
+            class="underline"
+            style={{ fontFamily: "var(--font-typewriter)" }}
+          >
+            twyne.love/{handle}
+          </a>
+          <span class="block text-xs text-[var(--color-ink-light)]">
+            {t("addressPieces", { example: `twyne.love/${handle}/my-post` })}
+          </span>
+        </p>
+      )}
 
       {store.error && (
         <p
@@ -272,6 +367,87 @@ export const CustomDomainSettings = component$(() => {
 
       {needsHandle ? (
         <p class="text-sm text-[var(--color-ink-light)]">{t("needsHandle")}</p>
+      ) : !store.isAdmin ? (
+        store.waitlist?.status === "connected" ? null : (
+          <div
+            class="border border-[var(--color-paper-3)] p-4"
+            style={{ borderRadius: "2px" }}
+          >
+            <p class="text-sm font-semibold">
+              {waiting ? t("waitlistJoined") : t("waitlistTitle")}
+            </p>
+            <p class="mt-1 mb-3 text-xs text-[var(--color-ink-light)] max-w-2xl">
+              {waiting
+                ? store.waitlist?.hostname
+                  ? t("waitlistJoinedFor", {
+                      hostname: store.waitlist.hostname,
+                    })
+                  : t("waitlistJoinedNoDomain")
+                : t("waitlistBody")}
+            </p>
+            <form
+              class="flex flex-wrap items-end gap-3"
+              preventdefault:submit
+              onSubmit$={joinWaitlist}
+            >
+              <label class="block min-w-0 flex-1 basis-56">
+                <span
+                  class={`block mb-1 ${label}`}
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                >
+                  {t("waitlistInputLabel")}
+                </span>
+                <input
+                  type="text"
+                  inputMode="url"
+                  autoComplete="off"
+                  spellcheck={false}
+                  value={store.waitlistDraft}
+                  placeholder={t("inputPlaceholder")}
+                  class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-2 py-1.5 text-sm"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                  onInput$={(event) => {
+                    store.waitlistDraft = (
+                      event.target as HTMLInputElement
+                    ).value;
+                  }}
+                />
+              </label>
+              <div class="flex items-center gap-3">
+                {waiting && (
+                  <button
+                    type="button"
+                    class="underline text-xs text-[var(--color-ink-light)]"
+                    disabled={!!store.busy}
+                    onClick$={leaveWaitlist}
+                  >
+                    {t("waitlistLeave")}
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  disabled={
+                    !!store.busy ||
+                    (waiting &&
+                      store.waitlistDraft.trim() ===
+                        (store.waitlist?.hostname ?? ""))
+                  }
+                  class="btn-press text-xs text-[var(--color-paper)] disabled:opacity-50"
+                  style={{
+                    backgroundColor: "var(--color-ink)",
+                    fontFamily: "var(--font-typewriter)",
+                  }}
+                >
+                  {store.busy === "waitlist"
+                    ? t("waitlistSaving")
+                    : waiting
+                      ? t("waitlistUpdate")
+                      : t("waitlistJoin")}
+                </button>
+              </div>
+            </form>
+          </div>
+        )
       ) : (
         <form
           class="flex flex-wrap items-end gap-3"
@@ -334,7 +510,7 @@ export const CustomDomainSettings = component$(() => {
           </button>
         </form>
       )}
-      {atLimit && (
+      {store.isAdmin && atLimit && (
         <p class="mt-2 text-xs text-[var(--color-ink-muted)]">
           {t("limitReached", { limit: CUSTOM_DOMAIN_LIMIT })}
         </p>

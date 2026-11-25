@@ -9,7 +9,19 @@
   "d030ecf7dea3a7a8": "Cargando preferencias…",
   "fa19046edd6cfbd4": "Apariencia",
   "cd9e36637447c542": "Tu propio dominio",
-  "92347e0f9373b4f6": "Muestra tu página de Twyne en un dominio tuyo, como example.com o pages.example.com. Sin coste adicional. Puedes conectar hasta {limit} dominios.",
+  "d3d0d2545d8ef773": "Tu página y tus textos están en tu dirección de Twyne. Pronto llegarán las páginas en un dominio propio, como example.com o pages.example.com, sin coste adicional.",
+  "a0cd67f872374061": "Tu página:",
+  "e91772756c176f50": "Cada texto tiene su propia dirección debajo, como {example}.",
+  "ef710365a8e3113a": "Usar tu propio dominio",
+  "d6b91e08d3d968f1": "Estamos abriendo los dominios propios a unos pocos escritores a la vez. Apúntate a la lista de espera y configuraremos el tuyo contigo cuando haya sitio. Todavía no necesitas tener un dominio.",
+  "8339a8f50aee9f7c": "Dominio que usarías (opcional)",
+  "94d9ce864bdcefc0": "Apuntarme a la lista de espera",
+  "2b5212a9de4a8838": "Actualizar dominio",
+  "6ad5d5a635a11015": "Guardando…",
+  "b3993187367af6e8": "Estás en la lista de espera",
+  "584e671b27e5509a": "Configuraremos {hostname} contigo cuando haya sitio. Mientras tanto, tu dirección de Twyne sigue funcionando.",
+  "c715d172b92287d8": "Te escribiremos cuando haya sitio. Añade el dominio que usarías cuando lo tengas.",
+  "eb1394f35e0c1c34": "Salir de la lista de espera",
   "fa2ab06fde56fe2b": "Primero reserva tu dirección de Twyne arriba. Tu dominio mostrará la página de esa dirección.",
   "58fd3c04e719fd09": "Dominio",
   "41445484a83ef0dc": "pages.example.com",
@@ -55,5 +67,6 @@
   "64e81dc9a7262a23": "Primero reserva tu dirección de Twyne. Un dominio propio muestra la página de esa dirección.",
   "424e0378861516ca": "Ese dominio todavía se está quitando. Inténtalo de nuevo en un minuto.",
   "bf52189ea6904b46": "Demasiados cambios a la vez. Espera un minuto e inténtalo de nuevo.",
-  "83246aaebb902219": "No ha funcionado. Inténtalo de nuevo."
+  "83246aaebb902219": "No ha funcionado. Inténtalo de nuevo.",
+  "67827993527eeeed": "Los dominios propios aún no están abiertos. Apúntate a la lista de espera y configuraremos el tuyo cuando haya sitio."
 }

@@ -9,7 +9,19 @@
   "d030ecf7dea3a7a8": "Chargement des préférences…",
   "fa19046edd6cfbd4": "Apparence",
   "cd9e36637447c542": "Votre propre domaine",
-  "92347e0f9373b4f6": "Affichez votre page Twyne sur un domaine qui vous appartient, comme example.com ou pages.example.com. Sans frais supplémentaires. Vous pouvez connecter jusqu’à {limit} domaines.",
+  "d3d0d2545d8ef773": "Votre page et vos textes sont à votre adresse Twyne. Les pages sur un domaine à vous, comme example.com ou pages.example.com, arrivent bientôt, sans frais supplémentaires.",
+  "a0cd67f872374061": "Votre page :",
+  "e91772756c176f50": "Chaque texte a sa propre adresse en dessous, par exemple {example}.",
+  "ef710365a8e3113a": "Utiliser votre propre domaine",
+  "d6b91e08d3d968f1": "Nous ouvrons les domaines personnalisés à quelques auteurs à la fois. Inscrivez-vous sur la liste d’attente et nous configurerons le vôtre avec vous dès qu’une place se libère. Pas besoin d’avoir déjà un domaine.",
+  "8339a8f50aee9f7c": "Domaine envisagé (facultatif)",
+  "94d9ce864bdcefc0": "Rejoindre la liste d’attente",
+  "2b5212a9de4a8838": "Mettre à jour le domaine",
+  "6ad5d5a635a11015": "Enregistrement…",
+  "b3993187367af6e8": "Vous êtes sur la liste d’attente",
+  "584e671b27e5509a": "Nous configurerons {hostname} avec vous dès qu’une place se libère. Votre adresse Twyne continue de fonctionner d’ici là.",
+  "c715d172b92287d8": "Nous vous contacterons dès qu’une place se libère. Ajoutez le domaine envisagé quand vous en aurez un.",
+  "eb1394f35e0c1c34": "Quitter la liste d’attente",
   "fa2ab06fde56fe2b": "Réservez d’abord votre adresse Twyne ci-dessus. Votre domaine affichera la page de cette adresse.",
   "58fd3c04e719fd09": "Domaine",
   "41445484a83ef0dc": "pages.example.com",
@@ -55,5 +67,6 @@
   "64e81dc9a7262a23": "Réservez d’abord votre adresse Twyne. Un domaine personnalisé affiche la page de cette adresse.",
   "424e0378861516ca": "Ce domaine est encore en cours de retrait. Réessayez dans une minute.",
   "bf52189ea6904b46": "Trop de changements à la fois. Attendez une minute et réessayez.",
-  "83246aaebb902219": "Cela n’a pas fonctionné. Réessayez."
+  "83246aaebb902219": "Cela n’a pas fonctionné. Réessayez.",
+  "67827993527eeeed": "Les domaines personnalisés ne sont pas encore ouverts. Inscrivez-vous sur la liste d’attente et nous configurerons le vôtre dès qu’une place se libère."
 }
