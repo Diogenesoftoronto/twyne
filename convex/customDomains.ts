@@ -10,6 +10,13 @@
  * plus `failed` (gave up, or the provider refused) and `removed`. Hosting on a
  * custom domain costs nothing extra; `CUSTOM_DOMAIN_LIMIT` is a fair-use cap.
  *
+ * Not self-serve yet. Railway gives a service about 20 custom domains, so
+ * writers join a waitlist (`joinWaitlist`) and keep their twyne.love/<handle>
+ * address meanwhile. The team connects a writer's domain from the waitlist
+ * with `connectFromWaitlist` (run from the dashboard or `npx convex run`), and
+ * only admins can call `add` directly. Once a provider built for many domains
+ * replaces Railway, `add` can open to everyone.
+ *
  * Every write derives the caller from `ctx.auth`; there is no user argument.
  * A domain belongs to the writer for now; `notorganicOrgId` is reserved for
  * organization ownership later.
@@ -113,6 +120,17 @@ async function requireIdentity(ctx: QueryCtx | MutationCtx): Promise<string> {
   return identity.tokenIdentifier;
 }
 
+async function isAdmin(
+  ctx: QueryCtx | MutationCtx,
+  userId: string,
+): Promise<boolean> {
+  const row = await ctx.db
+    .query("admins")
+    .withIndex("by_userId", (q) => q.eq("userId", userId))
+    .first();
+  return row !== null;
+}
+
 async function requireOwnedDomain(
   ctx: MutationCtx,
   ownerId: string,
@@ -181,104 +199,124 @@ export const listMine = query({
   },
 });
 
+/**
+ * Claim `hostname` for `ownerId` and start registering it. Shared by the
+ * admin-only `add` and by `connectFromWaitlist`; callers check who may do it.
+ */
+async function connectDomain(
+  ctx: MutationCtx,
+  ownerId: string,
+  hostname: string,
+  handle: string | undefined,
+): Promise<{ id: Id<"customDomains">; hostname: string }> {
+  const parsed = normalizeCustomHostname(hostname);
+  if (!parsed.ok) {
+    throw new ConvexError({ code: parsed.code, message: parsed.message });
+  }
+
+  const handles = await ownedHandles(ctx, ownerId);
+  if (!handles.length) {
+    throw new ConvexError({
+      code: "CUSTOM_DOMAIN_NEEDS_HANDLE",
+      message:
+        "Claim your Twyne address first. A custom domain shows the page at that address.",
+    });
+  }
+  const wanted = handle?.trim().toLowerCase();
+  const handleRow = wanted
+    ? handles.find((row) => row.handle === wanted)
+    : handles[0];
+  if (!handleRow) {
+    throw new ConvexError({
+      code: "CUSTOM_DOMAIN_HANDLE_NOT_OWNED",
+      message: "That Twyne address isn't yours.",
+    });
+  }
+
+  const existing = await ctx.db
+    .query("customDomains")
+    .withIndex("by_hostname", (q) => q.eq("hostname", parsed.hostname))
+    .unique();
+  if (existing && existing.ownerId === ownerId) {
+    if (existing.status !== "removed") {
+      return { id: existing._id, hostname: existing.hostname };
+    }
+  } else if (existing && existing.status !== "removed") {
+    // A failed claim by someone else (never verified, or gave up) doesn't
+    // hold the name: whoever controls the DNS can take it over.
+    if (existing.status !== "failed") {
+      throw new ConvexError({
+        code: "CUSTOM_DOMAIN_TAKEN",
+        message:
+          "Another Twyne writer has added that domain. If it's yours, contact support.",
+      });
+    }
+  }
+  if (existing?.status === "removed" && existing.providerDomainId) {
+    throw new ConvexError({
+      code: "CUSTOM_DOMAIN_REMOVING",
+      message: "That domain is still being removed. Try again in a minute.",
+    });
+  }
+
+  const live = await liveDomainsFor(ctx, ownerId);
+  if (live.length >= CUSTOM_DOMAIN_LIMIT) {
+    throw new ConvexError({
+      code: "CUSTOM_DOMAIN_LIMIT",
+      message: `You can connect up to ${CUSTOM_DOMAIN_LIMIT} domains. Remove one to add another.`,
+    });
+  }
+
+  const now = Date.now();
+  const fields = {
+    hostname: parsed.hostname,
+    kind: parsed.kind,
+    ownerId,
+    handle: handleRow.handle,
+    status: "pending_dns" as const,
+    provider: "railway" as const,
+    // A taken-over failed claim keeps its provider registration: it is
+    // per hostname, and the sync adopts it.
+    providerDomainId: existing?.providerDomainId,
+    dnsRecords: [],
+    pendingSince: now,
+    checkCount: 0,
+    nextCheckAt: now + SYNC_LEASE_MS,
+    createdAt: now,
+    updatedAt: now,
+  };
+  let id: Id<"customDomains">;
+  if (existing) {
+    await ctx.db.replace("customDomains", existing._id, fields);
+    id = existing._id;
+  } else {
+    id = await ctx.db.insert("customDomains", fields);
+  }
+  await ctx.scheduler.runAfter(0, internal.customDomainsSync.sync, {
+    domainId: id,
+  });
+  return { id, hostname: parsed.hostname };
+}
+
+/** Admins only for now; writers join the waitlist instead. */
 export const add = mutation({
   args: { hostname: v.string(), handle: v.optional(v.string()) },
   returns: v.object({ id: v.id("customDomains"), hostname: v.string() }),
   handler: async (ctx, args) => {
     const ownerId = await requireIdentity(ctx);
+    if (!(await isAdmin(ctx, ownerId))) {
+      throw new ConvexError({
+        code: "CUSTOM_DOMAIN_WAITLIST",
+        message:
+          "Custom domains aren't open yet. Join the waitlist and we'll set yours up when there's room.",
+      });
+    }
     await consumeRateLimit(ctx, {
       action: "customDomains:write",
       identifier: ownerId,
       ...RATE_LIMITS.customDomain,
     });
-
-    const parsed = normalizeCustomHostname(args.hostname);
-    if (!parsed.ok) {
-      throw new ConvexError({ code: parsed.code, message: parsed.message });
-    }
-
-    const handles = await ownedHandles(ctx, ownerId);
-    if (!handles.length) {
-      throw new ConvexError({
-        code: "CUSTOM_DOMAIN_NEEDS_HANDLE",
-        message:
-          "Claim your Twyne address first. A custom domain shows the page at that address.",
-      });
-    }
-    const wanted = args.handle?.trim().toLowerCase();
-    const handleRow = wanted
-      ? handles.find((row) => row.handle === wanted)
-      : handles[0];
-    if (!handleRow) {
-      throw new ConvexError({
-        code: "CUSTOM_DOMAIN_HANDLE_NOT_OWNED",
-        message: "That Twyne address isn't yours.",
-      });
-    }
-
-    const existing = await ctx.db
-      .query("customDomains")
-      .withIndex("by_hostname", (q) => q.eq("hostname", parsed.hostname))
-      .unique();
-    if (existing && existing.ownerId === ownerId) {
-      if (existing.status !== "removed") {
-        return { id: existing._id, hostname: existing.hostname };
-      }
-    } else if (existing && existing.status !== "removed") {
-      // A failed claim by someone else (never verified, or gave up) doesn't
-      // hold the name: whoever controls the DNS can take it over.
-      if (existing.status !== "failed") {
-        throw new ConvexError({
-          code: "CUSTOM_DOMAIN_TAKEN",
-          message:
-            "Another Twyne writer has added that domain. If it's yours, contact support.",
-        });
-      }
-    }
-    if (existing?.status === "removed" && existing.providerDomainId) {
-      throw new ConvexError({
-        code: "CUSTOM_DOMAIN_REMOVING",
-        message: "That domain is still being removed. Try again in a minute.",
-      });
-    }
-
-    const live = await liveDomainsFor(ctx, ownerId);
-    if (live.length >= CUSTOM_DOMAIN_LIMIT) {
-      throw new ConvexError({
-        code: "CUSTOM_DOMAIN_LIMIT",
-        message: `You can connect up to ${CUSTOM_DOMAIN_LIMIT} domains. Remove one to add another.`,
-      });
-    }
-
-    const now = Date.now();
-    const fields = {
-      hostname: parsed.hostname,
-      kind: parsed.kind,
-      ownerId,
-      handle: handleRow.handle,
-      status: "pending_dns" as const,
-      provider: "railway" as const,
-      // A taken-over failed claim keeps its provider registration: it is
-      // per hostname, and the sync adopts it.
-      providerDomainId: existing?.providerDomainId,
-      dnsRecords: [],
-      pendingSince: now,
-      checkCount: 0,
-      nextCheckAt: now + SYNC_LEASE_MS,
-      createdAt: now,
-      updatedAt: now,
-    };
-    let id: Id<"customDomains">;
-    if (existing) {
-      await ctx.db.replace("customDomains", existing._id, fields);
-      id = existing._id;
-    } else {
-      id = await ctx.db.insert("customDomains", fields);
-    }
-    await ctx.scheduler.runAfter(0, internal.customDomainsSync.sync, {
-      domainId: id,
-    });
-    return { id, hostname: parsed.hostname };
+    return connectDomain(ctx, ownerId, args.hostname, args.handle);
   },
 });
 
@@ -338,6 +376,149 @@ export const remove = mutation({
       });
     }
     return null;
+  },
+});
+
+/* ── Waitlist ─────────────────────────────────────────────────────── */
+
+const waitlistEntryValidator = v.object({
+  hostname: v.union(v.string(), v.null()),
+  status: v.union(v.literal("waiting"), v.literal("connected")),
+  joinedAt: v.number(),
+});
+
+async function waitlistEntryFor(
+  ctx: QueryCtx | MutationCtx,
+  ownerId: string,
+): Promise<Doc<"customDomainWaitlist"> | null> {
+  return ctx.db
+    .query("customDomainWaitlist")
+    .withIndex("by_ownerId", (q) => q.eq("ownerId", ownerId))
+    .unique();
+}
+
+/** The signed-in writer's place on the waitlist, if any. */
+export const myWaitlist = query({
+  args: {},
+  returns: v.union(v.null(), waitlistEntryValidator),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    const row = await waitlistEntryFor(ctx, identity.tokenIdentifier);
+    if (!row) return null;
+    return {
+      hostname: row.hostname ?? null,
+      status: row.status,
+      joinedAt: row.createdAt,
+    };
+  },
+});
+
+/**
+ * Join, or update the domain on an existing entry. The domain is optional:
+ * a writer may not have bought one yet. Joining again keeps the original
+ * place in the queue.
+ */
+export const joinWaitlist = mutation({
+  args: { hostname: v.optional(v.string()) },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const ownerId = await requireIdentity(ctx);
+    await consumeRateLimit(ctx, {
+      action: "customDomains:write",
+      identifier: ownerId,
+      ...RATE_LIMITS.customDomain,
+    });
+    let hostname: string | undefined;
+    if (args.hostname?.trim()) {
+      const parsed = normalizeCustomHostname(args.hostname);
+      if (!parsed.ok) {
+        throw new ConvexError({ code: parsed.code, message: parsed.message });
+      }
+      hostname = parsed.hostname;
+    }
+    const handles = await ownedHandles(ctx, ownerId);
+    const now = Date.now();
+    const existing = await waitlistEntryFor(ctx, ownerId);
+    if (existing) {
+      await ctx.db.patch("customDomainWaitlist", existing._id, {
+        hostname,
+        handle: existing.handle ?? handles[0]?.handle,
+        updatedAt: now,
+      });
+      return null;
+    }
+    await ctx.db.insert("customDomainWaitlist", {
+      ownerId,
+      hostname,
+      handle: handles[0]?.handle,
+      status: "waiting",
+      createdAt: now,
+      updatedAt: now,
+    });
+    return null;
+  },
+});
+
+export const leaveWaitlist = mutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const ownerId = await requireIdentity(ctx);
+    const existing = await waitlistEntryFor(ctx, ownerId);
+    if (existing) await ctx.db.delete("customDomainWaitlist", existing._id);
+    return null;
+  },
+});
+
+/** For the team: who's waiting, oldest first. */
+export const listWaitlist = internalQuery({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, { limit }) => {
+    return ctx.db
+      .query("customDomainWaitlist")
+      .withIndex("by_status_and_createdAt", (q) => q.eq("status", "waiting"))
+      .take(Math.min(Math.max(limit ?? 50, 1), 200));
+  },
+});
+
+/**
+ * For the team: connect a waiting writer's domain. The writer then sees the
+ * DNS records on their account page, as if they'd added it themselves.
+ */
+export const connectFromWaitlist = internalMutation({
+  args: {
+    entryId: v.id("customDomainWaitlist"),
+    hostname: v.optional(v.string()),
+  },
+  returns: v.object({ id: v.id("customDomains"), hostname: v.string() }),
+  handler: async (ctx, args) => {
+    const entry = await ctx.db.get("customDomainWaitlist", args.entryId);
+    if (!entry) {
+      throw new ConvexError({
+        code: "WAITLIST_ENTRY_NOT_FOUND",
+        message: "That waitlist entry doesn't exist.",
+      });
+    }
+    const hostname = args.hostname ?? entry.hostname;
+    if (!hostname) {
+      throw new ConvexError({
+        code: "HOSTNAME_EMPTY",
+        message: "This writer hasn't named a domain; pass one.",
+      });
+    }
+    const result = await connectDomain(
+      ctx,
+      entry.ownerId,
+      hostname,
+      entry.handle,
+    );
+    await ctx.db.patch("customDomainWaitlist", entry._id, {
+      status: "connected",
+      hostname: result.hostname,
+      updatedAt: Date.now(),
+    });
+    return result;
   },
 });
 

@@ -20,6 +20,10 @@ async function setup() {
   const other = t.withIdentity({ tokenIdentifier: "issuer|other" });
   await writer.mutation(api.profiles.claimHandle, { handle: "mara" });
   await other.mutation(api.profiles.claimHandle, { handle: "oskar" });
+  // Connecting a domain directly is team-only while domains are waitlisted,
+  // so the domain rules below run as admins.
+  await writer.mutation(api.admins.bootstrap, {});
+  await writer.mutation(api.admins.add, { userId: "issuer|other" });
   return { t, writer, other };
 }
 
@@ -114,8 +118,9 @@ describeConvex("custom domain rules", () => {
   });
 
   test("a writer without a Twyne address can't add a domain", async () => {
-    const { t } = await setup();
+    const { t, writer } = await setup();
     const newcomer = t.withIdentity({ tokenIdentifier: "issuer|newcomer" });
+    await writer.mutation(api.admins.add, { userId: "issuer|newcomer" });
     await expect(
       newcomer.mutation(api.customDomains.add, { hostname: "myfrens.us" }),
     ).rejects.toThrow(/Claim your Twyne address/);
@@ -391,5 +396,70 @@ describe("provider mapping", () => {
     );
     expect((await provider.register("myfrens.us")).id).toBe("d1");
     expect(calls).toEqual(["create", "list"]);
+  });
+});
+
+describeConvex("custom domain waitlist", () => {
+  async function writerOnly() {
+    const t = convexTest(schema, modules);
+    const writer = t.withIdentity({ tokenIdentifier: "issuer|writer" });
+    await writer.mutation(api.profiles.claimHandle, { handle: "mara" });
+    return { t, writer };
+  }
+
+  test("a writer can't connect a domain directly", async () => {
+    const { writer } = await writerOnly();
+    await expect(
+      writer.mutation(api.customDomains.add, { hostname: "myfrens.us" }),
+    ).rejects.toThrow(/Join the waitlist/);
+  });
+
+  test("joins once, with or without a domain, and can leave", async () => {
+    const { t, writer } = await writerOnly();
+    await expect(
+      t.mutation(api.customDomains.joinWaitlist, {}),
+    ).rejects.toThrow(/Sign in/);
+    expect(await writer.query(api.customDomains.myWaitlist, {})).toBeNull();
+
+    await writer.mutation(api.customDomains.joinWaitlist, {});
+    const first = await writer.query(api.customDomains.myWaitlist, {});
+    expect(first).toMatchObject({ hostname: null, status: "waiting" });
+
+    await writer.mutation(api.customDomains.joinWaitlist, {
+      hostname: "https://MyFrens.us/",
+    });
+    const second = await writer.query(api.customDomains.myWaitlist, {});
+    expect(second).toEqual({ ...first, hostname: "myfrens.us" });
+    await expect(
+      writer.mutation(api.customDomains.joinWaitlist, {
+        hostname: "mara.twyne.love",
+      }),
+    ).rejects.toThrow();
+
+    await writer.mutation(api.customDomains.leaveWaitlist, {});
+    expect(await writer.query(api.customDomains.myWaitlist, {})).toBeNull();
+  });
+
+  test("the team connects a waiting writer's domain", async () => {
+    const { t, writer } = await writerOnly();
+    await writer.mutation(api.customDomains.joinWaitlist, {
+      hostname: "pages.myfrens.us",
+    });
+    const [entry] = await t.query(internal.customDomains.listWaitlist, {});
+    expect(entry).toMatchObject({ handle: "mara", status: "waiting" });
+
+    await t.mutation(internal.customDomains.connectFromWaitlist, {
+      entryId: entry!._id,
+    });
+    const [domain] = await writer.query(api.customDomains.listMine, {});
+    expect(domain).toMatchObject({
+      hostname: "pages.myfrens.us",
+      handle: "mara",
+      status: "pending_dns",
+    });
+    expect(await writer.query(api.customDomains.myWaitlist, {})).toMatchObject({
+      status: "connected",
+    });
+    expect(await t.query(internal.customDomains.listWaitlist, {})).toEqual([]);
   });
 });

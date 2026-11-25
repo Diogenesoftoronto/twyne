@@ -658,6 +658,22 @@ export default defineSchema({
     .index("by_ownerId_and_status", ["ownerId", "status"])
     .index("by_status_and_nextCheckAt", ["status", "nextCheckAt"]),
 
+  // ── Writers waiting for a custom domain. One row per writer; the team
+  // connects them in order (customDomains.connectFromWaitlist) while the
+  // hosting provider's domain allowance is small. ──
+  customDomainWaitlist: defineTable({
+    ownerId: v.string(),
+    /** The domain they'd use, normalized; optional until they have one. */
+    hostname: v.optional(v.string()),
+    /** Their Twyne address when they joined. */
+    handle: v.optional(v.string()),
+    status: v.union(v.literal("waiting"), v.literal("connected")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_ownerId", ["ownerId"])
+    .index("by_status_and_createdAt", ["status", "createdAt"]),
+
   // ── Writer-authored inline comments (margin notes, with threads). ──
   // The CommentMark in the manuscript holds the id; the body, replies,
   // and resolve state live here. Owner-only.
