@@ -5,7 +5,7 @@ import type { Source } from "../../convex/research";
 import {
   decodeMcpObject,
   encodeMcpObject,
-} from "../../convex/lib/knowledge-wire";
+} from "../../convex/lib/knowledgeWire";
 import type { McpToolInfo } from "./mcp-client";
 import { toSources } from "./research-backends";
 

@@ -3,7 +3,7 @@
 import { action, type ActionCtx } from "./_generated/server";
 import { makeFunctionReference } from "convex/server";
 import { ConvexError, v } from "convex/values";
-import { decodeMcpObject, encodeMcpObject } from "./lib/knowledge-wire";
+import { decodeMcpObject, encodeMcpObject } from "./lib/knowledgeWire";
 import {
   issueNotOrganicAccessToken,
   notOrganicIssuer,

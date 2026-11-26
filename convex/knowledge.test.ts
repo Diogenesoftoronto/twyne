@@ -3,7 +3,7 @@ import { convexTest } from "convex-test";
 import { makeFunctionReference } from "convex/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import schema from "./schema";
-import { decodeMcpObject, encodeMcpObject } from "./lib/knowledge-wire";
+import { decodeMcpObject, encodeMcpObject } from "./lib/knowledgeWire";
 
 const supportsViteModules = typeof import.meta.glob === "function";
 // Convex loads this provider through the lazy module glob, after setup.
