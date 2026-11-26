@@ -24,10 +24,11 @@ export async function loadLocalLiveSessions<
 >(
   create: SessionFactory<T>,
   read: (url: string) => Promise<Blob | null> = readModelBlob,
+  onProgress?: (loaded: number) => void,
 ): Promise<Record<LocalLiveGraph, T>> {
   const sessions = {} as Record<LocalLiveGraph, T>;
   try {
-    for (const name of LOCAL_LIVE_GRAPHS) {
+    for (const [index, name] of LOCAL_LIVE_GRAPHS.entries()) {
       const graph = await read(`${LOCAL_LIVE_BASE}onnx/${name}.onnx`);
       const data = await read(`${LOCAL_LIVE_BASE}onnx/${name}.onnx_data`);
       if (!graph || !data)
@@ -48,6 +49,7 @@ export async function loadLocalLiveSessions<
         externalData: [{ path: `${name}.onnx_data`, data }],
         ...(name === "decoder_q4f16" ? { preferredOutputLocation } : {}),
       });
+      onProgress?.(index + 1);
     }
     return sessions;
   } catch (error) {

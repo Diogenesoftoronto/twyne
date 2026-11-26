@@ -7,7 +7,10 @@ import {
   useStyles$,
 } from "@qwik.dev/core";
 import { makeFunctionReference } from "convex/server";
-import { useAuth } from "../../utils/auth-context";
+import {
+  hasAuthenticatedConvexIdentity,
+  useAuth,
+} from "../../utils/auth-context";
 import { useConvexClient } from "../../utils/convex-context";
 import { PERSONAS } from "../../utils/personas";
 import { loadPersonasFromIdb } from "../../utils/idb";
@@ -21,6 +24,7 @@ import {
 import { onModelDownload } from "../../utils/models-cache";
 import { localLiveAdapter } from "../../utils/browser-inference";
 import {
+  continueLocalVoiceSetup,
   endLiveVoice,
   liveVoiceLevels,
   liveVoiceState,
@@ -94,7 +98,9 @@ export const LiveVoiceDesk = component$(() => {
     passage: "",
     cast: PERSONAS.map(toCast),
     access: null as Access | null,
+    accountUserId: null as string | null,
     loading: false,
+    accessRequest: 0,
     error: "",
     consent: false,
     elapsed: 0,
@@ -102,53 +108,107 @@ export const LiveVoiceDesk = component$(() => {
     localReady: false,
     localSelected: false,
     localSupported: false,
+    localChecked: false,
     localDownloading: false,
     localProgress: 0,
   });
   const refreshLocal = $(async () => {
-    const adapter = await localLiveAdapter();
+    ui.localSelected = localStorage.getItem("twyne.live.local") === "selected";
+    const [adapter, download] = await Promise.all([
+      localLiveAdapter(),
+      localLiveDownloadState(),
+    ]);
     ui.localSupported = !!adapter && adapter.features.has("shader-f16");
-    ui.localReady = (await localLiveDownloadState()).phase === "ready";
-    ui.localSelected =
-      ui.localReady && localStorage.getItem("twyne.live.local") === "selected";
+    ui.localReady = download.phase === "ready";
+    ui.localChecked = true;
   });
   const refresh = $(async () => {
-    if (!client.value || !auth.value.user) return;
+    const connection = client.value;
+    const userId = auth.value.user?.id;
+    if (
+      !connection ||
+      !userId ||
+      !hasAuthenticatedConvexIdentity(auth.value) ||
+      ui.loading
+    )
+      return;
+    const request = ++ui.accessRequest;
+    const current = () =>
+      ui.accessRequest === request &&
+      client.value === connection &&
+      auth.value.user?.id === userId &&
+      hasAuthenticatedConvexIdentity(auth.value);
     ui.loading = true;
     ui.error = "";
     try {
-      ui.access = await client.value.action(
+      const access = await connection.action(
         makeFunctionReference<"action", Record<string, never>, Access>(
           "liveVoice:access",
         ),
         {},
       );
-      ui.consent = ui.access.consentGranted;
+      if (current()) {
+        ui.access = access;
+        ui.consent = access.consentGranted;
+      }
     } catch {
-      ui.error =
-        "Could not check Live access. Retry, or check your account in Settings.";
+      if (current()) {
+        ui.access = null;
+        ui.error =
+          "Could not check Live access. Retry, or check your account in Settings.";
+      }
     } finally {
-      ui.loading = false;
+      if (current()) ui.loading = false;
     }
   });
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(
     ({ track }) => {
-      track(() => auth.value.user?.id);
+      const userId = track(() => auth.value.user?.id ?? null);
+      if (userId === ui.accountUserId) return;
+      ui.accountUserId = userId;
       endLiveVoice();
       ui.access = null;
+      ui.accessRequest++;
+      ui.loading = false;
+      ui.error = "";
       ui.consent = false;
       ui.open = false;
     },
     { strategy: "document-ready" },
   );
+  // A Better Auth session can be visible before its token is accepted by Convex.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(
+    ({ track }) => {
+      const open = track(() => ui.open);
+      const local = track(() => ui.localSelected);
+      const ready = track(
+        () => hasAuthenticatedConvexIdentity(auth.value) && !!client.value,
+      );
+      if (!ready) {
+        if (!local && !["idle", "error"].includes(live.status)) endLiveVoice();
+        ui.accessRequest++;
+        ui.loading = false;
+        ui.access = null;
+        return;
+      }
+      if (open && !local) void refresh();
+    },
+    { strategy: "document-ready" },
+  );
+
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(
     ({ cleanup }) => {
       const sync = () => {
         const wasActive = !["idle", "error"].includes(live.status);
         Object.assign(live, liveVoiceState());
-        if (wasActive && ["idle", "error"].includes(live.status))
+        if (
+          wasActive &&
+          ["idle", "error"].includes(live.status) &&
+          !ui.localSelected
+        )
           void refresh();
       };
       const open = async (event: Event) => {
@@ -166,11 +226,12 @@ export const LiveVoiceDesk = component$(() => {
             ui.author = ui.cast[0]?.name ?? "Le Lecteur";
           ui.passage = detail?.passage ?? "";
           ui.access = null;
+          ui.localSelected =
+            localStorage.getItem("twyne.live.local") === "selected";
         }
         ui.open = true;
         ui.compact = false;
         await refreshLocal();
-        await refresh();
         document.getElementById("live-voice-heading")?.focus();
       };
       const tick = setInterval(() => {
@@ -220,15 +281,22 @@ export const LiveVoiceDesk = component$(() => {
   const speaker = ui.cast.find((p) => p.name === author) ?? ui.cast[0];
   const firstName = (speaker?.name ?? author).split(" ").at(-1);
   const signedIn = Boolean(auth.value.user);
+  const hostedAuthenticated = hasAuthenticatedConvexIdentity(auth.value);
   const access = ui.access;
-  const affordable = !!access && access.availableMicros >= 500_000;
-  const localActive = ui.localSelected && ui.localReady && ui.localSupported;
-  const canStart =
-    localActive ||
-    (signedIn && !!access?.eligible && affordable && ui.consent && !ui.loading);
+  const affordable =
+    !!access && access.availableMicros >= access.sessionBudgetMicros;
+  const canStart = ui.localSelected
+    ? ui.localReady && ui.localSupported
+    : hostedAuthenticated &&
+      !!access?.eligible &&
+      affordable &&
+      ui.consent &&
+      !ui.loading;
   const status =
     live.status === "connecting"
-      ? "Connecting…"
+      ? live.localSetup
+        ? "Local voice"
+        : "Connecting…"
       : live.status === "closing"
         ? "Wrapping up…"
         : live.status === "speaking"
@@ -320,6 +388,76 @@ export const LiveVoiceDesk = component$(() => {
         </p>
       </section>
 
+      {live.localSetup && (
+        <section
+          class="lvd-setup"
+          aria-label="Local voice setup"
+          data-phase={live.localSetup.phase}
+        >
+          {live.localSetup.phase === "loading" ? (
+            <>
+              <div class="lvd-setup-heading">
+                <strong>Loading the voice model</strong>
+                <span>{live.localSetup.completed} of 4</span>
+              </div>
+              <progress
+                max={4}
+                value={live.localSetup.completed}
+                aria-label="Voice model components loaded"
+              />
+              <p role="status">
+                {
+                  [
+                    "Loading the language model…",
+                    "Loading speech recognition…",
+                    "Loading the speech generator…",
+                    "Loading audio playback…",
+                    "Model loaded.",
+                  ][live.localSetup.completed]
+                }
+              </p>
+            </>
+          ) : live.localSetup.phase === "profiling" ? (
+            <>
+              <div class="lvd-setup-heading">
+                <strong>Checking response speed</strong>
+              </div>
+              <div
+                class="lvd-setup-sweep"
+                role="progressbar"
+                aria-label="Checking local voice response speed"
+              />
+              <p role="status">Running a short sample on this device.</p>
+              <button
+                type="button"
+                class="lvd-link"
+                onClick$={() => continueLocalVoiceSetup()}
+              >
+                Skip speed check
+              </button>
+            </>
+          ) : (
+            <>
+              <div class="lvd-setup-heading">
+                <strong>Local replies may be slow</strong>
+              </div>
+              <p role="status">
+                {live.localSetup.result === "slow"
+                  ? "This device struggled to keep up with the sample. You can still use local voice."
+                  : "Twyne could not measure response speed. You can still use local voice."}
+              </p>
+              <button
+                type="button"
+                class="lvd-pill lvd-pill--solid"
+                onClick$={() => continueLocalVoiceSetup()}
+              >
+                Continue with local voice
+              </button>
+            </>
+          )}
+        </section>
+      )}
+
       {!ui.compact && (
         <div class="lvd-body">
           {!active && (
@@ -362,7 +500,7 @@ export const LiveVoiceDesk = component$(() => {
             </blockquote>
           )}
 
-          {(active || live.turns.length > 0) && (
+          {!live.localSetup && (active || live.turns.length > 0) && (
             <div class="lvd-captions" aria-label="Conversation captions">
               {ui.transcript ? (
                 <ol class="lvd-transcript">
@@ -471,25 +609,30 @@ export const LiveVoiceDesk = component$(() => {
             <div class="lvd-gate">
               <section aria-label="Local Live voice">
                 <p>Local voice · 2.44 GB · runs on this device</p>
-                {!ui.localSupported ? (
-                  <p>Not available on this device.</p>
+                {!ui.localChecked ? (
+                  <p>Checking this device…</p>
+                ) : !ui.localSupported ? (
+                  <p>
+                    Local voice needs WebGPU with 16-bit shader support
+                    (shader-f16).
+                  </p>
                 ) : ui.localReady ? (
                   <>
-                    <button
-                      type="button"
-                      class="lvd-link"
-                      onClick$={() => {
-                        ui.localSelected = !ui.localSelected;
-                        localStorage.setItem(
-                          "twyne.live.local",
-                          ui.localSelected ? "selected" : "hosted",
-                        );
-                      }}
-                    >
-                      {ui.localSelected
-                        ? "Using local voice"
-                        : "Use local voice"}
-                    </button>{" "}
+                    {ui.localSelected ? (
+                      <span>Using local voice</span>
+                    ) : (
+                      <button
+                        type="button"
+                        class="lvd-link"
+                        onClick$={() => {
+                          ui.localSelected = true;
+                          ui.error = "";
+                          localStorage.setItem("twyne.live.local", "selected");
+                        }}
+                      >
+                        Use local voice
+                      </button>
+                    )}{" "}
                     <button
                       type="button"
                       class="lvd-link"
@@ -528,14 +671,37 @@ export const LiveVoiceDesk = component$(() => {
                       : "Download local voice"}
                   </button>
                 )}
+                {ui.localDownloading && (
+                  <progress
+                    class="lvd-download-meter"
+                    max={1}
+                    value={ui.localProgress}
+                    aria-label="Local voice download"
+                  />
+                )}
+                {ui.localSelected && (
+                  <button
+                    type="button"
+                    class="lvd-link"
+                    onClick$={() => {
+                      ui.localSelected = false;
+                      ui.error = "";
+                      localStorage.setItem("twyne.live.local", "hosted");
+                    }}
+                  >
+                    {signedIn ? "Use hosted voice" : "Switch to hosted voice"}
+                  </button>
+                )}
               </section>
-              {!localActive && (
+              {!ui.localSelected && (
                 <>
                   {!signedIn ? (
                     <p>
                       <a href="/signin/">Sign in</a> to talk with your editors.
                       New accounts start with welcome credit.
                     </p>
+                  ) : !hostedAuthenticated ? (
+                    <p>Waiting for your account to connect…</p>
                   ) : ui.loading && !access ? (
                     <p>Checking your credit…</p>
                   ) : !access ? (
@@ -624,21 +790,13 @@ export const LiveVoiceDesk = component$(() => {
             class="lvd-start"
             disabled={!canStart}
             onClick$={async () => {
-              if (!client.value && !localActive) return;
+              if (!canStart || (!client.value && !ui.localSelected)) return;
               await startLiveVoice(
                 client.value ?? null,
                 ui.author,
                 ui.passage,
                 !ui.access?.consentGranted && ui.consent,
-                {
-                  local: localActive,
-                  hostedAvailable:
-                    signedIn &&
-                    !!access?.eligible &&
-                    affordable &&
-                    ui.consent &&
-                    navigator.onLine,
-                },
+                { local: ui.localSelected, profileLocal: ui.localSelected },
               );
             }}
           >

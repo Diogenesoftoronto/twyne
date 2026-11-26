@@ -76,18 +76,11 @@ machine with sufficient free disk space.
 
 ## Local quotation extraction
 
-With a separate llama.cpp server, you can use Liquid LFM2-350M-Extract for
-verbatim manuscript quotations in browser-side editorial reads. Run:
-
-```sh
-llama-server -hf LiquidAI/LFM2-350M-Extract-GGUF:Q4_K_M \
-  --alias lfm2-350m-extract --host 127.0.0.1 --port 8081
-```
-
-Enable **Settings → AI → Manuscript extraction**. Twyne uses exact, unambiguous
-matches in the source and computes their offsets locally. Estimates and forecasts
-still use their existing routes. The editorial prose provider is configured
-separately.
+Configure LFM3, Gemma 4 E4B, or Gemma 4 E2B as an OpenAI-compatible chat
+provider on this device in **Settings → AI** and enable your own providers.
+Twyne prefers LFM3, then E4B, then E2B, for quotation extraction in editorial
+reads. It uses the model's configured loopback URL and accepts only exact,
+unambiguous quotations. Estimates and forecasts keep their existing routes.
 
 ## Local sentence and paragraph alternatives
 

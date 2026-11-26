@@ -57,9 +57,12 @@ export const GroundedNote = component$<GroundedNoteProps>((props) => {
         "../../utils/persona-research-client"
       );
       const { loadAiSettingsFromIdb } = await import("../../utils/idb");
+      const { normalizeAiSettings } = await import("../../utils/ai-client");
+      const settings = normalizeAiSettings(await loadAiSettingsFromIdb());
       const research = await clientPersonaResearch(
         activeClient,
-        (await loadAiSettingsFromIdb())?.judgement,
+        settings.judgement,
+        settings,
       );
       if (!research.extract && !research.judge) return;
       const { assistGroundedNote } = await import(

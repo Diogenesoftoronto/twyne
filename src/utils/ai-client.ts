@@ -1495,7 +1495,7 @@ export async function runClientAgent(
     const research = await clientPersonaResearch(
       convexClient ?? mcpConvexClient(),
       settings.judgement,
-      settings.localExtraction,
+      normalizeAiSettings(settings),
     );
 
     if (adaptive) {

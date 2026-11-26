@@ -11,6 +11,7 @@ import {
   voiceWorkspace,
 } from "./live-voice-workspace";
 import { parseLiveAction, type LiveAction } from "./live-voice-contract";
+import type { LocalVoiceSetup } from "./live-voice-local-transport";
 
 export type LiveVoiceStatus =
   | "idle"
@@ -34,6 +35,7 @@ export interface LiveVoiceState {
   /** The conversation as alternating turns, newest last, for captions. */
   turns: LiveVoiceTurn[];
   notice: string;
+  localSetup: LocalVoiceSetup | null;
   error: string;
   pending: LiveAction | null;
   working: boolean;
@@ -50,6 +52,7 @@ const state: LiveVoiceState = {
   assistantTranscript: "",
   turns: [],
   notice: "",
+  localSetup: null,
   error: "",
   pending: null,
   working: false,
@@ -153,10 +156,14 @@ function finish(error = "", finalized = false) {
   socket = null;
   const previousLocal = localConnection;
   localConnection = null;
-  previousLocal?.close();
+  if (previousLocal) {
+    previousLocal.close();
+    state.notice = "";
+  }
   if (previous && previous.readyState < WebSocket.CLOSING) previous.close();
   cleanupEvents();
   cleanupEvents = () => {};
+  state.localSetup = null;
   state.status = error ? "error" : "idle";
   state.error = error;
   state.level = 0;
@@ -167,6 +174,14 @@ function finish(error = "", finalized = false) {
   pendingUserSpeech = "";
   emit();
 }
+export function continueLocalVoiceSetup() {
+  if (
+    state.localSetup?.phase === "profiling" ||
+    state.localSetup?.phase === "warning"
+  )
+    localConnection?.continueSetup();
+}
+
 export function endLiveVoice() {
   if (state.status === "closing") return;
   audio?.stop();
@@ -316,9 +331,8 @@ export async function startLiveVoice(
     audio?: typeof liveVoiceAudio;
     socket?: (url: URL) => WebSocket;
     local?: boolean;
+    profileLocal?: boolean;
     localWorker?: () => Worker;
-    hostedAvailable?: boolean;
-    localRoute?: (worker: Worker) => Promise<"local" | "hosted" | "local-slow">;
   } = {},
 ) {
   if (!["idle", "error"].includes(state.status)) return;
@@ -434,8 +448,16 @@ export async function startLiveVoice(
         return;
       }
       if (!alive()) return;
-      if (event.type === "twyne.local.slow") {
-        state.notice = "Replies may lag on this device.";
+      if (
+        event.type === "twyne.local.status" &&
+        typeof event.message === "string"
+      ) {
+        state.notice = event.message;
+        emit();
+      }
+      if (useLocal && event.type === "twyne.local.setup") {
+        state.localSetup = event.value as LocalVoiceSetup;
+        if (state.localSetup.phase === "warning") clearTimeout(startTimer);
         emit();
       }
       if (event.type === "twyne.live.ready") {
@@ -450,6 +472,7 @@ export async function startLiveVoice(
       }
       if (event.type === "session.started") {
         clearTimeout(startTimer);
+        if (useLocal) state.localSetup = null;
         state.startedAt = Date.now();
         state.status = "listening";
         emit();
@@ -602,24 +625,14 @@ export async function startLiveVoice(
           }
         },
         dependencies.localWorker?.(),
-        dependencies.localRoute ??
-          (async (worker) => {
-            const { resolveLocalLiveRoute } = await import(
-              "./live-voice-local-benchmark"
-            );
-            return resolveLocalLiveRoute(
-              worker,
-              dependencies.hostedAvailable === true,
-            );
-          }),
-        () => {
-          if (!alive()) return;
-          finish();
-          void startLiveVoice(client, author, passage, consent, {
-            ...dependencies,
-            local: false,
-          });
-        },
+        dependencies.profileLocal
+          ? async (worker, signal) => {
+              const { profileLocalVoice } = await import(
+                "./live-voice-local-benchmark"
+              );
+              return profileLocalVoice(worker, signal);
+            }
+          : undefined,
       );
       localConnection = connection;
       connection.onmessage = onMessage;

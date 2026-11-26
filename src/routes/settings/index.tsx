@@ -3428,24 +3428,33 @@ export default component$(() => {
               <h2 class="mb-2 text-base font-semibold">
                 Manuscript extraction
               </h2>
-              <label class="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={store.settings.localExtraction === true}
-                  onChange$={(_, input) => {
-                    store.settings = {
-                      ...store.settings,
-                      localExtraction: input.checked,
-                    };
-                    void persist();
-                  }}
-                />
-                Use Liquid LFM2-350M-Extract for on-device quote extraction
-              </label>
+              <SiteSelect
+                value={
+                  store.settings.localExtraction === undefined
+                    ? "automatic"
+                    : store.settings.localExtraction
+                      ? "local"
+                      : "hosted"
+                }
+                ariaLabel="Quote extraction model"
+                options={[
+                  { value: "automatic", label: "Prefer on-device models" },
+                  { value: "local", label: "On-device only" },
+                  { value: "hosted", label: "Hosted extraction" },
+                ]}
+                onChange$={(mode) => {
+                  store.settings = {
+                    ...store.settings,
+                    localExtraction:
+                      mode === "automatic" ? undefined : mode === "local",
+                  };
+                  void persist();
+                }}
+              />
               <p class="mt-2 text-sm text-[var(--color-ink-muted)]">
-                Used in editorial reads with your own prose provider. Requires a
-                local chat server on port 8081 with model alias
-                <code> lfm2-350m-extract</code>.
+                For on-device extraction, Twyne uses a configured LFM3 model
+                first, then Gemma 4 E4B or E2B. Automatic can use hosted
+                extraction when no supported local model is configured.
               </p>
             </section>
 

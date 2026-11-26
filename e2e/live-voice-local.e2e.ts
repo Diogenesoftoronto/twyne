@@ -1,21 +1,8 @@
 import { expect, test } from "@playwright/test";
-import { resolve } from "node:path";
-
-test.use({
-  launchOptions: {
-    args: [
-      "--use-fake-device-for-media-stream",
-      "--use-fake-ui-for-media-stream",
-      `--use-file-for-fake-audio-capture=${resolve("src/assets/live-voice-benchmark.wav")}%noloop`,
-    ],
-  },
-});
-
 test("the desk starts a chosen local session with a stubbed worker", async ({
   page,
-  context,
 }) => {
-  await context.grantPermissions(["microphone"]);
+  test.setTimeout(65_000);
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "gpu", {
       configurable: true,
@@ -42,7 +29,17 @@ test("the desk starts a chosen local session with a stubbed worker", async ({
             this.onmessage?.(event);
             this.dispatchEvent(event);
           });
-        if (data.type === "load") send({ type: "loaded", id: data.id });
+        if (data.type === "load") {
+          send({ type: "progress", id: data.id, completed: 1 });
+          setTimeout(() => send({ type: "loaded", id: data.id }), 900);
+        }
+        if (data.type === "turn" && data.id === -1) {
+          setTimeout(() => {
+            send({ type: "audio", id: data.id, samples: new Float32Array(10) });
+            send({ type: "done", id: data.id });
+          }, 100);
+          return;
+        }
         if (data.type === "turn" && data.mode === "asr") {
           send({ type: "text", id: data.id, delta: "What is two plus two?" });
           send({ type: "done", id: data.id });
@@ -121,14 +118,6 @@ test("the desk starts a chosen local session with a stubbed worker", async ({
     });
     db.close();
     localStorage.setItem("twyne.live.local", "selected");
-    localStorage.setItem(
-      "twyne.local-live.benchmark.v1",
-      JSON.stringify({
-        adapter: "test|gpu",
-        revision: model.LOCAL_LIVE_REVISION,
-        rate: 2,
-      }),
-    );
   });
   await page.goto("/editor/");
   const desk = page.getByRole("complementary", { name: "Live voice desk" });
@@ -142,12 +131,49 @@ test("the desk starts a chosen local session with a stubbed worker", async ({
       return desk.isVisible();
     })
     .toBe(true);
-  await expect(
-    desk.getByRole("button", { name: "Using local voice" }),
-  ).toBeVisible();
+  await expect(desk.getByText("Using local voice")).toBeVisible();
+  await page.evaluate(async () => {
+    const asset = "/src/assets/live-voice-benchmark.wav?url";
+    const { default: wav } = await import(/* @vite-ignore */ asset);
+    const bytes = await (await fetch(wav)).arrayBuffer();
+    Object.defineProperty(navigator.mediaDevices, "getUserMedia", {
+      configurable: true,
+      value: async () => {
+        const context = new AudioContext();
+        await context.resume();
+        const sample = await context.decodeAudioData(bytes.slice(0));
+        const mic = context.createMediaStreamDestination();
+        const timer = setInterval(() => {
+          if (
+            document
+              .querySelector(".live-voice-desk")
+              ?.getAttribute("data-status") !== "listening"
+          )
+            return;
+          clearInterval(timer);
+          const source = context.createBufferSource();
+          source.buffer = sample;
+          source.connect(mic);
+          source.start();
+        }, 40);
+        setTimeout(() => clearInterval(timer), 30_000);
+        return mic.stream;
+      },
+    });
+  });
   await desk.getByRole("button", { name: "Start talking" }).click();
+  await expect(
+    desk.getByRole("progressbar", { name: "Voice model components loaded" }),
+  ).toHaveAttribute("value", "1");
+  await expect(desk).toContainText("Local replies may be slow");
+  await desk.getByRole("button", { name: "Continue with local voice" }).click();
   await expect(desk).toHaveAttribute("data-status", /listening|speaking/);
   await expect(desk).toContainText("The answer is four.", { timeout: 30000 });
+  expect(
+    await page.evaluate(() =>
+      localStorage.getItem("twyne.local-live.benchmark.v1"),
+    ),
+  ).toBeNull();
   await desk.getByRole("button", { name: "End", exact: true }).click();
   await expect(desk).toHaveAttribute("data-status", "idle");
 });

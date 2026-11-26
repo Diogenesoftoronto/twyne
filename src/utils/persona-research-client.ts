@@ -1,8 +1,8 @@
 import type { ConvexClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
-import type { JudgementSettings } from "../types";
+import type { AiSettings, JudgementSettings } from "../types";
 import { askExtraction } from "./extraction-client";
-import { askLocalExtraction } from "./local-extraction";
+import { askLocalExtraction, localExtractionModel } from "./local-extraction";
 import { backOffExtraction, extractionBackedOff } from "./extraction-budget";
 import { accountKnowledgeSnapshot } from "./account-knowledge";
 import { askJudgement, normalizeEndpointUrl } from "./judgement-client";
@@ -20,8 +20,10 @@ import {
 export async function clientPersonaResearch(
   client: ConvexClient | null | undefined,
   settings?: JudgementSettings | null,
-  localExtraction = false,
+  aiSettings?: AiSettings | null,
 ): Promise<PersonaResearch> {
+  const localModel = aiSettings ? localExtractionModel(aiSettings) : null;
+  const localOnly = aiSettings?.localExtraction === true;
   let extraction = false;
   let hostedJudge = false;
   let authenticated = false;
@@ -34,7 +36,7 @@ export async function clientPersonaResearch(
       authenticated = !!linked || !!accountKnowledgeSnapshot().account;
       if (authenticated) {
         const [e, j] = await Promise.all([
-          localExtraction
+          localModel || localOnly
             ? undefined
             : client.action(api.extraction.isAvailable, {}),
           client.action(api.systemOne.isAvailable, {}),
@@ -74,8 +76,11 @@ export async function clientPersonaResearch(
   return {
     // Share the note cap without spending or checking another service's budget.
     reserve: reserveNote,
-    ...(localExtraction
-      ? { extract: askLocalExtraction }
+    ...(localModel
+      ? {
+          extract: (request: Parameters<typeof askLocalExtraction>[0]) =>
+            askLocalExtraction(request, localModel),
+        }
       : extraction
         ? {
             extract: (request: Parameters<typeof askExtraction>[1]) =>

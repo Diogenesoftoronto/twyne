@@ -27,6 +27,11 @@ const tools = LIVE_ACTIONS.map((name) =>
     },
   }),
 ).join("\n");
+export type LocalVoiceSetup =
+  | { phase: "loading"; completed: number }
+  | { phase: "profiling" }
+  | { phase: "warning"; result: "slow" | "unknown" };
+
 type WireEvent = { type: string; [key: string]: unknown };
 
 /** An in-process relay with the event names used by the hosted Live client. */
@@ -45,6 +50,7 @@ export class LocalLiveTransport {
   private muted = false;
   private closed = false;
   private history: string[] = [];
+  private profileController: AbortController | null = null;
   private input = createLocalLiveInput({
     interrupt: () => {
       if (this.closed) return;
@@ -52,11 +58,16 @@ export class LocalLiveTransport {
       this.phase = "idle";
       this.worker.postMessage({ type: "cancel", id: this.activeId });
       this.onClearAudio();
+      this.emit({ type: "twyne.local.status", message: "" });
     },
     turn: (audio) => {
       if (this.closed || this.muted) return;
       this.currentAudio = audio;
       this.phase = "asr";
+      this.emit({
+        type: "twyne.local.status",
+        message: "Transcribing on this device…",
+      });
       this.transcript = "";
       this.activeId = ++this.nextId;
       this.worker.postMessage({
@@ -72,10 +83,10 @@ export class LocalLiveTransport {
     private readonly onAudio: (audio: Float32Array) => void,
     private readonly onClearAudio: () => void,
     worker?: Worker,
-    private readonly route?: (
+    private readonly profile?: (
       worker: Worker,
-    ) => Promise<"local" | "hosted" | "local-slow">,
-    private readonly onHosted?: () => void,
+      signal: AbortSignal,
+    ) => Promise<"ready" | "slow" | "unknown">,
   ) {
     this.worker =
       worker ??
@@ -87,10 +98,21 @@ export class LocalLiveTransport {
     this.worker.onerror = () => this.fail("Local Live worker failed.");
   }
   start() {
+    this.setup({ phase: "loading", completed: 0 });
     this.worker.postMessage({ type: "load", id: ++this.nextId });
   }
   private emit(event: WireEvent) {
     if (!this.closed) this.onmessage?.({ data: JSON.stringify(event) });
+  }
+  private setup(value: LocalVoiceSetup) {
+    this.emit({ type: "twyne.local.setup", value });
+  }
+  continueSetup() {
+    if (this.closed || this.readyState === 1) return;
+    this.profileController?.abort();
+    this.profileController = null;
+    this.readyState = 1;
+    this.emit({ type: "twyne.live.ready" });
   }
   private fail(message: string) {
     if (!this.closed) this.onerror?.(new Error(message));
@@ -101,28 +123,29 @@ export class LocalLiveTransport {
     delta?: string;
     samples?: Float32Array;
     message?: string;
+    completed?: number;
   }) {
-    if (this.closed) return;
+    if (this.closed || data.id === -1) return;
+    if (data.type === "progress" && typeof data.completed === "number") {
+      this.setup({ phase: "loading", completed: data.completed });
+      return;
+    }
     if (data.type === "loaded") {
-      void (async () => {
-        try {
-          const route = this.route ? await this.route(this.worker) : "local";
-          if (this.closed) return;
-          if (route === "hosted") {
-            this.onHosted?.();
-            return;
-          }
-          this.readyState = 1;
-          if (route === "local-slow") this.emit({ type: "twyne.local.slow" });
-          this.emit({ type: "twyne.live.ready" });
-        } catch (error) {
-          this.fail(
-            error instanceof Error
-              ? error.message
-              : "Local Live benchmark failed.",
-          );
-        }
-      })();
+      if (!this.profile) {
+        this.continueSetup();
+        return;
+      }
+      const controller = new AbortController();
+      this.profileController = controller;
+      this.setup({ phase: "profiling" });
+      void this.profile(this.worker, controller.signal)
+        .catch(() => "unknown" as const)
+        .then((result) => {
+          if (this.closed || controller.signal.aborted) return;
+          this.profileController = null;
+          if (result === "ready") this.continueSetup();
+          else this.setup({ phase: "warning", result });
+        });
       return;
     }
     if (data.type === "error") {
@@ -154,9 +177,14 @@ export class LocalLiveTransport {
       const audio = this.currentAudio;
       if (!audio || !text) {
         this.phase = "idle";
+        this.emit({ type: "twyne.local.status", message: "" });
         return;
       }
       this.phase = "reply";
+      this.emit({
+        type: "twyne.local.status",
+        message: "Preparing a reply on this device…",
+      });
       this.transcript = "";
       this.activeId = ++this.nextId;
       this.worker.postMessage({
@@ -187,6 +215,7 @@ export class LocalLiveTransport {
         this.history.push(`Editor: ${text}`);
       }
       this.phase = "idle";
+      this.emit({ type: "twyne.local.status", message: "" });
     }
   }
   send(raw: string) {
@@ -221,6 +250,8 @@ export class LocalLiveTransport {
   close() {
     if (this.closed) return;
     this.closed = true;
+    this.profileController?.abort();
+    this.profileController = null;
     this.readyState = 3;
     this.input.reset();
     this.worker.postMessage({ type: "close", id: ++this.nextId });

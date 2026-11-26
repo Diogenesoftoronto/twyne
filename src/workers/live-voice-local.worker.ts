@@ -163,8 +163,14 @@ self.onmessage = ({ data }: MessageEvent<Command>) => {
           JSON.parse(await tokenBlob.text()),
           JSON.parse(await configBlob.text()),
         );
-        const loaded = await loadLocalLiveSessions(async (graph, options) =>
-          ort.InferenceSession.create(await graph.arrayBuffer(), options),
+        const loaded = await loadLocalLiveSessions(
+          async (graph, options) =>
+            ort.InferenceSession.create(await graph.arrayBuffer(), options),
+          readModelBlob,
+          (completed) => {
+            if (generation === current)
+              self.postMessage({ type: "progress", id: data.id, completed });
+          },
         );
         if (generation !== current) {
           await Promise.allSettled(
