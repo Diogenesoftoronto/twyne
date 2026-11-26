@@ -282,6 +282,7 @@ export function providerSupportsFeature(
   provider?: AiProviderConfig,
 ): boolean {
   if (feature === "scene-image") return supportsSceneImage(type);
+  if (feature === "scene-world") return type === "google";
   return VOICE_FEATURES.has(feature)
     ? supportsVoiceFeature(
         type,
@@ -633,6 +634,7 @@ function defaultModelForFeature(
     return provider.defaultModel;
   }
   if (feature === "scene-image") return defaultSceneImageModel(provider);
+  if (feature === "scene-world") return "models/genie-4";
   if (
     feature === "voice-narration" &&
     (provider.type === "openai" || isOpenAiCompatibleProvider(provider.type))

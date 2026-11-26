@@ -12,7 +12,8 @@ export function getNotOrganicHostedUsage(
   client: ConvexClient,
   range: { from: number | null; to: number },
 ): Promise<HostedUsageSummary> {
-  return client.action(hostedUsage, range);
+  // UsageRange also carries a UI preset; Convex rejects undeclared fields.
+  return client.action(hostedUsage, { from: range.from, to: range.to });
 }
 
 const walletState = makeFunctionReference<

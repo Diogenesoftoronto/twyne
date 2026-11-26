@@ -1004,16 +1004,31 @@ function startRemoteSubscription(
 ): void {
   if (typeof client.onUpdate !== "function") return;
   remoteUnsubscribe?.();
-  const current = () => state.client === client && state.userId === userId;
+  let disposed = false;
+  const current = () =>
+    !disposed && state.client === client && state.userId === userId;
   // Only the revision is live. A push re-sends one number to every open tab;
   // a tab that is behind then fetches the snapshot once, and a hidden tab
   // waits until it is looked at instead of rewriting its cache meanwhile.
   let latest = -1;
   let fetching = false;
+  let retryTimer: ReturnType<typeof setTimeout> | null = null;
+  let retryDelay = 1000;
+  const cancelRetry = () => {
+    if (retryTimer !== null) clearTimeout(retryTimer);
+    retryTimer = null;
+  };
   const catchUp = async () => {
     if (fetching || !current()) return;
     if (latest <= (state.remoteRevision ?? -1)) return;
     if (typeof document !== "undefined" && document.hidden) return;
+    // A pending push owns reconciliation with the server. Re-reading the
+    // cached pullAll result here cannot advance the revision, and can keep
+    // the microtask queue busy forever before the save timer gets to run.
+    // The sync-status event wakes catch-up when the push has finished.
+    if (state.pushing || state.dirtySections.size > 0) return;
+    cancelRetry();
+    const revisionBefore = state.remoteRevision;
     fetching = true;
     try {
       const snapshot = (await client.query(
@@ -1021,10 +1036,12 @@ function startRemoteSubscription(
         {},
       )) as SyncedSnapshot;
       if (!snapshot || !current()) return;
-      remoteApplyChain = remoteApplyChain.then(() =>
-        handleRemoteSnapshot(snapshot),
-      );
-      await remoteApplyChain;
+      const apply = remoteApplyChain.then(() => {
+        if (current()) return handleRemoteSnapshot(snapshot);
+      });
+      // A failed local apply must not poison all future catch-up attempts.
+      remoteApplyChain = apply.catch(() => {});
+      await apply;
     } catch (err) {
       if (!current()) return;
       setSyncFailure(err, "remote-update");
@@ -1032,12 +1049,28 @@ function startRemoteSubscription(
     } finally {
       fetching = false;
     }
-    // A revision that arrived while fetching is caught up now.
-    if (latest > (state.remoteRevision ?? -1)) void catchUp();
+    // Cached/stale replies, failed requests, and deferred applies may leave
+    // us behind. Always yield to browser tasks; back off if no progress was
+    // made instead of recursively draining cached promises on the main thread.
+    if (current() && latest > (state.remoteRevision ?? -1)) {
+      const progressed = state.remoteRevision !== revisionBefore;
+      const delay = progressed ? 0 : retryDelay;
+      retryDelay = progressed ? 1000 : Math.min(retryDelay * 2, 30_000);
+      retryTimer = setTimeout(() => {
+        retryTimer = null;
+        void catchUp();
+      }, delay);
+    } else {
+      retryDelay = 1000;
+    }
   };
-  const onVisible = () => void catchUp();
+  const wake = () => {
+    if (retryTimer === null) void catchUp();
+  };
   if (typeof document !== "undefined")
-    document.addEventListener("visibilitychange", onVisible);
+    document.addEventListener("visibilitychange", wake);
+  window.addEventListener("twyne:sync-status", wake);
+  window.addEventListener("online", wake);
   const unsubscribe = client.onUpdate(
     api.sync.syncRevision,
     {},
@@ -1053,9 +1086,13 @@ function startRemoteSubscription(
     },
   );
   remoteUnsubscribe = () => {
+    disposed = true;
+    cancelRetry();
     unsubscribe();
+    window.removeEventListener("twyne:sync-status", wake);
+    window.removeEventListener("online", wake);
     if (typeof document !== "undefined")
-      document.removeEventListener("visibilitychange", onVisible);
+      document.removeEventListener("visibilitychange", wake);
   };
 }
 

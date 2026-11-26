@@ -44,7 +44,7 @@ export default component$(() => (
     </p>
     <h2>Writing checks</h2>
     <p class="doc-p">
-      Jev runs these checks during automatic review when the required material
+      Twyne runs these checks during automatic review when the required material
       is available, even with the Tools board closed. Open a check to inspect
       its latest reading. Choose different revisions or add a focus when you
       want to steer it, then use “Run this check”. Audience changes and edits to

@@ -464,7 +464,7 @@ test("a delayed strength result preserves the focused input and caret", async ({
   releaseResponse();
   await expect(
     page.locator(".answer-strength--full .answer-strength__source"),
-  ).toHaveText("Jev");
+  ).toHaveText("Judged");
   expect(
     await field.evaluate((element: HTMLInputElement) => ({
       sameNode:

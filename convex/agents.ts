@@ -1210,6 +1210,24 @@ const projectBriefValidator = v.object({
   answers: projectInterviewAnswersValidator,
   attachments: v.array(attachmentValidator),
   probes: v.optional(v.array(probeValidator)),
+  constraintTriage: v.optional(
+    v.object({
+      source: v.string(),
+      lines: v.array(
+        v.object({
+          text: v.string(),
+          kind: v.union(
+            v.literal("hard"),
+            v.literal("editorial"),
+            v.literal("preference"),
+            v.literal("uncheckable"),
+          ),
+          confidence: v.number(),
+        }),
+      ),
+      at: v.number(),
+    }),
+  ),
   completedAt: v.number(),
   updatedAt: v.number(),
 });

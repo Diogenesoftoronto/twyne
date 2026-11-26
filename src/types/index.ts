@@ -741,11 +741,32 @@ export interface ProjectBrief {
    * every brief saved before probes existed keeps working untouched.
    */
   probes?: DossierProbe[];
+  /**
+   * Jev's reading of each constraint line, pinned to the exact constraints
+   * text it read. Only `hard` and `editorial` lines reach the note gate's
+   * veto; a stale triage (constraints edited since) is ignored.
+   */
+  constraintTriage?: ConstraintTriage;
+}
+
+export type ConstraintKind =
+  | "hard"
+  | "editorial"
+  | "preference"
+  | "uncheckable";
+
+export interface ConstraintTriage {
+  /** The `answers.constraints` text these lines were read from. */
+  source: string;
+  lines: Array<{ text: string; kind: ConstraintKind; confidence: number }>;
+  at: number;
 }
 
 export interface Folio {
   id: string;
   name: string;
+  /** Position in the drawer, set when the writer drags folios into order. */
+  order?: number;
   type: "draft" | "notes" | "outline";
   createdAt: number;
   updatedAt: number;
@@ -982,7 +1003,8 @@ export type AiFeature =
   | "in-flow-tool"
   | "alternatives"
   | "scene-image"
-  | "scene-reading";
+  | "scene-reading"
+  | "scene-world";
 
 export type WriterExperienceLevel =
   | "emerging"
@@ -1180,15 +1202,23 @@ export interface AiSettings {
 }
 
 /**
- * Scene Bench image generation.
+ * Scene Bench visual exploration (static pictures + live Genie 4 worlds).
  *
- *   twyne     Twyne's hosted image model, spending the writer's monthly credit
+ *   twyne     Twyne's hosted model, spending the writer's monthly credit
  *   provider  one of the writer's own providers, routed through the
- *             `scene-image` (picture) and `scene-reading` (comparison) features
+ *             `scene-image` (picture), `scene-reading` (comparison), and
+ *             `scene-world` (Genie 4 interactive world) features
  */
 export interface SceneMediaSettings {
   enabled: boolean;
   source: "twyne" | "provider";
+  /** Interactive Genie 4 world exploration. Opt-in separately (~$0.10/sec). */
+  worldEnabled?: boolean;
+  worldSource?: "twyne" | "provider";
+  /** Auto-stop cap in seconds (30–300, default 120). */
+  worldMaxSeconds?: number;
+  /** Auto-stop after inactivity in seconds (15–120, default 45). */
+  worldIdleSeconds?: number;
 }
 
 /**

@@ -34,6 +34,10 @@ import {
   loadProjectBriefForFolio,
   saveProjectBriefForFolio,
   UNTITLED_FOLIO_NAME,
+  FOLIO_RENAMED_EVENT,
+  briefTitleFromFolioName,
+  isPlaceholderFolioName,
+  renameFolioEverywhere,
   writeCrashMirror,
 } from "../../utils/anti-tabula-rasa";
 import {
@@ -121,6 +125,12 @@ import {
 import { usageLedger } from "../../utils/usage-ledger";
 import { startLiveReview } from "../../utils/live-review";
 import { LiveReviewStatus } from "../../components/writing-tools/live-review-status";
+import { WorkflowStamp } from "../../components/ui/workflow-stamp";
+import {
+  takeDossierFiledForDesk,
+  warmDossierCreate,
+} from "../../utils/dossier-warm";
+import { DOSSIER_FILED_FEEDBACK_MS } from "../../utils/dossier-filing";
 
 type RightPanel = PanelId;
 
@@ -160,6 +170,8 @@ interface LayoutStore {
   panelsBeforeZen: { left: boolean; right: boolean } | null;
   /** True while zen mode is active — drives masthead/toolbar hiding. */
   zenActive: boolean;
+  /** The dossier was just filed on the way here; its stamp finishes on the desk. */
+  filedOnArrival: "filed" | "revised" | null;
   hydrated: boolean;
   brief: ProjectBrief | null;
   modelBrief: ProjectBrief | null;
@@ -249,6 +261,7 @@ export default component$(() => {
     rightPanelOpen: opensVersionHistory,
     panelsBeforeZen: null,
     zenActive: !opensVersionHistory,
+    filedOnArrival: null,
     hydrated: false,
     brief: null,
     modelBrief: null,
@@ -270,585 +283,641 @@ export default component$(() => {
     workspaceError: null,
     activity: panelActivity(),
   });
+  // Start the dossier route's reads while the pointer is still on the way.
+  const warmDossier$ = $(() => {
+    warmDossierCreate(store.activeFolioId);
+  });
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ cleanup }) => {
-    const lastWordCounts = new Map<string, number>();
-    const editedFolios = new Set<string>();
-    let disposed = false;
-    cleanup(() => {
-      disposed = true;
-    });
-    // Download the editing engine concurrently with local workspace recovery.
-    // The editor reports an import failure when it actually needs the engine.
-    void loadEditorRuntime().catch(() => undefined);
+  useVisibleTask$(
+    ({ cleanup }) => {
+      const lastWordCounts = new Map<string, number>();
+      const editedFolios = new Set<string>();
+      let disposed = false;
+      cleanup(() => {
+        disposed = true;
+      });
+      // Download the editing engine concurrently with local workspace recovery.
+      // The editor reports an import failure when it actually needs the engine.
+      void loadEditorRuntime().catch(() => undefined);
 
-    (async () => {
-      try {
-        const legacyBrief = loadProjectBrief();
-        const [folios, activeFolioId] = await Promise.all([
-          loadFoliosFromIdb(),
-          loadActiveFolioIdFromIdb(),
-        ]);
-        if (disposed) return;
-        const requestedSharedId = new URLSearchParams(
-          window.location.search,
-        ).get("shared");
+      (async () => {
+        try {
+          const legacyBrief = loadProjectBrief();
+          const [folios, activeFolioId] = await Promise.all([
+            loadFoliosFromIdb(),
+            loadActiveFolioIdFromIdb(),
+          ]);
+          if (disposed) return;
+          const requestedSharedId = new URLSearchParams(
+            window.location.search,
+          ).get("shared");
 
-        // No dossier yet → the writer belongs in onboarding first.
-        if (!legacyBrief && folios.length === 0 && !requestedSharedId) {
-          void nav("/dossier/create/");
-          return;
-        }
+          // No dossier yet → the writer belongs in onboarding first.
+          if (!legacyBrief && folios.length === 0 && !requestedSharedId) {
+            void nav("/dossier/create/");
+            return;
+          }
 
-        // Migration: old storage had a single draft. If we have a brief but no
-        // folios, create a Folio I from the legacy draft key.
-        if (legacyBrief && folios.length === 0) {
-          const legacyDraft = loadLegacyDraftHtml();
-          const draftFolio: Folio = {
-            id: crypto.randomUUID(),
-            name: legacyBrief.answers.workingTitle || "Current draft",
-            type: "draft",
-            createdAt: legacyBrief.completedAt,
-            updatedAt: Date.now(),
-          };
-          await saveFoliosToIdb([draftFolio]);
-          await saveFolioContentToIdb(draftFolio.id, legacyDraft);
-          await saveActiveFolioIdToIdb(draftFolio.id);
-          store.folios = [draftFolio];
-          store.activeFolioId = draftFolio.id;
-          store.editorSeed = legacyDraft;
-          await saveProjectBriefForFolio(draftFolio.id, legacyBrief);
-          markDirty();
-        } else if (folios.length > 0) {
-          store.folios = folios;
-          store.activeFolioId = activeFolioId ?? folios[0].id;
-        }
+          // Migration: old storage had a single draft. If we have a brief but no
+          // folios, create a Folio I from the legacy draft key.
+          if (legacyBrief && folios.length === 0) {
+            const legacyDraft = loadLegacyDraftHtml();
+            const draftFolio: Folio = {
+              id: crypto.randomUUID(),
+              name: legacyBrief.answers.workingTitle || "Current draft",
+              type: "draft",
+              createdAt: legacyBrief.completedAt,
+              updatedAt: Date.now(),
+            };
+            await saveFoliosToIdb([draftFolio]);
+            await saveFolioContentToIdb(draftFolio.id, legacyDraft);
+            await saveActiveFolioIdToIdb(draftFolio.id);
+            store.folios = [draftFolio];
+            store.activeFolioId = draftFolio.id;
+            store.editorSeed = legacyDraft;
+            await saveProjectBriefForFolio(draftFolio.id, legacyBrief);
+            markDirty();
+          } else if (folios.length > 0) {
+            store.folios = folios;
+            store.activeFolioId = activeFolioId ?? folios[0].id;
+          }
 
-        const openingFolioId = store.activeFolioId;
-        // Recovery must precede reading the manuscript. Independent dossier
-        // reads and ownership migration can run alongside it.
-        const [content, brief] = await Promise.all([
-          (async () => {
-            if (!openingFolioId) return "";
-            if (await recoverFolioContentFromCrashMirror(openingFolioId)) {
-              markDirty(["folioContent"], openingFolioId);
-            }
-            return loadFolioContentFromIdb(openingFolioId);
-          })(),
-          loadProjectBriefForFolio(openingFolioId),
-          openingFolioId
-            ? migrateLegacyEditorialArtifacts(
-                openingFolioId,
-                canClaimLegacyEditorialArtifacts(
-                  store.folios.map((folio) => folio.id),
+          const openingFolioId = store.activeFolioId;
+          // Recovery must precede reading the manuscript. Independent dossier
+          // reads and ownership migration can run alongside it.
+          const [content, brief] = await Promise.all([
+            (async () => {
+              if (!openingFolioId) return "";
+              if (await recoverFolioContentFromCrashMirror(openingFolioId)) {
+                markDirty(["folioContent"], openingFolioId);
+              }
+              return loadFolioContentFromIdb(openingFolioId);
+            })(),
+            loadProjectBriefForFolio(openingFolioId),
+            openingFolioId
+              ? migrateLegacyEditorialArtifacts(
                   openingFolioId,
-                ),
-              )
-            : Promise.resolve(),
-        ]);
-        if (disposed) return;
-        store.editorSeed = content;
-        store.brief = brief;
-        // Only legacy fallback needs the complete dossier collection.
-        const folioDossiers =
-          !store.brief && legacyBrief ? await loadAllBriefsFromIdb() : null;
-        if (
-          !store.brief &&
-          folioDossiers?.length === 0 &&
-          legacyBrief &&
-          store.activeFolioId
-        ) {
-          await saveProjectBriefForFolio(store.activeFolioId, legacyBrief);
-          store.brief = legacyBrief;
-        }
-        if (disposed) return;
-        store.hydrated = true;
+                  canClaimLegacyEditorialArtifacts(
+                    store.folios.map((folio) => folio.id),
+                    openingFolioId,
+                  ),
+                )
+              : Promise.resolve(),
+          ]);
+          if (disposed) return;
+          store.editorSeed = content;
+          store.brief = brief;
+          // Only legacy fallback needs the complete dossier collection.
+          const folioDossiers =
+            !store.brief && legacyBrief ? await loadAllBriefsFromIdb() : null;
+          if (
+            !store.brief &&
+            folioDossiers?.length === 0 &&
+            legacyBrief &&
+            store.activeFolioId
+          ) {
+            await saveProjectBriefForFolio(store.activeFolioId, legacyBrief);
+            store.brief = legacyBrief;
+          }
+          if (disposed) return;
+          store.hydrated = true;
+          store.filedOnArrival = takeDossierFiledForDesk();
+          // Folios filed before names and titles were linked: a stand-in
+          // name takes its dossier's working title.
+          void (async () => {
+            const renamed = await Promise.all(
+              store.folios.map(async (folio) => {
+                if (!isPlaceholderFolioName(folio.name)) return folio;
+                const title = briefTitleFromFolioName(
+                  (await loadProjectBriefForFolio(folio.id))?.answers
+                    .workingTitle,
+                );
+                return title ? { ...folio, name: title } : folio;
+              }),
+            );
+            if (renamed.some((folio, i) => folio !== store.folios[i])) {
+              store.folios = renamed;
+              await saveFoliosToIdb(renamed);
+              markDirty(["folios"]);
+            }
+          })();
+          if (store.filedOnArrival)
+            setTimeout(() => {
+              store.filedOnArrival = null;
+            }, DOSSIER_FILED_FEEDBACK_MS + 420);
 
-        const openedFolio = store.folios.find(
-          (folio) => folio.id === store.activeFolioId,
-        );
-        if (openedFolio) {
-          lastWordCounts.set(openedFolio.id, countDraftWords(store.editorSeed));
-          void captureProductEvent("folio_opened", {
-            source: "editor",
-            folio_type: openedFolio.type,
+          const openedFolio = store.folios.find(
+            (folio) => folio.id === store.activeFolioId,
+          );
+          if (openedFolio) {
+            lastWordCounts.set(
+              openedFolio.id,
+              countDraftWords(store.editorSeed),
+            );
+            void captureProductEvent("folio_opened", {
+              source: "editor",
+              folio_type: openedFolio.type,
+            });
+          }
+
+          // Surface the local-only sign-in nudge unless it was dismissed before.
+          const dismissed = await loadMetaFromIdb<boolean>(
+            "signin-toast-dismissed",
+          ).catch((error) => {
+            reportApplicationDiagnostic("twyne:editor:signin-nudge", error);
+            return true;
+          });
+          if (disposed) return;
+          store.signInToastDismissed = dismissed === true;
+
+          // Arriving from the landing "Sign in" link → open the auth panel.
+          if (new URLSearchParams(window.location.search).get("auth") === "1") {
+            accountOpen.value = true;
+          }
+        } catch (err) {
+          if (disposed) return;
+          reportApplicationDiagnostic("twyne:editor:open-workspace", err, {
+            operation: "open-workspace",
+          });
+          store.workspaceError = normalizeApplicationError(err, {
+            source: "application",
+            metadata: { operation: "open-workspace" },
           });
         }
+      })();
 
-        // Surface the local-only sign-in nudge unless it was dismissed before.
-        const dismissed = await loadMetaFromIdb<boolean>(
-          "signin-toast-dismissed",
-        ).catch((error) => {
-          reportApplicationDiagnostic("twyne:editor:signin-nudge", error);
-          return true;
-        });
-        if (disposed) return;
-        store.signInToastDismissed = dismissed === true;
+      // ── Coalesced local persistence ────────────────────────────────────
+      // `twyne:content` already arrives coalesced from the editor, so this only
+      // needs to absorb bursts from non-typing sources (folio metadata edits)
+      // and to force a flush when the tab is hidden so a quick close never
+      // drops the tail.
+      //
+      // Only lifecycle departures write the synchronous crash mirror.
+      // Folio-scoped IndexedDB remains the store of record during typing.
+      const LOCAL_PERSIST_DEBOUNCE_MS = 400;
+      let localPersistTimer: number | null = null;
+      let pendingDraftHtml: string | null = null;
+      let pendingDraftFolioId: string | null = null;
+      let folioArrayDirty = false;
+      let pageLeaving = false;
+      const unacknowledgedDrafts = new Map<string, string>();
 
-        // Arriving from the landing "Sign in" link → open the auth panel.
-        if (new URLSearchParams(window.location.search).get("auth") === "1") {
-          accountOpen.value = true;
+      const flushLocalPersist = (leaving = false) => {
+        localPersistTimer = null;
+        // A timer may already have started the IDB write and cleared pending.
+        // Keep that draft recoverable until its own acknowledgement arrives.
+        if (leaving) {
+          for (const [folioId, html] of unacknowledgedDrafts) {
+            if (folioId === store.activeFolioId) continue;
+            writeCrashMirror(folioId, html);
+          }
+          // The legacy emergency slot contains one folio. A save from a folio
+          // opened earlier must never displace the manuscript being left now.
+          const activeHtml =
+            store.activeFolioId &&
+            unacknowledgedDrafts.get(store.activeFolioId);
+          if (
+            store.activeFolioId &&
+            activeHtml !== undefined &&
+            activeHtml !== null
+          ) {
+            writeCrashMirror(store.activeFolioId, activeHtml);
+          }
         }
-      } catch (err) {
-        if (disposed) return;
-        reportApplicationDiagnostic("twyne:editor:open-workspace", err, {
-          operation: "open-workspace",
-        });
-        store.workspaceError = normalizeApplicationError(err, {
-          source: "application",
-          metadata: { operation: "open-workspace" },
-        });
-      }
-    })();
-
-    // ── Coalesced local persistence ────────────────────────────────────
-    // `twyne:content` already arrives coalesced from the editor, so this only
-    // needs to absorb bursts from non-typing sources (folio metadata edits)
-    // and to force a flush when the tab is hidden so a quick close never
-    // drops the tail.
-    //
-    // Only lifecycle departures write the synchronous crash mirror.
-    // Folio-scoped IndexedDB remains the store of record during typing.
-    const LOCAL_PERSIST_DEBOUNCE_MS = 400;
-    let localPersistTimer: number | null = null;
-    let pendingDraftHtml: string | null = null;
-    let pendingDraftFolioId: string | null = null;
-    let folioArrayDirty = false;
-    let pageLeaving = false;
-    const unacknowledgedDrafts = new Map<string, string>();
-
-    const flushLocalPersist = (leaving = false) => {
-      localPersistTimer = null;
-      // A timer may already have started the IDB write and cleared pending.
-      // Keep that draft recoverable until its own acknowledgement arrives.
-      if (leaving) {
-        for (const [folioId, html] of unacknowledgedDrafts) {
-          if (folioId === store.activeFolioId) continue;
-          writeCrashMirror(folioId, html);
+        if (pendingDraftHtml !== null && pendingDraftFolioId !== null) {
+          const [html, folioId] = [pendingDraftHtml, pendingDraftFolioId];
+          pendingDraftHtml = null;
+          pendingDraftFolioId = null;
+          // On the way out the IndexedDB write may not get to commit, so leave a
+          // synchronous copy behind first. During normal typing this is skipped.
+          void saveFolioContentToIdb(folioId, html)
+            .then(() => {
+              if (unacknowledgedDrafts.get(folioId) === html) {
+                unacknowledgedDrafts.delete(folioId);
+              }
+              clearCrashMirror(folioId, html);
+              void usageLedger
+                .recordWritingActivity({ folioId })
+                .catch(() => undefined);
+              void createRevisionSnapshot({
+                folioId,
+                html,
+                source: "automatic",
+              });
+              // "Saved Xs ago" means on disk, so stamp it only once IDB commits.
+              window.dispatchEvent(
+                new CustomEvent("twyne:draft-saved", { detail: { folioId } }),
+              );
+            })
+            .catch((error) =>
+              reportApplicationDiagnostic("twyne:editor:save-draft", error, {
+                operation: "save-draft",
+              }),
+            );
         }
-        // The legacy emergency slot contains one folio. A save from a folio
-        // opened earlier must never displace the manuscript being left now.
-        const activeHtml =
-          store.activeFolioId && unacknowledgedDrafts.get(store.activeFolioId);
-        if (
-          store.activeFolioId &&
-          activeHtml !== undefined &&
-          activeHtml !== null
-        ) {
-          writeCrashMirror(store.activeFolioId, activeHtml);
+        if (folioArrayDirty) {
+          folioArrayDirty = false;
+          void saveFoliosToIdb(store.folios);
         }
-      }
-      if (pendingDraftHtml !== null && pendingDraftFolioId !== null) {
-        const [html, folioId] = [pendingDraftHtml, pendingDraftFolioId];
+      };
+
+      const scheduleLocalPersist = () => {
+        if (localPersistTimer !== null) return;
+        localPersistTimer = window.setTimeout(
+          flushLocalPersist,
+          LOCAL_PERSIST_DEBOUNCE_MS,
+        );
+      };
+
+      const flushLocalPersistNow = (leaving = false) => {
+        if (localPersistTimer !== null) {
+          window.clearTimeout(localPersistTimer);
+          localPersistTimer = null;
+        }
+        flushLocalPersist(leaving);
+      };
+
+      const cancelStaleVisualSave = (event: Event) => {
+        const { folioId } = (event as CustomEvent<{ folioId: string }>).detail;
+        unacknowledgedDrafts.delete(folioId);
+        clearCrashMirror(folioId);
+        if (pendingDraftFolioId !== folioId) return;
+        if (localPersistTimer !== null) window.clearTimeout(localPersistTimer);
+        localPersistTimer = null;
         pendingDraftHtml = null;
         pendingDraftFolioId = null;
-        // On the way out the IndexedDB write may not get to commit, so leave a
-        // synchronous copy behind first. During normal typing this is skipped.
-        void saveFolioContentToIdb(folioId, html)
-          .then(() => {
-            if (unacknowledgedDrafts.get(folioId) === html) {
-              unacknowledgedDrafts.delete(folioId);
-            }
-            clearCrashMirror(folioId, html);
-            void usageLedger
-              .recordWritingActivity({ folioId })
-              .catch(() => undefined);
-            void createRevisionSnapshot({
-              folioId,
-              html,
-              source: "automatic",
+      };
+      const sourceCommitted = (event: Event) => {
+        const { folioId } = (event as CustomEvent<{ folioId: string }>).detail;
+        markDirty(["folioContent"], folioId);
+      };
+      window.addEventListener("twyne:typst-applying", cancelStaleVisualSave);
+      window.addEventListener("twyne:typst-source-committed", sourceCommitted);
+      const remoteSaved = (event: Event) => {
+        if (
+          (event as CustomEvent<FolioContentSavedDetail>).detail.origin ===
+          "remote"
+        ) {
+          cancelStaleVisualSave(event);
+        }
+      };
+      window.addEventListener(FOLIO_CONTENT_SAVED, remoteSaved);
+      cleanup(() => {
+        window.removeEventListener(
+          "twyne:typst-applying",
+          cancelStaleVisualSave,
+        );
+        window.removeEventListener(FOLIO_CONTENT_SAVED, remoteSaved);
+        window.removeEventListener(
+          "twyne:typst-source-committed",
+          sourceCommitted,
+        );
+      });
+
+      const onLocalPersistPageHide = () => {
+        // pagehide can precede visibilitychange during a same-tab navigation.
+        // Keep departure explicit so a later editor listener cannot schedule a
+        // new debounce after this route listener has already flushed.
+        pageLeaving = true;
+        flushLocalPersistNow(true);
+      };
+      const onLocalPersistPageShow = () => {
+        pageLeaving = false;
+      };
+      const onLocalPersistVisibility = () => {
+        if (document.visibilityState === "hidden") flushLocalPersistNow(true);
+      };
+
+      // ── Save editor content to the active folio ──
+      const contentHandler = (e: Event) => {
+        const { html, wordCount: currentWordCount } = (
+          e as CustomEvent<DraftContentDetail>
+        ).detail;
+        if (store.activeFolioId) {
+          const folioId = store.activeFolioId;
+          const previousWordCount =
+            lastWordCounts.get(folioId) ?? currentWordCount;
+
+          if (!editedFolios.has(folioId)) {
+            editedFolios.add(folioId);
+            void captureProductEvent("draft_milestone_reached", {
+              milestone: "first_edit",
+              word_count_bucket: wordCountBucket(currentWordCount),
             });
-            // "Saved Xs ago" means on disk, so stamp it only once IDB commits.
-            window.dispatchEvent(
-              new CustomEvent("twyne:draft-saved", { detail: { folioId } }),
-            );
-          })
-          .catch((error) =>
-            reportApplicationDiagnostic("twyne:editor:save-draft", error, {
-              operation: "save-draft",
-            }),
-          );
-      }
-      if (folioArrayDirty) {
-        folioArrayDirty = false;
-        void saveFoliosToIdb(store.folios);
-      }
-    };
+          }
+          for (const milestone of crossedDraftMilestones(
+            previousWordCount,
+            currentWordCount,
+          )) {
+            if (milestone === "first_edit") continue;
+            void captureProductEvent("draft_milestone_reached", {
+              milestone,
+              word_count_bucket: wordCountBucket(currentWordCount),
+            });
+          }
+          lastWordCounts.set(folioId, currentWordCount);
 
-    const scheduleLocalPersist = () => {
-      if (localPersistTimer !== null) return;
-      localPersistTimer = window.setTimeout(
-        flushLocalPersist,
-        LOCAL_PERSIST_DEBOUNCE_MS,
-      );
-    };
-
-    const flushLocalPersistNow = (leaving = false) => {
-      if (localPersistTimer !== null) {
-        window.clearTimeout(localPersistTimer);
-        localPersistTimer = null;
-      }
-      flushLocalPersist(leaving);
-    };
-
-    const cancelStaleVisualSave = (event: Event) => {
-      const { folioId } = (event as CustomEvent<{ folioId: string }>).detail;
-      unacknowledgedDrafts.delete(folioId);
-      clearCrashMirror(folioId);
-      if (pendingDraftFolioId !== folioId) return;
-      if (localPersistTimer !== null) window.clearTimeout(localPersistTimer);
-      localPersistTimer = null;
-      pendingDraftHtml = null;
-      pendingDraftFolioId = null;
-    };
-    const sourceCommitted = (event: Event) => {
-      const { folioId } = (event as CustomEvent<{ folioId: string }>).detail;
-      markDirty(["folioContent"], folioId);
-    };
-    window.addEventListener("twyne:typst-applying", cancelStaleVisualSave);
-    window.addEventListener("twyne:typst-source-committed", sourceCommitted);
-    const remoteSaved = (event: Event) => {
-      if (
-        (event as CustomEvent<FolioContentSavedDetail>).detail.origin ===
-        "remote"
-      ) {
-        cancelStaleVisualSave(event);
-      }
-    };
-    window.addEventListener(FOLIO_CONTENT_SAVED, remoteSaved);
-    cleanup(() => {
-      window.removeEventListener("twyne:typst-applying", cancelStaleVisualSave);
-      window.removeEventListener(FOLIO_CONTENT_SAVED, remoteSaved);
-      window.removeEventListener(
-        "twyne:typst-source-committed",
-        sourceCommitted,
-      );
-    });
-
-    const onLocalPersistPageHide = () => {
-      // pagehide can precede visibilitychange during a same-tab navigation.
-      // Keep departure explicit so a later editor listener cannot schedule a
-      // new debounce after this route listener has already flushed.
-      pageLeaving = true;
-      flushLocalPersistNow(true);
-    };
-    const onLocalPersistPageShow = () => {
-      pageLeaving = false;
-    };
-    const onLocalPersistVisibility = () => {
-      if (document.visibilityState === "hidden") flushLocalPersistNow(true);
-    };
-
-    // ── Save editor content to the active folio ──
-    const contentHandler = (e: Event) => {
-      const { html, wordCount: currentWordCount } = (
-        e as CustomEvent<DraftContentDetail>
-      ).detail;
-      if (store.activeFolioId) {
-        const folioId = store.activeFolioId;
-        const previousWordCount =
-          lastWordCounts.get(folioId) ?? currentWordCount;
-
-        if (!editedFolios.has(folioId)) {
-          editedFolios.add(folioId);
-          void captureProductEvent("draft_milestone_reached", {
-            milestone: "first_edit",
-            word_count_bucket: wordCountBucket(currentWordCount),
-          });
+          const idx = store.folios.findIndex((f) => f.id === folioId);
+          if (idx >= 0) {
+            store.folios[idx].updatedAt = Date.now();
+            folioArrayDirty = true;
+          }
+          pendingDraftHtml = html;
+          pendingDraftFolioId = folioId;
+          unacknowledgedDrafts.set(folioId, html);
+          // When the editor flushes its derive because the page is going away,
+          // there is no later tick to coalesce into — write it out now.
+          if (pageLeaving || document.visibilityState === "hidden") {
+            flushLocalPersistNow(true);
+          } else {
+            scheduleLocalPersist();
+          }
+          markDirty(["folioContent", "folios"], folioId);
         }
-        for (const milestone of crossedDraftMilestones(
-          previousWordCount,
-          currentWordCount,
-        )) {
-          if (milestone === "first_edit") continue;
-          void captureProductEvent("draft_milestone_reached", {
-            milestone,
-            word_count_bucket: wordCountBucket(currentWordCount),
-          });
-        }
-        lastWordCounts.set(folioId, currentWordCount);
-
-        const idx = store.folios.findIndex((f) => f.id === folioId);
-        if (idx >= 0) {
-          store.folios[idx].updatedAt = Date.now();
-          folioArrayDirty = true;
-        }
-        pendingDraftHtml = html;
-        pendingDraftFolioId = folioId;
-        unacknowledgedDrafts.set(folioId, html);
-        // When the editor flushes its derive because the page is going away,
-        // there is no later tick to coalesce into — write it out now.
-        if (pageLeaving || document.visibilityState === "hidden") {
-          flushLocalPersistNow(true);
-        } else {
-          scheduleLocalPersist();
-        }
-        markDirty(["folioContent", "folios"], folioId);
-      }
-    };
-    window.addEventListener("twyne:content", contentHandler);
-    cleanup(() => window.removeEventListener("twyne:content", contentHandler));
-
-    // A hidden tab is a reliable cue that the writer is leaving — flush the
-    // pending draft synchronously instead of waiting on the coalesce window.
-    window.addEventListener("pagehide", onLocalPersistPageHide);
-    window.addEventListener("pageshow", onLocalPersistPageShow);
-    document.addEventListener("visibilitychange", onLocalPersistVisibility);
-    cleanup(() => {
-      window.removeEventListener("pagehide", onLocalPersistPageHide);
-      window.removeEventListener("pageshow", onLocalPersistPageShow);
-      document.removeEventListener(
-        "visibilitychange",
-        onLocalPersistVisibility,
-      );
-      if (localPersistTimer !== null) {
-        window.clearTimeout(localPersistTimer);
-        localPersistTimer = null;
-      }
-    });
-
-    const loadFolioHandler = (e: Event) => {
-      if (!store.activeFolioId) return;
-      const html = (e as CustomEvent).detail as string;
-      lastWordCounts.set(store.activeFolioId, countDraftWords(html));
-    };
-    window.addEventListener("twyne:load-folio", loadFolioHandler);
-    cleanup(() =>
-      window.removeEventListener("twyne:load-folio", loadFolioHandler),
-    );
-
-    // ── Persist layout (width, margin, running header, page numbers) ──
-    const layoutHandler = (e: Event) => {
-      if (store.sharedRole === "commenter") return;
-      const next = (e as CustomEvent).detail;
-      if (!next || !store.activeFolioId) return;
-      const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
-      if (idx < 0) return;
-      store.folios[idx] = {
-        ...store.folios[idx],
-        layout: next,
-        updatedAt: Date.now(),
       };
-      folioArrayDirty = true;
-      scheduleLocalPersist();
-      markDirty(["folios"]);
-    };
-    window.addEventListener("twyne:layout", layoutHandler);
-    cleanup(() => window.removeEventListener("twyne:layout", layoutHandler));
+      window.addEventListener("twyne:content", contentHandler);
+      cleanup(() =>
+        window.removeEventListener("twyne:content", contentHandler),
+      );
 
-    // ── Persist editable running header / footer text ──
-    const headerHandler = (e: Event) => {
-      if (store.sharedRole === "commenter") return;
-      const text = (e as CustomEvent).detail as string;
-      if (!store.activeFolioId) return;
-      const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
-      if (idx < 0) return;
-      store.folios[idx] = {
-        ...store.folios[idx],
-        header: text,
-        updatedAt: Date.now(),
+      // A hidden tab is a reliable cue that the writer is leaving — flush the
+      // pending draft synchronously instead of waiting on the coalesce window.
+      window.addEventListener("pagehide", onLocalPersistPageHide);
+      window.addEventListener("pageshow", onLocalPersistPageShow);
+      document.addEventListener("visibilitychange", onLocalPersistVisibility);
+      cleanup(() => {
+        window.removeEventListener("pagehide", onLocalPersistPageHide);
+        window.removeEventListener("pageshow", onLocalPersistPageShow);
+        document.removeEventListener(
+          "visibilitychange",
+          onLocalPersistVisibility,
+        );
+        if (localPersistTimer !== null) {
+          window.clearTimeout(localPersistTimer);
+          localPersistTimer = null;
+        }
+      });
+
+      const loadFolioHandler = (e: Event) => {
+        if (!store.activeFolioId) return;
+        const html = (e as CustomEvent).detail as string;
+        lastWordCounts.set(store.activeFolioId, countDraftWords(html));
       };
-      folioArrayDirty = true;
-      scheduleLocalPersist();
-      markDirty(["folios"]);
-    };
-    const footerHandler = (e: Event) => {
-      if (store.sharedRole === "commenter") return;
-      const text = (e as CustomEvent).detail as string;
-      if (!store.activeFolioId) return;
-      const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
-      if (idx < 0) return;
-      store.folios[idx] = {
-        ...store.folios[idx],
-        footer: text,
-        updatedAt: Date.now(),
-      };
-      folioArrayDirty = true;
-      scheduleLocalPersist();
-      markDirty(["folios"]);
-    };
-    window.addEventListener("twyne:header", headerHandler);
-    window.addEventListener("twyne:footer", footerHandler);
-    cleanup(() => window.removeEventListener("twyne:header", headerHandler));
-    cleanup(() => window.removeEventListener("twyne:footer", footerHandler));
+      window.addEventListener("twyne:load-folio", loadFolioHandler);
+      cleanup(() =>
+        window.removeEventListener("twyne:load-folio", loadFolioHandler),
+      );
 
-    // A margin tool opened from the board needs the margin the board covers.
-    const inFlowOpenHandler = () => {
-      store.rightPanelOpen = false;
-      setVisiblePanel(null);
-    };
-    window.addEventListener(IN_FLOW_OPEN_EVENT, inFlowOpenHandler);
-    cleanup(() =>
-      window.removeEventListener(IN_FLOW_OPEN_EVENT, inFlowOpenHandler),
-    );
-
-    // Zen mode: collapse both side panels to give the manuscript the full
-    // width, and put them back the way they were on exit.
-    const zenModeHandler = (e: Event) => {
-      const detail = (e as CustomEvent<{ on?: boolean; source?: string }>)
-        .detail;
-      const on = !!detail?.on;
-      // Manual/device preferences own the layout. Flow never shifts the caret.
-      if (detail?.source === "flow") return;
-      store.zenActive = on;
-      if (on) {
-        if (store.panelsBeforeZen) return;
-        store.panelsBeforeZen = {
-          left: store.leftSidebarOpen,
-          right: store.rightPanelOpen,
+      // ── Persist layout (width, margin, running header, page numbers) ──
+      const layoutHandler = (e: Event) => {
+        if (store.sharedRole === "commenter") return;
+        const next = (e as CustomEvent).detail;
+        if (!next || !store.activeFolioId) return;
+        const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
+        if (idx < 0) return;
+        store.folios[idx] = {
+          ...store.folios[idx],
+          layout: next,
+          updatedAt: Date.now(),
         };
-        store.leftSidebarOpen = false;
+        folioArrayDirty = true;
+        scheduleLocalPersist();
+        markDirty(["folios"]);
+      };
+      window.addEventListener("twyne:layout", layoutHandler);
+      cleanup(() => window.removeEventListener("twyne:layout", layoutHandler));
+
+      // ── Persist editable running header / footer text ──
+      const headerHandler = (e: Event) => {
+        if (store.sharedRole === "commenter") return;
+        const text = (e as CustomEvent).detail as string;
+        if (!store.activeFolioId) return;
+        const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
+        if (idx < 0) return;
+        store.folios[idx] = {
+          ...store.folios[idx],
+          header: text,
+          updatedAt: Date.now(),
+        };
+        folioArrayDirty = true;
+        scheduleLocalPersist();
+        markDirty(["folios"]);
+      };
+      const footerHandler = (e: Event) => {
+        if (store.sharedRole === "commenter") return;
+        const text = (e as CustomEvent).detail as string;
+        if (!store.activeFolioId) return;
+        const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
+        if (idx < 0) return;
+        store.folios[idx] = {
+          ...store.folios[idx],
+          footer: text,
+          updatedAt: Date.now(),
+        };
+        folioArrayDirty = true;
+        scheduleLocalPersist();
+        markDirty(["folios"]);
+      };
+      window.addEventListener("twyne:header", headerHandler);
+      window.addEventListener("twyne:footer", footerHandler);
+      cleanup(() => window.removeEventListener("twyne:header", headerHandler));
+      cleanup(() => window.removeEventListener("twyne:footer", footerHandler));
+
+      // A margin tool opened from the board needs the margin the board covers.
+      const inFlowOpenHandler = () => {
         store.rightPanelOpen = false;
-      } else if (store.panelsBeforeZen) {
-        store.leftSidebarOpen = store.panelsBeforeZen.left;
-        store.rightPanelOpen = store.panelsBeforeZen.right;
-        store.panelsBeforeZen = null;
-      }
-    };
-    window.addEventListener("twyne:zen-mode", zenModeHandler);
-    cleanup(() => window.removeEventListener("twyne:zen-mode", zenModeHandler));
-
-    // The Drawer still undocks when the viewport is narrow. The Editorial
-    // Board is now an overlay with its own mobile layout, so it no longer
-    // needs to be closed just to preserve the manuscript measure.
-    const onWindowResize = () => {
-      const max = maxRightPanelWidth(store.leftSidebarOpen);
-      if (store.rightPanelWidth > max) store.rightPanelWidth = max;
-
-      // On a phone there is no room to dock anything: both rails together
-      // reserved 548px of a 390px screen, leaving the manuscript 122px. Undock
-      // them instead of rendering a column too narrow to write in. This runs
-      // on mount too, so the editor opens usable rather than opening wrong and
-      // waiting for a resize that never comes.
-      if (!fitsDockedPanel(store.leftSidebarOpen)) {
-        if (store.leftSidebarOpen) store.leftSidebarOpen = false;
-      }
-    };
-    window.addEventListener("resize", onWindowResize);
-    onWindowResize();
-    cleanup(() => window.removeEventListener("resize", onWindowResize));
-
-    const onDraftContent = (e: Event) => {
-      // `text` arrives with blocks already separated by a blank line, which is
-      // exactly what the room's paragraph splitter wants. Research wants it
-      // flattened. Both used to be reconstructed from `html` by ~15 chained
-      // regexes, each allocating another copy of the whole manuscript.
-      const { text } = (e as CustomEvent<DraftContentDetail>).detail;
-      onDraftChanged(text.replace(/\s+/g, " ").trim());
-      onDraftChangedForRoom(text);
-    };
-    window.addEventListener("twyne:content", onDraftContent);
-    const onVoicePanel = (event: Event) => {
-      const detail = (
-        event as CustomEvent<{ target: string; handled: boolean }>
-      ).detail;
-      const panel = (
-        {
-          room: "personas",
-          comments: "comments",
-          research: "citations",
-        } as const
-      )[detail.target as "room" | "comments" | "research"];
-      if (panel) {
-        store.rightPanel = panel;
-        store.rightPanelOpen = true;
-        detail.handled = true;
-      }
-      if (detail.target === "dossier") {
-        store.leftSidebarOpen = true;
-        detail.handled = true;
-      }
-    };
-    window.addEventListener("twyne:voice-open-panel", onVoicePanel);
-    cleanup(() =>
-      window.removeEventListener("twyne:voice-open-panel", onVoicePanel),
-    );
-
-    // When the writer replies to an editor's note from the inline modal, the
-    // Cast panel handles the thread. Reveal it so they see the reply land.
-    const onPersonaReply = () => {
-      store.rightPanel = "personas";
-      store.rightPanelOpen = true;
-      setVisiblePanel("personas");
-    };
-    window.addEventListener("twyne:persona-reply", onPersonaReply);
-
-    // A margin card's expand button: show its full thread on the board.
-    const onOpenFullThread = (event: Event) => {
-      const { kind } = (event as CustomEvent<OpenFullThreadDetail>).detail;
-      store.rightPanel = kind === "comment" ? "comments" : "personas";
-      store.rightPanelOpen = true;
-      setVisiblePanel(store.rightPanel);
-    };
-    window.addEventListener(OPEN_FULL_THREAD_EVENT, onOpenFullThread);
-
-    // ── Unread counts on the board tabs ──
-    const stopActivity = startPanelActivity();
-    setVisiblePanel(store.rightPanelOpen ? store.rightPanel : null);
-    const onActivity = (e: Event) => {
-      store.activity = (e as CustomEvent).detail as ActivityCounts;
-    };
-    window.addEventListener("twyne:panel-activity", onActivity);
-
-    const onRemoteSync = async (event: Event) => {
-      const detail = (event as CustomEvent).detail as
-        | { folioContent?: string[]; briefs?: string[] }
-        | undefined;
-      const folios = await loadFoliosFromIdb();
-      const storedActive = await loadActiveFolioIdFromIdb();
-      const activeFolioId = folios.some(
-        (folio) => folio.id === store.activeFolioId,
-      )
-        ? store.activeFolioId
-        : storedActive && folios.some((folio) => folio.id === storedActive)
-          ? storedActive
-          : (folios[0]?.id ?? null);
-      // Another tab or device edited something else: keep this editor, its
-      // cursor and its undo history, and refresh only the folio list.
-      if (
-        detail?.folioContent &&
-        activeFolioId === store.activeFolioId &&
-        activeFolioId &&
-        !detail.folioContent.includes(activeFolioId)
-      ) {
-        store.folios = folios;
-        if (detail.briefs?.includes(activeFolioId)) {
-          store.brief = await loadProjectBriefForFolio(activeFolioId);
-          store.briefEditions = await loadBriefEditions(activeFolioId);
-        }
-        store.activity = panelActivity();
-        return;
-      }
-      const [content, brief, briefEditions] = activeFolioId
-        ? await Promise.all([
-            loadFolioContentFromIdb(activeFolioId),
-            loadProjectBriefForFolio(activeFolioId),
-            loadBriefEditions(activeFolioId),
-          ])
-        : ["", null, []];
-      store.folios = folios;
-      store.activeFolioId = activeFolioId;
-      store.editorSeed = content;
-      store.brief = brief;
-      store.briefEditions = briefEditions;
-      store.folioKey += 1;
-      store.activity = panelActivity();
-      window.dispatchEvent(
-        new CustomEvent("twyne:load-folio", { detail: content }),
+        setVisiblePanel(null);
+      };
+      window.addEventListener(IN_FLOW_OPEN_EVENT, inFlowOpenHandler);
+      cleanup(() =>
+        window.removeEventListener(IN_FLOW_OPEN_EVENT, inFlowOpenHandler),
       );
-    };
-    window.addEventListener("twyne:remote-sync", onRemoteSync);
 
-    cleanup(() => {
-      stopActivity();
-      window.removeEventListener("twyne:panel-activity", onActivity);
-      window.removeEventListener("twyne:content", onDraftContent);
-      window.removeEventListener("twyne:persona-reply", onPersonaReply);
-      window.removeEventListener(OPEN_FULL_THREAD_EVENT, onOpenFullThread);
-      window.removeEventListener("twyne:remote-sync", onRemoteSync);
-    });
-  }, { strategy: "document-ready" });
+      // Zen mode: collapse both side panels to give the manuscript the full
+      // width, and put them back the way they were on exit.
+      const zenModeHandler = (e: Event) => {
+        const detail = (e as CustomEvent<{ on?: boolean; source?: string }>)
+          .detail;
+        const on = !!detail?.on;
+        // Manual/device preferences own the layout. Flow never shifts the caret.
+        if (detail?.source === "flow") return;
+        store.zenActive = on;
+        if (on) {
+          if (store.panelsBeforeZen) return;
+          store.panelsBeforeZen = {
+            left: store.leftSidebarOpen,
+            right: store.rightPanelOpen,
+          };
+          store.leftSidebarOpen = false;
+          store.rightPanelOpen = false;
+        } else if (store.panelsBeforeZen) {
+          store.leftSidebarOpen = store.panelsBeforeZen.left;
+          store.rightPanelOpen = store.panelsBeforeZen.right;
+          store.panelsBeforeZen = null;
+        }
+      };
+      window.addEventListener("twyne:zen-mode", zenModeHandler);
+      cleanup(() =>
+        window.removeEventListener("twyne:zen-mode", zenModeHandler),
+      );
+
+      // A working title filed in the dossier renames its folio.
+      const folioRenamed = (e: Event) => {
+        const { folioId, name } = (
+          e as CustomEvent<{ folioId: string; name: string }>
+        ).detail;
+        store.folios = store.folios.map((folio) =>
+          folio.id === folioId ? { ...folio, name } : folio,
+        );
+      };
+      window.addEventListener(FOLIO_RENAMED_EVENT, folioRenamed);
+      cleanup(() =>
+        window.removeEventListener(FOLIO_RENAMED_EVENT, folioRenamed),
+      );
+
+      // The Drawer still undocks when the viewport is narrow. The Editorial
+      // Board is now an overlay with its own mobile layout, so it no longer
+      // needs to be closed just to preserve the manuscript measure.
+      const onWindowResize = () => {
+        const max = maxRightPanelWidth(store.leftSidebarOpen);
+        if (store.rightPanelWidth > max) store.rightPanelWidth = max;
+
+        // On a phone there is no room to dock anything: both rails together
+        // reserved 548px of a 390px screen, leaving the manuscript 122px. Undock
+        // them instead of rendering a column too narrow to write in. This runs
+        // on mount too, so the editor opens usable rather than opening wrong and
+        // waiting for a resize that never comes.
+        if (!fitsDockedPanel(store.leftSidebarOpen)) {
+          if (store.leftSidebarOpen) store.leftSidebarOpen = false;
+        }
+      };
+      window.addEventListener("resize", onWindowResize);
+      onWindowResize();
+      cleanup(() => window.removeEventListener("resize", onWindowResize));
+
+      const onDraftContent = (e: Event) => {
+        // `text` arrives with blocks already separated by a blank line, which is
+        // exactly what the room's paragraph splitter wants. Research wants it
+        // flattened. Both used to be reconstructed from `html` by ~15 chained
+        // regexes, each allocating another copy of the whole manuscript.
+        const { text } = (e as CustomEvent<DraftContentDetail>).detail;
+        onDraftChanged(text.replace(/\s+/g, " ").trim());
+        onDraftChangedForRoom(text);
+      };
+      window.addEventListener("twyne:content", onDraftContent);
+      const onVoicePanel = (event: Event) => {
+        const detail = (
+          event as CustomEvent<{ target: string; handled: boolean }>
+        ).detail;
+        const panel = (
+          {
+            room: "personas",
+            comments: "comments",
+            research: "citations",
+          } as const
+        )[detail.target as "room" | "comments" | "research"];
+        if (panel) {
+          store.rightPanel = panel;
+          store.rightPanelOpen = true;
+          detail.handled = true;
+        }
+        if (detail.target === "dossier") {
+          store.leftSidebarOpen = true;
+          detail.handled = true;
+        }
+      };
+      window.addEventListener("twyne:voice-open-panel", onVoicePanel);
+      cleanup(() =>
+        window.removeEventListener("twyne:voice-open-panel", onVoicePanel),
+      );
+
+      // When the writer replies to an editor's note from the inline modal, the
+      // Cast panel handles the thread. Reveal it so they see the reply land.
+      const onPersonaReply = () => {
+        store.rightPanel = "personas";
+        store.rightPanelOpen = true;
+        setVisiblePanel("personas");
+      };
+      window.addEventListener("twyne:persona-reply", onPersonaReply);
+
+      // A margin card's expand button: show its full thread on the board.
+      const onOpenFullThread = (event: Event) => {
+        const { kind } = (event as CustomEvent<OpenFullThreadDetail>).detail;
+        store.rightPanel = kind === "comment" ? "comments" : "personas";
+        store.rightPanelOpen = true;
+        setVisiblePanel(store.rightPanel);
+      };
+      window.addEventListener(OPEN_FULL_THREAD_EVENT, onOpenFullThread);
+
+      // ── Unread counts on the board tabs ──
+      const stopActivity = startPanelActivity();
+      setVisiblePanel(store.rightPanelOpen ? store.rightPanel : null);
+      const onActivity = (e: Event) => {
+        store.activity = (e as CustomEvent).detail as ActivityCounts;
+      };
+      window.addEventListener("twyne:panel-activity", onActivity);
+
+      const onRemoteSync = async (event: Event) => {
+        const detail = (event as CustomEvent).detail as
+          | { folioContent?: string[]; briefs?: string[] }
+          | undefined;
+        const folios = await loadFoliosFromIdb();
+        const storedActive = await loadActiveFolioIdFromIdb();
+        const activeFolioId = folios.some(
+          (folio) => folio.id === store.activeFolioId,
+        )
+          ? store.activeFolioId
+          : storedActive && folios.some((folio) => folio.id === storedActive)
+            ? storedActive
+            : (folios[0]?.id ?? null);
+        // Another tab or device edited something else: keep this editor, its
+        // cursor and its undo history, and refresh only the folio list.
+        if (
+          detail?.folioContent &&
+          activeFolioId === store.activeFolioId &&
+          activeFolioId &&
+          !detail.folioContent.includes(activeFolioId)
+        ) {
+          store.folios = folios;
+          if (detail.briefs?.includes(activeFolioId)) {
+            store.brief = await loadProjectBriefForFolio(activeFolioId);
+            store.briefEditions = await loadBriefEditions(activeFolioId);
+          }
+          store.activity = panelActivity();
+          return;
+        }
+        const [content, brief, briefEditions] = activeFolioId
+          ? await Promise.all([
+              loadFolioContentFromIdb(activeFolioId),
+              loadProjectBriefForFolio(activeFolioId),
+              loadBriefEditions(activeFolioId),
+            ])
+          : ["", null, []];
+        store.folios = folios;
+        store.activeFolioId = activeFolioId;
+        store.editorSeed = content;
+        store.brief = brief;
+        store.briefEditions = briefEditions;
+        store.folioKey += 1;
+        store.activity = panelActivity();
+        window.dispatchEvent(
+          new CustomEvent("twyne:load-folio", { detail: content }),
+        );
+      };
+      window.addEventListener("twyne:remote-sync", onRemoteSync);
+
+      cleanup(() => {
+        stopActivity();
+        window.removeEventListener("twyne:panel-activity", onActivity);
+        window.removeEventListener("twyne:content", onDraftContent);
+        window.removeEventListener("twyne:persona-reply", onPersonaReply);
+        window.removeEventListener(OPEN_FULL_THREAD_EVENT, onOpenFullThread);
+        window.removeEventListener("twyne:remote-sync", onRemoteSync);
+      });
+    },
+    { strategy: "document-ready" },
+  );
 
   // A shared link must survive both first-use onboarding and the asynchronous
   // auth bootstrap. Tracking the signed-in user resumes the join as soon as
@@ -1129,6 +1198,27 @@ export default component$(() => {
     );
   });
 
+  /** One name for the folio and its dossier's working title. */
+  const renameFolio = $(async (id: string, name: string) => {
+    store.folios = await renameFolioEverywhere(id, name);
+    if (id === store.activeFolioId)
+      store.brief = await loadProjectBriefForFolio(id);
+    markDirty(["folios"]);
+  });
+
+  const reorderFolios = $(async (ids: string[]) => {
+    const byId = new Map(store.folios.map((folio) => [folio.id, folio]));
+    const next = ids
+      .map((id) => byId.get(id))
+      .filter((folio): folio is Folio => !!folio);
+    // Anything the drawer didn't list (shouldn't happen) keeps its place last.
+    for (const folio of store.folios)
+      if (!ids.includes(folio.id)) next.push(folio);
+    store.folios = next.map((folio, order) => ({ ...folio, order }));
+    await saveFoliosToIdb(store.folios);
+    markDirty(["folios"]);
+  });
+
   /**
    * Create a blank folio and immediately open its own dossier.
    *
@@ -1192,7 +1282,6 @@ export default component$(() => {
         ? "Owner · Can edit"
         : "Can edit";
 
-
   return (
     <div class="min-h-screen relative">
       {/* ── Local-only nudge: prompt sign-in so work follows across devices ── */}
@@ -1245,6 +1334,18 @@ export default component$(() => {
             </div>
           </div>
         )}
+      {store.filedOnArrival && (
+        <div
+          class="dossier-filed-confirmation dossier-filed-confirmation--desk"
+          role="status"
+          aria-live="polite"
+        >
+          <div class="dossier-filed-confirmation__paper">
+            <WorkflowStamp kind={store.filedOnArrival} />
+            <span>Dossier saved to this folio</span>
+          </div>
+        </div>
+      )}
       <div class="editor-workspace-shell flex h-screen bg-[var(--color-paper)] overflow-hidden">
         {/* ── The Drawer (left sidebar) ──────────────────────── */}
         <aside
@@ -1308,6 +1409,8 @@ export default component$(() => {
                   folios={store.folios}
                   activeFolioId={store.activeFolioId}
                   onOpen$={activateFolio}
+                  onRename$={renameFolio}
+                  onReorder$={reorderFolios}
                 />
                 {store.newFolioFormOpen ? (
                   <div class="space-y-2">
@@ -1372,18 +1475,20 @@ export default component$(() => {
 
               {/* The filed dossier sits below the folios so switching folios
                   never needs a scroll. */}
-              <ProjectBriefCard
-                brief={store.brief}
-                editions={store.briefEditions}
-                onStartInterview$={$(() => {
-                  if (!store.activeFolioId) return;
-                  void nav(
-                    store.brief
-                      ? `/dossier/refine/?folio=${encodeURIComponent(store.activeFolioId)}`
-                      : `/dossier/create/?folio=${encodeURIComponent(store.activeFolioId)}`,
-                  );
-                })}
-              />
+              <div onPointerEnter$={warmDossier$} onFocusIn$={warmDossier$}>
+                <ProjectBriefCard
+                  brief={store.brief}
+                  editions={store.briefEditions}
+                  onStartInterview$={$(() => {
+                    if (!store.activeFolioId) return;
+                    void nav(
+                      store.brief
+                        ? `/dossier/refine/?folio=${encodeURIComponent(store.activeFolioId)}`
+                        : `/dossier/create/?folio=${encodeURIComponent(store.activeFolioId)}`,
+                    );
+                  })}
+                />
+              </div>
 
               <div
                 class="ornament-divider"
@@ -1629,15 +1734,15 @@ export default component$(() => {
               {/* Wraps rather than sliding under the Board when the column is
                   narrower than the controls. */}
               <div class="flex flex-wrap items-center justify-end gap-2 whitespace-nowrap">
-                <button
-                  onClick$={$(() => {
-                    if (!store.activeFolioId) return;
-                    void nav(
-                      store.brief
-                        ? `/dossier/refine/?folio=${encodeURIComponent(store.activeFolioId)}`
-                        : `/dossier/create/?folio=${encodeURIComponent(store.activeFolioId)}`,
-                    );
-                  })}
+                <Link
+                  href={
+                    store.activeFolioId
+                      ? `${store.brief ? "/dossier/refine/" : "/dossier/create/"}?folio=${encodeURIComponent(store.activeFolioId)}`
+                      : "/dossier/create/"
+                  }
+                  prefetchBundles="intent"
+                  onPointerEnter$={warmDossier$}
+                  onFocus$={warmDossier$}
                   class={`btn-paper hidden sm:inline-flex items-center gap-1.5${store.hydrated && store.activeFolioId && !store.brief ? " dossier-action-pending" : ""}`}
                   title={store.brief ? "Refine dossier" : "Create dossier"}
                   aria-label={store.brief ? "Refine dossier" : "Create dossier"}
@@ -1646,7 +1751,7 @@ export default component$(() => {
                   <span class="hidden min-[1280px]:inline">
                     {store.brief ? "Refine dossier" : "Create dossier"}
                   </span>
-                </button>
+                </Link>
                 <FolioMenu
                   brief={store.brief}
                   activeFolioId={store.activeFolioId}

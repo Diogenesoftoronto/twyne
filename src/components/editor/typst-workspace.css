@@ -573,3 +573,19 @@ a.editor-forecast__credit:focus-visible {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* Keep conflict recovery together without squeezing the editor or actions. */
+.typst-conflict {
+  flex-shrink: 0;
+  color: var(--color-ink);
+}
+.typst-conflict-message {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.typst-conflict .typst-draft-actions {
+  flex-wrap: wrap;
+}

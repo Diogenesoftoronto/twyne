@@ -3,12 +3,18 @@ import { component$, useStore, useVisibleTask$, $ } from "@qwik.dev/core";
 import { useNavigate, Link } from "@qwik.dev/router";
 import type { DocumentHead } from "@qwik.dev/router";
 import { AntiTabulaRasa } from "../../../components/onboarding/anti-tabula-rasa";
+import { DossierFolioSkeleton } from "../../../components/onboarding/dossier-folio-skeleton";
+import {
+  interviewStyleHint,
+  markDossierFiledForDesk,
+} from "../../../utils/dossier-warm";
 import { ConversationalInterview } from "../../../components/onboarding/conversational-interview";
 import { ThemedDialog } from "../../../components/ui/themed-dialog";
 import { useConvexClient } from "../../../utils/convex-context";
 import { useAuth } from "../../../utils/auth-context";
 import { api } from "../../../../convex/_generated/api";
 import type {
+  ConstraintTriage,
   DossierAttachment,
   DossierProbe,
   DossierCheckResult,
@@ -45,10 +51,8 @@ import {
   dossierCheckUnavailableMessage,
   runDossierCheckWithHostedFallback,
 } from "../../../utils/dossier-check";
-import {
-  waitForDossierFiledFeedback,
-  type DossierFilingState,
-} from "../../../utils/dossier-filing";
+import type { DossierFilingState } from "../../../utils/dossier-filing";
+import { DOSSIER_ROUTE_CLASS } from "../../../utils/conversation-layout";
 
 interface RefiningStore {
   brief: ProjectBrief | null;
@@ -120,6 +124,7 @@ export default component$(() => {
       _filename?: string,
       attachments?: DossierAttachment[],
       probes?: DossierProbe[],
+      constraintTriage?: ConstraintTriage | null,
     ) => {
       if (!store.brief || !store.folioId) return;
       store.filingState = "filing";
@@ -129,13 +134,14 @@ export default component$(() => {
           store.brief,
           attachments,
           probes,
+          constraintTriage,
         );
         await saveProjectBriefForFolio(store.folioId, next);
         store.brief = next;
-        store.briefEditions = await loadBriefEditions(store.folioId);
         void captureProductEvent("dossier_completed", { mode: "refine" });
         store.filingState = "filed";
-        await waitForDossierFiledFeedback();
+        // Navigate first: the "revised" stamp finishes on the desk.
+        markDossierFiledForDesk("revised");
         await nav("/editor/");
       } catch (error) {
         store.filingState = "idle";
@@ -165,10 +171,10 @@ export default component$(() => {
         );
         await saveProjectBriefForFolio(store.folioId, next);
         store.brief = next;
-        store.briefEditions = await loadBriefEditions(store.folioId);
         void captureProductEvent("dossier_completed", { mode: "refine" });
         store.filingState = "filed";
-        await waitForDossierFiledFeedback();
+        // Navigate first: the "revised" stamp finishes on the desk.
+        markDossierFiledForDesk("revised");
         await nav("/editor/");
       } catch (error) {
         store.filingState = "idle";
@@ -315,10 +321,12 @@ export default component$(() => {
 
   if (!store.hydrated) {
     return (
-      <div class="flex h-screen items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">
-        <div class="rounded-[3px] border border-[var(--color-paper-3)] bg-[var(--color-paper-2)] px-5 py-4 shadow-sm">
-          Loading dossier…
-        </div>
+      <div class={DOSSIER_ROUTE_CLASS}>
+        {DossierFolioSkeleton({
+          surface: interviewStyleHint(),
+          backHref: "/editor/",
+          backLabel: "Back to desk",
+        })}
       </div>
     );
   }
@@ -401,6 +409,7 @@ export default component$(() => {
               : store.brief.attachments
           }
           initialProbes={store.brief.probes}
+          initialConstraintTriage={store.brief.constraintTriage}
           briefEditions={store.briefEditions}
           draftReview={store.dossierCheck}
           draftReviewLoading={store.dossierCheckLoading}

@@ -86,3 +86,42 @@ export const ModelSpecimen: Story = {
     }),
   },
 };
+
+export const GenieWorldSpecimen: Story = {
+  args: {
+    world: {
+      available: true,
+      enabled: true,
+      source: "twyne",
+      destination: "Storybook Genie 4 mock",
+      costLabel: "~$0.10/sec · auto-stops at 02:00 (Storybook preview, no charge)",
+      maxSeconds: 120,
+      idleSeconds: 45,
+      availableMicros: 5_000_000,
+    },
+    onStartWorld$: $(async () => ({
+      interactionId: "storybook-genie-4",
+      authToken: "preview-local",
+      model: "models/genie-4 (Storybook specimen)",
+      source: "preview" as const,
+      destination: "Storybook Genie 4 specimen (no charge)",
+      maxSeconds: 120,
+      idleSeconds: 45,
+    })),
+    onReadPicture$: $(async () => ({
+      items: [
+        {
+          dimension: "light",
+          detail: "Warm flickering doorway lamp casting amber light into dusk",
+          status: "sourced",
+          source: "The lamp above the doorway flickered.",
+        },
+        {
+          dimension: "place",
+          detail: "Dark wooden kitchen floorboards and narrow window frame",
+          status: "invented",
+        },
+      ],
+    })),
+  },
+};

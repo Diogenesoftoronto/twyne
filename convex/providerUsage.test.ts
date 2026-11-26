@@ -4,6 +4,8 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { generateKeyPairSync } from "node:crypto";
 import { api } from "./_generated/api";
 import schema from "./schema";
+import type { ConvexClient } from "convex/browser";
+import { getNotOrganicHostedUsage } from "../src/utils/notorganic-provider";
 
 const supportsViteModules = typeof import.meta.glob === "function";
 const modules = supportsViteModules ? import.meta.glob("./**/*.ts") : {};
@@ -68,6 +70,13 @@ describeConvex("hosted usage account boundary", () => {
               billedMicros: 42,
             },
             {
+              requestId: "charged-failure",
+              product: "twyne",
+              createdAt: 150,
+              state: "failed",
+              billedMicros: 8,
+            },
+            {
               requestId: "other-request",
               product: "keating",
               createdAt: 150,
@@ -90,12 +99,22 @@ describeConvex("hosted usage account boundary", () => {
         updatedAt: 1,
       });
     });
-    const summary = await t
-      .withIdentity({ subject: "alice" })
-      .action(api.providerIdentity.getHostedUsage, { from: 100, to: 200 });
+    const caller = t.withIdentity({ subject: "alice" });
+    const deskRange = { preset: "30d" as const, from: 100, to: 200 };
+    // This was the Desk's failing request before the client boundary fix.
+    await expect(
+      caller.action(api.providerIdentity.getHostedUsage, deskRange),
+    ).rejects.toThrow("Unexpected field `preset`");
+    const client = {
+      action: (
+        _reference: unknown,
+        args: { from: number | null; to: number },
+      ) => caller.action(api.providerIdentity.getHostedUsage, args),
+    } as unknown as ConvexClient;
+    const summary = await getNotOrganicHostedUsage(client, deskRange);
     expect(summary).toEqual({
-      billedMicrousd: 42,
-      settledRequests: 1,
+      billedMicrousd: 50,
+      settledRequests: 2,
       unverifiedCostRequests: 0,
       unverifiedCostMicrousd: 0,
       unresolvedRequests: 0,

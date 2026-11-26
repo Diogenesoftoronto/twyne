@@ -1,3 +1,4 @@
+import { setZenMode } from "../../utils/zen-transition";
 import {
   $,
   component$,
@@ -268,9 +269,7 @@ export const TypstWorkspace = component$<{
             const opening = !props.store.compositorOpen || props.store.zenMode;
             props.store.compositorOpen = opening;
             if (opening && props.store.zenMode) {
-              window.dispatchEvent(
-                new CustomEvent("twyne:zen-mode", { detail: { on: false } }),
-              );
+              setZenMode({ on: false });
             }
             saveEditorViewPreferences(localStorage, {
               zenMode: opening ? false : props.store.zenMode,
@@ -431,7 +430,7 @@ export const TypstWorkspace = component$<{
         </div>
       </div>
       <Slot name="writing-tools" />
-      {state.dirty && (
+      {state.dirty && !state.conflict && (
         <div class="typst-draft-bar">
           <span class="typst-draft-message">
             <Icon name="edit" size={16} /> Source draft{" "}
@@ -471,32 +470,43 @@ export const TypstWorkspace = component$<{
           </div>
         </div>
       )}
-      {(state.conflict || state.error) && (
+      {state.conflict ? (
+        <div class="typst-draft-bar typst-conflict" role="alert">
+          <span class="typst-conflict-message">
+            <Icon name="alert-triangle" size={16} />
+            Manuscript updated elsewhere. Your draft is kept on this device.
+          </span>
+          <div class="typst-draft-actions">
+            <button
+              type="button"
+              class="tool-btn typst-tool-btn"
+              onClick$={saveSourceCopy}
+            >
+              <Icon name="code-file" size={16} /> Save source copy
+            </button>
+            <button
+              type="button"
+              class="tool-btn typst-tool-btn"
+              aria-label="Discard source changes"
+              title="Discard your draft and load the latest manuscript"
+              disabled={state.applying}
+              onClick$={async () => {
+                await session.value?.discard();
+              }}
+            >
+              <Icon name="undo" size={16} /> Discard draft
+            </button>
+          </div>
+        </div>
+      ) : state.error ? (
         <div class="typst-error" role="alert">
           <Icon name="alert-triangle" size={18} />
           <div>
-            <strong>
-              {state.conflict
-                ? "The manuscript has changed"
-                : "Check your source"}
-            </strong>
-            <p>
-              {state.conflict
-                ? "Save your source copy, then discard these changes to load the latest manuscript."
-                : state.error}
-            </p>
-            {state.conflict && (
-              <button
-                type="button"
-                class="tool-btn typst-tool-btn"
-                onClick$={saveSourceCopy}
-              >
-                <Icon name="code-file" size={16} /> Save source copy
-              </button>
-            )}
+            <strong>Check your source</strong>
+            <p>{state.error}</p>
           </div>
         </div>
-      )}
+      ) : null}
       <div
         class={{
           "typst-panes": true,
@@ -633,13 +643,7 @@ export const TypstWorkspace = component$<{
           aria-label="Toggle Zen mode"
           aria-pressed={props.store.zenMode}
           title="Toggle distraction-free writing"
-          onClick$={() =>
-            window.dispatchEvent(
-              new CustomEvent("twyne:zen-mode", {
-                detail: { on: !props.store.zenMode },
-              }),
-            )
-          }
+          onClick$={() => setZenMode({ on: !props.store.zenMode })}
         >
           <Icon name="eye" size={15} />{" "}
           {props.store.zenMode ? "Writing focus" : "Zen"}

@@ -191,8 +191,8 @@ export const InstrumentIntentField = component$(
               state.labels.map((label) => (
                 <div class="intent-token" key={label.id}>
                   <span class="intent-label">
-                    {label.label.replace("-", " ")} · Jev{" "}
-                    {Math.round(label.probability * 100)}% distribution weight ·{" "}
+                    {label.label.replace("-", " ")} · judged{" "}
+                    {Math.round(label.probability * 100)}% likely ·{" "}
                     {state.confirmed ? "confirmed" : "review required"}
                   </span>
                   <code>{label.text}</code>

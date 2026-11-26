@@ -288,9 +288,9 @@ export default component$(() => {
                   establish publication readiness.
                 </p>
                 <p class="mt-2 text-xs text-[var(--color-ink-muted)]">
-                  Reading by {store.result.judgementGrade?.model ?? "Jev"}. No
-                  persona opinions are included in this grade. Ask the room at
-                  the desk for a separate reading.
+                  Judged against your criteria. No persona opinions are included
+                  in this grade. Ask the room at the desk for a separate
+                  reading.
                 </p>
               </section>
             ) : (

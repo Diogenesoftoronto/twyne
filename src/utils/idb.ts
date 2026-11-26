@@ -478,10 +478,22 @@ export async function loadFoliosFromIdb(): Promise<Folio[]> {
     const db = await openDb();
     return reqAsPromise<Folio[]>(
       db.transaction("folios").objectStore("folios").getAll(),
-    );
+    ).then(sortFolios);
   } catch {
     return [];
   }
+}
+
+/**
+ * Drawer order. The store is keyed by id, so order lives on the folio:
+ * dragged folios carry `order`; ones never dragged follow by creation time.
+ */
+export function sortFolios(folios: Folio[]): Folio[] {
+  return [...folios].sort(
+    (a, b) =>
+      (a.order ?? Number.POSITIVE_INFINITY) -
+        (b.order ?? Number.POSITIVE_INFINITY) || a.createdAt - b.createdAt,
+  );
 }
 
 export async function saveFoliosToIdb(folios: Folio[]): Promise<void> {

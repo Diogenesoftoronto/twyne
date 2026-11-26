@@ -465,3 +465,65 @@ test("saving a native source copy removes private feedback and preserves the ope
   expect(contents).toContain("[manuscript]");
   expect(await source.innerText()).toBe(before);
 });
+
+test("remote source conflict has one compact recovery notice", async ({
+  page,
+}, testInfo) => {
+  await seedFolio(page);
+  await chooseView(page, "Source");
+  await replaceSource(page, "My unsaved source draft.");
+  await page.evaluate(async () => {
+    const path = "/src/utils/idb.ts";
+    const idb = await import(/* @vite-ignore */ path);
+    await idb.saveFolioContentToIdb(
+      "e2e-typst-editor",
+      "<p>The newer manuscript.</p>",
+    );
+    window.dispatchEvent(
+      new CustomEvent("twyne:typst-remote-change", {
+        detail: {
+          folioId: "e2e-typst-editor",
+          source: "The newer manuscript.",
+          html: "<p>The newer manuscript.</p>",
+        },
+      }),
+    );
+  });
+  const workspace = page.getByRole("region", { name: "Manuscript workspace" });
+  const notice = workspace.getByRole("alert");
+  await expect(notice).toHaveCount(1);
+  await expect(notice).toContainText("Manuscript updated elsewhere.");
+  await expect(workspace.locator(".typst-draft-bar")).toHaveCount(1);
+  await expect(
+    workspace.getByRole("button", { name: "Apply source", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("textbox", { name: "Typst source" }),
+  ).toContainText("My unsaved source draft.");
+  const downloading = page.waitForEvent("download");
+  await notice
+    .getByRole("button", { name: "Save source copy", exact: true })
+    .click();
+  const download = await downloading;
+  expect(await readFile((await download.path())!, "utf8")).toContain(
+    "My unsaved source draft.",
+  );
+  await expect(notice).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const button of await notice.getByRole("button").all()) {
+    const box = await button.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+  }
+  await page.screenshot({
+    path: testInfo.outputPath("compact-conflict-mobile.png"),
+    animations: "disabled",
+  });
+  await notice.getByRole("button", { name: "Discard source changes" }).click();
+  await expect(notice).toHaveCount(0);
+  await expect(workspace.locator(".typst-draft-bar")).toHaveCount(0);
+  await expect(
+    page.getByRole("textbox", { name: "Typst source" }),
+  ).toContainText("The newer manuscript.");
+});

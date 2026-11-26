@@ -255,16 +255,13 @@ export const EntityInstrument = component$<EntityInstrumentProps>((props) => {
             disabled={state.busy || !requestKey}
             onClick$={read}
           >
-            {state.busy
-              ? "Reading selected evidence…"
-              : "Read with judgement model"}
+            {state.busy ? "Reading selected evidence…" : "Judge the evidence"}
           </button>
           {currentResult?.readings.map((reading) => (
             <article class="entity-reading" key={reading.id}>
               <h3>{reading.choice}</h3>
               <p class="entity-note">
-                {reading.model} · {Math.round(reading.probability * 100)}%
-                distribution weight. Concentration is not correctness.
+                Judged · {Math.round(reading.probability * 100)}% likely
               </p>
               <p>
                 {reading.entityIds

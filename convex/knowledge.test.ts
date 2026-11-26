@@ -3,6 +3,7 @@ import { convexTest } from "convex-test";
 import { makeFunctionReference } from "convex/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import schema from "./schema";
+import { decodeMcpObject, encodeMcpObject } from "./lib/knowledge-wire";
 
 const supportsViteModules = typeof import.meta.glob === "function";
 // Convex loads this provider through the lazy module glob, after setup.
@@ -109,6 +110,37 @@ describeConvex("trusted Twyne account knowledge actions", () => {
     expect(provider.request.mock.calls[0]?.[0]).toBe(
       "/v1/knowledge/sources/notes/resources/read",
     );
+  });
+  test("preserves reserved JSON keys in tool schemas, reviewed arguments and results", async () => {
+    const { writer } = await setup();
+    const catalog = {
+      data: [
+        { tools: [{ name: "notes", inputSchema: { $ref: "#/$defs/notes" } }] },
+      ],
+    };
+    provider.request.mockResolvedValueOnce(catalog);
+    expect(decodeMcpObject(await writer.action(sources, {}))).toEqual(catalog);
+
+    const args = { $id: "notes" };
+    const output = { content: [], structuredContent: { $id: "result" } };
+    provider.request.mockResolvedValueOnce(output);
+    const result = await writer.action(call, {
+      sourceId: "notes",
+      tool: "notes",
+      arguments: encodeMcpObject(args),
+    });
+    expect(decodeMcpObject(result)).toEqual(output);
+    expect(JSON.parse(provider.request.mock.calls[1]![2].body)).toEqual({
+      arguments: args,
+    });
+    await expect(
+      writer.action(call, {
+        sourceId: "notes",
+        tool: "notes",
+        arguments: "[]",
+      }),
+    ).rejects.toThrow("arguments object");
+    expect(provider.request).toHaveBeenCalledTimes(2);
   });
   test("changed tool consent requires a fresh review without replay", async () => {
     const { writer } = await setup();

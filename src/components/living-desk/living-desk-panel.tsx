@@ -114,8 +114,8 @@ function impactLabel(finding: Finding, criterion: string): string {
 function provenanceLabel(occ: Occurrence): string {
   if (occ.provenance !== "jev") return occ.provenance;
   return occ.probability == null
-    ? "Jev"
-    : `Jev ${occ.probability.toFixed(2).replace(/^0/, "")}`;
+    ? "judged"
+    : `judged · ${Math.round(occ.probability * 100)}% likely`;
 }
 
 interface DeskUi {
@@ -704,7 +704,7 @@ export const LivingDeskPanel = component$<{
                 <p class="ld-quiet">
                   Narrating tense: {review.tense.label.replace("-", " ")} ·{" "}
                   {review.tense.source === "jev"
-                    ? `Jev${review.tense.probability === null ? "" : ` · ${Math.round(review.tense.probability * 100)}% distribution weight`}`
+                    ? `judged${review.tense.probability === null ? "" : ` · ${Math.round(review.tense.probability * 100)}% likely`}`
                     : "English verb cues"}
                 </p>
                 <p class="ld-quiet">{review.tense.note}</p>
@@ -715,9 +715,9 @@ export const LivingDeskPanel = component$<{
                       <dd>
                         {metric.value === null ? "unread" : one(metric.value)}{" "}
                         <em>
-                          {metric.source === "jev" ? "by Jev" : "by rule"}
+                          {metric.source === "jev" ? "judged" : "counted"}
                         </em>
-                        {metric.bimodal && <span> · split distribution</span>}
+                        {metric.bimodal && <span> · a close call</span>}
                       </dd>
                     </div>
                   ))}

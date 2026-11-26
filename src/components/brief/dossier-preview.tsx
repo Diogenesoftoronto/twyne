@@ -7,7 +7,18 @@ import type {
 } from "../../types";
 import { isAnswered, probeAnswerText } from "../../utils/dossier-probes";
 import type { BriefEdition } from "../../utils/brief-history";
-import { STRONG_ENOUGH, type StrengthView } from "../../utils/brief-strength";
+import {
+  BEARING_LABELS,
+  FIELD_DEPARTMENTS,
+  LOAD_BEARING,
+} from "../../utils/brief-facets";
+import {
+  standingFromViews,
+  type BriefStanding,
+  type FirstQuestion,
+  type StrengthView,
+  type Tension,
+} from "../../utils/brief-strength";
 import { AnswerStrength } from "./answer-strength";
 
 const FIELD_LABELS: Record<keyof ProjectInterviewAnswers, string> = {
@@ -55,8 +66,14 @@ interface DossierPreviewProps {
   strengths?: Partial<Record<keyof ProjectInterviewAnswers, StrengthView>>;
   /** Fields Jev is reading right now. */
   strengthReading?: Partial<Record<keyof ProjectInterviewAnswers, boolean>>;
-  /** Jev's probability that a stranger could write the piece from this brief. */
+  /** Probability that a stranger could write the piece from this brief. */
   briefSufficiency?: number | null;
+  /** Reader, goal and landing; derived from `strengths` when omitted. */
+  standing?: BriefStanding;
+  /** What a stranger handed this brief would ask first. */
+  firstQuestion?: FirstQuestion | null;
+  /** Two answers that pull against each other. */
+  tension?: Tension | null;
   /** The Particular the writer just answered; its row stamps and scrolls into view. */
   recentProbeId?: string | null;
   /** Bumped per answer so repeated answers to one Particular replay the stamp. */
@@ -103,7 +120,18 @@ export const DossierPreview = component$((props: DossierPreviewProps) => {
         (field) => strengths[field]!,
       )
     : [];
-  const strongCount = graded.filter((v) => v.level >= STRONG_ENOUGH).length;
+  const standing =
+    props.standing ??
+    standingFromViews(strengths ?? {}, {
+      sufficiency: props.briefSufficiency ?? null,
+      contradiction: null,
+    });
+  const firstQuestion = selectedEdition ? null : props.firstQuestion;
+  const tension = selectedEdition ? null : props.tension;
+  const clip = (text: string) =>
+    text.length > 64 ? `${text.slice(0, 63).trimEnd()}…` : text;
+  const department = (field: keyof ProjectInterviewAnswers) =>
+    `${FIELD_DEPARTMENTS[field].numeral}. ${FIELD_DEPARTMENTS[field].name}`;
   const hasReview = props.draftReview !== undefined || !!props.onReadDraft$;
   const observations = props.draftReview?.observations ?? [];
 
@@ -181,29 +209,89 @@ export const DossierPreview = component$((props: DossierPreviewProps) => {
       )}
 
       {strengths && graded.length > 0 && (
-        <div
-          class="mt-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 border-y border-[var(--color-paper-3)] py-1.5 text-[0.6rem] tracking-[0.12em] uppercase text-[var(--color-ink-muted)]"
-          style={{ fontFamily: "var(--font-typewriter)" }}
-          role="status"
-        >
-          <span>
-            Brief strength ·{" "}
-            <span class="text-[var(--color-ink)]">
-              {strongCount} of {graded.length}
-            </span>{" "}
-            answers carrying weight
-          </span>
-          {props.briefSufficiency != null && (
-            <span title="Jev's estimate that a writer who has never met you could write this piece from the brief alone.">
-              Stranger could write it ·{" "}
-              <span class="text-[var(--color-ink)]">
-                {props.briefSufficiency >= 0.7
-                  ? "likely"
-                  : props.briefSufficiency >= 0.4
-                    ? "maybe"
-                    : "not yet"}
-              </span>
+        <div class="brief-standing">
+          <div class="brief-standing__row" role="status">
+            <span
+              class="brief-standing__bearing"
+              aria-label="The three answers the draft is measured against"
+            >
+              {LOAD_BEARING.map((field) => (
+                <span
+                  key={field}
+                  title={
+                    standing.held[field]
+                      ? `${BEARING_LABELS[field]} holds`
+                      : `${BEARING_LABELS[field]} is ${(strengths[field]?.label ?? "Missing").toLowerCase()}`
+                  }
+                >
+                  <i
+                    class="brief-standing__dot"
+                    data-held={standing.held[field] ? "true" : undefined}
+                    aria-hidden="true"
+                  />
+                  {BEARING_LABELS[field]}
+                  <span class="sr-only">
+                    {standing.held[field]
+                      ? " holds"
+                      : ` is ${(strengths[field]?.label ?? "Missing").toLowerCase()}`}
+                  </span>
+                </span>
+              ))}
             </span>
+            {props.briefSufficiency != null && (
+              <span title="How likely a writer who has never met you could write this piece from the brief alone">
+                Stranger could write it ·{" "}
+                <b>
+                  {props.briefSufficiency >= 0.7
+                    ? "likely"
+                    : props.briefSufficiency >= 0.4
+                      ? "maybe"
+                      : "not yet"}
+                </b>
+              </span>
+            )}
+          </div>
+          {firstQuestion && (
+            <p class="brief-standing__say">
+              <span class="brief-standing__kicker">
+                A stranger's first question
+              </span>
+              “{firstQuestion.question}” —{" "}
+              {props.onJumpToField$ ? (
+                <button
+                  type="button"
+                  class="brief-standing__link"
+                  onClick$={() => props.onJumpToField$?.(firstQuestion.field)}
+                >
+                  {department(firstQuestion.field)}
+                </button>
+              ) : (
+                department(firstQuestion.field)
+              )}
+            </p>
+          )}
+          {tension && (
+            <p class="brief-standing__say">
+              <span class="brief-standing__kicker">These two pull apart</span>
+              {([tension.a, tension.b] as const).map((field, index) => (
+                <>
+                  {index === 1 && " against "}
+                  {props.onJumpToField$ ? (
+                    <button
+                      type="button"
+                      class="brief-standing__link"
+                      onClick$={() => props.onJumpToField$?.(field)}
+                    >
+                      {department(field)}
+                    </button>
+                  ) : (
+                    department(field)
+                  )}{" "}
+                  <q>{clip(tension.values[index])}</q>
+                </>
+              ))}
+              . {tension.reason}
+            </p>
           )}
         </div>
       )}
@@ -258,7 +346,11 @@ export const DossierPreview = component$((props: DossierPreviewProps) => {
             </>
           );
 
+          const pulled =
+            !!tension && (tension.a === field || tension.b === field);
           const shellClass = `min-w-0 border px-2.5 py-1.5 text-left ${
+            pulled ? "brief-field--tension " : ""
+          }${
             active
               ? "field-live"
               : "border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] hover:border-[var(--color-ink-muted)]"

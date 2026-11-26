@@ -311,6 +311,11 @@ export function effectiveBrief(
     answers,
     attachments: stack.attachments,
     ...(brief?.probes?.length ? { probes: brief.probes } : {}),
+    // Pinned to the constraints text it read (which includes house
+    // standards), so the note gate ignores it once either side changes.
+    ...(brief?.constraintTriage
+      ? { constraintTriage: brief.constraintTriage }
+      : {}),
     completedAt: brief?.completedAt ?? now,
     updatedAt: brief?.updatedAt ?? now,
   };

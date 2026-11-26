@@ -5,6 +5,16 @@ import {
   type LiveReviewSnapshot,
 } from "../../utils/live-review";
 
+const BRIEF_FIELD_LABELS: Record<string, string> = {
+  workingTitle: "Working title",
+  format: "Format",
+  audience: "Audience",
+  goal: "Goal",
+  tone: "Tone",
+  constraints: "Non-negotiables",
+  successSignal: "Success signal",
+};
+
 export const LiveReviewPanel = component$<{ folioId: string }>(
   ({ folioId }) => {
     const state = useStore<{ snapshot: LiveReviewSnapshot }>({
@@ -41,12 +51,21 @@ export const LiveReviewPanel = component$<{ folioId: string }>(
             {!!result.brief?.weakest.length && (
               <section class="live-review-panel__section">
                 <h3 class="dept-label">Sharpen the dossier</h3>
+                {/* A review saved before the brief had a standing has none. */}
+                {result.brief.standing &&
+                  !result.brief.standing.loadBearing && (
+                    <p class="panel-meta">
+                      “On brief” is measured against a soft brief
+                      {result.brief.standing.soft.length > 0 &&
+                        `: ${result.brief.standing.soft.join("; ")}`}
+                      .
+                    </p>
+                  )}
                 {result.brief.weakest.slice(0, 3).map((field) => (
                   <p key={field.field}>
                     <strong>
-                      {field.field === "successSignal"
-                        ? "Success signal"
-                        : field.field}
+                      {BRIEF_FIELD_LABELS[field.field] ?? field.field}
+                      {field.label ? ` · ${field.label}` : ""}
                     </strong>
                     : {field.diagnosis}
                   </p>

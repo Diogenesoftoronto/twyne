@@ -10,6 +10,7 @@ import {
   type PropFunction,
 } from "@qwik.dev/core";
 import type {
+  ConstraintTriage,
   DossierAttachment,
   DossierCheckResult,
   DossierProbe,
@@ -20,8 +21,19 @@ import { ProbeInput } from "./probe-input";
 import { AnswerStrength } from "../brief/answer-strength";
 import {
   briefStrengthViews,
+  briefWhole,
+  constraintTriageFor,
+  overrideConstraintLine,
   useBriefStrength,
 } from "../brief/use-brief-strength";
+import {
+  SPLIT_PROBE_PREFIX,
+  softSpots,
+  splitProbe,
+  syncSplitProbes,
+  type BriefField,
+} from "../../utils/brief-strength";
+import type { Span } from "../../utils/brief-facets";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { loadAiSettingsFromIdb } from "../../utils/idb";
@@ -47,6 +59,7 @@ import { ApplicationNotice } from "../ui/application-notice";
 import { useAuth } from "../../utils/auth-context";
 import { DossierPreview } from "../brief/dossier-preview";
 import { DossierFolio } from "./dossier-folio";
+import { DossierFolioSkeleton } from "./dossier-folio-skeleton";
 import { DossierTopBar } from "./dossier-top-bar";
 import { WritingFormatInput } from "./writing-format-input";
 import type { DossierFilingState } from "../../utils/dossier-filing";
@@ -220,6 +233,8 @@ interface AntiTabulaRasaProps {
   initialAnswers?: ProjectInterviewAnswers | null;
   initialAttachments?: DossierAttachment[];
   initialProbes?: DossierProbe[];
+  /** The filed brief's constraint reading; kinds set by hand carry over. */
+  initialConstraintTriage?: ConstraintTriage | null;
   briefEditions?: BriefEdition[];
   /**
    * Existing manuscript text to seed the "starting material" field with. Set
@@ -244,8 +259,50 @@ interface AntiTabulaRasaProps {
       filename?: string,
       attachments?: DossierAttachment[],
       probes?: DossierProbe[],
+      constraintTriage?: ConstraintTriage | null,
     ) => void
   >;
+}
+
+/**
+ * The answer with its marks, for the layer behind the textarea: the generic
+ * stand-in underlined, the phrase doing the most work shaded. Spans are
+ * offsets into the trimmed answer, so leading space is added back.
+ */
+function markedAnswer(
+  value: string,
+  standIn: Span | null | undefined,
+  carries: Span | null | undefined,
+) {
+  const lead = value.length - value.trimStart().length;
+  const marks = [
+    standIn && { ...standIn, class: "answer-marks__stand-in" },
+    carries && { ...carries, class: "answer-marks__carries" },
+  ]
+    .filter((m): m is Span & { class: string } => !!m)
+    .map((m) => ({ ...m, start: m.start + lead, end: m.end + lead }))
+    .filter((m) => m.end <= value.length && m.start < m.end)
+    .sort((a, b) => a.start - b.start);
+  const parts: Array<string | { text: string; class: string }> = [];
+  let at = 0;
+  for (const mark of marks) {
+    if (mark.start < at) continue;
+    parts.push(value.slice(at, mark.start));
+    parts.push({ text: value.slice(mark.start, mark.end), class: mark.class });
+    at = mark.end;
+  }
+  // The trailing newline keeps the mirror as tall as the textarea when the
+  // answer ends on an empty line.
+  parts.push(`${value.slice(at)}\n`);
+  return parts.map((part, index) =>
+    typeof part === "string" ? (
+      part
+    ) : (
+      <mark key={index} class={part.class}>
+        {part.text}
+      </mark>
+    ),
+  );
 }
 
 export const AntiTabulaRasa = component$(
@@ -261,6 +318,7 @@ export const AntiTabulaRasa = component$(
     initialAnswers,
     initialAttachments,
     initialProbes,
+    initialConstraintTriage,
     briefEditions,
     initialMaterial,
     mode = "first-run",
@@ -319,7 +377,7 @@ export const AntiTabulaRasa = component$(
     // Spread so a per-field write (`store.answers[field] = …`) still reads as
     // a new brief to the strength meter.
     const liveAnswers = useComputed$(() => ({ ...store.answers }));
-    const strength = useBriefStrength(liveAnswers);
+    const strength = useBriefStrength(liveAnswers, initialConstraintTriage);
 
     const textareaRef = useSignal<HTMLTextAreaElement>();
     const draftReady = useSignal(!draftScope);
@@ -441,6 +499,19 @@ export const AntiTabulaRasa = component$(
       { strategy: "document-ready" },
     );
 
+    // An answer that fits two readings files its question to Particulars as
+    // soon as it is judged, and withdraws it once the answer settles. Driven
+    // by the judgements alone, so typing does not churn the list.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ track }) => {
+      const judged = track(() => strength.judged);
+      if (!draftReady.value) return;
+      const next = syncSplitProbes(store.probes, judged);
+      if (JSON.stringify(next) === JSON.stringify(store.probes)) return;
+      store.probes = next;
+      void persistDraft();
+    });
+
     /**
      * Ask the interviewer for follow-ups based on the answers filled in so far.
      *
@@ -472,11 +543,19 @@ export const AntiTabulaRasa = component$(
       }
 
       const answered = store.probes.filter(isAnswered);
+      // Questions filed by a split answer are not drafts to be replaced.
+      const pendingSplits = () =>
+        store.probes.filter(
+          (probe) =>
+            probe.id.startsWith(SPLIT_PROBE_PREFIX) && !isAnswered(probe),
+        );
       const localFallback = buildLocalFormProbes(store.answers);
       const visibleQuestionLimit = Math.max(FORM_PROBE_COUNT, answered.length);
+      const splits = pendingSplits();
       store.probes = mergeFormProbesWithLimit(
-        visibleQuestionLimit,
+        visibleQuestionLimit + splits.length,
         answered,
+        splits,
         localFallback,
       );
       store.probesRequested = true;
@@ -484,6 +563,13 @@ export const AntiTabulaRasa = component$(
       const generation = ++store.probesGeneration;
       const current = () => generation === store.probesGeneration;
       const draftAnswers = { ...store.answers };
+      // Aim the questions at what the grading found soft, weakest first,
+      // rather than leaving the interviewer to guess.
+      const focus = softSpots(
+        draftAnswers,
+        briefStrengthViews(draftAnswers, strength),
+        strength.firstQuestionOdds,
+      );
       store.probesLoading = true;
       store.probesError = null;
       store.probesSource = "local";
@@ -502,7 +588,11 @@ export const AntiTabulaRasa = component$(
         // interviewer doesn't ask the same question three ways.
         for (let i = 0; i < FORM_PROBE_COUNT; i++) {
           if (!current()) return;
-          const messages = buildFormProbeMessages(draftAnswers, collected);
+          const messages = buildFormProbeMessages(
+            draftAnswers,
+            collected,
+            focus,
+          );
           if (useByok) {
             const client = await runClientInterviewTurn(
               { messages, mode: "first-run", currentBrief: null },
@@ -551,11 +641,15 @@ export const AntiTabulaRasa = component$(
 
         if (!current()) return;
         if (collected.length > 0) {
-          store.probes = mergeProviderFormProbes(
-            store.probes,
-            collected,
-            localFallback,
-          );
+          const waiting = pendingSplits();
+          store.probes = [
+            ...waiting,
+            ...mergeProviderFormProbes(
+              store.probes.filter((probe) => !waiting.includes(probe)),
+              collected,
+              localFallback,
+            ),
+          ];
           store.probesSource = "provider";
         }
       } catch (err) {
@@ -580,6 +674,7 @@ export const AntiTabulaRasa = component$(
 
     const step = STEPS[store.step];
     const strengths = briefStrengthViews(store.answers, strength);
+    const whole = briefWhole(store.answers, strength, strengths);
     if (!step) return null;
     const progress = Math.round(((store.step + 1) / STEPS.length) * 100);
 
@@ -601,6 +696,7 @@ export const AntiTabulaRasa = component$(
               store.importedFilename,
               store.attachments,
               store.probes.filter((p) => p.answer !== undefined),
+              constraintTriageFor(store.answers, strength),
             );
             if (draftScope) {
               draftReady.value = false;
@@ -622,6 +718,7 @@ export const AntiTabulaRasa = component$(
               filename: store.importedFilename,
               attachments: store.attachments,
               probes: store.probes.filter((p) => p.answer !== undefined),
+              constraintTriage: constraintTriageFor(store.answers, strength),
             },
           }),
         );
@@ -629,6 +726,7 @@ export const AntiTabulaRasa = component$(
       }
       const next = currentStep + 1;
       store.step = next;
+      strength.leave++;
       void persistDraft();
       // Draft the follow-ups a step early, not on mount — they are derived
       // from answers that don't exist until the brief is nearly filed, and
@@ -658,6 +756,7 @@ export const AntiTabulaRasa = component$(
     const goBack = $(() => {
       if (store.step > 0) {
         store.step -= 1;
+        strength.leave++;
         void persistDraft();
       }
     });
@@ -671,6 +770,7 @@ export const AntiTabulaRasa = component$(
     const goToStep = $((index: number) => {
       if (index < 0 || index >= STEPS.length || index === store.step) return;
       store.step = index;
+      strength.leave++;
       void persistDraft();
       if (draftsParticulars(index)) {
         void loadProbes(false);
@@ -681,6 +781,7 @@ export const AntiTabulaRasa = component$(
       const index = STEPS.findIndex((entry) => entry.field === field);
       if (index >= 0) {
         store.step = index;
+        strength.leave++;
         void persistDraft();
       }
     });
@@ -732,6 +833,20 @@ export const AntiTabulaRasa = component$(
       });
     });
 
+    /** Answer a split from under the field instead of walking to Particulars. */
+    const pickSplit = $((field: BriefField, option: string) => {
+      const split = strength.judged[field]?.split;
+      const probe =
+        store.probes.find(
+          (entry) => entry.id === `${SPLIT_PROBE_PREFIX}${field}`,
+        ) ?? (split ? splitProbe(split) : null);
+      if (probe) void answerFormProbe({ ...probe, answer: option });
+    });
+
+    const toggleConstraintLine = $((text: string) => {
+      overrideConstraintLine(strength, text);
+    });
+
     const readDraft = $(async () => {
       await onReadDraft$?.(store.answers);
     });
@@ -762,7 +877,11 @@ export const AntiTabulaRasa = component$(
     });
 
     if (!draftReady.value && !store.submitting)
-      return <p role="status">Restoring the brief…</p>;
+      return DossierFolioSkeleton({
+        surface: "form",
+        backHref: chromeBackHref,
+        backLabel: chromeBackLabel,
+      });
 
     // Call the hook-free layout helper directly. In Qwik beta.42, rendering
     // it as an inline JSX component replaces its root on parent updates.
@@ -833,6 +952,9 @@ export const AntiTabulaRasa = component$(
             strengths={strengths}
             strengthReading={strength.reading}
             briefSufficiency={strength.sufficiency}
+            standing={whole.standing}
+            firstQuestion={whole.firstQuestion}
+            tension={whole.tension}
             recentProbeId={store.recentProbeId}
             recentProbeRevision={store.recentProbeRevision}
             activeField={STEPS[store.step]?.field}
@@ -968,6 +1090,9 @@ export const AntiTabulaRasa = component$(
                           ).value;
                           void persistDraft();
                         }}
+                        onBlur$={() => {
+                          strength.leave++;
+                        }}
                         onKeyDown$={(e) => {
                           if (e.key === "Enter") goNext();
                         }}
@@ -977,35 +1102,68 @@ export const AntiTabulaRasa = component$(
                       />
                     )}
                   {step.kind === "textarea" && step.field && (
-                    <textarea
-                      ref={textareaRef}
-                      key={step.field}
-                      value={store.answers[step.field!]}
-                      aria-labelledby="atr-question"
-                      aria-describedby="atr-hint"
-                      autoFocus
-                      onInput$={(e) => {
-                        store.answers[step.field!] = (
-                          e.target as HTMLTextAreaElement
-                        ).value;
-                        void persistDraft();
-                      }}
-                      onKeyDown$={(e) => {
-                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                          goNext();
-                        }
-                      }}
-                      placeholder={step.placeholder}
-                      rows={step.rows || 4}
-                      class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-3 text-base leading-7 text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic focus:border-[var(--color-vermilion)] focus:outline-none"
-                      style="font-family: var(--font-serif); border-radius: 2px;"
-                    />
+                    <div key={step.field} class="answer-marks">
+                      {/* The marks sit behind the text the writer is
+                          typing; constraints are marked line by line below
+                          instead. */}
+                      <div
+                        class="answer-marks__mirror px-4 py-3 text-base leading-7"
+                        style="font-family: var(--font-serif);"
+                        aria-hidden="true"
+                      >
+                        {step.field === "constraints"
+                          ? `${store.answers[step.field]}\n`
+                          : markedAnswer(
+                              store.answers[step.field],
+                              strengths[step.field]?.standIn,
+                              strengths[step.field]?.carries,
+                            )}
+                      </div>
+                      <textarea
+                        ref={textareaRef}
+                        key={step.field}
+                        value={store.answers[step.field!]}
+                        aria-labelledby="atr-question"
+                        aria-describedby="atr-hint"
+                        autoFocus
+                        onInput$={(e) => {
+                          store.answers[step.field!] = (
+                            e.target as HTMLTextAreaElement
+                          ).value;
+                          void persistDraft();
+                        }}
+                        onBlur$={() => {
+                          strength.leave++;
+                        }}
+                        onScroll$={(_, el) => {
+                          const mirror = el.previousElementSibling;
+                          if (mirror) mirror.scrollTop = el.scrollTop;
+                        }}
+                        onKeyDown$={(e) => {
+                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                            goNext();
+                          }
+                        }}
+                        placeholder={step.placeholder}
+                        rows={step.rows || 4}
+                        class="w-full border border-[var(--color-paper-3)] px-4 py-3 text-base leading-7 text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic focus:border-[var(--color-vermilion)] focus:outline-none"
+                        style="font-family: var(--font-serif); border-radius: 2px;"
+                      />
+                    </div>
                   )}
                   {step.field && strengths[step.field] && (
                     <AnswerStrength
                       strength={strengths[step.field]!}
                       reading={strength.reading[step.field]}
                       quickOnly={strength.unavailable}
+                      pickedSplit={
+                        store.probes.find(
+                          (probe) =>
+                            probe.id === `${SPLIT_PROBE_PREFIX}${step.field}`,
+                        )?.answer as string | undefined
+                      }
+                      onPickSplit$={pickSplit}
+                      onToggleLine$={toggleConstraintLine}
                     />
                   )}
                   {step.kind === "import" && (

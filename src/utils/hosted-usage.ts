@@ -50,7 +50,14 @@ export function summarizeHostedUsage(
       (range.from !== null && row.createdAt < range.from)
     )
       continue;
-    if (row.state === "succeeded" && isMoney(row.billedMicros)) {
+    // A failed generation can still have a settled wallet charge (for
+    // example, upstream work completed before a downstream failure). The
+    // gateway's fail mutation settles billedMicros, not just successful work.
+    const hasSettledCharge =
+      isMoney(row.billedMicros) &&
+      (row.state === "succeeded" ||
+        (row.state === "failed" && row.billedMicros > 0));
+    if (hasSettledCharge && isMoney(row.billedMicros)) {
       const total = result.billedMicrousd + row.billedMicros;
       if (!Number.isSafeInteger(total))
         throw new Error("Hosted usage total exceeds safe range");
@@ -65,7 +72,11 @@ export function summarizeHostedUsage(
         result.unverifiedCostRequests += 1;
         result.unverifiedCostMicrousd += row.billedMicros;
       }
-    } else if (row.state !== "failed" && row.state !== "cancelled") {
+    } else if (
+      row.state !== "failed" &&
+      row.state !== "cancelled" &&
+      row.state !== "expired"
+    ) {
       result.unresolvedRequests += 1;
     }
   }

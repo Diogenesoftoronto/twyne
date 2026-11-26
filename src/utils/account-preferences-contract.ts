@@ -65,7 +65,14 @@ const schemas = {
       })
       .optional(),
     sceneMedia: z
-      .object({ enabled: z.boolean(), source: z.enum(["twyne", "provider"]) })
+      .object({
+        enabled: z.boolean(),
+        source: z.enum(["twyne", "provider"]),
+        worldEnabled: z.boolean().optional(),
+        worldSource: z.enum(["twyne", "provider"]).optional(),
+        worldMaxSeconds: z.number().finite().min(30).max(300).optional(),
+        worldIdleSeconds: z.number().finite().min(15).max(120).optional(),
+      })
       .optional(),
   }),
   apparatus: z.object({

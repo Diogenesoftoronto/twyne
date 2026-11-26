@@ -160,7 +160,7 @@ export const InstrumentRoom = component$<InstrumentRoomProps>((props) => {
           !judgement.typesafeKey?.trim()
         ) {
           state.notice =
-            "Add your TypeSafe key in Settings, or choose an editor yourself.";
+            "Finish setting up judgement in Settings, or choose an editor yourself.";
           return;
         }
         const wait = systemOneWait();
@@ -193,7 +193,11 @@ export const InstrumentRoom = component$<InstrumentRoomProps>((props) => {
         state.selection = selection;
         state.resultKey = context;
         state.account = account;
-        state.provenance = selection.model ?? describeJudgement(judgement);
+        // Writers on Twyne's own judgement don't need the model's name.
+        state.provenance =
+          !judgement || judgement.source === "twyne"
+            ? describeJudgement(judgement)
+            : (selection.model ?? describeJudgement(judgement));
         if (selection.status === "none") {
           state.selected = "";
           state.notice =

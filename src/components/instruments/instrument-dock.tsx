@@ -39,6 +39,13 @@ import {
   type ScenePictureCapability,
 } from "../../utils/scene-media";
 import {
+  describeSceneWorld,
+  finishSceneWorldSession,
+  startSceneWorldSession,
+  type SceneWorldCapability,
+} from "../../utils/scene-world";
+import { openSceneWorldDock } from "../../utils/scene-world-dock";
+import {
   useAuth,
   hasAuthenticatedConvexIdentity,
 } from "../../utils/auth-context";
@@ -85,6 +92,7 @@ export const InstrumentDock = component$<InstrumentDockProps>((props) => {
     judgement?: SceneProviderCapability;
     narration?: SceneProviderCapability;
     pictures?: ScenePictureCapability;
+    world?: SceneWorldCapability;
     error: string;
   }>({ error: "" });
   useStyles$(`
@@ -196,11 +204,20 @@ export const InstrumentDock = component$<InstrumentDockProps>((props) => {
         unavailableReason:
           "Choose a narration provider in Settings or sign in to hear this passage.",
       };
-      const pictures = await describeScenePictures(settings, {
-        client: client.value ?? null,
-        signedIn,
-      });
-      if (!disposed) capabilities.pictures = pictures;
+      const [pictures, world] = await Promise.all([
+        describeScenePictures(settings, {
+          client: client.value ?? null,
+          signedIn,
+        }),
+        describeSceneWorld(settings, {
+          client: client.value ?? null,
+          signedIn,
+        }),
+      ]);
+      if (!disposed) {
+        capabilities.pictures = pictures;
+        capabilities.world = world;
+      }
     };
     if (open) void refresh();
     window.addEventListener("twyne:ai-settings-saved", refresh);
@@ -390,6 +407,43 @@ export const InstrumentDock = component$<InstrumentDockProps>((props) => {
                         client.value ?? null,
                       )
                     }
+                    world={capabilities.world}
+                    onStartWorld$={async ({ preview }) => {
+                      const settings = await getCachedAiSettings();
+                      return startSceneWorldSession({
+                        settings,
+                        client: client.value ?? null,
+                        preview,
+                      });
+                    }}
+                    onFinishWorld$={async ({
+                      token,
+                      elapsedSeconds,
+                      reason,
+                    }) => {
+                      await finishSceneWorldSession({
+                        token,
+                        elapsedSeconds,
+                        reason,
+                        client: client.value ?? null,
+                      });
+                      if (token.source === "twyne") {
+                        const settings = await getCachedAiSettings();
+                        capabilities.world = await describeSceneWorld(
+                          settings,
+                          {
+                            client: client.value ?? null,
+                            signedIn: hasAuthenticatedConvexIdentity(
+                              auth.value,
+                            ),
+                          },
+                        );
+                      }
+                    }}
+                    onUndockWorld$={(payload) => {
+                      dialog.value?.close("manuscript");
+                      openSceneWorldDock(payload);
+                    }}
                   />
                 </>
               ) : (

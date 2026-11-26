@@ -162,6 +162,11 @@ export const RATE_LIMITS = {
    * is the only limit on how many pictures a writer makes.
    */
   scenePicture: { limit: 6, windowMs: 60_000 },
+  /**
+   * Scene Bench Genie 4 interactive world sessions: 4 session starts per minute
+   * per user to prevent runaway WebRTC session creation.
+   */
+  sceneWorld: { limit: 4, windowMs: 60_000 },
   /** Room of editors feedback: 30 per minute per user. */
   agentFeedback: { limit: 30, windowMs: 60_000 },
   /** Suggested rewrite: 30 per minute per user. */

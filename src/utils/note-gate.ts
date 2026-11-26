@@ -37,6 +37,7 @@
 
 import type { ProjectBrief, WriterProfile } from "../types";
 import type { EditorialPolicyAssessment } from "./editorial-policy";
+import { noteGateConstraints } from "./brief-coach";
 import {
   noul,
   score as scoreQuestion,
@@ -224,7 +225,9 @@ export function buildNoteState(input: {
     if (a.audience) state.audience = a.audience;
     if (a.goal) state.goal = a.goal;
     if (a.tone) state.tone = a.tone;
-    if (a.constraints) state.constraints = a.constraints;
+    const { veto, preferences } = noteGateConstraints(input.brief);
+    if (veto) state.constraints = veto;
+    if (preferences) state.constraintPreferences = preferences;
     if (a.successSignal) state.successSignal = a.successSignal;
   }
 

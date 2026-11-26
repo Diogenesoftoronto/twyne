@@ -222,6 +222,7 @@ const FEATURE_LABELS: Record<AiFeature, string> = {
   alternatives: "Alternatives",
   "scene-image": "Scene Pictures",
   "scene-reading": "Scene Picture Comparison",
+  "scene-world": "Interactive Scene World (Genie 4)",
 };
 
 const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
@@ -260,6 +261,8 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
     "Draws a selected passage in Scene Bench when you choose your own models under Scene Pictures. Needs a model that outputs images.",
   "scene-reading":
     "Compares a Scene Bench picture with its passage. Needs a model that can see images.",
+  "scene-world":
+    "Streams a live interactive Genie 4 world from a selected passage when you choose your own Google Gemini key under Scene Worlds.",
 };
 
 function providerMetaFor(type: AiProviderConfig["type"]) {

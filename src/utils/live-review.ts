@@ -2,7 +2,10 @@ import { loadModelBriefForFolio } from "./model-context";
 import type { ConvexClient } from "convex/browser";
 import { askJudgement } from "./judgement-client";
 import type { RubricResult } from "../types";
-import { htmlToPlainText } from "./anti-tabula-rasa";
+import {
+  htmlToPlainText,
+  saveConstraintTriageForFolio,
+} from "./anti-tabula-rasa";
 import { paragraphTextFromHtml } from "./draft-trajectory";
 import { requestActiveDraftSnapshot } from "./collaboration";
 import {
@@ -29,6 +32,9 @@ import {
   buildBriefQuestions,
   buildBriefState,
   readBriefAssessment,
+  SOFT_BRIEF_NOTE,
+  softBriefNote,
+  triageFromAssessment,
   type BriefAssessment,
 } from "./brief-coach";
 import {
@@ -347,7 +353,23 @@ export function startLiveReview(
           brief,
           response.answers as Record<string, SystemOneAnswer>,
         );
+        // The note gate vetoes only on lines Jev read as binding.
+        const triage = triageFromAssessment(brief, result.brief);
+        if (triage)
+          void saveConstraintTriageForFolio(folioId, triage).catch(() => {});
         if (!current()) return;
+        // "On brief" graded against a brief that does not hold is measuring
+        // the brief; say so on the score itself rather than let it stand.
+        const soft = softBriefNote(result.brief);
+        const fit = rubric?.criteria.find((c) => c.id === "targetFit");
+        if (soft && rubric && fit && !fit.feedback.includes(SOFT_BRIEF_NOTE)) {
+          fit.feedback = `${fit.feedback} ${soft}`.trim();
+          await saveRubricResultToIdb(rubric, folioId);
+          if (!current()) return;
+          window.dispatchEvent(
+            new CustomEvent("twyne:rubric-updated", { detail: { folioId } }),
+          );
+        }
         publish({
           folioId,
           status: "reading",

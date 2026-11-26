@@ -51,6 +51,7 @@ export const USAGE_AI_FEATURES = [
   "alternatives",
   "scene-image",
   "scene-reading",
+  "scene-world",
   "other",
 ] as const;
 

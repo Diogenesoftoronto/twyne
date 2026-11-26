@@ -3,6 +3,7 @@
 import { action, type ActionCtx } from "./_generated/server";
 import { makeFunctionReference } from "convex/server";
 import { ConvexError, v } from "convex/values";
+import { decodeMcpObject, encodeMcpObject } from "./lib/knowledge-wire";
 import {
   issueNotOrganicAccessToken,
   notOrganicIssuer,
@@ -43,7 +44,7 @@ async function request(
       feature: "knowledge",
       capabilities: [call ? "knowledge:tools" : "knowledge:read"],
     });
-    return await providerJsonRequest<unknown>(
+    const result = await providerJsonRequest<unknown>(
       path,
       token,
       body === undefined
@@ -55,6 +56,7 @@ async function request(
           },
       { issuer: notOrganicIssuer(), feature: "knowledge" },
     );
+    return encodeMcpObject(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (/\(403\)|knowledge_access_denied/.test(message))
@@ -104,18 +106,26 @@ export const call = action({
   args: { sourceId, tool: v.string(), arguments: v.any() },
   returns: v.any(),
   handler: (ctx, args) => {
+    let reviewed: unknown;
+    try {
+      if (typeof args.arguments === "string" && args.arguments.length > 60_000)
+        throw new Error();
+      reviewed = decodeMcpObject(args.arguments);
+    } catch {
+      throw new ConvexError("Supply a tool arguments object.");
+    }
     if (
-      !args.arguments ||
-      typeof args.arguments !== "object" ||
-      Array.isArray(args.arguments) ||
-      JSON.stringify(args.arguments).length > 60_000
+      !reviewed ||
+      typeof reviewed !== "object" ||
+      Array.isArray(reviewed) ||
+      JSON.stringify(reviewed).length > 60_000
     )
       throw new ConvexError("Supply a tool arguments object.");
     return request(
       ctx,
       `/v1/knowledge/sources/${segment(args.sourceId)}/tools/${segment(args.tool)}/call`,
       true,
-      { arguments: args.arguments },
+      { arguments: reviewed },
     );
   },
 });

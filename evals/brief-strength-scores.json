@@ -1,0 +1,5299 @@
+{
+  "model": "jev-latest",
+  "at": "2026-11-26T19:50:20.015Z",
+  "tuned": {
+    "fixtures": {
+      "answers": 76,
+      "briefs": 13
+    },
+    "level": {
+      "judged": {
+        "inBand": 0.98,
+        "withinOne": 1,
+        "n": 147
+      },
+      "firstLook": {
+        "inBand": 0.667,
+        "withinOne": 0.98,
+        "n": 147
+      },
+      "oldScore": {
+        "inBand": 0.701,
+        "withinOne": 0.979,
+        "n": 144
+      }
+    },
+    "meter": {
+      "judgedMeanByLevel": [
+        7,
+        32,
+        55,
+        98
+      ],
+      "firstLookMeanByLevel": [
+        2,
+        39,
+        49,
+        63
+      ],
+      "scaleAlone": {
+        "inBand": 0.828,
+        "withinOne": 0.953,
+        "n": 64
+      }
+    },
+    "facets": {
+      "precision": 1,
+      "recall": 0.99,
+      "accuracy": 0.994,
+      "n": 180
+    },
+    "gamed": {
+      "n": 15,
+      "judgedRejected": 14,
+      "firstLookRejected": 15,
+      "oldScoreRejected": 14
+    },
+    "terseSharp": {
+      "n": 12,
+      "judgedKept": 12,
+      "firstLookKept": 12
+    },
+    "constraints": {
+      "kind": 0.92,
+      "binding": 1,
+      "n": 25
+    },
+    "whole": {
+      "sufficiency": [
+        {
+          "id": "brief-sharp-transit",
+          "p": 0.93,
+          "want": true
+        },
+        {
+          "id": "brief-vague-everything",
+          "p": 0.08,
+          "want": false
+        },
+        {
+          "id": "brief-gamed-everything",
+          "p": 0.19,
+          "want": false
+        },
+        {
+          "id": "brief-long-vague",
+          "p": 0.22,
+          "want": false
+        },
+        {
+          "id": "brief-terse-sharp",
+          "p": 0.95,
+          "want": true
+        },
+        {
+          "id": "brief-mock-pilot",
+          "p": 0.82,
+          "want": true
+        },
+        {
+          "id": "brief-missing-landing",
+          "p": 0.57,
+          "want": false
+        },
+        {
+          "id": "brief-grant",
+          "p": 0.84,
+          "want": true
+        },
+        {
+          "id": "brief-personal-essay",
+          "p": 0.93,
+          "want": true
+        }
+      ],
+      "brier": 0.054,
+      "tensionNamed": "3/4",
+      "tensionFalseAlarms": "0/9",
+      "loadBearing": "12/13"
+    },
+    "perBrief": {
+      "requests": 1,
+      "questionsMedian": 49,
+      "inputTokensMedian": 4534,
+      "latencyMsMedian": 125,
+      "usd": 0.0001868
+    },
+    "misses": [
+      "signal-gamed-numbers [successSignal] expected 1–2, judged 3 (first look 1, old score 3)",
+      "brief-gamed-everything [successSignal] expected 1–1, judged 2 (first look 1, old score 3)",
+      "brief-mock-pilot [format] expected 4–4, judged 3 (first look 3, old score 3)"
+    ],
+    "answers": [
+      {
+        "id": "audience-gamed-keywords",
+        "field": "audience",
+        "kind": "gamed",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 2,
+        "score": 19,
+        "quickScore": 0,
+        "scale": 3,
+        "facets": {
+          "reader": {
+            "p": 0.25,
+            "label": false
+          },
+          "knows": {
+            "p": 0.28,
+            "label": false
+          },
+          "wants": {
+            "p": 0.11,
+            "label": false
+          },
+          "narrow": {
+            "p": 0.25,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 924,
+        "latencyMs": 397
+      },
+      {
+        "id": "audience-gamed-adjectives",
+        "field": "audience",
+        "kind": "gamed",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 2,
+        "score": 41,
+        "quickScore": 28,
+        "scale": 4,
+        "facets": {
+          "reader": {
+            "p": 0.52
+          },
+          "knows": {
+            "p": 0.19,
+            "label": false
+          },
+          "wants": {
+            "p": 0.12,
+            "label": false
+          },
+          "narrow": {
+            "p": 0.24,
+            "label": false
+          }
+        },
+        "split": true,
+        "standIn": "and want things",
+        "questions": 9,
+        "inputTokens": 1094,
+        "latencyMs": 364
+      },
+      {
+        "id": "audience-gamed-negation",
+        "field": "audience",
+        "kind": "gamed",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 2,
+        "score": 14,
+        "quickScore": 0,
+        "scale": 2,
+        "facets": {
+          "reader": {
+            "p": 0.08,
+            "label": false
+          },
+          "knows": {
+            "p": 0.06,
+            "label": false
+          },
+          "wants": {
+            "p": 0.14,
+            "label": false
+          },
+          "narrow": {
+            "p": 0.17,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "Readers, not non-readers; people",
+        "questions": 9,
+        "inputTokens": 1119,
+        "latencyMs": 360
+      },
+      {
+        "id": "audience-general",
+        "field": "audience",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 1,
+        "quickScore": 0,
+        "scale": 1,
+        "facets": {
+          "reader": {
+            "p": 0.02,
+            "label": false
+          },
+          "knows": {
+            "p": 0.06,
+            "label": false
+          },
+          "wants": {
+            "p": 0.04,
+            "label": false
+          },
+          "narrow": {
+            "p": 0.08,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "General readers",
+        "questions": 7,
+        "inputTokens": 917,
+        "latencyMs": 367
+      },
+      {
+        "id": "audience-vague-long",
+        "field": "audience",
+        "kind": "vague-long",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 13,
+        "quickScore": 10,
+        "scale": 2,
+        "facets": {
+          "reader": {
+            "p": 0.09,
+            "label": false
+          },
+          "knows": {
+            "p": 0.16,
+            "label": false
+          },
+          "wants": {
+            "p": 0.54
+          },
+          "narrow": {
+            "p": 0.09,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "and backgrounds",
+        "questions": 9,
+        "inputTokens": 1186,
+        "latencyMs": 90
+      },
+      {
+        "id": "audience-podcasts",
+        "field": "audience",
+        "kind": "plain",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 2,
+        "quick": 1,
+        "legacy": 1,
+        "score": 31,
+        "quickScore": 2,
+        "scale": 2,
+        "facets": {
+          "reader": {
+            "p": 0.54
+          },
+          "knows": {
+            "p": 0.34,
+            "label": false
+          },
+          "wants": {
+            "p": 0.14,
+            "label": false
+          },
+          "narrow": {
+            "p": 0.3,
+            "label": false
+          }
+        },
+        "split": true,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 919,
+        "latencyMs": 85
+      },
+      {
+        "id": "audience-nurses",
+        "field": "audience",
+        "kind": "plain",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 2,
+        "score": 26,
+        "quickScore": 27,
+        "scale": 2,
+        "facets": {
+          "reader": {
+            "p": 0.95
+          },
+          "knows": {
+            "p": 0.07,
+            "label": false
+          },
+          "wants": {
+            "p": 0.03,
+            "label": false
+          },
+          "narrow": {
+            "p": 0.69
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 918,
+        "latencyMs": 316
+      },
+      {
+        "id": "audience-mock-partial",
+        "field": "audience",
+        "kind": "plain",
+        "band": [
+          2,
+          3
+        ],
+        "jev": 3,
+        "quick": 2,
+        "legacy": 3,
+        "score": 64,
+        "quickScore": 42,
+        "scale": 3,
+        "facets": {
+          "reader": {
+            "p": 0.97,
+            "label": true
+          },
+          "knows": {
+            "p": 0.47,
+            "label": false
+          },
+          "wants": {
+            "p": 0.8
+          },
+          "narrow": {
+            "p": 0.84
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1074,
+        "latencyMs": 67
+      },
+      {
+        "id": "audience-junior-oncall",
+        "field": "audience",
+        "kind": "plain",
+        "band": [
+          2,
+          3
+        ],
+        "jev": 3,
+        "quick": 2,
+        "legacy": 3,
+        "score": 59,
+        "quickScore": 35,
+        "scale": 3,
+        "facets": {
+          "reader": {
+            "p": 0.98,
+            "label": true
+          },
+          "knows": {
+            "p": 0.66
+          },
+          "wants": {
+            "p": 0.07,
+            "label": false
+          },
+          "narrow": {
+            "p": 0.79
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1059,
+        "latencyMs": 126
+      },
+      {
+        "id": "audience-regret",
+        "field": "audience",
+        "kind": "plain",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 2,
+        "legacy": 3,
+        "score": 89,
+        "quickScore": 42,
+        "scale": 3,
+        "facets": {
+          "reader": {
+            "p": 0.98,
+            "label": true
+          },
+          "knows": {
+            "p": 0.92,
+            "label": true
+          },
+          "wants": {
+            "p": 0.87,
+            "label": true
+          },
+          "narrow": {
+            "p": 0.85
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1074,
+        "latencyMs": 118
+      },
+      {
+        "id": "audience-phd",
+        "field": "audience",
+        "kind": "plain",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 2,
+        "legacy": 3,
+        "score": 97,
+        "quickScore": 42,
+        "scale": 4,
+        "facets": {
+          "reader": {
+            "p": 0.98,
+            "label": true
+          },
+          "knows": {
+            "p": 0.97,
+            "label": true
+          },
+          "wants": {
+            "p": 0.93,
+            "label": true
+          },
+          "narrow": {
+            "p": 0.82
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1125,
+        "latencyMs": 80
+      },
+      {
+        "id": "audience-planners-sharp",
+        "field": "audience",
+        "kind": "plain",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 98,
+        "quickScore": 69,
+        "scale": 4,
+        "facets": {
+          "reader": {
+            "p": 0.97,
+            "label": true
+          },
+          "knows": {
+            "p": 0.96,
+            "label": true
+          },
+          "wants": {
+            "p": 0.97,
+            "label": true
+          },
+          "narrow": {
+            "p": 0.93,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1140,
+        "latencyMs": 126
+      },
+      {
+        "id": "audience-terse-icu",
+        "field": "audience",
+        "kind": "terse-sharp",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 94,
+        "quickScore": 69,
+        "scale": 4,
+        "facets": {
+          "reader": {
+            "p": 0.98,
+            "label": true
+          },
+          "knows": {
+            "p": 0.96,
+            "label": true
+          },
+          "wants": {
+            "p": 0.96,
+            "label": true
+          },
+          "narrow": {
+            "p": 0.91
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1073,
+        "latencyMs": 98
+      },
+      {
+        "id": "audience-terse-cofounder",
+        "field": "audience",
+        "kind": "terse-sharp",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 95,
+        "quickScore": 69,
+        "scale": 4,
+        "facets": {
+          "reader": {
+            "p": 0.96,
+            "label": true
+          },
+          "knows": {
+            "p": 0.96,
+            "label": true
+          },
+          "wants": {
+            "p": 0.86
+          },
+          "narrow": {
+            "p": 0.71,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1086,
+        "latencyMs": 84
+      },
+      {
+        "id": "goal-gamed-verbs",
+        "field": "goal",
+        "kind": "gamed",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 14,
+        "quickScore": 0,
+        "scale": 2,
+        "facets": {
+          "aim": {
+            "p": 0.16,
+            "label": false
+          },
+          "change": {
+            "p": 0.04,
+            "label": false
+          },
+          "single": {
+            "p": 0.06,
+            "label": false
+          },
+          "missable": {
+            "p": 0.19,
+            "label": false
+          }
+        },
+        "split": true,
+        "standIn": "convince persuade change decide so",
+        "questions": 9,
+        "inputTokens": 958,
+        "latencyMs": 104
+      },
+      {
+        "id": "goal-gamed-sentence",
+        "field": "goal",
+        "kind": "gamed",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 2,
+        "score": 19,
+        "quickScore": 0,
+        "scale": 2,
+        "facets": {
+          "aim": {
+            "p": 0.25,
+            "label": false
+          },
+          "change": {
+            "p": 0.11
+          },
+          "single": {
+            "p": 0.1,
+            "label": false
+          },
+          "missable": {
+            "p": 0.37,
+            "label": false
+          }
+        },
+        "split": true,
+        "standIn": "not just understand",
+        "questions": 9,
+        "inputTokens": 1010,
+        "latencyMs": 106
+      },
+      {
+        "id": "goal-inform",
+        "field": "goal",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 8,
+        "quickScore": 2,
+        "scale": 1,
+        "facets": {
+          "aim": {
+            "p": 0.24,
+            "label": false
+          },
+          "change": {
+            "p": 0.08,
+            "label": false
+          },
+          "single": {
+            "p": 0.96
+          },
+          "missable": {
+            "p": 0.37,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 812,
+        "latencyMs": 122
+      },
+      {
+        "id": "goal-good",
+        "field": "goal",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 1,
+        "quickScore": 2,
+        "scale": 1,
+        "facets": {
+          "aim": {
+            "p": 0.04,
+            "label": false
+          },
+          "change": {
+            "p": 0.08,
+            "label": false
+          },
+          "single": {
+            "p": 0.45
+          },
+          "missable": {
+            "p": 0.09,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "Make it good",
+        "questions": 9,
+        "inputTokens": 922,
+        "latencyMs": 89
+      },
+      {
+        "id": "goal-vague-long",
+        "field": "goal",
+        "kind": "vague-long",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 1,
+        "quick": 2,
+        "legacy": 2,
+        "score": 15,
+        "quickScore": 35,
+        "scale": 2,
+        "facets": {
+          "aim": {
+            "p": 0.11
+          },
+          "change": {
+            "p": 0.04,
+            "label": false
+          },
+          "single": {
+            "p": 0.08,
+            "label": false
+          },
+          "missable": {
+            "p": 0.07,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1104,
+        "latencyMs": 101
+      },
+      {
+        "id": "goal-mock-partial",
+        "field": "goal",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 3,
+        "score": 35,
+        "quickScore": 39,
+        "scale": 2,
+        "facets": {
+          "aim": {
+            "p": 0.87,
+            "label": true
+          },
+          "change": {
+            "p": 0.1,
+            "label": false
+          },
+          "single": {
+            "p": 0.94,
+            "label": true
+          },
+          "missable": {
+            "p": 0.5
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 816,
+        "latencyMs": 225
+      },
+      {
+        "id": "goal-many",
+        "field": "goal",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 3,
+        "score": 32,
+        "quickScore": 42,
+        "scale": 2,
+        "facets": {
+          "aim": {
+            "p": 0.88,
+            "label": true
+          },
+          "change": {
+            "p": 0.38
+          },
+          "single": {
+            "p": 0.03,
+            "label": false
+          },
+          "missable": {
+            "p": 0.92
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1006,
+        "latencyMs": 184
+      },
+      {
+        "id": "goal-rates",
+        "field": "goal",
+        "kind": "plain",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 93,
+        "quickScore": 69,
+        "scale": 3,
+        "facets": {
+          "aim": {
+            "p": 0.92,
+            "label": true
+          },
+          "change": {
+            "p": 0.72,
+            "label": true
+          },
+          "single": {
+            "p": 0.95,
+            "label": true
+          },
+          "missable": {
+            "p": 0.91
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 821,
+        "latencyMs": 137
+      },
+      {
+        "id": "goal-council-sharp",
+        "field": "goal",
+        "kind": "plain",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 4,
+        "score": 100,
+        "quickScore": 68,
+        "scale": 4,
+        "facets": {
+          "aim": {
+            "p": 0.96,
+            "label": true
+          },
+          "change": {
+            "p": 0.92,
+            "label": true
+          },
+          "single": {
+            "p": 0.95,
+            "label": true
+          },
+          "missable": {
+            "p": 0.94,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 943,
+        "latencyMs": 90
+      },
+      {
+        "id": "goal-terse-board",
+        "field": "goal",
+        "kind": "terse-sharp",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 100,
+        "quickScore": 66,
+        "scale": 4,
+        "facets": {
+          "aim": {
+            "p": 0.95,
+            "label": true
+          },
+          "change": {
+            "p": 0.93,
+            "label": true
+          },
+          "single": {
+            "p": 0.98,
+            "label": true
+          },
+          "missable": {
+            "p": 0.96,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 815,
+        "latencyMs": 132
+      },
+      {
+        "id": "goal-terse-reviewer",
+        "field": "goal",
+        "kind": "terse-sharp",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 99,
+        "quickScore": 66,
+        "scale": 4,
+        "facets": {
+          "aim": {
+            "p": 0.81,
+            "label": true
+          },
+          "change": {
+            "p": 0.76,
+            "label": true
+          },
+          "single": {
+            "p": 0.87,
+            "label": true
+          },
+          "missable": {
+            "p": 0.96,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 937,
+        "latencyMs": 144
+      },
+      {
+        "id": "tone-gamed-negatives",
+        "field": "tone",
+        "kind": "gamed",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 2,
+        "score": 12,
+        "quickScore": 0,
+        "scale": 2,
+        "facets": {
+          "distinct": {
+            "p": 0.07,
+            "label": false
+          },
+          "imitable": {
+            "p": 0.12,
+            "label": false
+          },
+          "avoid": {
+            "p": 0.95
+          }
+        },
+        "split": false,
+        "standIn": "avoid bad writing",
+        "questions": 6,
+        "inputTokens": 751,
+        "latencyMs": 119
+      },
+      {
+        "id": "tone-gamed-likes",
+        "field": "tone",
+        "kind": "gamed",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 2,
+        "score": 24,
+        "quickScore": 0,
+        "scale": 2,
+        "facets": {
+          "distinct": {
+            "p": 0.47,
+            "label": false
+          },
+          "imitable": {
+            "p": 0.28,
+            "label": false
+          },
+          "avoid": {
+            "p": 0.28,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 6,
+        "inputTokens": 742,
+        "latencyMs": 147
+      },
+      {
+        "id": "tone-engaging",
+        "field": "tone",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 3,
+        "quickScore": 0,
+        "scale": 1,
+        "facets": {
+          "distinct": {
+            "p": 0.05,
+            "label": false
+          },
+          "imitable": {
+            "p": 0.08,
+            "label": false
+          },
+          "avoid": {
+            "p": 0.01,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 659,
+        "latencyMs": 97
+      },
+      {
+        "id": "tone-professional",
+        "field": "tone",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 3,
+        "quickScore": 0,
+        "scale": 1,
+        "facets": {
+          "distinct": {
+            "p": 0.06,
+            "label": false
+          },
+          "imitable": {
+            "p": 0.14,
+            "label": false
+          },
+          "avoid": {
+            "p": 0.02,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "and clear",
+        "questions": 6,
+        "inputTokens": 720,
+        "latencyMs": 97
+      },
+      {
+        "id": "tone-vague-long",
+        "field": "tone",
+        "kind": "vague-long",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 1,
+        "quickScore": 10,
+        "scale": 1,
+        "facets": {
+          "distinct": {
+            "p": 0.05,
+            "label": false
+          },
+          "imitable": {
+            "p": 0.17,
+            "label": false
+          },
+          "avoid": {
+            "p": 0.02,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "and is well written from start to finish",
+        "questions": 6,
+        "inputTokens": 801,
+        "latencyMs": 125
+      },
+      {
+        "id": "tone-warm",
+        "field": "tone",
+        "kind": "plain",
+        "band": [
+          2,
+          3
+        ],
+        "jev": 3,
+        "quick": 2,
+        "legacy": 3,
+        "score": 62,
+        "quickScore": 28,
+        "scale": 3,
+        "facets": {
+          "distinct": {
+            "p": 0.53,
+            "label": true
+          },
+          "imitable": {
+            "p": 0.19
+          },
+          "avoid": {
+            "p": 0.72
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 663,
+        "latencyMs": 75
+      },
+      {
+        "id": "tone-placeholder",
+        "field": "tone",
+        "kind": "plain",
+        "band": [
+          2,
+          3
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 3,
+        "score": 30,
+        "quickScore": 33,
+        "scale": 2,
+        "facets": {
+          "distinct": {
+            "p": 0.73,
+            "label": true
+          },
+          "imitable": {
+            "p": 0.21
+          },
+          "avoid": {
+            "p": 0.02,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "Calm, exact",
+        "questions": 6,
+        "inputTokens": 733,
+        "latencyMs": 114
+      },
+      {
+        "id": "tone-mechanic",
+        "field": "tone",
+        "kind": "plain",
+        "band": [
+          3,
+          3
+        ],
+        "jev": 3,
+        "quick": 2,
+        "legacy": 3,
+        "score": 56,
+        "quickScore": 39,
+        "scale": 3,
+        "facets": {
+          "distinct": {
+            "p": 0.91,
+            "label": true
+          },
+          "imitable": {
+            "p": 0.9,
+            "label": true
+          },
+          "avoid": {
+            "p": 0.02,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 673,
+        "latencyMs": 122
+      },
+      {
+        "id": "tone-terse-lab",
+        "field": "tone",
+        "kind": "terse-sharp",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 98,
+        "quickScore": 72,
+        "scale": 4,
+        "facets": {
+          "distinct": {
+            "p": 0.94,
+            "label": true
+          },
+          "imitable": {
+            "p": 0.9,
+            "label": true
+          },
+          "avoid": {
+            "p": 0.98,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 6,
+        "inputTokens": 733,
+        "latencyMs": 84
+      },
+      {
+        "id": "tone-terse-deadpan",
+        "field": "tone",
+        "kind": "terse-sharp",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 2,
+        "legacy": 3,
+        "score": 90,
+        "quickScore": 35,
+        "scale": 3,
+        "facets": {
+          "distinct": {
+            "p": 0.89,
+            "label": true
+          },
+          "imitable": {
+            "p": 0.52
+          },
+          "avoid": {
+            "p": 0.95,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 665,
+        "latencyMs": 97
+      },
+      {
+        "id": "tone-field-guide",
+        "field": "tone",
+        "kind": "plain",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 4,
+        "score": 99,
+        "quickScore": 72,
+        "scale": 4,
+        "facets": {
+          "distinct": {
+            "p": 0.96,
+            "label": true
+          },
+          "imitable": {
+            "p": 0.91,
+            "label": true
+          },
+          "avoid": {
+            "p": 0.98,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 6,
+        "inputTokens": 754,
+        "latencyMs": 113
+      },
+      {
+        "id": "format-gamed-units",
+        "field": "format",
+        "kind": "gamed",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 2,
+        "score": 26,
+        "quickScore": 25,
+        "scale": 2,
+        "facets": {
+          "shape": {
+            "p": 0.85
+          },
+          "size": {
+            "p": 0.04,
+            "label": false
+          },
+          "venue": {
+            "p": 0.3,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 698,
+        "latencyMs": 97
+      },
+      {
+        "id": "format-gamed-lengths",
+        "field": "format",
+        "kind": "gamed",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 2,
+        "score": 27,
+        "quickScore": 25,
+        "scale": 1,
+        "facets": {
+          "shape": {
+            "p": 0.94
+          },
+          "size": {
+            "p": 0.09,
+            "label": false
+          },
+          "venue": {
+            "p": 0.02,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 702,
+        "latencyMs": 81
+      },
+      {
+        "id": "format-piece",
+        "field": "format",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 5,
+        "quickScore": 0,
+        "scale": 1,
+        "facets": {
+          "shape": {
+            "p": 0.18,
+            "label": false
+          },
+          "size": {
+            "p": 0.01,
+            "label": false
+          },
+          "venue": {
+            "p": 0.01,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 696,
+        "latencyMs": 100
+      },
+      {
+        "id": "format-essay",
+        "field": "format",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 1,
+        "score": 25,
+        "quickScore": 25,
+        "scale": 2,
+        "facets": {
+          "shape": {
+            "p": 0.99,
+            "label": true
+          },
+          "size": {
+            "p": 0.01,
+            "label": false
+          },
+          "venue": {
+            "p": 0.02,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 693,
+        "latencyMs": 106
+      },
+      {
+        "id": "format-venue-only",
+        "field": "format",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 2,
+        "score": 30,
+        "quickScore": 28,
+        "scale": 2,
+        "facets": {
+          "shape": {
+            "p": 0.98,
+            "label": true
+          },
+          "size": {
+            "p": 0.02,
+            "label": false
+          },
+          "venue": {
+            "p": 0.68,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 699,
+        "latencyMs": 380
+      },
+      {
+        "id": "format-essay-length",
+        "field": "format",
+        "kind": "plain",
+        "band": [
+          3,
+          3
+        ],
+        "jev": 3,
+        "quick": 3,
+        "legacy": 2,
+        "score": 56,
+        "quickScore": 57,
+        "scale": 3,
+        "facets": {
+          "shape": {
+            "p": 0.99,
+            "label": true
+          },
+          "size": {
+            "p": 0.94,
+            "label": true
+          },
+          "venue": {
+            "p": 0.01,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 702,
+        "latencyMs": 67
+      },
+      {
+        "id": "format-newsletter-sharp",
+        "field": "format",
+        "kind": "plain",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 100,
+        "quickScore": 60,
+        "scale": 4,
+        "facets": {
+          "shape": {
+            "p": 0.99,
+            "label": true
+          },
+          "size": {
+            "p": 0.95,
+            "label": true
+          },
+          "venue": {
+            "p": 0.94,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 706,
+        "latencyMs": 69
+      },
+      {
+        "id": "format-terse-oped",
+        "field": "format",
+        "kind": "terse-sharp",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 100,
+        "quickScore": 62,
+        "scale": 4,
+        "facets": {
+          "shape": {
+            "p": 0.99,
+            "label": true
+          },
+          "size": {
+            "p": 0.99,
+            "label": true
+          },
+          "venue": {
+            "p": 0.99,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 702,
+        "latencyMs": 205
+      },
+      {
+        "id": "format-terse-talk",
+        "field": "format",
+        "kind": "terse-sharp",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 92,
+        "quickScore": 64,
+        "scale": 3,
+        "facets": {
+          "shape": {
+            "p": 0.96,
+            "label": true
+          },
+          "size": {
+            "p": 0.97,
+            "label": true
+          },
+          "venue": {
+            "p": 0.75
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 698,
+        "latencyMs": 181
+      },
+      {
+        "id": "signal-gamed-verbs",
+        "field": "successSignal",
+        "kind": "gamed",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 2,
+        "score": 21,
+        "quickScore": 0,
+        "scale": 3,
+        "facets": {
+          "observable": {
+            "p": 0.32,
+            "label": false
+          },
+          "theirs": {
+            "p": 0.95
+          },
+          "threshold": {
+            "p": 0.17,
+            "label": false
+          },
+          "earned": {
+            "p": 0.41,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "and not ignore 100%",
+        "questions": 9,
+        "inputTokens": 1063,
+        "latencyMs": 172
+      },
+      {
+        "id": "signal-gamed-numbers",
+        "field": "successSignal",
+        "kind": "gamed",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 3,
+        "quick": 1,
+        "legacy": 3,
+        "score": 61,
+        "quickScore": 0,
+        "scale": 3,
+        "facets": {
+          "observable": {
+            "p": 0.73
+          },
+          "theirs": {
+            "p": 0.96
+          },
+          "threshold": {
+            "p": 0.53
+          },
+          "earned": {
+            "p": 0.15,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 893,
+        "latencyMs": 109
+      },
+      {
+        "id": "signal-gamed-list",
+        "field": "successSignal",
+        "kind": "gamed",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 20,
+        "quickScore": 0,
+        "scale": 2,
+        "facets": {
+          "observable": {
+            "p": 0.36,
+            "label": false
+          },
+          "theirs": {
+            "p": 0.99
+          },
+          "threshold": {
+            "p": 0.07,
+            "label": false
+          },
+          "earned": {
+            "p": 0.62,
+            "label": false
+          }
+        },
+        "split": true,
+        "standIn": "Readers can",
+        "questions": 9,
+        "inputTokens": 1048,
+        "latencyMs": 101
+      },
+      {
+        "id": "signal-like",
+        "field": "successSignal",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 3,
+        "quickScore": 0,
+        "scale": 1,
+        "facets": {
+          "observable": {
+            "p": 0.12,
+            "label": false
+          },
+          "theirs": {
+            "p": 0.96
+          },
+          "threshold": {
+            "p": 0.03,
+            "label": false
+          },
+          "earned": {
+            "p": 0.07,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "People like it",
+        "questions": 7,
+        "inputTokens": 879,
+        "latencyMs": 81
+      },
+      {
+        "id": "signal-resonates",
+        "field": "successSignal",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 1,
+        "quickScore": 0,
+        "scale": 1,
+        "facets": {
+          "observable": {
+            "p": 0.02,
+            "label": false
+          },
+          "theirs": {
+            "p": 0.85
+          },
+          "threshold": {
+            "p": 0.03,
+            "label": false
+          },
+          "earned": {
+            "p": 0.08,
+            "label": false
+          }
+        },
+        "split": true,
+        "standIn": "It resonates with the audience",
+        "questions": 7,
+        "inputTokens": 882,
+        "latencyMs": 99
+      },
+      {
+        "id": "signal-vague-long",
+        "field": "successSignal",
+        "kind": "vague-long",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 2,
+        "quickScore": 10,
+        "scale": 1,
+        "facets": {
+          "observable": {
+            "p": 0.08,
+            "label": false
+          },
+          "theirs": {
+            "p": 0.95
+          },
+          "threshold": {
+            "p": 0.05,
+            "label": false
+          },
+          "earned": {
+            "p": 0.49,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "The piece will have succeeded if readers come away feeling",
+        "questions": 9,
+        "inputTokens": 1138,
+        "latencyMs": 76
+      },
+      {
+        "id": "signal-writer",
+        "field": "successSignal",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 2,
+        "quickScore": 3,
+        "scale": 1,
+        "facets": {
+          "observable": {
+            "p": 0.07,
+            "label": false
+          },
+          "theirs": {
+            "p": 0.02,
+            "label": false
+          },
+          "threshold": {
+            "p": 0.04,
+            "label": false
+          },
+          "earned": {
+            "p": 0.24
+          }
+        },
+        "split": false,
+        "standIn": "I feel proud of it when I read it back",
+        "questions": 7,
+        "inputTokens": 886,
+        "latencyMs": 85
+      },
+      {
+        "id": "signal-placeholder",
+        "field": "successSignal",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 2,
+        "score": 34,
+        "quickScore": 37,
+        "scale": 2,
+        "facets": {
+          "observable": {
+            "p": 0.72,
+            "label": true
+          },
+          "theirs": {
+            "p": 0.98,
+            "label": true
+          },
+          "threshold": {
+            "p": 0.05,
+            "label": false
+          },
+          "earned": {
+            "p": 0.81
+          }
+        },
+        "split": false,
+        "standIn": "and knows why it matters",
+        "questions": 9,
+        "inputTokens": 1025,
+        "latencyMs": 88
+      },
+      {
+        "id": "signal-views",
+        "field": "successSignal",
+        "kind": "plain",
+        "band": [
+          2,
+          3
+        ],
+        "jev": 3,
+        "quick": 3,
+        "legacy": 3,
+        "score": 59,
+        "quickScore": 63,
+        "scale": 3,
+        "facets": {
+          "observable": {
+            "p": 0.59,
+            "label": true
+          },
+          "theirs": {
+            "p": 0.9
+          },
+          "threshold": {
+            "p": 0.95,
+            "label": true
+          },
+          "earned": {
+            "p": 0.12
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 886,
+        "latencyMs": 90
+      },
+      {
+        "id": "signal-cfo",
+        "field": "successSignal",
+        "kind": "plain",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 88,
+        "quickScore": 68,
+        "scale": 3,
+        "facets": {
+          "observable": {
+            "p": 0.95,
+            "label": true
+          },
+          "theirs": {
+            "p": 0.91,
+            "label": true
+          },
+          "threshold": {
+            "p": 0.91,
+            "label": true
+          },
+          "earned": {
+            "p": 0.83
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 888,
+        "latencyMs": 75
+      },
+      {
+        "id": "signal-terse-reviewers",
+        "field": "successSignal",
+        "kind": "terse-sharp",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 89,
+        "quickScore": 64,
+        "scale": 3,
+        "facets": {
+          "observable": {
+            "p": 0.96,
+            "label": true
+          },
+          "theirs": {
+            "p": 0.97,
+            "label": true
+          },
+          "threshold": {
+            "p": 0.86,
+            "label": true
+          },
+          "earned": {
+            "p": 0.87,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 886,
+        "latencyMs": 90
+      },
+      {
+        "id": "signal-terse-dana",
+        "field": "successSignal",
+        "kind": "terse-sharp",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 88,
+        "quickScore": 64,
+        "scale": 3,
+        "facets": {
+          "observable": {
+            "p": 0.71,
+            "label": true
+          },
+          "theirs": {
+            "p": 0.96,
+            "label": true
+          },
+          "threshold": {
+            "p": 0.96,
+            "label": true
+          },
+          "earned": {
+            "p": 0.81
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 886,
+        "latencyMs": 88
+      },
+      {
+        "id": "signal-founders",
+        "field": "successSignal",
+        "kind": "plain",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 91,
+        "quickScore": 66,
+        "scale": 3,
+        "facets": {
+          "observable": {
+            "p": 0.95,
+            "label": true
+          },
+          "theirs": {
+            "p": 0.96,
+            "label": true
+          },
+          "threshold": {
+            "p": 0.91,
+            "label": true
+          },
+          "earned": {
+            "p": 0.91,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1021,
+        "latencyMs": 108
+      },
+      {
+        "id": "title-untitled",
+        "field": "workingTitle",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 0,
+        "score": 0,
+        "quickScore": 0,
+        "scale": 1,
+        "facets": {
+          "named": {
+            "p": 0.01,
+            "label": false
+          },
+          "angle": {
+            "p": 0.01,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 3,
+        "inputTokens": 539,
+        "latencyMs": 98
+      },
+      {
+        "id": "title-draft",
+        "field": "workingTitle",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 0,
+        "score": 1,
+        "quickScore": 0,
+        "scale": 1,
+        "facets": {
+          "named": {
+            "p": 0.04,
+            "label": false
+          },
+          "angle": {
+            "p": 0.02,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 3,
+        "inputTokens": 539,
+        "latencyMs": 112
+      },
+      {
+        "id": "title-gamed",
+        "field": "workingTitle",
+        "kind": "gamed",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 0,
+        "score": 2,
+        "quickScore": 0,
+        "scale": 1,
+        "facets": {
+          "named": {
+            "p": 0.06,
+            "label": false
+          },
+          "angle": {
+            "p": 0.03,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 3,
+        "inputTokens": 541,
+        "latencyMs": 79
+      },
+      {
+        "id": "title-topic",
+        "field": "workingTitle",
+        "kind": "plain",
+        "band": [
+          3,
+          3
+        ],
+        "jev": 3,
+        "quick": 3,
+        "legacy": 1,
+        "score": 52,
+        "quickScore": 52,
+        "scale": 3,
+        "facets": {
+          "named": {
+            "p": 0.74,
+            "label": true
+          },
+          "angle": {
+            "p": 0.1,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 3,
+        "inputTokens": 538,
+        "latencyMs": 61
+      },
+      {
+        "id": "title-pilot",
+        "field": "workingTitle",
+        "kind": "plain",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 2,
+        "score": 97,
+        "quickScore": 53,
+        "scale": 4,
+        "facets": {
+          "named": {
+            "p": 0.96,
+            "label": true
+          },
+          "angle": {
+            "p": 0.62
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 3,
+        "inputTokens": 542,
+        "latencyMs": 92
+      },
+      {
+        "id": "title-claim",
+        "field": "workingTitle",
+        "kind": "terse-sharp",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 97,
+        "quickScore": 57,
+        "scale": 4,
+        "facets": {
+          "named": {
+            "p": 0.98,
+            "label": true
+          },
+          "angle": {
+            "p": 0.66,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 3,
+        "inputTokens": 546,
+        "latencyMs": 91
+      },
+      {
+        "id": "constraints-empty",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          0,
+          0
+        ],
+        "jev": 0,
+        "quick": 0,
+        "legacy": null,
+        "score": null,
+        "quickScore": null,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 0,
+        "inputTokens": 0,
+        "latencyMs": 0
+      },
+      {
+        "id": "constraints-none",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          0,
+          0
+        ],
+        "jev": 0,
+        "quick": 0,
+        "legacy": null,
+        "score": null,
+        "quickScore": null,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 0,
+        "inputTokens": 0,
+        "latencyMs": 0
+      },
+      {
+        "id": "constraints-na",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          0,
+          0
+        ],
+        "jev": 0,
+        "quick": 0,
+        "legacy": null,
+        "score": null,
+        "quickScore": null,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 0,
+        "inputTokens": 0,
+        "latencyMs": 0
+      },
+      {
+        "id": "constraints-gamed",
+        "field": "constraints",
+        "kind": "gamed",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 2,
+        "score": 0,
+        "quickScore": 0,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 3,
+        "inputTokens": 511,
+        "latencyMs": 84,
+        "lines": [
+          {
+            "text": "must must must cite sources, keep it under max, not over",
+            "kind": "uncheckable",
+            "want": []
+          }
+        ]
+      },
+      {
+        "id": "constraints-gamed-rules",
+        "field": "constraints",
+        "kind": "gamed",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 0,
+        "quickScore": 0,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 905,
+        "latencyMs": 97,
+        "lines": [
+          {
+            "text": "Must keep to the rules",
+            "kind": "uncheckable",
+            "want": [
+              "uncheckable"
+            ]
+          },
+          {
+            "text": "Never break the limits",
+            "kind": "uncheckable",
+            "want": [
+              "uncheckable"
+            ]
+          },
+          {
+            "text": "Only use what is allowed",
+            "kind": "uncheckable",
+            "want": [
+              "uncheckable"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "constraints-mock-mixed",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 3,
+        "score": 38,
+        "quickScore": 36,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 12,
+        "inputTokens": 1160,
+        "latencyMs": 78,
+        "lines": [
+          {
+            "text": "Under 1,800 words — the journal's hard limit",
+            "kind": "hard",
+            "want": [
+              "hard"
+            ]
+          },
+          {
+            "text": "Every statistic cites a primary source",
+            "kind": "hard",
+            "want": [
+              "editorial"
+            ]
+          },
+          {
+            "text": "Avoid sounding preachy",
+            "kind": "uncheckable",
+            "want": [
+              "preference"
+            ]
+          },
+          {
+            "text": "Make it feel fresh",
+            "kind": "uncheckable",
+            "want": [
+              "uncheckable"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "constraints-uncheckable",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 0,
+        "quickScore": 0,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 893,
+        "latencyMs": 101,
+        "lines": [
+          {
+            "text": "Make it feel fresh",
+            "kind": "uncheckable",
+            "want": [
+              "uncheckable"
+            ]
+          },
+          {
+            "text": "Keep it authentic",
+            "kind": "uncheckable",
+            "want": [
+              "uncheckable"
+            ]
+          },
+          {
+            "text": "Should be high quality",
+            "kind": "uncheckable",
+            "want": [
+              "uncheckable"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "constraints-preferences",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 3,
+        "legacy": 3,
+        "score": 25,
+        "quickScore": 65,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 936,
+        "latencyMs": 89,
+        "lines": [
+          {
+            "text": "I'd rather not use the word 'journey'",
+            "kind": "preference",
+            "want": [
+              "preference"
+            ]
+          },
+          {
+            "text": "Prefer short paragraphs if possible",
+            "kind": "preference",
+            "want": [
+              "preference"
+            ]
+          },
+          {
+            "text": "Ideally no footnotes",
+            "kind": "preference",
+            "want": [
+              "preference"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "constraints-hard",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 4,
+        "score": 100,
+        "quickScore": 65,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 977,
+        "latencyMs": 93,
+        "lines": [
+          {
+            "text": "Embargoed until March 3: do not mention the acquisition",
+            "kind": "hard",
+            "want": [
+              "hard"
+            ]
+          },
+          {
+            "text": "Legal must approve every quote from the deposition",
+            "kind": "hard",
+            "want": [
+              "hard"
+            ]
+          },
+          {
+            "text": "Maximum 900 words per the op-ed desk",
+            "kind": "hard",
+            "want": [
+              "hard"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "constraints-editorial",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 2,
+        "legacy": 4,
+        "score": 100,
+        "quickScore": 35,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 925,
+        "latencyMs": 87,
+        "lines": [
+          {
+            "text": "No second person",
+            "kind": "editorial",
+            "want": [
+              "editorial"
+            ]
+          },
+          {
+            "text": "Every section opens with a scene, not a claim",
+            "kind": "editorial",
+            "want": [
+              "editorial"
+            ]
+          },
+          {
+            "text": "No statistics without a named source",
+            "kind": "editorial",
+            "want": [
+              "editorial"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "constraints-semicolons",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 2,
+        "score": 38,
+        "quickScore": 36,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 12,
+        "inputTokens": 1104,
+        "latencyMs": 90,
+        "lines": [
+          {
+            "text": "Cite every claim",
+            "kind": "editorial",
+            "want": [
+              "hard",
+              "editorial"
+            ]
+          },
+          {
+            "text": "British spelling",
+            "kind": "editorial",
+            "want": [
+              "hard",
+              "editorial"
+            ]
+          },
+          {
+            "text": "try to keep it light",
+            "kind": "preference",
+            "want": [
+              "preference"
+            ]
+          },
+          {
+            "text": "be true to myself",
+            "kind": "uncheckable",
+            "want": [
+              "uncheckable"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "constraints-terse",
+        "field": "constraints",
+        "kind": "terse-sharp",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 4,
+        "score": 100,
+        "quickScore": 65,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 6,
+        "inputTokens": 699,
+        "latencyMs": 95,
+        "lines": [
+          {
+            "text": "No named patients.",
+            "kind": "editorial",
+            "want": [
+              "hard",
+              "editorial"
+            ]
+          },
+          {
+            "text": "Max 1,200 words.",
+            "kind": "editorial",
+            "want": [
+              "hard",
+              "editorial"
+            ]
+          }
+        ]
+      }
+    ],
+    "briefs": [
+      {
+        "id": "brief-sharp-transit",
+        "levels": {
+          "workingTitle": 4,
+          "format": 4,
+          "audience": 4,
+          "goal": 4,
+          "tone": 4,
+          "constraints": 4,
+          "successSignal": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 3,
+          "goal": 3,
+          "tone": 3,
+          "constraints": 3,
+          "successSignal": 3
+        },
+        "legacy": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 4,
+          "goal": 3,
+          "tone": 4,
+          "constraints": 3,
+          "successSignal": 3
+        },
+        "sufficiency": 0.93,
+        "contradiction": 0.3,
+        "tension": null,
+        "firstQuestion": null,
+        "loadBearing": true,
+        "soft": [],
+        "questions": 50,
+        "requests": 1,
+        "inputTokens": 4711,
+        "latencyMs": 152
+      },
+      {
+        "id": "brief-vague-everything",
+        "levels": {
+          "workingTitle": 1,
+          "format": 2,
+          "audience": 1,
+          "goal": 1,
+          "tone": 1,
+          "constraints": 1,
+          "successSignal": 1
+        },
+        "quick": {
+          "workingTitle": 1,
+          "format": 2,
+          "audience": 1,
+          "goal": 1,
+          "tone": 1,
+          "constraints": 1,
+          "successSignal": 1
+        },
+        "legacy": {
+          "workingTitle": 0,
+          "format": 1,
+          "audience": 1,
+          "goal": 1,
+          "tone": 1,
+          "constraints": 1,
+          "successSignal": 1
+        },
+        "sufficiency": 0.08,
+        "contradiction": 0.15000000000000002,
+        "tension": null,
+        "firstQuestion": "audience",
+        "loadBearing": false,
+        "soft": [
+          "Reader is vague",
+          "Goal is vague",
+          "Landing is vague",
+          "one rule cannot be checked"
+        ],
+        "questions": 42,
+        "requests": 1,
+        "inputTokens": 3960,
+        "latencyMs": 154
+      },
+      {
+        "id": "brief-gamed-everything",
+        "levels": {
+          "workingTitle": 1,
+          "format": 2,
+          "audience": 1,
+          "goal": 1,
+          "tone": 1,
+          "constraints": 1,
+          "successSignal": 2
+        },
+        "quick": {
+          "workingTitle": 1,
+          "format": 2,
+          "audience": 1,
+          "goal": 1,
+          "tone": 1,
+          "constraints": 1,
+          "successSignal": 1
+        },
+        "legacy": {
+          "workingTitle": 0,
+          "format": 2,
+          "audience": 2,
+          "goal": 2,
+          "tone": 2,
+          "constraints": 2,
+          "successSignal": 3
+        },
+        "sufficiency": 0.19,
+        "contradiction": 0.7050000000000001,
+        "tension": null,
+        "firstQuestion": "audience",
+        "loadBearing": false,
+        "soft": [
+          "Reader is vague",
+          "Goal is vague",
+          "Landing is partial",
+          "two answers pull apart",
+          "one rule cannot be checked"
+        ],
+        "questions": 47,
+        "requests": 1,
+        "inputTokens": 4437,
+        "latencyMs": 125
+      },
+      {
+        "id": "brief-long-vague",
+        "levels": {
+          "workingTitle": 3,
+          "format": 2,
+          "audience": 1,
+          "goal": 1,
+          "tone": 1,
+          "constraints": 1,
+          "successSignal": 1
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 2,
+          "audience": 1,
+          "goal": 2,
+          "tone": 1,
+          "constraints": 3,
+          "successSignal": 1
+        },
+        "legacy": {
+          "workingTitle": 1,
+          "format": 2,
+          "audience": 1,
+          "goal": 2,
+          "tone": 1,
+          "constraints": 1,
+          "successSignal": 1
+        },
+        "sufficiency": 0.22,
+        "contradiction": 0.14,
+        "tension": null,
+        "firstQuestion": "goal",
+        "loadBearing": false,
+        "soft": [
+          "Reader is vague",
+          "Goal is vague",
+          "Landing is vague",
+          "one rule cannot be checked"
+        ],
+        "questions": 49,
+        "requests": 1,
+        "inputTokens": 4991,
+        "latencyMs": 164
+      },
+      {
+        "id": "brief-terse-sharp",
+        "levels": {
+          "workingTitle": 4,
+          "format": 4,
+          "audience": 3,
+          "goal": 4,
+          "tone": 4,
+          "constraints": 4,
+          "successSignal": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 3,
+          "tone": 2,
+          "constraints": 3,
+          "successSignal": 2
+        },
+        "legacy": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 4,
+          "goal": 3,
+          "tone": 4,
+          "constraints": 4,
+          "successSignal": 3
+        },
+        "sufficiency": 0.95,
+        "contradiction": 0.42500000000000004,
+        "tension": null,
+        "firstQuestion": null,
+        "loadBearing": true,
+        "soft": [],
+        "questions": 49,
+        "requests": 1,
+        "inputTokens": 4534,
+        "latencyMs": 122
+      },
+      {
+        "id": "brief-mock-pilot",
+        "levels": {
+          "workingTitle": 4,
+          "format": 3,
+          "audience": 4,
+          "goal": 2,
+          "tone": 3,
+          "constraints": 0,
+          "successSignal": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 2,
+          "tone": 2,
+          "constraints": 0,
+          "successSignal": 3
+        },
+        "legacy": {
+          "workingTitle": 2,
+          "format": 3,
+          "audience": 3,
+          "goal": 3,
+          "tone": 3,
+          "constraints": 0,
+          "successSignal": 3
+        },
+        "sufficiency": 0.82,
+        "contradiction": 0.175,
+        "tension": null,
+        "firstQuestion": "goal",
+        "loadBearing": false,
+        "soft": [
+          "Goal is partial"
+        ],
+        "questions": 41,
+        "requests": 1,
+        "inputTokens": 3957,
+        "latencyMs": 111
+      },
+      {
+        "id": "brief-missing-landing",
+        "levels": {
+          "workingTitle": 3,
+          "format": 4,
+          "audience": 4,
+          "goal": 4,
+          "tone": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 2,
+          "tone": 3
+        },
+        "legacy": {
+          "workingTitle": 2,
+          "format": 3,
+          "audience": 3,
+          "goal": 3,
+          "tone": 3
+        },
+        "sufficiency": 0.57,
+        "contradiction": 0.125,
+        "tension": null,
+        "firstQuestion": "successSignal",
+        "loadBearing": false,
+        "soft": [
+          "Landing is missing"
+        ],
+        "questions": 35,
+        "requests": 1,
+        "inputTokens": 3326,
+        "latencyMs": 124
+      },
+      {
+        "id": "brief-grant",
+        "levels": {
+          "workingTitle": 3,
+          "format": 4,
+          "audience": 4,
+          "goal": 4,
+          "tone": 4,
+          "constraints": 4,
+          "successSignal": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 3,
+          "tone": 3,
+          "constraints": 3,
+          "successSignal": 3
+        },
+        "legacy": {
+          "workingTitle": 2,
+          "format": 3,
+          "audience": 4,
+          "goal": 3,
+          "tone": 4,
+          "constraints": 4,
+          "successSignal": 4
+        },
+        "sufficiency": 0.84,
+        "contradiction": 0.22999999999999998,
+        "tension": null,
+        "firstQuestion": null,
+        "loadBearing": true,
+        "soft": [],
+        "questions": 55,
+        "requests": 1,
+        "inputTokens": 5156,
+        "latencyMs": 117
+      },
+      {
+        "id": "brief-personal-essay",
+        "levels": {
+          "workingTitle": 4,
+          "format": 4,
+          "audience": 4,
+          "goal": 4,
+          "tone": 4,
+          "constraints": 4,
+          "successSignal": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 3,
+          "tone": 2,
+          "constraints": 3,
+          "successSignal": 2
+        },
+        "legacy": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 3,
+          "goal": 3,
+          "tone": 4,
+          "constraints": 4,
+          "successSignal": 3
+        },
+        "sufficiency": 0.93,
+        "contradiction": 0.32,
+        "tension": null,
+        "firstQuestion": null,
+        "loadBearing": true,
+        "soft": [],
+        "questions": 50,
+        "requests": 1,
+        "inputTokens": 4660,
+        "latencyMs": 133
+      },
+      {
+        "id": "brief-tension-tone-reader",
+        "levels": {
+          "workingTitle": 3,
+          "format": 4,
+          "audience": 3,
+          "goal": 4,
+          "tone": 3,
+          "constraints": 4,
+          "successSignal": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 2,
+          "tone": 2,
+          "constraints": 3,
+          "successSignal": 3
+        },
+        "legacy": {
+          "workingTitle": 2,
+          "format": 3,
+          "audience": 3,
+          "goal": 3,
+          "tone": 3,
+          "constraints": 4,
+          "successSignal": 3
+        },
+        "sufficiency": 0.94,
+        "contradiction": 0.665,
+        "tension": [
+          "tone",
+          "audience"
+        ],
+        "firstQuestion": null,
+        "loadBearing": false,
+        "soft": [
+          "two answers pull apart"
+        ],
+        "questions": 52,
+        "requests": 1,
+        "inputTokens": 4779,
+        "latencyMs": 132
+      },
+      {
+        "id": "brief-tension-rule-landing",
+        "levels": {
+          "workingTitle": 3,
+          "format": 4,
+          "audience": 3,
+          "goal": 4,
+          "tone": 3,
+          "constraints": 4,
+          "successSignal": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 3,
+          "tone": 2,
+          "constraints": 3,
+          "successSignal": 2
+        },
+        "legacy": {
+          "workingTitle": 2,
+          "format": 3,
+          "audience": 3,
+          "goal": 3,
+          "tone": 3,
+          "constraints": 4,
+          "successSignal": 3
+        },
+        "sufficiency": 0.82,
+        "contradiction": 0.75,
+        "tension": [
+          "constraints",
+          "successSignal"
+        ],
+        "firstQuestion": null,
+        "loadBearing": false,
+        "soft": [
+          "two answers pull apart"
+        ],
+        "questions": 50,
+        "requests": 1,
+        "inputTokens": 4643,
+        "latencyMs": 142
+      },
+      {
+        "id": "brief-tension-form-goal",
+        "levels": {
+          "workingTitle": 4,
+          "format": 3,
+          "audience": 3,
+          "goal": 4,
+          "tone": 3,
+          "constraints": 0,
+          "successSignal": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 2,
+          "tone": 2,
+          "constraints": 0,
+          "successSignal": 3
+        },
+        "legacy": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 3,
+          "goal": 3,
+          "tone": 3,
+          "constraints": 0,
+          "successSignal": 3
+        },
+        "sufficiency": 0.95,
+        "contradiction": 0.73,
+        "tension": [
+          "format",
+          "goal"
+        ],
+        "firstQuestion": null,
+        "loadBearing": false,
+        "soft": [
+          "two answers pull apart"
+        ],
+        "questions": 44,
+        "requests": 1,
+        "inputTokens": 4224,
+        "latencyMs": 117
+      },
+      {
+        "id": "brief-tension-goal-landing",
+        "levels": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 4,
+          "goal": 4,
+          "tone": 4,
+          "constraints": 4,
+          "successSignal": 3
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 3,
+          "tone": 2,
+          "constraints": 3,
+          "successSignal": 2
+        },
+        "legacy": {
+          "workingTitle": 2,
+          "format": 3,
+          "audience": 4,
+          "goal": 3,
+          "tone": 4,
+          "constraints": 4,
+          "successSignal": 2
+        },
+        "sufficiency": 0.64,
+        "contradiction": 0.42,
+        "tension": null,
+        "firstQuestion": null,
+        "loadBearing": true,
+        "soft": [],
+        "questions": 48,
+        "requests": 1,
+        "inputTokens": 4453,
+        "latencyMs": 116
+      }
+    ]
+  },
+  "heldOut": {
+    "fixtures": {
+      "answers": 43,
+      "briefs": 6
+    },
+    "level": {
+      "judged": {
+        "inBand": 0.915,
+        "withinOne": 0.986,
+        "n": 71
+      },
+      "firstLook": {
+        "inBand": 0.592,
+        "withinOne": 1,
+        "n": 71
+      },
+      "oldScore": {
+        "inBand": 0.771,
+        "withinOne": 1,
+        "n": 70
+      }
+    },
+    "meter": {
+      "judgedMeanByLevel": [
+        9,
+        35,
+        56,
+        99
+      ],
+      "firstLookMeanByLevel": [
+        16,
+        38,
+        49,
+        67
+      ],
+      "scaleAlone": {
+        "inBand": 0.811,
+        "withinOne": 0.946,
+        "n": 37
+      }
+    },
+    "facets": {
+      "precision": 1,
+      "recall": 0.942,
+      "accuracy": 0.969,
+      "n": 96
+    },
+    "gamed": {
+      "n": 6,
+      "judgedRejected": 6,
+      "firstLookRejected": 6,
+      "oldScoreRejected": 6
+    },
+    "terseSharp": {
+      "n": 9,
+      "judgedKept": 9,
+      "firstLookKept": 9
+    },
+    "constraints": {
+      "kind": 0.923,
+      "binding": 1,
+      "n": 13
+    },
+    "whole": {
+      "sufficiency": [
+        {
+          "id": "h-brief-sharp-pricing",
+          "p": 0.94,
+          "want": true
+        },
+        {
+          "id": "h-brief-vague-blog",
+          "p": 0.08,
+          "want": false
+        },
+        {
+          "id": "h-brief-thin",
+          "p": 0.54,
+          "want": false
+        },
+        {
+          "id": "h-brief-solid-flood",
+          "p": 0.93,
+          "want": true
+        }
+      ],
+      "brier": 0.0766,
+      "tensionNamed": "2/2",
+      "tensionFalseAlarms": "0/4",
+      "loadBearing": "5/6"
+    },
+    "perBrief": {
+      "requests": 1,
+      "questionsMedian": 45,
+      "inputTokensMedian": 4274,
+      "latencyMsMedian": 158,
+      "usd": 0.0001762
+    },
+    "misses": [
+      "h-audience-investors [audience] expected 1–2, judged 3 (first look 2, old score 2)",
+      "h-goal-gamed [goal] expected 1–1, judged 2 (first look 2, old score 2)",
+      "h-tone-gamed [tone] expected 1–1, judged 2 (first look 1, old score 1)",
+      "h-constraints-mixed [constraints] expected 2–2, judged 3 (first look 2, old score 3)",
+      "h-brief-solid-flood [goal] expected 3–4, judged 2 (first look 3, old score 3)",
+      "h-brief-solid-flood [tone] expected 3–4, judged 1 (first look 2, old score 3)"
+    ],
+    "answers": [
+      {
+        "id": "h-audience-gamed",
+        "field": "audience",
+        "kind": "gamed",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 2,
+        "legacy": 1,
+        "score": 21,
+        "quickScore": 28,
+        "scale": 3,
+        "facets": {
+          "reader": {
+            "p": 0.32,
+            "label": false
+          },
+          "knows": {
+            "p": 0.11,
+            "label": false
+          },
+          "wants": {
+            "p": 0.1,
+            "label": false
+          },
+          "narrow": {
+            "p": 0.08
+          }
+        },
+        "split": false,
+        "standIn": "who doubt, fear, want",
+        "questions": 9,
+        "inputTokens": 1106,
+        "latencyMs": 98
+      },
+      {
+        "id": "h-audience-millennials",
+        "field": "audience",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 2,
+        "legacy": 1,
+        "score": 18,
+        "quickScore": 27,
+        "scale": 2,
+        "facets": {
+          "reader": {
+            "p": 0.22,
+            "label": false
+          },
+          "knows": {
+            "p": 0.07,
+            "label": false
+          },
+          "wants": {
+            "p": 0.05,
+            "label": false
+          },
+          "narrow": {
+            "p": 0.27
+          }
+        },
+        "split": true,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 918,
+        "latencyMs": 91
+      },
+      {
+        "id": "h-audience-vague-long",
+        "field": "audience",
+        "kind": "vague-long",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 3,
+        "quickScore": 10,
+        "scale": 1,
+        "facets": {
+          "reader": {
+            "p": 0.03,
+            "label": false
+          },
+          "knows": {
+            "p": 0.1,
+            "label": false
+          },
+          "wants": {
+            "p": 0.36
+          },
+          "narrow": {
+            "p": 0.07
+          }
+        },
+        "split": false,
+        "standIn": "This is for a broad audience of readers from many different walks of life",
+        "questions": 9,
+        "inputTokens": 1133,
+        "latencyMs": 110
+      },
+      {
+        "id": "h-audience-investors",
+        "field": "audience",
+        "kind": "plain",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 3,
+        "quick": 2,
+        "legacy": 2,
+        "score": 60,
+        "quickScore": 35,
+        "scale": 3,
+        "facets": {
+          "reader": {
+            "p": 0.74
+          },
+          "knows": {
+            "p": 0.22,
+            "label": false
+          },
+          "wants": {
+            "p": 0.83
+          },
+          "narrow": {
+            "p": 0.55
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 921,
+        "latencyMs": 104
+      },
+      {
+        "id": "h-audience-teachers",
+        "field": "audience",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 3,
+        "score": 27,
+        "quickScore": 30,
+        "scale": 2,
+        "facets": {
+          "reader": {
+            "p": 0.97,
+            "label": true
+          },
+          "knows": {
+            "p": 0.15,
+            "label": false
+          },
+          "wants": {
+            "p": 0.04,
+            "label": false
+          },
+          "narrow": {
+            "p": 0.77
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 919,
+        "latencyMs": 204
+      },
+      {
+        "id": "h-audience-landlords",
+        "field": "audience",
+        "kind": "plain",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 2,
+        "legacy": 3,
+        "score": 98,
+        "quickScore": 42,
+        "scale": 4,
+        "facets": {
+          "reader": {
+            "p": 0.98,
+            "label": true
+          },
+          "knows": {
+            "p": 0.95,
+            "label": true
+          },
+          "wants": {
+            "p": 0.91,
+            "label": true
+          },
+          "narrow": {
+            "p": 0.84
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1103,
+        "latencyMs": 117
+      },
+      {
+        "id": "h-audience-terse-staff",
+        "field": "audience",
+        "kind": "terse-sharp",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 2,
+        "legacy": 3,
+        "score": 88,
+        "quickScore": 33,
+        "scale": 3,
+        "facets": {
+          "reader": {
+            "p": 0.97,
+            "label": true
+          },
+          "knows": {
+            "p": 0.9,
+            "label": true
+          },
+          "wants": {
+            "p": 0.67
+          },
+          "narrow": {
+            "p": 0.83
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1046,
+        "latencyMs": 114
+      },
+      {
+        "id": "h-audience-terse-mother",
+        "field": "audience",
+        "kind": "terse-sharp",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 94,
+        "quickScore": 68,
+        "scale": 4,
+        "facets": {
+          "reader": {
+            "p": 0.95,
+            "label": true
+          },
+          "knows": {
+            "p": 0.97,
+            "label": true
+          },
+          "wants": {
+            "p": 0.94,
+            "label": true
+          },
+          "narrow": {
+            "p": 0.71
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1092,
+        "latencyMs": 113
+      },
+      {
+        "id": "h-goal-gamed",
+        "field": "goal",
+        "kind": "gamed",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 2,
+        "score": 34,
+        "quickScore": 35,
+        "scale": 3,
+        "facets": {
+          "aim": {
+            "p": 0.59,
+            "label": false
+          },
+          "change": {
+            "p": 0.06,
+            "label": false
+          },
+          "single": {
+            "p": 0.13,
+            "label": false
+          },
+          "missable": {
+            "p": 0.36
+          }
+        },
+        "split": false,
+        "standIn": "that after reading they will change",
+        "questions": 9,
+        "inputTokens": 994,
+        "latencyMs": 111
+      },
+      {
+        "id": "h-goal-awareness",
+        "field": "goal",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 2,
+        "legacy": 1,
+        "score": 5,
+        "quickScore": 35,
+        "scale": 1,
+        "facets": {
+          "aim": {
+            "p": 0.11,
+            "label": false
+          },
+          "change": {
+            "p": 0.08,
+            "label": false
+          },
+          "single": {
+            "p": 0.96
+          },
+          "missable": {
+            "p": 0.21
+          }
+        },
+        "split": false,
+        "standIn": "Raise awareness",
+        "questions": 7,
+        "inputTokens": 809,
+        "latencyMs": 81
+      },
+      {
+        "id": "h-goal-vague-long",
+        "field": "goal",
+        "kind": "vague-long",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 2,
+        "legacy": 1,
+        "score": 5,
+        "quickScore": 35,
+        "scale": 1,
+        "facets": {
+          "aim": {
+            "p": 0.12,
+            "label": false
+          },
+          "change": {
+            "p": 0.2,
+            "label": false
+          },
+          "single": {
+            "p": 0.45
+          },
+          "missable": {
+            "p": 0.11
+          }
+        },
+        "split": false,
+        "standIn": "that they come away better informed",
+        "questions": 9,
+        "inputTokens": 1048,
+        "latencyMs": 363
+      },
+      {
+        "id": "h-goal-cover",
+        "field": "goal",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 2,
+        "score": 35,
+        "quickScore": 39,
+        "scale": 2,
+        "facets": {
+          "aim": {
+            "p": 0.67,
+            "label": true
+          },
+          "change": {
+            "p": 0.11,
+            "label": false
+          },
+          "single": {
+            "p": 0.96,
+            "label": true
+          },
+          "missable": {
+            "p": 0.2
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 817,
+        "latencyMs": 89
+      },
+      {
+        "id": "h-goal-two",
+        "field": "goal",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 3,
+        "score": 39,
+        "quickScore": 40,
+        "scale": 3,
+        "facets": {
+          "aim": {
+            "p": 0.81,
+            "label": true
+          },
+          "change": {
+            "p": 0.74
+          },
+          "single": {
+            "p": 0.06,
+            "label": false
+          },
+          "missable": {
+            "p": 0.94
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 946,
+        "latencyMs": 95
+      },
+      {
+        "id": "h-goal-switch",
+        "field": "goal",
+        "kind": "plain",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 99,
+        "quickScore": 69,
+        "scale": 4,
+        "facets": {
+          "aim": {
+            "p": 0.95,
+            "label": true
+          },
+          "change": {
+            "p": 0.93,
+            "label": true
+          },
+          "single": {
+            "p": 0.96,
+            "label": true
+          },
+          "missable": {
+            "p": 0.93,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 955,
+        "latencyMs": 78
+      },
+      {
+        "id": "h-goal-terse",
+        "field": "goal",
+        "kind": "terse-sharp",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 99,
+        "quickScore": 64,
+        "scale": 4,
+        "facets": {
+          "aim": {
+            "p": 0.68,
+            "label": true
+          },
+          "change": {
+            "p": 0.8,
+            "label": true
+          },
+          "single": {
+            "p": 0.97,
+            "label": true
+          },
+          "missable": {
+            "p": 0.95
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 815,
+        "latencyMs": 101
+      },
+      {
+        "id": "h-tone-gamed",
+        "field": "tone",
+        "kind": "gamed",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 2,
+        "quick": 1,
+        "legacy": 1,
+        "score": 29,
+        "quickScore": 0,
+        "scale": 2,
+        "facets": {
+          "distinct": {
+            "p": 0.73,
+            "label": false
+          },
+          "imitable": {
+            "p": 0.11,
+            "label": false
+          },
+          "avoid": {
+            "p": 0.23
+          }
+        },
+        "split": false,
+        "standIn": "not like anything",
+        "questions": 6,
+        "inputTokens": 740,
+        "latencyMs": 81
+      },
+      {
+        "id": "h-tone-informative",
+        "field": "tone",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 2,
+        "quickScore": 0,
+        "scale": 1,
+        "facets": {
+          "distinct": {
+            "p": 0.05,
+            "label": false
+          },
+          "imitable": {
+            "p": 0.08,
+            "label": false
+          },
+          "avoid": {
+            "p": 0.01,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "Informative and well written",
+        "questions": 5,
+        "inputTokens": 663,
+        "latencyMs": 109
+      },
+      {
+        "id": "h-tone-vague-long",
+        "field": "tone",
+        "kind": "vague-long",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 1,
+        "quickScore": 10,
+        "scale": 1,
+        "facets": {
+          "distinct": {
+            "p": 0.05,
+            "label": false
+          },
+          "imitable": {
+            "p": 0.11,
+            "label": false
+          },
+          "avoid": {
+            "p": 0.01,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 6,
+        "inputTokens": 810,
+        "latencyMs": 80
+      },
+      {
+        "id": "h-tone-wry",
+        "field": "tone",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 3,
+        "score": 28,
+        "quickScore": 27,
+        "scale": 2,
+        "facets": {
+          "distinct": {
+            "p": 0.82,
+            "label": true
+          },
+          "imitable": {
+            "p": 0.19,
+            "label": false
+          },
+          "avoid": {
+            "p": 0.02,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 659,
+        "latencyMs": 93
+      },
+      {
+        "id": "h-tone-newyorker",
+        "field": "tone",
+        "kind": "plain",
+        "band": [
+          3,
+          3
+        ],
+        "jev": 3,
+        "quick": 2,
+        "legacy": 3,
+        "score": 56,
+        "quickScore": 35,
+        "scale": 3,
+        "facets": {
+          "distinct": {
+            "p": 0.92,
+            "label": true
+          },
+          "imitable": {
+            "p": 0.91,
+            "label": true
+          },
+          "avoid": {
+            "p": 0.02,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 6,
+        "inputTokens": 741,
+        "latencyMs": 91
+      },
+      {
+        "id": "h-tone-letter",
+        "field": "tone",
+        "kind": "terse-sharp",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 97,
+        "quickScore": 72,
+        "scale": 4,
+        "facets": {
+          "distinct": {
+            "p": 0.87,
+            "label": true
+          },
+          "imitable": {
+            "p": 0.91,
+            "label": true
+          },
+          "avoid": {
+            "p": 0.9,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 6,
+        "inputTokens": 754,
+        "latencyMs": 84
+      },
+      {
+        "id": "h-tone-terse-clinical",
+        "field": "tone",
+        "kind": "terse-sharp",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 2,
+        "legacy": 4,
+        "score": 92,
+        "quickScore": 35,
+        "scale": 3,
+        "facets": {
+          "distinct": {
+            "p": 0.84,
+            "label": true
+          },
+          "imitable": {
+            "p": 0.64
+          },
+          "avoid": {
+            "p": 0.95,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 664,
+        "latencyMs": 101
+      },
+      {
+        "id": "h-format-gamed",
+        "field": "format",
+        "kind": "gamed",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 2,
+        "score": 29,
+        "quickScore": 27,
+        "scale": 1,
+        "facets": {
+          "shape": {
+            "p": 0.93
+          },
+          "size": {
+            "p": 0.17,
+            "label": false
+          },
+          "venue": {
+            "p": 0.26,
+            "label": false
+          }
+        },
+        "split": true,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 704,
+        "latencyMs": 83
+      },
+      {
+        "id": "h-format-something",
+        "field": "format",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 2,
+        "legacy": 1,
+        "score": 6,
+        "quickScore": 27,
+        "scale": 1,
+        "facets": {
+          "shape": {
+            "p": 0.22,
+            "label": false
+          },
+          "size": {
+            "p": 0.02,
+            "label": false
+          },
+          "venue": {
+            "p": 0.31
+          }
+        },
+        "split": true,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 696,
+        "latencyMs": 75
+      },
+      {
+        "id": "h-format-chapter",
+        "field": "format",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 2,
+        "score": 26,
+        "quickScore": 28,
+        "scale": 2,
+        "facets": {
+          "shape": {
+            "p": 0.99,
+            "label": true
+          },
+          "size": {
+            "p": 0.02,
+            "label": false
+          },
+          "venue": {
+            "p": 0.11,
+            "label": false
+          }
+        },
+        "split": true,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 694,
+        "latencyMs": 89
+      },
+      {
+        "id": "h-format-memo",
+        "field": "format",
+        "kind": "plain",
+        "band": [
+          3,
+          3
+        ],
+        "jev": 3,
+        "quick": 3,
+        "legacy": 3,
+        "score": 57,
+        "quickScore": 59,
+        "scale": 3,
+        "facets": {
+          "shape": {
+            "p": 0.98,
+            "label": true
+          },
+          "size": {
+            "p": 0.96,
+            "label": true
+          },
+          "venue": {
+            "p": 0.03,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 695,
+        "latencyMs": 65
+      },
+      {
+        "id": "h-format-terse-talk",
+        "field": "format",
+        "kind": "terse-sharp",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 99,
+        "quickScore": 72,
+        "scale": 4,
+        "facets": {
+          "shape": {
+            "p": 0.97,
+            "label": true
+          },
+          "size": {
+            "p": 0.98,
+            "label": true
+          },
+          "venue": {
+            "p": 0.98,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 5,
+        "inputTokens": 706,
+        "latencyMs": 119
+      },
+      {
+        "id": "h-signal-gamed",
+        "field": "successSignal",
+        "kind": "gamed",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 2,
+        "score": 22,
+        "quickScore": 0,
+        "scale": 3,
+        "facets": {
+          "observable": {
+            "p": 0.37,
+            "label": false
+          },
+          "theirs": {
+            "p": 0.9
+          },
+          "threshold": {
+            "p": 0.59,
+            "label": false
+          },
+          "earned": {
+            "p": 0.52,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "at least some",
+        "questions": 9,
+        "inputTokens": 1041,
+        "latencyMs": 119
+      },
+      {
+        "id": "h-signal-feedback",
+        "field": "successSignal",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 1,
+        "quickScore": 2,
+        "scale": 1,
+        "facets": {
+          "observable": {
+            "p": 0.02,
+            "label": false
+          },
+          "theirs": {
+            "p": 0.86
+          },
+          "threshold": {
+            "p": 0.02,
+            "label": false
+          },
+          "earned": {
+            "p": 0.1,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": "Good feedback",
+        "questions": 7,
+        "inputTokens": 878,
+        "latencyMs": 101
+      },
+      {
+        "id": "h-signal-vague-long",
+        "field": "successSignal",
+        "kind": "vague-long",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 5,
+        "quickScore": 10,
+        "scale": 1,
+        "facets": {
+          "observable": {
+            "p": 0.12,
+            "label": false
+          },
+          "theirs": {
+            "p": 0.97
+          },
+          "threshold": {
+            "p": 0.04,
+            "label": false
+          },
+          "earned": {
+            "p": 0.49
+          }
+        },
+        "split": true,
+        "standIn": "who read it find it genuinely interesting",
+        "questions": 9,
+        "inputTokens": 1096,
+        "latencyMs": 91
+      },
+      {
+        "id": "h-signal-happy",
+        "field": "successSignal",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 0,
+        "quickScore": 5,
+        "scale": 1,
+        "facets": {
+          "observable": {
+            "p": 0.01,
+            "label": false
+          },
+          "theirs": {
+            "p": 0.03,
+            "label": false
+          },
+          "threshold": {
+            "p": 0.02,
+            "label": false
+          },
+          "earned": {
+            "p": 0.12
+          }
+        },
+        "split": false,
+        "standIn": "I'm happy with how it turned out",
+        "questions": 7,
+        "inputTokens": 884,
+        "latencyMs": 85
+      },
+      {
+        "id": "h-signal-explain",
+        "field": "successSignal",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 2,
+        "legacy": 3,
+        "score": 33,
+        "quickScore": 40,
+        "scale": 2,
+        "facets": {
+          "observable": {
+            "p": 0.7,
+            "label": true
+          },
+          "theirs": {
+            "p": 0.98,
+            "label": true
+          },
+          "threshold": {
+            "p": 0.07,
+            "label": false
+          },
+          "earned": {
+            "p": 0.93
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1021,
+        "latencyMs": 86
+      },
+      {
+        "id": "h-signal-signups",
+        "field": "successSignal",
+        "kind": "plain",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 93,
+        "quickScore": 64,
+        "scale": 3,
+        "facets": {
+          "observable": {
+            "p": 0.97,
+            "label": true
+          },
+          "theirs": {
+            "p": 0.95,
+            "label": true
+          },
+          "threshold": {
+            "p": 0.88,
+            "label": true
+          },
+          "earned": {
+            "p": 0.7
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 7,
+        "inputTokens": 887,
+        "latencyMs": 72
+      },
+      {
+        "id": "h-signal-terse-editor",
+        "field": "successSignal",
+        "kind": "terse-sharp",
+        "band": [
+          3,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 88,
+        "quickScore": 68,
+        "scale": 3,
+        "facets": {
+          "observable": {
+            "p": 0.88,
+            "label": true
+          },
+          "theirs": {
+            "p": 0.96,
+            "label": true
+          },
+          "threshold": {
+            "p": 0.79,
+            "label": true
+          },
+          "earned": {
+            "p": 0.82
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 1015,
+        "latencyMs": 89
+      },
+      {
+        "id": "h-title-tbd",
+        "field": "workingTitle",
+        "kind": "plain",
+        "band": [
+          1,
+          1
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 0,
+        "score": 0,
+        "quickScore": 0,
+        "scale": 1,
+        "facets": {
+          "named": {
+            "p": 0.01,
+            "label": false
+          },
+          "angle": {
+            "p": 0.01
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 3,
+        "inputTokens": 538,
+        "latencyMs": 81
+      },
+      {
+        "id": "h-title-topic",
+        "field": "workingTitle",
+        "kind": "plain",
+        "band": [
+          3,
+          3
+        ],
+        "jev": 3,
+        "quick": 3,
+        "legacy": 2,
+        "score": 55,
+        "quickScore": 52,
+        "scale": 3,
+        "facets": {
+          "named": {
+            "p": 0.86,
+            "label": true
+          },
+          "angle": {
+            "p": 0.23,
+            "label": false
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 3,
+        "inputTokens": 539,
+        "latencyMs": 104
+      },
+      {
+        "id": "h-title-claim",
+        "field": "workingTitle",
+        "kind": "terse-sharp",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 96,
+        "quickScore": 57,
+        "scale": 4,
+        "facets": {
+          "named": {
+            "p": 0.98,
+            "label": true
+          },
+          "angle": {
+            "p": 0.6,
+            "label": true
+          }
+        },
+        "split": false,
+        "standIn": null,
+        "questions": 3,
+        "inputTokens": 544,
+        "latencyMs": 94
+      },
+      {
+        "id": "h-constraints-none",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          0,
+          0
+        ],
+        "jev": 0,
+        "quick": 0,
+        "legacy": null,
+        "score": null,
+        "quickScore": null,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 0,
+        "inputTokens": 0,
+        "latencyMs": 0
+      },
+      {
+        "id": "h-constraints-gamed",
+        "field": "constraints",
+        "kind": "gamed",
+        "band": [
+          1,
+          2
+        ],
+        "jev": 1,
+        "quick": 1,
+        "legacy": 1,
+        "score": 0,
+        "quickScore": 0,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 9,
+        "inputTokens": 893,
+        "latencyMs": 90,
+        "lines": [
+          {
+            "text": "No bad stuff",
+            "kind": "uncheckable",
+            "want": [
+              "uncheckable"
+            ]
+          },
+          {
+            "text": "Must be right",
+            "kind": "uncheckable",
+            "want": [
+              "uncheckable"
+            ]
+          },
+          {
+            "text": "Never wrong, only good",
+            "kind": "uncheckable",
+            "want": [
+              "uncheckable"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "h-constraints-mixed",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 3,
+        "quick": 2,
+        "legacy": 3,
+        "score": 63,
+        "quickScore": 36,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 12,
+        "inputTokens": 1156,
+        "latencyMs": 103,
+        "lines": [
+          {
+            "text": "750 words max — the magazine's column length",
+            "kind": "hard",
+            "want": [
+              "hard"
+            ]
+          },
+          {
+            "text": "No first-person plural",
+            "kind": "editorial",
+            "want": [
+              "editorial"
+            ]
+          },
+          {
+            "text": "I'd like to avoid clichés where possible",
+            "kind": "preference",
+            "want": [
+              "preference",
+              "uncheckable"
+            ]
+          },
+          {
+            "text": "It should sing",
+            "kind": "preference",
+            "want": [
+              "uncheckable"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "h-constraints-legal",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 3,
+        "score": 100,
+        "quickScore": 65,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 6,
+        "inputTokens": 742,
+        "latencyMs": 100,
+        "lines": [
+          {
+            "text": "Do not name the defendant: the publication ban is still in effect",
+            "kind": "hard",
+            "want": [
+              "hard"
+            ]
+          },
+          {
+            "text": "All quotes must come from the public court record",
+            "kind": "hard",
+            "want": [
+              "hard",
+              "editorial"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "h-constraints-prefs",
+        "field": "constraints",
+        "kind": "plain",
+        "band": [
+          2,
+          2
+        ],
+        "jev": 2,
+        "quick": 3,
+        "legacy": 2,
+        "score": 25,
+        "quickScore": 65,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 6,
+        "inputTokens": 706,
+        "latencyMs": 83,
+        "lines": [
+          {
+            "text": "Would be nice to include a chart",
+            "kind": "preference",
+            "want": [
+              "preference"
+            ]
+          },
+          {
+            "text": "Maybe keep paragraphs under five sentences",
+            "kind": "preference",
+            "want": [
+              "preference"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "h-constraints-terse",
+        "field": "constraints",
+        "kind": "terse-sharp",
+        "band": [
+          4,
+          4
+        ],
+        "jev": 4,
+        "quick": 3,
+        "legacy": 4,
+        "score": 100,
+        "quickScore": 65,
+        "scale": null,
+        "facets": {},
+        "split": false,
+        "standIn": null,
+        "questions": 6,
+        "inputTokens": 683,
+        "latencyMs": 73,
+        "lines": [
+          {
+            "text": "No em dashes.",
+            "kind": "editorial",
+            "want": [
+              "hard",
+              "editorial"
+            ]
+          },
+          {
+            "text": "No listicles.",
+            "kind": "editorial",
+            "want": [
+              "hard",
+              "editorial"
+            ]
+          }
+        ]
+      }
+    ],
+    "briefs": [
+      {
+        "id": "h-brief-sharp-pricing",
+        "levels": {
+          "workingTitle": 4,
+          "format": 4,
+          "audience": 4,
+          "goal": 4,
+          "tone": 4,
+          "constraints": 4,
+          "successSignal": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 2,
+          "tone": 3,
+          "constraints": 3,
+          "successSignal": 2
+        },
+        "legacy": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 4,
+          "goal": 3,
+          "tone": 4,
+          "constraints": 4,
+          "successSignal": 3
+        },
+        "sufficiency": 0.94,
+        "contradiction": 0.19,
+        "tension": null,
+        "firstQuestion": null,
+        "loadBearing": true,
+        "soft": [],
+        "questions": 48,
+        "requests": 1,
+        "inputTokens": 4542,
+        "latencyMs": 158
+      },
+      {
+        "id": "h-brief-vague-blog",
+        "levels": {
+          "workingTitle": 1,
+          "format": 2,
+          "audience": 1,
+          "goal": 1,
+          "tone": 1,
+          "constraints": 1,
+          "successSignal": 2
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 2,
+          "audience": 1,
+          "goal": 2,
+          "tone": 1,
+          "constraints": 1,
+          "successSignal": 1
+        },
+        "legacy": {
+          "workingTitle": 1,
+          "format": 2,
+          "audience": 1,
+          "goal": 1,
+          "tone": 1,
+          "constraints": 1,
+          "successSignal": 1
+        },
+        "sufficiency": 0.08,
+        "contradiction": 0.075,
+        "tension": null,
+        "firstQuestion": "audience",
+        "loadBearing": false,
+        "soft": [
+          "Reader is vague",
+          "Goal is vague",
+          "Landing is partial",
+          "one rule cannot be checked"
+        ],
+        "questions": 42,
+        "requests": 1,
+        "inputTokens": 3969,
+        "latencyMs": 136
+      },
+      {
+        "id": "h-brief-thin",
+        "levels": {
+          "workingTitle": 1,
+          "format": 2,
+          "audience": 2,
+          "goal": 4,
+          "tone": 1,
+          "successSignal": 1
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 2,
+          "audience": 2,
+          "goal": 2,
+          "tone": 2,
+          "successSignal": 1
+        },
+        "legacy": {
+          "workingTitle": 2,
+          "format": 2,
+          "audience": 2,
+          "goal": 3,
+          "tone": 2,
+          "successSignal": 1
+        },
+        "sufficiency": 0.54,
+        "contradiction": 0.055,
+        "tension": null,
+        "firstQuestion": "successSignal",
+        "loadBearing": false,
+        "soft": [
+          "Reader is partial",
+          "Landing is vague"
+        ],
+        "questions": 39,
+        "requests": 1,
+        "inputTokens": 3675,
+        "latencyMs": 156
+      },
+      {
+        "id": "h-brief-solid-flood",
+        "levels": {
+          "workingTitle": 3,
+          "format": 4,
+          "audience": 4,
+          "goal": 2,
+          "tone": 1,
+          "constraints": 0,
+          "successSignal": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 3,
+          "tone": 2,
+          "constraints": 0,
+          "successSignal": 3
+        },
+        "legacy": {
+          "workingTitle": 2,
+          "format": 3,
+          "audience": 3,
+          "goal": 3,
+          "tone": 3,
+          "constraints": 0,
+          "successSignal": 3
+        },
+        "sufficiency": 0.93,
+        "contradiction": 0.11,
+        "tension": null,
+        "firstQuestion": "goal",
+        "loadBearing": false,
+        "soft": [
+          "Goal is partial"
+        ],
+        "questions": 44,
+        "requests": 1,
+        "inputTokens": 4274,
+        "latencyMs": 138
+      },
+      {
+        "id": "h-brief-tension-reader-goal",
+        "levels": {
+          "workingTitle": 3,
+          "format": 4,
+          "audience": 3,
+          "goal": 4,
+          "tone": 1,
+          "constraints": 4,
+          "successSignal": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 2,
+          "tone": 2,
+          "constraints": 3,
+          "successSignal": 3
+        },
+        "legacy": {
+          "workingTitle": 2,
+          "format": 3,
+          "audience": 3,
+          "goal": 3,
+          "tone": 3,
+          "constraints": 3,
+          "successSignal": 3
+        },
+        "sufficiency": 0.93,
+        "contradiction": 0.725,
+        "tension": [
+          "audience",
+          "goal"
+        ],
+        "firstQuestion": null,
+        "loadBearing": false,
+        "soft": [
+          "two answers pull apart"
+        ],
+        "questions": 45,
+        "requests": 1,
+        "inputTokens": 4242,
+        "latencyMs": 158
+      },
+      {
+        "id": "h-brief-tension-tone-goal",
+        "levels": {
+          "workingTitle": 3,
+          "format": 4,
+          "audience": 3,
+          "goal": 4,
+          "tone": 3,
+          "constraints": 4,
+          "successSignal": 4
+        },
+        "quick": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 2,
+          "goal": 3,
+          "tone": 2,
+          "constraints": 3,
+          "successSignal": 3
+        },
+        "legacy": {
+          "workingTitle": 3,
+          "format": 3,
+          "audience": 3,
+          "goal": 3,
+          "tone": 3,
+          "constraints": 3,
+          "successSignal": 3
+        },
+        "sufficiency": 0.92,
+        "contradiction": 0.605,
+        "tension": [
+          "tone",
+          "goal"
+        ],
+        "firstQuestion": null,
+        "loadBearing": false,
+        "soft": [
+          "two answers pull apart"
+        ],
+        "questions": 48,
+        "requests": 1,
+        "inputTokens": 4469,
+        "latencyMs": 164
+      }
+    ]
+  }
+}

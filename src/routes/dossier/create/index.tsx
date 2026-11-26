@@ -3,6 +3,7 @@ import {
   $,
   useSignal,
   useStore,
+  useTask$,
   useVisibleTask$,
 } from "@qwik.dev/core";
 import { useNavigate } from "@qwik.dev/router";
@@ -12,6 +13,7 @@ import { ConversationalInterview } from "../../../components/onboarding/conversa
 import { AuthPanel } from "../../../components/auth/auth-panel";
 import { useAuth } from "../../../utils/auth-context";
 import type {
+  ConstraintTriage,
   DossierAttachment,
   DossierProbe,
   Folio,
@@ -25,16 +27,13 @@ import {
   createProjectBrief,
   briefTitleFromFolioName,
   loadStartingMaterial,
-  loadProjectBriefForFolio,
   saveProjectBriefForFolio,
   UNTITLED_FOLIO_NAME,
   withFolioTitle,
 } from "../../../utils/anti-tabula-rasa";
 import {
-  loadActiveFolioIdFromIdb,
   loadFolioContentFromIdb,
   loadFoliosFromIdb,
-  loadWriterSettingsFromIdb,
   saveActiveFolioIdToIdb,
   saveFolioContentToIdb,
   saveFoliosToIdb,
@@ -47,6 +46,13 @@ import {
   type DossierFilingState,
 } from "../../../utils/dossier-filing";
 
+import { DossierFolioSkeleton } from "../../../components/onboarding/dossier-folio-skeleton";
+import {
+  interviewStyleHint,
+  markDossierFiledForDesk,
+  rememberInterviewStyle,
+  takeDossierCreate,
+} from "../../../utils/dossier-warm";
 import {
   clearBriefFormDraft,
   moveBriefFormDraft,
@@ -80,6 +86,11 @@ export default component$(() => {
   // Once the brief is saved we offer (but never force) sign-up.
   const briefDone = useSignal(false);
   const filingState = useSignal<DossierFilingState>("idle");
+  // Read synchronously on the client so the skeleton matches the surface.
+  const styleHint = useSignal<"form" | "conversational">("form");
+  useTask$(() => {
+    if (typeof window !== "undefined") styleHint.value = interviewStyleHint();
+  });
   const store = useStore<OnboardingStore>({
     hydrated: false,
     style: "form",
@@ -95,26 +106,22 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    const [writer, folios, activeFolioId] = await Promise.all([
-      loadWriterSettingsFromIdb(),
-      loadFoliosFromIdb(),
-      loadActiveFolioIdFromIdb(),
-    ]);
-    store.style = writer.interviewStyle;
     const requestedFolioId = new URLSearchParams(window.location.search).get(
       "folio",
     );
-    const folio =
-      folios.find((candidate) => candidate.id === requestedFolioId) ??
-      folios.find((candidate) => candidate.id === activeFolioId) ??
-      null;
+    // Usually already in flight from hovering "Create dossier".
+    const {
+      writer,
+      folio,
+      brief: savedBrief,
+    } = await takeDossierCreate(requestedFolioId);
+    store.style = writer.interviewStyle;
     store.folioId = folio?.id ?? null;
     store.draftScope = `create:${store.folioId ?? "new"}`;
     store.folioName = folio?.name ?? "";
     // A folio named in the editor already has a title; start the brief there.
     const folioTitle = briefTitleFromFolioName(store.folioName);
     if (folioTitle) store.formAnswers = { workingTitle: folioTitle };
-    const savedBrief = await loadProjectBriefForFolio(store.folioId);
     store.draftBase = String(savedBrief?.updatedAt ?? 0);
     if (savedBrief) {
       store.formAnswers = savedBrief.answers;
@@ -141,11 +148,18 @@ export default component$(() => {
       filename?: string,
       attachments?: DossierAttachment[],
       probes?: DossierProbe[],
+      constraintTriage?: ConstraintTriage | null,
     ) => {
       filingState.value = "filing";
       try {
         answers = withFolioTitle(answers, store.folioName);
-        const brief = createProjectBrief(answers, null, attachments, probes);
+        const brief = createProjectBrief(
+          answers,
+          null,
+          attachments,
+          probes,
+          constraintTriage,
+        );
         let folioId = store.folioId;
         let folioName = store.folioName;
         if (!folioId) {
@@ -212,7 +226,13 @@ export default component$(() => {
         markDirty();
         void captureProductEvent("dossier_completed", { mode: "first_run" });
         filingState.value = "filed";
-        await waitForDossierFiledFeedback();
+        if (auth.value.user) {
+          // Navigate first: the stamp finishes on the desk instead of
+          // holding the writer here for it.
+          markDossierFiledForDesk("filed");
+        } else {
+          await waitForDossierFiledFeedback();
+        }
         briefDone.value = true;
         try {
           clearBriefFormDraft(
@@ -231,11 +251,14 @@ export default component$(() => {
   );
 
   if (!store.hydrated) {
+    // Same frame as the form, so nothing moves when the brief arrives.
     return (
-      <div class="flex h-screen items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">
-        <div class="rounded-[3px] border border-[var(--color-paper-3)] bg-[var(--color-paper-2)] px-5 py-4 shadow-sm">
-          Loading the room…
-        </div>
+      <div class={DOSSIER_ROUTE_CLASS}>
+        {DossierFolioSkeleton({
+          surface: styleHint.value,
+          backHref: "/editor/",
+          backLabel: "Back to desk",
+        })}
       </div>
     );
   }
@@ -299,6 +322,7 @@ export default component$(() => {
           chromeBackLabel={store.folioId ? "Back to desk" : "Back home"}
           onSwitchSurface$={$(() => {
             store.style = "form";
+            rememberInterviewStyle("form");
           })}
           initialMaterial={store.initialMaterial}
           onComplete$={({ answers, attachments, probes }) =>
@@ -333,6 +357,7 @@ export default component$(() => {
         chromeBackLabel={store.folioId ? "Back to desk" : "Back home"}
         onSwitchSurface$={$(() => {
           store.style = "conversational";
+          rememberInterviewStyle("conversational");
         })}
         initialAnswers={
           store.formAnswers as ProjectInterviewAnswers | null | undefined

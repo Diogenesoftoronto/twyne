@@ -82,7 +82,7 @@ export function normalizeEndpointUrl(value: string | undefined): string | null {
 
 /** Short, human description of where judgements go, for status lines. */
 export function describeJudgement(settings: JudgementSettings | null): string {
-  if (!settings || settings.source === "twyne") return "Jev, through Twyne";
+  if (!settings || settings.source === "twyne") return "Twyne";
   if (isLocalDecision(settings)) return "Liquid d1-2B, on this computer";
   if (settings.source === "typesafe")
     return `${settings.typesafeModel || DEFAULT_TYPESAFE_MODEL} on your TypeSafe key`;

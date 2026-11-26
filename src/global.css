@@ -3528,8 +3528,63 @@ body {
   background: var(--color-paper-3);
   transition: background-color 0.25s ease;
 }
-.answer-strength__notch[data-lit] {
+/* A notch fills from the left as the score crosses its quarter. `--fill` is
+   set per notch; without it a lit notch is simply full. */
+.answer-strength__notch {
+  background: linear-gradient(
+    to right,
+    var(--strength) var(--fill, 0%),
+    var(--color-paper-3) var(--fill, 0%)
+  );
+}
+.answer-strength__notch[data-lit]:not([style]) {
   background: var(--strength);
+}
+.answer-strength__score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+}
+/* The first look's number is an estimate: lighter, marked "~", and it
+   settles into full ink when the judged value lands. */
+.answer-strength__score[data-provisional] {
+  color: var(--color-ink-muted);
+}
+.answer-strength__score:not([data-provisional]) .answer-strength__value {
+  animation: answer-strength-settle 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes answer-strength-settle {
+  from {
+    color: var(--color-ink-muted);
+    transform: translateY(-1px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .answer-strength__score:not([data-provisional]) .answer-strength__value {
+    animation: none;
+  }
+}
+.answer-strength--compact .answer-strength__score {
+  font-size: 0.5rem;
+  color: var(--color-ink-muted);
+}
+.answer-strength__delta {
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  animation: probe-filed-receipt 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.answer-strength__delta[data-direction="up"] {
+  color: var(--color-accent-green);
+}
+.answer-strength__delta[data-direction="down"] {
+  color: var(--color-vermilion);
+}
+.answer-strength__facet[data-met="near"] .answer-strength__mark {
+  color: var(--color-mustard);
 }
 .answer-strength[data-reading] .answer-strength__notches {
   animation: gentle-pulse 1.4s ease-in-out infinite;
@@ -3590,8 +3645,339 @@ body {
   font-size: 0.5rem;
   letter-spacing: 0.14em;
 }
+
+/* The checklist behind the level: one line per thing the answer is read for,
+   with the writer's own words quoted beside it. */
+.answer-strength__head {
+  flex-wrap: wrap;
+}
+.answer-strength__tally {
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.answer-strength__facets {
+  list-style: none;
+  margin: 0.45rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+  font-family: var(--font-serif);
+}
+.answer-strength__facet {
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+.answer-strength__mark {
+  font-family: var(--font-typewriter);
+  text-align: center;
+  color: var(--color-ink-muted);
+}
+.answer-strength__facet[data-met="yes"] .answer-strength__mark {
+  color: var(--color-accent-green);
+}
+.answer-strength__facet[data-met="no"] .answer-strength__mark {
+  color: var(--color-vermilion);
+}
+.answer-strength__facet-name {
+  color: var(--color-ink);
+}
+.answer-strength__facet[data-met="yes"] .answer-strength__facet-name {
+  color: var(--color-ink-light);
+}
+.answer-strength__facet[data-met="unseen"] .answer-strength__facet-name {
+  color: var(--color-ink-muted);
+}
+.answer-strength__quote {
+  font-style: italic;
+  color: var(--color-ink-muted);
+  quotes: "\201C" "\201D";
+}
+.answer-strength__why {
+  color: var(--color-ink-muted);
+}
+.answer-strength__add {
+  margin-right: 0.35rem;
+  font-family: var(--font-typewriter);
+  font-weight: 400;
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-vermilion);
+}
+
+/* Constraints, line by line, as the room will use them. */
+.answer-strength__lines {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  font-family: var(--font-serif);
+}
+.answer-strength__line {
+  --kind: var(--color-paper-3);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.2rem 0.6rem;
+  align-items: start;
+  padding: 0.35rem 0.55rem;
+  background: var(--color-paper-soft);
+  border: 1px solid var(--color-paper-3);
+  border-left: 3px solid var(--kind);
+  border-radius: 2px;
+}
+.answer-strength__line[data-kind="hard"] {
+  --kind: var(--color-ink);
+}
+.answer-strength__line[data-kind="editorial"] {
+  --kind: var(--color-cobalt);
+}
+.answer-strength__line[data-kind="preference"] {
+  --kind: var(--color-mustard);
+}
+.answer-strength__line[data-kind="uncheckable"] {
+  --kind: var(--color-vermilion);
+}
+.answer-strength__line-text {
+  min-width: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+.answer-strength__kind {
+  align-self: center;
+  padding: 1px 6px;
+  font-family: var(--font-typewriter);
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--kind);
+  background: transparent;
+  border: 1px solid var(--kind);
+}
+.answer-strength__line:not([data-kind]) .answer-strength__kind {
+  color: var(--color-ink-muted);
+  border-color: var(--color-paper-3);
+}
+button.answer-strength__kind {
+  cursor: pointer;
+}
+button.answer-strength__kind:hover,
+button.answer-strength__kind:focus-visible {
+  background: color-mix(in srgb, var(--kind) 10%, transparent);
+  outline: none;
+}
+button.answer-strength__kind[aria-pressed="true"] {
+  border-style: double;
+  border-width: 3px;
+}
+.answer-strength__line-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: var(--color-ink-light);
+}
+.answer-strength__ledger {
+  margin: 0.45rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.2rem 0.75rem;
+  border-top: 1px solid var(--color-paper-3);
+  border-bottom: 1px solid var(--color-paper-3);
+  padding: 0.3rem 0;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.answer-strength__ledger b {
+  font-weight: 400;
+  color: var(--color-ink);
+}
+
+/* An answer that fits two readings: the two, as a question. */
+.answer-strength__split {
+  margin-top: 0.6rem;
+  border-top: 1px dashed var(--color-paper-3);
+  padding-top: 0.5rem;
+}
+.answer-strength__split-lead {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--color-ink);
+}
+.answer-strength__split-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 0.4rem;
+}
+.answer-strength__split-option {
+  max-width: 100%;
+  padding: 5px 9px;
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  line-height: 1.3;
+  text-align: left;
+  color: var(--color-ink);
+  background: var(--color-paper-soft);
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.answer-strength__split-option:hover,
+.answer-strength__split-option:focus-visible {
+  border-color: var(--color-cobalt);
+  outline: none;
+}
+.answer-strength__split-option[aria-pressed="true"] {
+  border-color: var(--color-cobalt);
+  background: color-mix(
+    in srgb,
+    var(--color-cobalt) 9%,
+    var(--color-paper-soft)
+  );
+}
+.answer-strength__split-foot {
+  margin: 0.35rem 0 0;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+/* The answer itself, marked up: a mirror of the text sits behind a
+   transparent textarea and carries the underlines. */
+.answer-marks {
+  position: relative;
+  background: var(--color-paper-soft);
+  border-radius: 2px;
+}
+.answer-marks__mirror,
+.answer-marks > textarea {
+  scrollbar-gutter: stable;
+}
+.answer-marks__mirror {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid transparent;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  color: transparent;
+  pointer-events: none;
+}
+.answer-marks > textarea {
+  position: relative;
+  display: block;
+  background: transparent;
+}
+.answer-marks__stand-in {
+  color: transparent;
+  background: none;
+  text-decoration: underline wavy var(--color-vermilion);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+}
+.answer-marks__carries {
+  color: transparent;
+  background: color-mix(in srgb, var(--color-accent-green) 14%, transparent);
+  box-shadow: inset 0 -2px 0
+    color-mix(in srgb, var(--color-accent-green) 55%, transparent);
+}
+
+/* The working copy's standing strip: reader, goal, landing. */
+.brief-standing {
+  margin-top: 0.5rem;
+  display: grid;
+  gap: 0.4rem;
+  border-top: 1px solid var(--color-paper-3);
+  border-bottom: 1px solid var(--color-paper-3);
+  padding: 0.4rem 0;
+}
+.brief-standing__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.15rem 0.75rem;
+  font-family: var(--font-typewriter);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.brief-standing__row b {
+  font-weight: 400;
+  color: var(--color-ink);
+}
+.brief-standing__bearing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.brief-standing__bearing > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.brief-standing__dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid var(--color-cobalt);
+  border-radius: 50%;
+}
+.brief-standing__dot[data-held] {
+  background: var(--color-cobalt);
+}
+.brief-standing__say {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--color-ink);
+}
+.brief-standing__kicker {
+  display: block;
+  margin-bottom: 1px;
+  font-family: var(--font-typewriter);
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-vermilion);
+}
+.brief-standing__link {
+  padding: 0;
+  font: inherit;
+  color: var(--color-cobalt);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.brief-standing__say q {
+  font-style: italic;
+}
+.brief-field--tension {
+  border-color: var(--color-vermilion) !important;
+  box-shadow: inset 3px 0 0 var(--color-vermilion);
+}
 @media (prefers-reduced-motion: reduce) {
   .answer-strength__label--stamp,
+  .answer-strength__delta,
   .answer-strength[data-reading] .answer-strength__notches {
     animation: none;
   }
@@ -3756,9 +4142,16 @@ body {
    (the .zen-mode rule earlier already quiets them) but the chip is a
    UI affordance we suppress. */
 .twyne-editor.zen-mode .twyne-mark-anchor {
-  /* Hidden, not removed: the chip holds its width so lines never re-wrap
-     under the caret when focus comes on by itself. */
-  visibility: hidden;
+  /* Collapsed, not just hidden: an invisible chip still held 32px at the
+     end of the sentence. Zen only changes on an explicit choice now (flow
+     never toggles it), so a one-time re-wrap on entry is fine. */
+  width: 0;
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden; /* out of the tab order too */
   pointer-events: none;
 }
 
@@ -6922,6 +7315,7 @@ a {
 /* Foot keys: Reply keeps its word; the rest are round icons. */
 .board-key {
   display: inline-flex;
+  flex-shrink: 0;
   height: 1.75rem;
   align-items: center;
   gap: 0.35rem;
@@ -6930,6 +7324,7 @@ a {
   color: var(--color-ink-muted);
   font-family: var(--font-sans);
   font-size: 0.75rem;
+  white-space: nowrap;
   cursor: pointer;
   transition:
     background-color 0.15s ease,
@@ -6982,6 +7377,9 @@ a {
 }
 .board-card .desk-card__foot {
   padding-top: 0.35rem;
+}
+.board-card .desk-card__foot-start {
+  flex: 1 1 0;
 }
 
 /* The board's thread and reply box are the margin card's. */
@@ -10776,4 +11174,330 @@ body:has(
 .desk-card.is-settled:hover,
 .desk-card.is-settled:focus-within {
   opacity: 1;
+}
+
+/* ── Dossier folio skeleton ──────────────────────────────────────
+   The frame is the real DossierFolio; only data still being read from
+   storage shimmers, as a paper-light sweep across faint pencil lines. */
+.dossier-skeleton {
+  display: grid;
+  gap: 0.9rem;
+  align-content: start;
+}
+.dossier-skeleton--leaf {
+  padding: clamp(1.25rem, 4vw, 3rem);
+  gap: 1.1rem;
+}
+.dossier-skeleton__line,
+.dossier-skeleton__rule,
+.dossier-skeleton__notch,
+.dossier-skeleton__composer {
+  display: block;
+  height: 0.7rem;
+  border-radius: 2px;
+  background:
+    linear-gradient(
+      100deg,
+      transparent 20%,
+      color-mix(in srgb, var(--color-paper-soft) 85%, white) 50%,
+      transparent 80%
+    )
+      0 0 / 220% 100% no-repeat,
+    color-mix(in srgb, var(--color-paper-3) 55%, transparent);
+  animation: dossier-skeleton-sweep 1.6s ease-in-out infinite;
+}
+.dossier-skeleton__line--title {
+  height: 1.2rem;
+  width: 62%;
+}
+.dossier-skeleton__line--label {
+  height: 0.5rem;
+  width: 28%;
+}
+.dossier-skeleton__line--short {
+  width: 54%;
+}
+.dossier-skeleton__card,
+.dossier-skeleton__bubble {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--color-paper-3);
+  background: color-mix(in srgb, var(--color-paper) 70%, transparent);
+}
+.dossier-skeleton__bubble {
+  max-width: 34rem;
+}
+.dossier-skeleton__question {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+  color: var(--color-ink);
+}
+.dossier-skeleton__numeral {
+  color: var(--color-vermilion);
+  font-style: italic;
+  font-size: 1.6em;
+}
+.dossier-skeleton__rule {
+  height: 1px;
+  margin-top: 2.2rem;
+}
+.dossier-skeleton__meter {
+  display: flex;
+  gap: 0.25rem;
+  min-height: 2.5rem;
+}
+.dossier-skeleton__notch {
+  width: 1.6rem;
+  height: 0.25rem;
+}
+.dossier-skeleton__composer {
+  height: 3rem;
+  margin-top: auto;
+}
+@keyframes dossier-skeleton-sweep {
+  from {
+    background-position: 120% 0, 0 0;
+  }
+  to {
+    background-position: -120% 0, 0 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dossier-skeleton__line,
+  .dossier-skeleton__rule,
+  .dossier-skeleton__notch,
+  .dossier-skeleton__composer {
+    animation: none;
+  }
+}
+
+/* The filing stamp, finishing on the desk after navigate-first. */
+.dossier-filed-confirmation--desk {
+  position: fixed;
+  z-index: 70;
+  animation:
+    dossier-filed-wash 180ms ease-out both,
+    dossier-filed-lift 320ms ease-in 900ms forwards;
+}
+@keyframes dossier-filed-lift {
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dossier-filed-confirmation--desk {
+    animation: dossier-filed-lift 1ms linear 900ms forwards;
+  }
+}
+
+/* ── Zen as one motion ───────────────────────────────────────────
+   setZenMode() wraps the change in a View Transition and marks the root
+   with data-zen-transition. The page keeps its identity and widens in
+   place; the masthead folds up and away; everything else cross-fades. */
+:root[data-zen-transition] .page-canvas {
+  view-transition-name: zen-page;
+}
+:root[data-zen-transition] .editor-workspace-main > header {
+  view-transition-name: zen-masthead;
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-zen-transition]::view-transition-old(root),
+  :root[data-zen-transition]::view-transition-new(root) {
+    animation-duration: 320ms;
+    animation-timing-function: ease;
+    animation-name: zen-fade-out;
+  }
+  :root[data-zen-transition]::view-transition-new(root) {
+    animation-name: zen-fade-in;
+  }
+  :root[data-zen-transition]::view-transition-group(zen-page) {
+    animation-duration: 460ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  /* Don't stretch the text: pin both snapshots to the top and let the
+     group's box do the widening. */
+  :root[data-zen-transition]::view-transition-old(zen-page),
+  :root[data-zen-transition]::view-transition-new(zen-page) {
+    height: 100%;
+    width: auto;
+    object-fit: none;
+    object-position: top center;
+    animation-duration: 460ms;
+  }
+  :root[data-zen-transition="in"]::view-transition-old(zen-masthead):only-child {
+    animation: zen-fold-up 300ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  :root[data-zen-transition="out"]::view-transition-new(zen-masthead):only-child {
+    animation: zen-fold-down 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+@keyframes zen-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes zen-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes zen-fold-up {
+  to {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+@keyframes zen-fold-down {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+
+/* ── Folio drawer: drag, nest, rename on hover ──────────────────── */
+.folio-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  color: var(--color-ink-light);
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    opacity 120ms ease;
+}
+.folio-row:hover {
+  background: var(--color-paper-soft);
+}
+.folio-row[data-active="true"] {
+  border-color: var(--color-paper-3);
+  background: var(--color-paper-soft);
+  color: var(--color-ink);
+}
+.folio-row[data-dragging="true"] {
+  opacity: 0.4;
+}
+.folio-row__grip {
+  flex-shrink: 0;
+  width: 0.9rem;
+  padding-left: 0.2rem;
+  color: var(--color-ink-muted);
+  font-size: 0.7rem;
+  letter-spacing: -0.15em;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.folio-row:hover .folio-row__grip,
+.folio-row:focus-within .folio-row__grip {
+  opacity: 1;
+}
+.folio-row__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.folio-row:hover .folio-row__actions,
+.folio-row:focus-within .folio-row__actions,
+.folio-group-header:hover .folio-row__action,
+.folio-group-header:focus-within .folio-row__action {
+  opacity: 1;
+}
+.folio-row__action {
+  border-radius: 2px;
+  padding: 0.3rem 0.4rem;
+  color: var(--color-ink-light);
+  font-size: 0.72rem;
+}
+.folio-row__action:hover {
+  color: var(--color-ink);
+  background: var(--color-paper-2);
+}
+.folio-group-header .folio-row__action {
+  opacity: 0;
+}
+.folio-row__placeholder {
+  color: var(--color-ink-muted);
+  font-style: italic;
+}
+.folio-row__name-input {
+  width: 100%;
+  border: 1px solid var(--color-vermilion);
+  border-radius: 2px;
+  background: var(--color-paper);
+  padding: 0.2rem 0.4rem;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+}
+.folio-row__name-input:focus {
+  outline: none;
+}
+.folio-row__hint {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--color-ink-muted);
+  font-size: 0.68rem;
+}
+/* Drop indicators: a rule above or below, or a ring to file together. */
+.folio-row[data-drop="before"]::before,
+.folio-row[data-drop="after"]::after {
+  content: "";
+  position: absolute;
+  left: 0.25rem;
+  right: 0.25rem;
+  height: 2px;
+  background: var(--color-vermilion);
+  pointer-events: none;
+}
+.folio-row[data-drop="before"]::before {
+  top: -2px;
+}
+.folio-row[data-drop="after"]::after {
+  bottom: -2px;
+}
+.folio-row[data-drop="into"],
+.folio-group-header[data-drop="into"] {
+  border-color: var(--color-vermilion);
+  background: color-mix(in srgb, var(--color-vermilion) 8%, var(--color-paper-soft));
+}
+.folio-group-header {
+  display: inline-flex;
+  width: calc(100% - 1.2rem);
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 0.35rem 0.5rem;
+  vertical-align: middle;
+}
+nav[data-dragging="true"] .folio-group-header {
+  border-style: dashed;
+  border-color: var(--color-paper-3);
+}
+.folio-drawer__tip {
+  padding: 0.25rem 0.5rem 0;
+  color: var(--color-ink-muted);
+  font-size: 0.68rem;
+}
+@media (hover: none) {
+  .folio-row__grip,
+  .folio-row__actions,
+  .folio-group-header .folio-row__action {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .folio-row,
+  .folio-row__grip,
+  .folio-row__actions {
+    transition: none;
+  }
 }

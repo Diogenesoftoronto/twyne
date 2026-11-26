@@ -38,6 +38,10 @@ import {
 } from "../../utils/scene-bench";
 import { useSpeechPlayer } from "../../utils/use-speech-player";
 import type { ScenePictureCapability } from "../../utils/scene-media";
+import type {
+  SceneWorldCapability,
+  SceneWorldSessionToken,
+} from "../../utils/scene-world";
 import {
   lowCreditWarning,
   SCENE_CREDIT_WARNING,
@@ -46,6 +50,12 @@ import { InstrumentArt, InstrumentRule } from "./instrument-art";
 import { InstrumentMotion, InstrumentMotionPart } from "./instrument-motion";
 import styles from "./scene-bench.css?inline";
 import { InstrumentRoom } from "./instrument-room";
+import {
+  SceneWorldStage,
+  type SceneWorldStartRequest,
+  type SceneWorldStopReport,
+  type SceneWorldUndockPayload,
+} from "./scene-world-stage";
 import type {
   InstrumentRoomRequest,
   InstrumentRoomResult,
@@ -90,6 +100,12 @@ export interface SceneBenchProps {
   onReadPicture$?: QRL<
     (picture: ScenePicture) => Promise<ScenePicture["reading"]>
   >;
+  world?: SceneWorldCapability;
+  onStartWorld$?: QRL<
+    (request: SceneWorldStartRequest) => Promise<SceneWorldSessionToken>
+  >;
+  onFinishWorld$?: QRL<(report: SceneWorldStopReport) => Promise<void>>;
+  onUndockWorld$?: QRL<(payload: SceneWorldUndockPayload) => Promise<void> | void>;
 }
 
 const READING_GROUPS: ReadonlyArray<{
@@ -874,6 +890,51 @@ export const SceneBench = component$<SceneBenchProps>((props) => {
                   </div>
                 );
               })}
+          </section>
+
+          <section
+            class="scene-bench__section"
+            aria-label="Interactive Genie 4 world"
+          >
+            <SceneWorldStage
+              passage={props.passage}
+              proposals={proposals}
+              referencePicture={ui.picture}
+              capability={props.world}
+              onStartSession$={props.onStartWorld$}
+              onFinishSession$={props.onFinishWorld$}
+              onUndock$={props.onUndockWorld$}
+              onSnapshot$={async (snapshotPicture) => {
+                ui.pictureMode = "imagined";
+                ui.picture = snapshotPicture;
+                ui.pictureMessage = "";
+                await saveScenePicture(snapshotPicture).catch(() => undefined);
+                if (!props.onReadPicture$) return;
+                ui.readingPicture = true;
+                try {
+                  const reading = await props.onReadPicture$(snapshotPicture);
+                  if (
+                    sceneSnapshotMatches(
+                      { passage: snapshotPicture.passage },
+                      props.passage,
+                    )
+                  ) {
+                    if (!reading) {
+                      ui.pictureMessage =
+                        "The comparison didn't come back. The captured world frame is still here to look at.";
+                      return;
+                    }
+                    ui.picture = { ...snapshotPicture, reading };
+                    await saveScenePicture(ui.picture).catch(() => undefined);
+                  }
+                } catch {
+                  ui.pictureMessage =
+                    "The comparison didn't come back. The captured world frame is still here to look at.";
+                } finally {
+                  ui.readingPicture = false;
+                }
+              }}
+            />
           </section>
 
           <section

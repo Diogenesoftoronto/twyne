@@ -2,6 +2,10 @@ import { makeFunctionReference } from "convex/server";
 import type { ToolSet } from "ai";
 import type { ConvexClient } from "convex/browser";
 import type { Source } from "../../convex/research";
+import {
+  decodeMcpObject,
+  encodeMcpObject,
+} from "../../convex/lib/knowledge-wire";
 import type { McpToolInfo } from "./mcp-client";
 import { toSources } from "./research-backends";
 
@@ -53,7 +57,11 @@ const refs = {
   >("knowledge:read"),
   call: makeFunctionReference<
     "action",
-    { sourceId: string; tool: string; arguments: Record<string, unknown> },
+    {
+      sourceId: string;
+      tool: string;
+      arguments: Record<string, unknown> | string;
+    },
     unknown
   >("knowledge:call"),
 };
@@ -174,12 +182,10 @@ export function chooseAccountSource(
   publish();
 }
 function toolDefinition(info: McpToolInfo) {
-  return JSON.stringify({
-    name: info.name,
-    title: info.title,
-    description: info.description,
-    inputSchema: info.inputSchema,
-  });
+  const { name, title, description, inputSchema, ...metadata } = info;
+  // Preserve existing selections for unchanged basic tools while binding the
+  // choice to an upstream revision or any additional MCP tool capabilities.
+  return JSON.stringify({ name, title, description, inputSchema, ...metadata });
 }
 export function chooseAccountSearchTool(id: string, name: string) {
   if (
@@ -283,7 +289,9 @@ export async function refreshAccountKnowledge(): Promise<AccountSource[]> {
   snapshot.error = "";
   publish();
   try {
-    const raw = (await active.action(refs.sources, {})) as { data?: unknown };
+    const raw = decodeMcpObject(await active.action(refs.sources, {})) as {
+      data?: unknown;
+    };
     if (epoch !== generation || active !== client || request !== catalogRequest)
       return [];
     if (!Array.isArray(raw?.data)) throw new Error("Invalid sources response");
@@ -473,13 +481,13 @@ export async function callAccountTool(
     const result = await active.action(refs.call, {
       sourceId: id,
       tool: name,
-      arguments: reviewedArguments,
+      arguments: encodeMcpObject(reviewedArguments),
     });
     current(epoch);
     if (signal?.aborted)
       throw new Error("Tool call cancelled. The response was discarded.");
     permittedTool(id, name, mode);
-    return result;
+    return decodeMcpObject(result);
   } catch (error) {
     return failed(error, epoch, id);
   }
@@ -489,7 +497,9 @@ export async function accountResources(id: string): Promise<AccountResource[]> {
   if (!source.resources_allowed)
     throw new Error("Resource access is not approved for Twyne.");
   try {
-    const result = (await active.action(refs.resources, { sourceId: id })) as {
+    const result = decodeMcpObject(
+      await active.action(refs.resources, { sourceId: id }),
+    ) as {
       resources?: AccountResource[];
     };
     current(epoch);
@@ -519,7 +529,9 @@ export async function readAccountResource(
   current(epoch);
   selected(id, "resources");
   try {
-    const result = (await active.action(refs.read, { sourceId: id, uri })) as {
+    const result = decodeMcpObject(
+      await active.action(refs.read, { sourceId: id, uri }),
+    ) as {
       contents?: { text?: string }[];
     };
     current(epoch);

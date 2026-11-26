@@ -2288,31 +2288,32 @@ export const PersonasPanel = component$(
                   compact
                 />
               )}
-            {store.personas
-              .filter((p) => {
-                // Anything arriving counts, including reasoning. A model that
-                // thinks before it writes has an empty `text` for its first
-                // several seconds; keying the card on text alone left the
-                // panel blank for exactly as long as the model was working.
-                const s = store.streamingNotes[p.id];
-                if (!s) return false;
-                return (
-                  s.status === "running" ||
-                  !!s.text.trim() ||
-                  !!s.reasoning.trim()
-                );
-              })
-              .map((persona) => (
-                <div
-                  key={`streaming-${persona.id}`}
-                  class="desk-card border-l-2 bg-[var(--color-paper-soft)]"
-                  style={{
-                    borderColor: persona.color,
-                    ["--card-accent" as never]: persona.color,
-                  }}
-                  aria-live="polite"
-                >
-                  {/* The same masthead the filed note will get, so the card
+            {(() => {
+              const streamingCards = store.personas
+                .filter((p) => {
+                  // Anything arriving counts, including reasoning. A model that
+                  // thinks before it writes has an empty `text` for its first
+                  // several seconds; keying the card on text alone left the
+                  // panel blank for exactly as long as the model was working.
+                  const s = store.streamingNotes[p.id];
+                  if (!s) return false;
+                  return (
+                    s.status === "running" ||
+                    !!s.text.trim() ||
+                    !!s.reasoning.trim()
+                  );
+                })
+                .map((persona) => (
+                  <div
+                    key={`streaming-${persona.id}`}
+                    class="desk-card border-l-2 bg-[var(--color-paper-soft)]"
+                    style={{
+                      borderColor: persona.color,
+                      ["--card-accent" as never]: persona.color,
+                    }}
+                    aria-live="polite"
+                  >
+                    {/* The same masthead the filed note will get, so the card
                     does not rearrange itself the moment it lands. */}
                   <div class="desk-card__head persona-critique-head room-stream-head" style={{ "--reading-progress": readingProgress(store.streamingNotes[persona.id]) }}>
                     <ReadingRing />
@@ -2333,31 +2334,35 @@ export const PersonasPanel = component$(
                     {/* The model's scratch work, folded away. Offered rather
                       than shown: it is how the note was arrived at, not the
                       note, and the room speaks in finished sentences. */}
-                    {store.streamingNotes[persona.id].reasoning.trim() && (
-                      <details class="desk-card__aside">
-                        <summary class="cursor-pointer">
-                          {store.streamingNotes[persona.id].activePart ===
-                          "reasoning"
-                            ? "thinking"
-                            : "thought"}
-                        </summary>
-                        <p
-                          class="mt-1 whitespace-pre-wrap border-l pl-2 text-[0.7rem] leading-4 text-[var(--color-ink-muted)]"
-                          style="font-family: var(--font-typewriter); border-color: var(--color-rule);"
-                        >
-                          {store.streamingNotes[persona.id].reasoning}
-                        </p>
-                      </details>
-                    )}
+                      {store.streamingNotes[persona.id].reasoning.trim() && (
+                        <details class="desk-card__aside">
+                          <summary class="cursor-pointer">
+                            {store.streamingNotes[persona.id].activePart ===
+                            "reasoning"
+                              ? "thinking"
+                              : "thought"}
+                          </summary>
+                          <p
+                            class="mt-1 whitespace-pre-wrap border-l pl-2 text-[0.7rem] leading-4 text-[var(--color-ink-muted)]"
+                            style="font-family: var(--font-typewriter); border-color: var(--color-rule);"
+                          >
+                            {store.streamingNotes[persona.id].reasoning}
+                          </p>
+                        </details>
+                      )}
+                    </div>
+                    <div
+                      class="desk-card__body comment-markdown"
+                      dangerouslySetInnerHTML={renderMarkdown(
+                        store.streamingNotes[persona.id].text,
+                      )}
+                    />
                   </div>
-                  <div
-                    class="desk-card__body comment-markdown"
-                    dangerouslySetInnerHTML={renderMarkdown(
-                      store.streamingNotes[persona.id].text,
-                    )}
-                  />
-                </div>
-              ))}
+                ));
+              // An empty nested JSX array makes Qwik recreate later siblings,
+              // including the focused reply textarea, on every draft update.
+              return streamingCards.length > 0 ? streamingCards : null;
+            })()}
 
             {store.streamingSynthesis.trim() && (
               <div

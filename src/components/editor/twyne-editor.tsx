@@ -1,3 +1,4 @@
+import { setZenMode } from "../../utils/zen-transition";
 import {
   accountDisplayName,
   accountAvatarUrl,
@@ -90,6 +91,7 @@ import {
   SelectionActions,
 } from "./selection-actions";
 import { InstrumentDock } from "../instruments/instrument-dock";
+import { SceneWorldDock } from "../instruments/scene-world-dock";
 import { ThreadsInstrument } from "../in-flow/thread-instrument";
 import { openInstrumentDock } from "../../utils/instrument-dock";
 import {
@@ -3967,12 +3969,8 @@ export const TwyneEditor = component$(
           store.showShortcutDialog = true;
           break;
         case "view.zen":
-          store.zenMode = !store.zenMode;
-          window.dispatchEvent(
-            new CustomEvent("twyne:zen-mode", {
-              detail: { on: store.zenMode },
-            }),
-          );
+          // followZenChoice flips store.zenMode inside the transition.
+          setZenMode({ on: !store.zenMode });
           break;
         default:
           break;
@@ -4534,6 +4532,9 @@ export const TwyneEditor = component$(
           <div class="writing-threads-host">
             <ThreadsInstrument readOnly={readOnly} />
           </div>
+        )}
+        {store.activeFolioId && (
+          <SceneWorldDock folioId={store.activeFolioId} />
         )}
 
         <PersonaNotePanel

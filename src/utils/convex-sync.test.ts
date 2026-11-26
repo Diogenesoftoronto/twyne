@@ -24,6 +24,7 @@ import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 const originalWindow = globalThis.window;
 const originalLocalStorage = globalThis.localStorage;
 const syncRefreshes: Array<{ html: string; detail?: unknown }> = [];
+const windowEvents = new EventTarget();
 const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
 const localStorageShim = (() => {
   const store: Record<string, string> = {};
@@ -46,15 +47,15 @@ Object.defineProperty(globalThis, "window", {
   configurable: true,
   value: {
     localStorage: localStorageShim,
-    addEventListener: () => undefined,
-    removeEventListener: () => undefined,
+    addEventListener: windowEvents.addEventListener.bind(windowEvents),
+    removeEventListener: windowEvents.removeEventListener.bind(windowEvents),
     dispatchEvent: (event: Event) => {
       if (event.type === "twyne:remote-sync")
         syncRefreshes.push({
           html: folioHtml,
           detail: (event as CustomEvent).detail,
         });
-      return true;
+      return windowEvents.dispatchEvent(event);
     },
   },
 });
@@ -747,6 +748,149 @@ describe("folio sync (convex-sync)", () => {
     setConvexSyncContext(client as never, "user-live-shape");
     await settle();
     expect(live.subscribed).toEqual(["sync:syncRevision"]);
+  });
+
+  test("a remote revision waits for pending local edits without starving browser tasks", async () => {
+    const { live, client } = liveClient({
+      ...emptyRemoteSnapshot(),
+      syncRevision: 1,
+      folios: SAMPLE_FOLIOS,
+    });
+    setConvexSyncContext(client as never, "user-pending-catch-up");
+    await settle();
+    const pullsBefore = live.pulls;
+    const query = client.query;
+    // Bound the broken implementation so the regression fails instead of
+    // hanging the test runner in the same microtask loop as the browser.
+    client.query = async () => {
+      const result = await query();
+      if (live.pulls - pullsBefore >= 20) clearConvexSyncContext();
+      return result;
+    };
+
+    folioHtml = "<p>my unsent edit</p>";
+    markDirty(["folioContent"], "f1");
+    live.remote = { ...live.remote, syncRevision: 3 };
+    live.onRevision?.(3);
+    await settle();
+
+    expect(live.pulls).toBe(pullsBefore);
+    expect(folioHtml).toBe("<p>my unsent edit</p>");
+    await flushNow();
+    expect(live.mutationCalls.at(-1)?.folioContent).toEqual([
+      { folioId: "f1", html: "<p>my unsent edit</p>" },
+    ]);
+  });
+
+  test("a cached snapshot behind the announced revision does not spin", async () => {
+    const { live, client } = liveClient({
+      ...emptyRemoteSnapshot(),
+      syncRevision: 1,
+      folios: SAMPLE_FOLIOS,
+    });
+    setConvexSyncContext(client as never, "user-stale-catch-up");
+    await settle();
+    const pullsBefore = live.pulls;
+    const query = client.query;
+    client.query = async () => {
+      const result = await query();
+      if (live.pulls - pullsBefore >= 20) clearConvexSyncContext();
+      return result;
+    };
+
+    live.onRevision?.(30);
+    await settle();
+    expect(live.pulls - pullsBefore).toBe(1);
+  });
+
+  test("catch-up resumes after an in-flight local push settles", async () => {
+    const { live, client } = liveClient({
+      ...emptyRemoteSnapshot(),
+      syncRevision: 1,
+      folios: SAMPLE_FOLIOS,
+    });
+    setConvexSyncContext(client as never, "user-pushing-catch-up");
+    await settle();
+    const pullsBefore = live.pulls;
+    let finishPush!: (result: { revision: number }) => void;
+    client.mutation = async () =>
+      new Promise((resolve) => {
+        finishPush = resolve;
+      });
+    folioHtml = "<p>my saved edit</p>";
+    markDirty(["folioContent"], "f1");
+    const push = flushNow();
+    await settle();
+    live.remote = {
+      ...live.remote,
+      syncRevision: 4,
+      folioContent: [{ folioId: "f1", html: folioHtml, updatedAt: 4 }],
+    };
+    live.onRevision?.(4);
+    await settle();
+    expect(live.pulls).toBe(pullsBefore);
+
+    finishPush({ revision: 3 });
+    await push;
+    await settle();
+    expect(live.pulls).toBe(pullsBefore + 1);
+    expect(folioHtml).toBe("<p>my saved edit</p>");
+  });
+
+  test("failed catch-up yields before retrying and recovers", async () => {
+    const { live, client } = liveClient({
+      ...emptyRemoteSnapshot(),
+      syncRevision: 1,
+      folios: SAMPLE_FOLIOS,
+    });
+    setConvexSyncContext(client as never, "user-retry-catch-up");
+    await settle();
+    const query = client.query;
+    let attempts = 0;
+    client.query = async () => {
+      attempts++;
+      if (attempts === 1) throw new Error("temporarily offline");
+      // Stop a regression from hanging the test process indefinitely.
+      if (attempts >= 20) clearConvexSyncContext();
+      return query();
+    };
+    live.onRevision?.(30);
+    await settle();
+    expect(attempts).toBe(1);
+    live.remote = {
+      ...live.remote,
+      syncRevision: 30,
+      folioContent: [
+        { folioId: "f1", html: "<p>caught up</p>", updatedAt: 30 },
+      ],
+    };
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+    expect(attempts).toBe(2);
+    expect(folioHtml).toBe("<p>caught up</p>");
+  });
+
+  test("sign-out cancels a pending catch-up retry", async () => {
+    const { live, client } = liveClient({
+      ...emptyRemoteSnapshot(),
+      syncRevision: 1,
+      folios: SAMPLE_FOLIOS,
+    });
+    setConvexSyncContext(client as never, "user-cancel-catch-up");
+    await settle();
+    const query = client.query;
+    const pullsBefore = live.pulls;
+    client.query = async () => {
+      const result = await query();
+      if (live.pulls - pullsBefore >= 20) clearConvexSyncContext();
+      return result;
+    };
+    live.onRevision?.(30);
+    await settle();
+    expect(live.pulls - pullsBefore).toBe(1);
+    clearConvexSyncContext();
+    const pullsAtSignOut = live.pulls;
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+    expect(live.pulls).toBe(pullsAtSignOut);
   });
 
   test("typing for a minute pulls nothing back and rewrites nothing locally", async () => {

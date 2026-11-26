@@ -1,6 +1,8 @@
 import type { LedgerSource } from "./house-model";
 import type {
+  ConstraintTriage,
   DossierAttachment,
+  Folio,
   DossierProbe,
   ProjectBrief,
   ProjectInterviewAnswers,
@@ -11,7 +13,9 @@ import {
   loadActiveFolioIdFromIdb,
   loadBriefFromIdb,
   loadFolioContentFromIdb,
+  loadFoliosFromIdb,
   saveBriefToIdb,
+  saveFoliosToIdb,
 } from "./idb";
 import { archiveBriefEdition } from "./brief-history";
 import { htmlToPlainText } from "./html-to-plain-text";
@@ -42,15 +46,94 @@ export const DEFAULT_INTERVIEW_ANSWERS: ProjectInterviewAnswers = {
     "A reader should know what this is, who it is for, and why it matters",
 };
 
-/** The name a folio gets when the writer didn't give it one. */
-export const UNTITLED_FOLIO_NAME = "Untitled folio";
+/**
+ * The name a folio carries until the piece has a working title. It is a
+ * stand-in, not a title: the first working title (from the dossier or a
+ * rename in the drawer) replaces it.
+ */
+export const UNTITLED_FOLIO_NAME = "Current draft";
+
+/** Stand-ins earlier versions wrote; still read as "no title yet". */
+const PLACEHOLDER_FOLIO_NAMES = new Set([
+  UNTITLED_FOLIO_NAME,
+  "Untitled folio",
+]);
+
+export function isPlaceholderFolioName(
+  name: string | null | undefined,
+): boolean {
+  const title = name?.trim() ?? "";
+  return !title || PLACEHOLDER_FOLIO_NAMES.has(title);
+}
 
 /** A folio's name as a brief title, or "" when the folio is unnamed. */
 export function briefTitleFromFolioName(
   name: string | null | undefined,
 ): string {
-  const title = name?.trim() ?? "";
-  return title === UNTITLED_FOLIO_NAME ? "" : title;
+  return isPlaceholderFolioName(name) ? "" : (name?.trim() ?? "");
+}
+
+/**
+ * Keep the folio's name and its dossier's working title one name.
+ *
+ * Called whenever a brief is saved: a new, real working title renames the
+ * folio. Renaming from the drawer goes the other way through
+ * `renameFolioEverywhere`.
+ */
+async function syncFolioNameToTitle(
+  folioId: string,
+  workingTitle: string,
+): Promise<void> {
+  const title = workingTitle.trim();
+  if (!title || title === DEFAULT_INTERVIEW_ANSWERS.workingTitle) return;
+  const folios = await loadFoliosFromIdb();
+  const folio = folios.find((candidate) => candidate.id === folioId);
+  if (!folio || folio.name === title) return;
+  await saveFoliosToIdb(
+    folios.map((candidate) =>
+      candidate.id === folioId
+        ? { ...candidate, name: title, updatedAt: Date.now() }
+        : candidate,
+    ),
+  );
+  window.dispatchEvent(
+    new CustomEvent(FOLIO_RENAMED_EVENT, { detail: { folioId, name: title } }),
+  );
+}
+
+export const FOLIO_RENAMED_EVENT = "twyne:folio-renamed";
+
+/**
+ * Rename a folio and, when it has a dossier, its working title with it, so
+ * the drawer, the masthead and the brief never show two names for one piece.
+ * Returns the updated folio list.
+ */
+export async function renameFolioEverywhere(
+  folioId: string,
+  requested: string,
+): Promise<Folio[]> {
+  const name = requested.trim() || UNTITLED_FOLIO_NAME;
+  const folios = (await loadFoliosFromIdb()).map((folio) =>
+    folio.id === folioId ? { ...folio, name, updatedAt: Date.now() } : folio,
+  );
+  await saveFoliosToIdb(folios);
+  const stored = await loadBriefFromIdb(folioId);
+  if (stored && !isPlaceholderFolioName(name)) {
+    const brief = normalizeProjectBrief(stored);
+    if (brief.answers.workingTitle.trim() !== name) {
+      await saveProjectBriefForFolio(
+        folioId,
+        {
+          ...brief,
+          answers: { ...brief.answers, workingTitle: name },
+          updatedAt: Date.now(),
+        },
+        { source: "manual", reason: "Renamed in the drawer" },
+      );
+    }
+  }
+  markSyncDirty();
+  return folios;
 }
 
 /**
@@ -75,15 +158,26 @@ export function createProjectBrief(
   previous?: ProjectBrief | null,
   attachments?: DossierAttachment[],
   probes?: DossierProbe[],
+  /**
+   * The form's reading of each constraint line. Without one, the previous
+   * brief's reading is kept while the constraints it read are unchanged.
+   */
+  constraintTriage?: ConstraintTriage | null,
 ): ProjectBrief {
   const now = Date.now();
   const carried = probes ?? previous?.probes;
+  const normalized = normalizeInterviewAnswers(answers);
+  const triage = [constraintTriage, previous?.constraintTriage].find(
+    (reading) =>
+      !!reading && reading.source.trim() === normalized.constraints.trim(),
+  );
   return {
-    answers: normalizeInterviewAnswers(answers),
+    answers: normalized,
     attachments: attachments ?? previous?.attachments ?? [],
     // Omitted entirely rather than stored as [] so a brief that never had
     // probes stays byte-identical to one written before they existed.
     ...(carried && carried.length > 0 ? { probes: carried } : {}),
+    ...(triage ? { constraintTriage: triage } : {}),
     completedAt: previous?.completedAt ?? now,
     updatedAt: now,
   };
@@ -131,7 +225,11 @@ export async function saveProjectBriefForFolio(
 ): Promise<void> {
   const normalized = normalizeProjectBrief(brief);
   const previous = await loadBriefFromIdb(folioId);
-  if (previous && JSON.stringify(previous) !== JSON.stringify(normalized)) {
+  if (
+    previous &&
+    JSON.stringify(withoutTriage(previous)) !==
+      JSON.stringify(withoutTriage(normalized))
+  ) {
     await archiveBriefEdition(
       folioId,
       normalizeProjectBrief(previous),
@@ -152,6 +250,56 @@ export async function saveProjectBriefForFolio(
   // still open the most recently filed dossier.
   saveProjectBrief(normalized);
   await writeFileAsJson(`/folios/${folioId}/brief.json`, normalized);
+  if (
+    normalized.answers.workingTitle.trim() !==
+    (previous?.answers?.workingTitle ?? "").trim()
+  )
+    await syncFolioNameToTitle(folioId, normalized.answers.workingTitle);
+  markSyncDirty();
+}
+
+/** Triage is derived from the brief; a new reading is not a new edition. */
+function withoutTriage(brief: Partial<ProjectBrief>): Partial<ProjectBrief> {
+  const rest = { ...brief };
+  delete rest.constraintTriage;
+  return rest;
+}
+
+function isConstraintTriage(value: unknown): value is ConstraintTriage {
+  const t = value as ConstraintTriage | undefined;
+  return (
+    !!t &&
+    typeof t.source === "string" &&
+    typeof t.at === "number" &&
+    Array.isArray(t.lines) &&
+    t.lines.every(
+      (line) =>
+        typeof line?.text === "string" &&
+        typeof line.confidence === "number" &&
+        ["hard", "editorial", "preference", "uncheckable"].includes(line.kind),
+    )
+  );
+}
+
+/**
+ * Store Jev's constraint reading on the folio's brief without filing a new
+ * edition. The triage's `source` is the effective constraints text (folio
+ * answers plus house standards); the note gate checks it against the same
+ * effective text, so a stale reading is ignored rather than trusted.
+ */
+export async function saveConstraintTriageForFolio(
+  folioId: string,
+  triage: ConstraintTriage,
+): Promise<void> {
+  const stored = await loadBriefFromIdb(folioId);
+  if (!stored) return;
+  const brief = normalizeProjectBrief(stored);
+  if (
+    JSON.stringify(brief.constraintTriage?.lines) ===
+    JSON.stringify(triage.lines)
+  )
+    return;
+  await saveBriefToIdb(folioId, { ...brief, constraintTriage: triage });
   markSyncDirty();
 }
 
@@ -167,6 +315,9 @@ export function normalizeProjectBrief(
     ),
     attachments: Array.isArray(parsed.attachments) ? parsed.attachments : [],
     ...(probes.length > 0 ? { probes } : {}),
+    ...(isConstraintTriage(parsed.constraintTriage)
+      ? { constraintTriage: parsed.constraintTriage }
+      : {}),
     completedAt:
       typeof parsed.completedAt === "number" ? parsed.completedAt : Date.now(),
     updatedAt:

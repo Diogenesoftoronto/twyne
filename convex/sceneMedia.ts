@@ -26,8 +26,11 @@ import {
 import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
 import { liveVoiceAccess } from "../src/utils/live-voice-contract";
 import {
+  clampWorldMaxSeconds,
+  estimateWorldSessionCostMicros,
   SCENE_PICTURE_BUDGET_MICROS,
   SCENE_READING_BUDGET_MICROS,
+  SCENE_WORLD_MIN_CREDIT_MICROS,
 } from "../src/utils/scene-media-credit";
 import { SCENE_READING_SYSTEM } from "../src/utils/scene-media-contract";
 import { createAiTraceId } from "../src/utils/ai-deterministic-evals";
@@ -118,7 +121,7 @@ async function hostedRoute(
 async function recordAttempt(
   ctx: ActionCtx,
   ownerId: string,
-  feature: "scene-image" | "scene-reading",
+  feature: "scene-image" | "scene-reading" | "scene-world",
   model: string,
   outcome: "completed" | "failed",
   usage: { inputTokens?: number; outputTokens?: number } = {},
@@ -311,5 +314,172 @@ export const reading = action({
       );
       throw error;
     }
+  },
+});
+
+/**
+ * Provision a single-session ephemeral Genie 4 WebRTC token through Not Organic.
+ * The server enforces a hard duration & cost ceiling so one world session can
+ * never spend more than the writer's chosen cap.
+ */
+export const worldSession = action({
+  args: {
+    maxSeconds: v.optional(v.number()),
+  },
+  returns: v.object({
+    interactionId: v.string(),
+    authToken: v.string(),
+    model: v.string(),
+    expiresAt: v.number(),
+    transportUrl: v.optional(v.string()),
+    completeUrl: v.optional(v.string()),
+  }),
+  handler: async (ctx, args) => {
+    const link = await account(ctx);
+    await consumeRateLimit(ctx, {
+      action: "scene:world-session",
+      identifier: link.identity.tokenIdentifier,
+      ...RATE_LIMITS.sceneWorld,
+    });
+    const { eligible, availableMicros } = await walletCredit(
+      link,
+      "scene-world",
+    );
+    if (!eligible) {
+      throw new Error(
+        "Hosted Genie 4 worlds need Pro or welcome credit. You can use your own Google Gemini key in Settings, or try the local preview.",
+      );
+    }
+    if (availableMicros < SCENE_WORLD_MIN_CREDIT_MICROS) {
+      throw new Error(
+        "You need at least $1.00 in available credit to enter a hosted Genie 4 world. Add credit, use your own Google Gemini key, or try the local preview.",
+      );
+    }
+
+    const maxSeconds = clampWorldMaxSeconds(args.maxSeconds);
+    const maxCostMicrousd = Math.min(
+      availableMicros,
+      estimateWorldSessionCostMicros(maxSeconds),
+    );
+    const model = "models/genie-4";
+
+    const token = await issueNotOrganicAccessToken({
+      ...link,
+      feature: "scene-world",
+      capabilities: ["realtime:connect"],
+    });
+
+    try {
+      const response = await providerJsonRequest<{
+        interactionId?: string;
+        interaction_id?: string;
+        authToken?: string;
+        auth_token?: string;
+        model?: string;
+        expiresAt?: number;
+        expires_at?: number;
+        transportUrl?: string;
+        transport_url?: string;
+        completeUrl?: string;
+        complete_url?: string;
+      }>(
+        "/v1/world/sessions",
+        token,
+        {
+          method: "POST",
+          headers: {
+            "idempotency-key": crypto.randomUUID(),
+            "x-notorganic-max-cost-microusd": String(maxCostMicrousd),
+          },
+          body: JSON.stringify({
+            model,
+            maxSeconds,
+            maxCostMicrousd,
+          }),
+        },
+        { issuer: notOrganicIssuer(), feature: "scene-world" },
+      );
+
+      const interactionId =
+        response.interactionId || response.interaction_id || "";
+      const authToken = response.authToken || response.auth_token || "";
+      if (!interactionId || !authToken) {
+        throw new Error(
+          "The hosted world gateway did not return a Genie 4 session token.",
+        );
+      }
+      return {
+        interactionId,
+        authToken,
+        model: response.model || model,
+        expiresAt:
+          response.expiresAt ||
+          response.expires_at ||
+          Date.now() + maxSeconds * 1000,
+        ...(response.transportUrl || response.transport_url
+          ? { transportUrl: response.transportUrl || response.transport_url }
+          : {}),
+        ...(response.completeUrl || response.complete_url
+          ? { completeUrl: response.completeUrl || response.complete_url }
+          : {}),
+      };
+    } catch (error) {
+      await recordAttempt(
+        ctx,
+        link.identity.tokenIdentifier,
+        "scene-world",
+        model,
+        "failed",
+      );
+      throw error;
+    }
+  },
+});
+
+/** Terminate a hosted Genie 4 session and record its usage in My Desk. */
+export const completeWorldSession = action({
+  args: {
+    interactionId: v.string(),
+    elapsedSeconds: v.number(),
+    reason: v.union(
+      v.literal("writer"),
+      v.literal("idle"),
+      v.literal("cap"),
+      v.literal("unmount"),
+      v.literal("error"),
+    ),
+  },
+  returns: v.object({ ok: v.boolean() }),
+  handler: async (ctx, args) => {
+    const link = await account(ctx);
+    const token = await issueNotOrganicAccessToken({
+      ...link,
+      feature: "scene-world",
+      capabilities: ["realtime:connect"],
+    });
+    try {
+      await providerJsonRequest(
+        `/v1/world/sessions/${encodeURIComponent(args.interactionId)}/complete`,
+        token,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            elapsedSeconds: Math.max(0, Math.round(args.elapsedSeconds)),
+            reason: args.reason,
+          }),
+        },
+        { issuer: notOrganicIssuer(), feature: "scene-world" },
+      );
+    } catch {
+      // Best-effort gateway teardown; still record the attempt locally.
+    }
+    await recordAttempt(
+      ctx,
+      link.identity.tokenIdentifier,
+      "scene-world",
+      "models/genie-4",
+      args.reason === "error" ? "failed" : "completed",
+    );
+    return { ok: true };
   },
 });

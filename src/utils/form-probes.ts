@@ -149,15 +149,40 @@ export function buildLocalFormProbes(
   ];
 }
 
+/** A soft spot in the brief, and what a stranger would ask about it. */
+export interface ProbeFocus {
+  field: keyof ProjectInterviewAnswers;
+  question: string;
+}
+
+const FOCUS_LABELS: Record<keyof ProjectInterviewAnswers, string> = {
+  workingTitle: "working title",
+  format: "format",
+  audience: "audience",
+  goal: "goal",
+  tone: "tone",
+  constraints: "constraints",
+  successSignal: "success signal",
+};
+
+const TYPED_QUESTION =
+  "ask me one sharp follow-up as a typed question — a choice, a scale, or a fill-in-the-blanks —";
+
 /**
  * Build the form interview from the writer's current answers. Each subsequent
  * request includes the probes already collected so the model does not ask the
  * same question three ways.
+ *
+ * `focus` names the answers the brief's own grading found soft, weakest
+ * first, one per question. Without it the model is left to guess which
+ * answer is vaguest, and it guesses by length.
  */
 export function buildFormProbeMessages(
   answers: ProjectInterviewAnswers,
   collected: DossierProbe[],
+  focus: ReadonlyArray<ProbeFocus> = [],
 ): InterviewMessage[] {
+  const target = focus[collected.length];
   return [
     {
       author: "interviewer",
@@ -177,7 +202,9 @@ export function buildFormProbeMessages(
     },
     {
       author: "writer",
-      text: "(ask me one sharp follow-up as a typed question — a choice, a scale, or a fill-in-the-blanks — about whichever of those answers is vaguest)",
+      text: target
+        ? `(${TYPED_QUESTION} about my ${FOCUS_LABELS[target.field]} answer. Someone handed this brief cold would ask: "${target.question}")`
+        : `(${TYPED_QUESTION} about whichever of those answers is vaguest)`,
     },
     ...collected.flatMap((probe) => [
       { author: "interviewer" as const, text: probe.prompt },

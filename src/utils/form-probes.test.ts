@@ -41,6 +41,30 @@ describe("buildFormProbeMessages", () => {
   });
 });
 
+describe("buildFormProbeMessages with the brief's soft spots", () => {
+  const focus = [
+    { field: "successSignal" as const, question: "How much of that counts?" },
+    { field: "audience" as const, question: "Who exactly is reading this?" },
+  ];
+
+  test("each question is aimed at the next soft answer, weakest first", () => {
+    const first = buildFormProbeMessages(answers, [], focus);
+    expect(first[2]?.text).toContain("about my success signal answer");
+    expect(first[2]?.text).toContain("How much of that counts?");
+    const second = buildFormProbeMessages(answers, [probe], focus);
+    expect(second[2]?.text).toContain("about my audience answer");
+  });
+
+  test("past the soft spots, or without any, the interviewer chooses", () => {
+    expect(buildFormProbeMessages(answers, [probe, probe], focus)[2]?.text).toContain(
+      "whichever of those answers is vaguest",
+    );
+    expect(buildFormProbeMessages(answers, [])[2]?.text).toContain(
+      "whichever of those answers is vaguest",
+    );
+  });
+});
+
 describe("requireFormProbe", () => {
   test("accepts a renderable typed question", () => {
     const result: InterviewTurnResult = {

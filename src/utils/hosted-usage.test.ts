@@ -82,6 +82,57 @@ describe("hosted billing evidence", () => {
     expect(summary.unverifiedCostRequests).toBe(1);
     expect(summary.unverifiedCostMicrousd).toBe(50000);
   });
+  test("includes settled charges from failed generations without counting released funds", () => {
+    const summary = summarizeHostedUsage(
+      {
+        data: [
+          row(),
+          row({
+            requestId: "billed-failure",
+            state: "failed",
+            billedMicros: 600,
+          }),
+          row({
+            requestId: "billed-failure",
+            state: "failed",
+            billedMicros: 600,
+          }),
+          row({
+            requestId: "released",
+            state: "failed",
+            billedMicros: undefined,
+          }),
+          row({ requestId: "zero", state: "failed", billedMicros: 0 }),
+          row({
+            requestId: "expired",
+            state: "expired",
+            billedMicros: undefined,
+          }),
+          row({
+            requestId: "other",
+            product: "keating",
+            state: "failed",
+            billedMicros: 900,
+          }),
+          row({
+            requestId: "outside",
+            createdAt: 200,
+            state: "failed",
+            billedMicros: 900,
+          }),
+        ],
+      },
+      range,
+    );
+    expect(summary).toEqual({
+      billedMicrousd: 1834,
+      settledRequests: 2,
+      unresolvedRequests: 0,
+      unverifiedCostRequests: 0,
+      unverifiedCostMicrousd: 0,
+      truncated: false,
+    });
+  });
   test("marks a full account feed as partial even when other products fill it", () => {
     const data = Array.from({ length: 100 }, (_, i) =>
       row({ requestId: String(i), product: "keating" }),

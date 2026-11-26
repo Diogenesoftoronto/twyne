@@ -1,0 +1,226 @@
+.scene-world {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+
+.scene-world__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.scene-world__head h3 {
+  margin: 0;
+  font: 600 1rem/1.35 var(--font-sans);
+}
+
+.scene-world__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-family: var(--font-typewriter, monospace);
+}
+
+.scene-world__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--color-paper-3);
+  background: var(--color-paper-2);
+  color: var(--color-ink-light);
+}
+
+.scene-world__badge--live {
+  border-color: var(--color-cobalt);
+  color: var(--color-ink);
+}
+
+.scene-world__badge--warn {
+  border-color: var(--color-crimson);
+  color: var(--color-crimson);
+}
+
+.scene-world__dot {
+  inline-size: 0.45rem;
+  block-size: 0.45rem;
+  border-radius: 999px;
+  background: var(--color-cobalt);
+}
+
+.scene-world__setup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.scene-world__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.875rem;
+}
+
+.scene-world__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.scene-world__viewport-wrap {
+  position: relative;
+  inline-size: 100%;
+  aspect-ratio: 16 / 9;
+  background: #101218;
+  border: 1px solid var(--color-ink-light);
+  overflow: hidden;
+  outline: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.scene-world__viewport-wrap:active {
+  cursor: grabbing;
+}
+
+.scene-world__viewport-wrap:focus-visible,
+.scene-world__viewport-wrap[data-focused="true"] {
+  border-color: var(--color-cobalt);
+  box-shadow: 0 0 0 2px var(--color-cobalt);
+}
+
+.scene-world__media {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.scene-world__overlay {
+  position: absolute;
+  inset-inline: 0.625rem;
+  inset-block-start: 0.625rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.scene-world__hint {
+  padding: 0.25rem 0.5rem;
+  background: rgba(16, 18, 24, 0.78);
+  color: #f4efe6;
+  font-size: 0.7rem;
+  font-family: var(--font-typewriter, monospace);
+}
+
+.scene-world__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--color-paper-3);
+  background: var(--color-paper-soft);
+}
+
+.scene-world__dpad {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.scene-world__dpad button {
+  min-inline-size: 2rem;
+  min-block-size: 2rem !important;
+  padding: 0.2rem 0.4rem !important;
+  font-size: 0.75rem !important;
+}
+
+.scene-world__audio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-light);
+}
+
+.scene-world__audio input[type="range"] {
+  inline-size: 5rem;
+}
+
+.scene-world__sync {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-inline-start: 2px solid var(--color-cobalt);
+  background: var(--color-paper-2);
+  font-size: 0.8125rem;
+}
+
+.scene-world__steer-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.scene-world__steer-form input {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  min-block-size: 2.5rem;
+  padding: 0.45rem 0.625rem;
+  border: 1px solid var(--color-ink-light);
+  background: var(--color-paper-soft);
+  color: var(--color-ink);
+  font: 0.875rem/1.4 var(--font-sans);
+}
+
+.scene-world__idea-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.scene-world__idea-pills button {
+  min-block-size: 2rem !important;
+  padding: 0.25rem 0.55rem !important;
+  font-size: 0.75rem !important;
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scene-world__stop {
+  border-color: var(--color-crimson) !important;
+  color: var(--color-crimson) !important;
+}
+
+.scene-world__log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-light);
+}
+
+.scene-world--compact .scene-world__controls {
+  padding: 0.375rem 0.5rem;
+}
