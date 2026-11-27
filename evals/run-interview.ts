@@ -30,6 +30,8 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { extractTaggedJson, stripTaggedJson } from "../src/utils/llm-parsing";
+import { stripReasoningTags } from "../src/utils/reasoning-tags";
 import {
   chatCompletion,
   DEFAULT_MODEL,
@@ -98,107 +100,6 @@ function interviewSystemPrompt(
   ]
     .filter(Boolean)
     .join("\n");
-}
-
-// ---------------------------------------------------------------------------
-// Tagged-JSON extraction — verbatim from src/utils/llm-parsing.ts.
-// ---------------------------------------------------------------------------
-
-interface TaggedJsonSegment {
-  value: unknown;
-  start: number;
-  end: number;
-}
-
-function findJsonObjectEnd(text: string, open: number): number | null {
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-  for (let i = open; i < text.length; i += 1) {
-    const ch = text[i];
-    if (escaped) {
-      escaped = false;
-      continue;
-    }
-    if (ch === "\\") {
-      escaped = true;
-      continue;
-    }
-    if (ch === '"') {
-      inString = !inString;
-      continue;
-    }
-    if (inString) continue;
-    if (ch === "{") depth += 1;
-    if (ch === "}") {
-      depth -= 1;
-      if (depth === 0) return i;
-    }
-  }
-  return null;
-}
-
-function extractTaggedJson(
-  text: string,
-  tag: "DOSSIER" | "SYNTHESIZE",
-): TaggedJsonSegment | null {
-  const marker = new RegExp(`${tag}:`, "i").exec(text);
-  if (!marker) return null;
-  const open = text.indexOf("{", marker.index + marker[0].length);
-  if (open < 0) return null;
-  const end = findJsonObjectEnd(text, open);
-  if (end === null) return null;
-  try {
-    return {
-      value: JSON.parse(text.slice(open, end + 1)),
-      start: marker.index,
-      end: end + 1,
-    };
-  } catch {
-    return null;
-  }
-}
-
-function stripTaggedJson(
-  text: string,
-  segment: Pick<TaggedJsonSegment, "start" | "end">,
-): string {
-  return `${text.slice(0, segment.start)}${text.slice(segment.end)}`.trim();
-}
-
-// ---------------------------------------------------------------------------
-// Reasoning-tag stripping — verbatim from src/utils/reasoning-tags.ts.
-// ---------------------------------------------------------------------------
-
-const REASONING_TAG_PATTERN = /<\/?\s*think(?:ing)?\b[^>]*\/?\s*>/gi;
-
-function stripReasoningTags(text: string): string {
-  let visible = "";
-  let cursor = 0;
-  let depth = 0;
-  for (const match of text.matchAll(REASONING_TAG_PATTERN)) {
-    const tag = match[0];
-    const index = match.index ?? 0;
-    if (depth === 0) {
-      visible += text.slice(cursor, index);
-    }
-    const normalized = tag.toLowerCase().replace(/\s+/g, "");
-    const isClosing = normalized.startsWith("</") || normalized.endsWith("/>");
-    if (isClosing) {
-      depth = Math.max(0, depth - 1);
-    } else {
-      depth += 1;
-    }
-    cursor = index + tag.length;
-  }
-  if (depth === 0) {
-    visible += text.slice(cursor);
-  }
-  return visible
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n[ \t]+/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
 }
 
 // ---------------------------------------------------------------------------

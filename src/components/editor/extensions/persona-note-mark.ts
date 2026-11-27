@@ -1,4 +1,5 @@
 import { Mark, type Editor } from "@tiptap/core";
+import { removeMarkById } from "./remove-mark-by-id";
 
 export interface PersonaNoteMarkOptions {
   HTMLAttributes: Record<string, any>;
@@ -124,21 +125,5 @@ export function removePersonaNoteMarkById(
   editor: Editor,
   noteId: string,
 ): boolean {
-  const { state, view } = editor;
-  const type = state.schema.marks.personaNote;
-  if (!type) return false;
-
-  const transaction = state.tr;
-  state.doc.descendants((node, pos) => {
-    if (!node.isText) return true;
-    for (const mark of node.marks) {
-      if (mark.type === type && mark.attrs.id === noteId) {
-        transaction.removeMark(pos, pos + node.nodeSize, mark);
-      }
-    }
-    return true;
-  });
-  if (!transaction.docChanged) return false;
-  view.dispatch(transaction);
-  return true;
+  return removeMarkById(editor, "personaNote", noteId);
 }

@@ -9,17 +9,14 @@
  * quantiles does not establish 80% coverage for a total or crossing date.
  */
 import type { Interval } from "./extraction";
+import { quantile as quantileOrNull } from "./flow-profile";
 
 /** z for the 10th/90th percentile of a normal. */
 const Z80 = 1.2816;
 
+/** The `q` quantile of `values`, or 0 for none (forecasts need a number). */
 export function quantile(values: readonly number[], q: number): number {
-  if (!values.length) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const index = Math.min(sorted.length - 1, Math.max(0, (sorted.length - 1) * q));
-  const lo = Math.floor(index);
-  const hi = Math.ceil(index);
-  return sorted[lo] + (sorted[hi] - sorted[lo]) * (index - lo);
+  return quantileOrNull(values, q) ?? 0;
 }
 
 export function meanAndSd(values: readonly number[]): { mean: number; sd: number } {

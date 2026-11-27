@@ -1,4 +1,5 @@
 import { Mark, type Editor } from "@tiptap/core";
+import { removeMarkById } from "./remove-mark-by-id";
 
 export interface CommentMarkOptions {
   HTMLAttributes: Record<string, any>;
@@ -161,21 +162,5 @@ export function removeCommentMarkById(
   editor: Editor,
   commentId: string,
 ): boolean {
-  const { state, view } = editor;
-  const type = state.schema.marks.commentMark;
-  if (!type) return false;
-
-  const tr = state.tr;
-  state.doc.descendants((node, pos) => {
-    if (!node.isText) return true;
-    for (const mark of node.marks) {
-      if (mark.type === type && mark.attrs.id === commentId) {
-        tr.removeMark(pos, pos + node.nodeSize, mark);
-      }
-    }
-    return true;
-  });
-  if (!tr.docChanged) return false;
-  view.dispatch(tr);
-  return true;
+  return removeMarkById(editor, "commentMark", commentId);
 }

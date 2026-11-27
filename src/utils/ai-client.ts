@@ -1,4 +1,5 @@
 import { isLongAlternative, type AlternativeScale } from "./alternatives";
+import { normalizeInterviewDossierDraft } from "./interview-dossier-draft";
 import {
   currentModelLocale,
   withResponseLanguage,
@@ -3558,47 +3559,6 @@ export type InterviewTurnResult =
       model: string;
       traceId?: string;
     };
-
-const INTERVIEW_FIELDS = [
-  "workingTitle",
-  "format",
-  "audience",
-  "goal",
-  "tone",
-  "constraints",
-  "successSignal",
-] as const satisfies ReadonlyArray<keyof ProjectInterviewAnswers>;
-
-function normalizeInterviewDossierDraft(
-  value: unknown,
-): InterviewDossierDraft | null {
-  if (!value || typeof value !== "object") return null;
-  const obj = value as Record<string, unknown>;
-  const briefSource =
-    obj.brief && typeof obj.brief === "object"
-      ? (obj.brief as Record<string, unknown>)
-      : obj;
-  const confidenceSource =
-    obj.confidence && typeof obj.confidence === "object"
-      ? (obj.confidence as Record<string, unknown>)
-      : {};
-
-  const brief: Partial<ProjectInterviewAnswers> = {};
-  const confidence: Partial<
-    Record<keyof ProjectInterviewAnswers, InterviewConfidence>
-  > = {};
-  for (const field of INTERVIEW_FIELDS) {
-    const raw = briefSource[field];
-    if (typeof raw === "string" && raw.trim()) {
-      brief[field] = raw.trim();
-    }
-    const c = confidenceSource[field];
-    if (c === "high" || c === "medium" || c === "low") {
-      confidence[field] = c;
-    }
-  }
-  return Object.keys(brief).length > 0 ? { brief, confidence } : null;
-}
 
 /**
  * Run one conversational-interview turn against the writer's configured

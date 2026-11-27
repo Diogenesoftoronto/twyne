@@ -2,6 +2,7 @@ import { DestinationTag } from "../ui/destination-tag";
 import { HoldToConfirm } from "../ui/hold-to-confirm";
 import { aiConsequenceFor } from "../../utils/consequence";
 import { runRoomAnalysis } from "../../utils/room-analysis";
+import { timeAgo as formatTimeAgo } from "../../utils/time-ago";
 import { PREFERENCES_APPLIED } from "../../utils/preference-outbox";
 import {
   CardBust,
@@ -3403,14 +3404,9 @@ function truncate(text: string, n: number): string {
   return text.slice(0, n - 1).trimEnd() + "…";
 }
 
+/** "5m", "3h": the panel's rows are too narrow for " ago". */
 function timeAgo(timestamp: number): string {
-  const seconds = Math.floor((Date.now() - timestamp) / 1000);
-  if (seconds < 60) return "just now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-  return `${Math.floor(hours / 24)}d`;
+  return formatTimeAgo(timestamp, { compact: true });
 }
 
 /** Progress is intentionally capped until the stream actually completes. */
