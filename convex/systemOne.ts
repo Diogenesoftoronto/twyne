@@ -30,6 +30,7 @@ import { v, type ObjectType } from "convex/values";
 import {
   directJudgementKey,
   judgementQuestions,
+  packAnswers,
   validJudgementResponse,
 } from "./lib/judgementContract";
 import {
@@ -252,6 +253,8 @@ const askReturns = v.object({
   ok: v.boolean(),
   model: v.optional(v.string()),
   answers: v.optional(v.record(v.string(), v.any())),
+  /** Answers whose labels Convex cannot use as field names; see `packAnswers`. */
+  answersJson: v.optional(v.string()),
   usage: v.optional(
     v.object({ input_tokens: v.number(), output_tokens: v.number() }),
   ),
@@ -270,6 +273,7 @@ interface AskResult {
   ok: boolean;
   model?: string;
   answers?: Record<string, unknown>;
+  answersJson?: string;
   usage?: { input_tokens: number; output_tokens: number };
   transport?: JudgementTransport | "byok";
   error?: string;
@@ -376,7 +380,7 @@ async function askCore(
       ok: true,
       transport: via,
       model: result.body.model,
-      answers: result.body.answers,
+      ...packAnswers(result.body.answers),
       usage: result.body.usage,
     };
   }

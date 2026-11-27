@@ -44,6 +44,10 @@ const SAFE_CONTEXT_KEYS = new Set([
   "action",
   "attempt",
   "retryAfterMs",
+  "stage",
+  "upstreamStatus",
+  "upstreamCode",
+  "clientOrigin",
 ]);
 
 function safeContext(

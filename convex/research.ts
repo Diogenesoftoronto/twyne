@@ -18,6 +18,14 @@ import { internal } from "./_generated/api";
 import { userIsPro } from "./lib/entitlement";
 import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
 import { applicationError } from "./lib/applicationErrors";
+import { reportError } from "./lib/errors";
+import {
+  networkFailure,
+  reportRecoveredUpstreamFailure,
+  upstreamApplicationError,
+  upstreamFailureOf,
+  type UpstreamFailure,
+} from "./lib/upstreamFailure";
 import {
   callerFromIdentity,
   callerFromTokenIdentifier,
@@ -277,24 +285,28 @@ async function providerSearch(
   const id = providerId();
   if (id === "notorganic") throw applicationError("configuration_required");
   const spec = PROVIDERS[id];
+  const fail = (failure: UpstreamFailure) =>
+    upstreamApplicationError("research.search", {
+      service: "The search service",
+      provider: id,
+      stage: "search",
+      failure,
+    });
+  let res: Response;
   try {
     const { url, init } = spec.search(key, query, context, limit);
-    const res = await fetch(url, {
-      ...init,
-      signal: AbortSignal.timeout(30_000),
-    });
-    if (!res.ok) {
-      await res.body?.cancel();
-      throw new Error("search failed");
-    }
-    const rows = spec.path(await res.json());
-    if (!Array.isArray(rows)) throw new Error("invalid search response");
-    return normalize(rows, limit);
-  } catch {
-    throw applicationError("provider_unavailable", {
-      message: "The search service could not answer. Try again shortly.",
-    });
+    res = await fetch(url, { ...init, signal: AbortSignal.timeout(30_000) });
+  } catch (error) {
+    throw fail(networkFailure(error));
   }
+  if (!res.ok) throw fail(await upstreamFailureOf(res));
+  const rows = await res
+    .json()
+    .then((body) => spec.path(body))
+    .catch(() => null);
+  if (!Array.isArray(rows))
+    throw fail({ status: res.status, code: "invalid_search_response" });
+  return normalize(rows, limit);
 }
 
 /** Keenable reads a page from its index; `live=false` avoids redirect chains. */
@@ -316,7 +328,11 @@ async function keenableFetch(
       signal: AbortSignal.timeout(30_000),
     });
     if (!res.ok) {
-      await res.body?.cancel();
+      reportRecoveredUpstreamFailure("research.fetch", {
+        provider: "keenable",
+        stage: "read-page",
+        failure: await upstreamFailureOf(res),
+      });
       return null;
     }
     const data = (await res.json()) as { title?: unknown; content?: unknown };
@@ -326,7 +342,12 @@ async function keenableFetch(
       markdown: data.content,
       embeddable: false,
     };
-  } catch {
+  } catch (error) {
+    reportRecoveredUpstreamFailure("research.fetch", {
+      provider: "keenable",
+      stage: "read-page",
+      failure: networkFailure(error),
+    });
     return null;
   }
 }
@@ -351,7 +372,14 @@ async function providerFetch(url: string): Promise<FetchedSource | null> {
       },
       body: JSON.stringify({ url, format: "markdown" }),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      reportRecoveredUpstreamFailure("research.fetch", {
+        provider: id,
+        stage: "read-page",
+        failure: await upstreamFailureOf(res),
+      });
+      return null;
+    }
     const data = (await res.json()) as {
       title?: string;
       author?: string;
@@ -369,7 +397,12 @@ async function providerFetch(url: string): Promise<FetchedSource | null> {
       markdown: data.markdown ?? data.text ?? "",
       embeddable: data.embeddable ?? false,
     };
-  } catch {
+  } catch (error) {
+    reportRecoveredUpstreamFailure("research.fetch", {
+      provider: id,
+      stage: "read-page",
+      failure: networkFailure(error),
+    });
     return null;
   }
 }
@@ -478,8 +511,21 @@ async function notOrganicSearch(
   );
   if (!link)
     throw applicationError("configuration_required", {
-      message: "Link your Not Organic account before using hosted research.",
+      title: "Sign in with Not Organic to search",
+      message:
+        "Twyne's web search runs through your Not Organic account, and this account isn't linked to one. Sign in with Not Organic and research starts on its own.",
+      recovery: "sign_in",
+      stage: "search:account-link",
+      provider: "notorganic",
     });
+  const fail = (failure: UpstreamFailure) =>
+    upstreamApplicationError("research.search", {
+      service: "Not Organic's web search",
+      provider: "notorganic",
+      stage: "search",
+      failure,
+    });
+  let res: Response;
   try {
     const token = await issueNotOrganicAccessToken({
       did: link.did,
@@ -487,7 +533,7 @@ async function notOrganicSearch(
       capabilities: ["web:search"],
       sessionVersion: link.sessionVersion,
     });
-    const res = await createDpopFetch(token, fetch)(
+    res = await createDpopFetch(token, fetch)(
       `${notOrganicIssuer()}/v1/web/search`,
       {
         method: "POST",
@@ -505,22 +551,16 @@ async function notOrganicSearch(
         signal: AbortSignal.timeout(30_000),
       },
     );
-    if (!res.ok) {
-      // Never surface the body; it can echo the request.
-      await res.body?.cancel();
-      throw new Error("search failed");
-    }
-    const body: unknown = await res.json();
-    if (!Array.isArray((body as { results?: unknown } | null)?.results)) {
-      throw new Error("invalid search response");
-    }
-    return notOrganicSources(body, limit);
-  } catch {
-    // Upstream/token errors can contain the writer's query or credentials.
-    throw applicationError("provider_unavailable", {
-      message: "The search service could not answer. Try again shortly.",
-    });
+  } catch (error) {
+    // Token minting and the request itself; their messages can carry the
+    // query or credentials, so only the failure's shape is kept.
+    throw fail(networkFailure(error));
   }
+  if (!res.ok) throw fail(await upstreamFailureOf(res));
+  const body: unknown = await res.json().catch(() => null);
+  if (!Array.isArray((body as { results?: unknown } | null)?.results))
+    throw fail({ status: res.status, code: "invalid_search_response" });
+  return notOrganicSources(body, limit);
 }
 
 /** Read one page through Not Organic, as the writer's linked account. */
@@ -557,7 +597,11 @@ async function notOrganicFetch(
       },
     );
     if (!res.ok) {
-      await res.body?.cancel();
+      reportRecoveredUpstreamFailure("research.fetch", {
+        provider: "notorganic",
+        stage: "read-page",
+        failure: await upstreamFailureOf(res),
+      });
       return null;
     }
     const body = (await res.json()) as { title?: unknown; markdown?: unknown };
@@ -567,9 +611,14 @@ async function notOrganicFetch(
       markdown: body.markdown.slice(0, FETCH_MAX_CHARS),
       embeddable: false,
     };
-  } catch {
+  } catch (error) {
     // Upstream errors can echo the URL or credentials; a page that cannot be
     // read leaves the claim to be judged on its search snippet.
+    reportRecoveredUpstreamFailure("research.fetch", {
+      provider: "notorganic",
+      stage: "read-page",
+      failure: networkFailure(error),
+    });
     return null;
   }
 }
@@ -585,11 +634,16 @@ const searchArgs = {
 export interface SearchResult {
   results: Source[];
   provider: string;
+  /** Why placeholder results came back instead of a live search. */
+  reason?: "signed_out" | "not_configured";
 }
 
 const searchReturns = v.object({
   results: v.array(sourceValidator),
   provider: v.string(),
+  reason: v.optional(
+    v.union(v.literal("signed_out"), v.literal("not_configured")),
+  ),
 });
 
 /** Whether this deployment can search for real, before any request is made. */
@@ -631,9 +685,20 @@ export async function searchSourcesCore(
         : await providerSearch(args.query, args.context ?? "", limit);
     return { results, provider: id };
   }
+  const reason = caller ? "not_configured" : "signed_out";
+  if (liveSearchConfigured() || caller)
+    // A live deployment answering with placeholders is always worth a log
+    // line: either the browser's session didn't reach Convex, or the search
+    // provider env is missing.
+    reportError({
+      feature: "research.search",
+      error: new Error(`placeholder results: ${reason}`),
+      context: { stage: "search:fallback", kind: reason, provider: providerId() },
+    });
   return {
     results: localSearch(args.query, args.context ?? "").slice(0, limit),
     provider: "local",
+    reason,
   };
 }
 

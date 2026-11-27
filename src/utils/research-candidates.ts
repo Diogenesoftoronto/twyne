@@ -50,8 +50,11 @@ function sentences(draft: string): string[] {
     .split(/\n\s*\n/)
     .flatMap(
       (paragraph) =>
-        paragraph.replace(/\s+/g, " ").match(/[^.!?]+(?:[.!?]+["”']?|$)/g) ??
-        [],
+        // A stop only ends a sentence before a space or a closing quote, so
+        // "4.5 million" and "U.S." stay inside the claim they belong to.
+        paragraph
+          .replace(/\s+/g, " ")
+          .match(/(?:[^.!?]|[.!?](?=[^\s"”'.!?]))+(?:[.!?]+["”']?|$)/g) ?? [],
     )
     .map((s) => s.trim())
     .filter((s) => s.split(" ").length >= 5);
@@ -99,6 +102,29 @@ export function candidateRequest(
     };
   });
   return { state, questions };
+}
+
+/**
+ * The rule-picked candidates as targets, for when Jev cannot answer. Only the
+ * kinds a reader most often checks (figures, quotations, dated events) go
+ * through unconfirmed; appeals to authority wait for a judgement.
+ */
+export function ruleTargets(
+  candidates: readonly ClaimCandidate[],
+  limit = 4,
+): ResearchTarget[] {
+  return candidates
+    .map((c, i) => ({ c, i }))
+    .filter(({ c }) => c.kind !== "claim")
+    .slice(0, limit)
+    .map(({ c, i }) => ({
+      id: `rule-${i}`,
+      kind: c.kind,
+      anchor: c.anchor,
+      reason: c.reason,
+      query: c.anchor.replace(/["“”]/g, "").slice(0, 180),
+      importance: 3,
+    }));
 }
 
 /** The candidates Jev confirmed, as research targets with a search query. */

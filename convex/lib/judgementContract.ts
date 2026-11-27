@@ -20,6 +20,42 @@ export function directJudgementKey(
   }
 }
 
+/**
+ * Convex field names must be printable ASCII and may not start with "$", but
+ * Choice and Score answers are keyed by the writer-facing labels (a persona
+ * named "Ally — already agrees"). Such answers cross the function boundary as
+ * JSON instead; {@link unpackAnswers} restores them on the other side.
+ */
+export function packAnswers(answers: Record<string, unknown>): {
+  answers?: Record<string, unknown>;
+  answersJson?: string;
+} {
+  return hasUnsafeKey(answers)
+    ? { answersJson: JSON.stringify(answers) }
+    : { answers };
+}
+
+export function unpackAnswers<
+  T extends { answers?: Record<string, unknown>; answersJson?: string },
+>(result: T): Omit<T, "answersJson"> {
+  const { answersJson, ...rest } = result;
+  if (answersJson === undefined) return rest;
+  try {
+    return { ...rest, answers: JSON.parse(answersJson) };
+  } catch {
+    return rest;
+  }
+}
+
+function hasUnsafeKey(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  if (Array.isArray(value)) return value.some(hasUnsafeKey);
+  return Object.entries(value).some(
+    ([key, inner]) =>
+      key.startsWith("$") || !/^[\x20-\x7e]*$/.test(key) || hasUnsafeKey(inner),
+  );
+}
+
 /** Keep the app's ordered labels, emit the current HTTP Choice map contract. */
 export function judgementQuestions(
   questions: Record<string, JudgementQuestion>,

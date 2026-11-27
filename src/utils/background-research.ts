@@ -56,9 +56,16 @@ import {
 import { searchMcpServers, setMcpConvexClient } from "./mcp-research";
 import { askJudgement } from "./judgement-client";
 import {
+  logResearchEvent,
+  researchFailureFrom,
+  researchFailureLine,
+  type ResearchFailure,
+} from "./research-failure";
+import {
   candidateRequest,
   claimCandidates,
   confirmedTargets,
+  ruleTargets,
 } from "./research-candidates";
 import {
   fetchPageWithBackend,
@@ -112,6 +119,8 @@ interface ResearchState {
   lastProvider?: string;
   lastStatus: "idle" | "running" | "saving" | "error";
   lastError?: string;
+  /** The structured form of `lastError`, for recovery buttons and details. */
+  lastFailure?: ResearchFailure;
   /** What the watcher is doing right now, for an observable headline. */
   phase: "idle" | "extracting" | "searching" | "saving" | "error";
   /** Why the watcher is idle, so the panel never just says "watching". */
@@ -185,6 +194,7 @@ export interface ResearchProgressItem {
   read?: number;
   /** Human-readable reason when the claim hit an error. */
   error?: string;
+  failure?: ResearchFailure;
   at?: number;
 }
 
@@ -209,6 +219,9 @@ interface ResearchSnapshot {
   lastTickAt: number;
   status: string;
   error?: string;
+  /** What went wrong, how to recover, and a reference for support. */
+  failure?: ResearchFailure;
+  signedIn: boolean;
   activeFolioId: string | null;
   provider?: string;
   /** The citable items the last pass wanted sources for. */
@@ -295,13 +308,26 @@ const MAX_ACTIVITY_ROWS = 8;
 function setStatus(
   status: ResearchState["lastStatus"],
   phase: ResearchState["phase"] | undefined,
-  error?: string,
+  error?: string | ResearchFailure,
 ): void {
   state.lastStatus = status;
   state.lastTickAt = Date.now();
   if (phase !== undefined) state.phase = status === "error" ? "error" : phase;
-  if (error) state.lastError = error;
-  else if (status !== "error") state.lastError = undefined;
+  if (error) {
+    const failure = typeof error === "string" ? undefined : error;
+    state.lastError = failure ? researchFailureLine(failure) : (error as string);
+    state.lastFailure = failure;
+    logResearchEvent(failure?.stage ?? "pass", "failed", {
+      title: failure?.title ?? (error as string),
+      code: failure?.code,
+      upstreamStatus: failure?.upstreamStatus,
+      upstreamCode: failure?.upstreamCode,
+      referenceId: failure?.referenceId,
+    });
+  } else if (status !== "error") {
+    state.lastError = undefined;
+    state.lastFailure = undefined;
+  }
   notify();
 }
 
@@ -326,6 +352,8 @@ export function snapshot(): ResearchSnapshot {
     lastTickAt: state.lastTickAt,
     status: state.lastStatus,
     error: state.lastError,
+    failure: state.lastFailure,
+    signedIn: signedIn && !!activeClient,
     activeFolioId,
     provider: state.lastProvider,
     lastTargets: lastTargetSummary,
@@ -400,7 +428,7 @@ function emitSaved(
 /** A provider verdict on a single claim's query. */
 export type SearchOutcome =
   | { ok: true; provider: string; results: Source[] }
-  | { ok: false; message: string };
+  | { ok: false; message: string; failure?: ResearchFailure };
 
 function errorMessage(err: unknown, fallback: string): string {
   if (err instanceof Error && err.message) return err.message;
@@ -624,6 +652,7 @@ async function resolveClaim(
   let searches = 0;
   let read = 0;
   let failMsg: string | undefined;
+  let failure: ResearchFailure | undefined;
 
   for (const [i, query] of queries.entries()) {
     row.query = query;
@@ -639,16 +668,31 @@ async function resolveClaim(
         (o) => (o.ok ? null : o.message),
       );
     } catch (err) {
-      outcome = { ok: false, message: errorMessage(err, "Search failed.") };
+      const f = researchFailureFrom(err, {
+        stage: "search",
+        title: "The search failed",
+        message: "No results came back for this claim.",
+      });
+      outcome = { ok: false, message: researchFailureLine(f), failure: f };
     }
     if (run.generation !== researchGeneration) return;
     searches += 1;
     if (!outcome.ok) {
       // A later query may still get through; the claim fails only if none do.
       failMsg = outcome.message;
+      failure = outcome.failure;
+      logResearchEvent("search", "failed", {
+        claim: target.anchor.slice(0, 80),
+        code: failure?.code,
+        upstreamStatus: failure?.upstreamStatus,
+        referenceId: failure?.referenceId,
+      });
+      // Signed out, out of credit, not set up: no other query will fare better.
+      if (failure && !failure.retryable) break;
       continue;
     }
     failMsg = undefined;
+    failure = undefined;
     state.lastProvider = outcome.provider;
 
     const candidates = rankSourcesForTarget(outcome.results)
@@ -683,6 +727,14 @@ async function resolveClaim(
     if (run.generation !== researchGeneration) return;
     if (!readings) {
       failMsg = "The sources could not be checked against the claim.";
+      failure = {
+        title: "Sources found, but they couldn't be checked",
+        message: `${passages.length} page${passages.length === 1 ? " was" : "s were"} found for this claim, but the check of whether ${passages.length === 1 ? "it supports" : "they support"} the claim didn't answer.`,
+        recovery: "retry",
+        stage: "check-support",
+        retryable: true,
+        at: Date.now(),
+      };
       continue;
     }
     readings.forEach((reading, j) => {
@@ -711,7 +763,12 @@ async function resolveClaim(
       setStatus("running", "searching");
       failMsg = undefined;
     } catch (err) {
-      failMsg = errorMessage(err, "Could not save the found sources.");
+      failure = researchFailureFrom(err, {
+        stage: "save",
+        title: "Sources found but not saved",
+        message: "Twyne found sources for this claim but couldn't add them to your bibliography.",
+      });
+      failMsg = researchFailureLine(failure);
     }
   }
 
@@ -729,7 +786,8 @@ async function resolveClaim(
     outcome = "contradicted";
   } else if (failMsg) {
     outcome = "error";
-    row.error = failMsg;
+    row.error = failure?.title ?? failMsg;
+    row.failure = failure;
   } else {
     outcome = "missed";
   }
@@ -983,15 +1041,18 @@ async function runOnce(
       : await extractOnService(trimmed);
   } catch (err) {
     scheduleRetry();
-    setStatus(
-      "error",
-      "error",
-      `Reading your draft failed — ${errorMessage(err, "the AI call errored")}. ${
-        retryTimer
-          ? "It will try again on its own."
-          : "It stopped retrying; check your AI settings or sign-in, then retry."
-      }`,
-    );
+    const failure = researchFailureFrom(err, {
+      stage: ownModel ? "read-draft" : "claim-check",
+      title: "Research couldn't read your draft",
+      message: ownModel
+        ? "Your AI model didn't answer when asked which claims need sources. Check the model in Settings."
+        : "Twyne couldn't check which claims need sources.",
+    });
+    if (failure.retryable)
+      failure.message += retryTimer
+        ? " It tries again on its own shortly."
+        : " It has stopped retrying; use the button to try again.";
+    setStatus("error", "error", failure);
     return;
   }
   retryAttempt = 0;
@@ -1041,6 +1102,11 @@ async function runOnce(
   }));
   passInFlight = true;
   setStatus("running", "searching");
+  logResearchEvent("pass", "started", {
+    claims: fresh.length,
+    route: state.route?.kind,
+  });
+  let blocking: ResearchFailure | undefined;
 
   try {
     for (const target of fresh) {
@@ -1048,11 +1114,39 @@ async function runOnce(
       if (!row) continue;
       await resolveClaim(row, target, { generation, folioId });
       if (generation !== researchGeneration) return;
+      // A blocking failure (signed out, no credit, not set up) will fail
+      // every remaining claim the same way; stop and say so once.
+      if (row.failure && !row.failure.retryable) {
+        blocking = row.failure;
+        break;
+      }
     }
   } finally {
     if (generation === researchGeneration) {
       passInFlight = false;
-      setStatus("idle", "idle");
+      if (blocking) {
+        for (const p of progressItems)
+          if (p.status === "queued") p.status = "error";
+        setStatus("error", "error", blocking);
+      } else {
+        const failed = progressItems.filter((p) => p.status === "error");
+        // Every claim failed: the panel headline should say why, not "idle".
+        if (failed.length && failed.length === progressItems.length) {
+          scheduleRetry();
+          setStatus(
+            "error",
+            "error",
+            failed[0].failure ?? {
+              title: "Research couldn't finish",
+              message: failed[0].error ?? "Every claim failed to research.",
+              recovery: "retry",
+              stage: "pass",
+              retryable: true,
+              at: Date.now(),
+            },
+          );
+        } else setStatus("idle", "idle");
+      }
     }
   }
 }
@@ -1068,7 +1162,13 @@ async function extractOnService(
     candidateRequest(candidates, dossierResearchMode(activeBrief)),
   );
   if (!result.ok) {
-    throw new Error(result.error || "the claim check could not run");
+    // A rate limit or an unconfigured deployment shouldn't stop research:
+    // the text rules already picked figures, quotations and dated events,
+    // so search the strongest of those unconfirmed.
+    if (result.error === "no credit" || result.error === "unauthorized")
+      throw new Error(result.error);
+    const targets = ruleTargets(candidates);
+    return targets.length ? { targets, provider: "hosted" } : null;
   }
   const targets = confirmedTargets(candidates, result);
   return targets.length ? { targets, provider: "hosted" } : null;
@@ -1109,24 +1209,53 @@ async function searchViaAccount(
     const res = (await activeClient.action(api.research.searchSources, {
       query,
       context,
-    })) as { results?: Source[]; provider?: string };
+    })) as { results?: Source[]; provider?: string; reason?: string };
     if (res.provider === "local") {
-      return {
-        ok: false,
-        message:
-          "Live research is not configured. Choose a research provider in Settings; local placeholder results are not fact-check evidence.",
-      };
+      // The page thinks you're signed in, but the server saw no account, or
+      // the deployment has no search service. Each needs a different fix.
+      const failure: ResearchFailure =
+        res.reason === "signed_out"
+          ? {
+              title: "Twyne's server didn't recognise your sign-in",
+              message:
+                "This page shows you signed in, but the search arrived without your account, so nothing was searched. Sign in again and research resumes on its own.",
+              recovery: "sign_in",
+              stage: "search:auth",
+              retryable: false,
+              code: "session_not_sent",
+              provider: "twyne",
+              at: Date.now(),
+            }
+          : {
+              title: "Web search isn't set up on this server",
+              message:
+                "Twyne's built-in search has no search service here. Add your own search key or a web-search model in Settings to research now.",
+              recovery: "open_settings",
+              stage: "search:config",
+              retryable: false,
+              code: "search_not_configured",
+              provider: "twyne",
+              at: Date.now(),
+            };
+      return { ok: false, message: researchFailureLine(failure), failure };
     }
+    logResearchEvent("search", "answered", {
+      provider: res.provider,
+      results: res.results?.length ?? 0,
+    });
     return {
       ok: true,
       provider: res.provider ?? "hosted",
       results: Array.isArray(res.results) ? res.results : [],
     };
   } catch (err) {
-    return {
-      ok: false,
-      message: errorMessage(err, "The built-in research service failed."),
-    };
+    const failure = researchFailureFrom(err, {
+      stage: "search",
+      title: "Twyne's web search failed",
+      message: "The search didn't come back. Research retries on its own.",
+      provider: "twyne",
+    });
+    return { ok: false, message: researchFailureLine(failure), failure };
   }
 }
 
@@ -1293,4 +1422,33 @@ async function persistTarget(
   }
   if (supported + contradicted > 0) await saveBibliography(all);
   return { supported, contradicted };
+}
+
+/* ── Developer inspection ─────────────────────────────────────────
+ * In development, `window.__twyneResearch` exposes the live state:
+ *
+ *   __twyneResearch.snapshot()   current status, failure, per-claim rows
+ *   __twyneResearch.log()        the last 200 research events
+ *   __twyneResearch.report()     the same text "Copy diagnostics" copies
+ *
+ * Every event is also printed as `[twyne:research:<stage>]` at debug level.
+ */
+if (typeof window !== "undefined" && import.meta.env?.DEV) {
+  void import("./research-failure").then(
+    ({ researchLogEntries, researchDiagnosticsReport }) => {
+      (window as unknown as Record<string, unknown>).__twyneResearch = {
+        snapshot,
+        log: () => [...researchLogEntries()],
+        report: () => {
+          const s = snapshot();
+          return researchDiagnosticsReport({
+            status: s.status,
+            route: s.route?.label,
+            signedIn: s.signedIn,
+            failure: s.failure,
+          });
+        },
+      };
+    },
+  );
 }

@@ -1,4 +1,17 @@
 import { createDpopKeyPair, createDpopFetch } from "./notorganic";
+import { upstreamFailureOf, type UpstreamFailure } from "./upstreamFailure";
+
+/** A redeem that failed at a known step, with Not Organic's machine code. */
+export class ProviderLinkError extends Error {
+  constructor(
+    message: string,
+    readonly stage: "token" | "account" | "claims",
+    readonly failure?: UpstreamFailure,
+  ) {
+    super(message);
+    this.name = "ProviderLinkError";
+  }
+}
 
 /** Redeem a one-time provider authorization; no caller-supplied DID is trusted. */
 export async function redeemProviderLink(
@@ -32,8 +45,10 @@ export async function redeemProviderLink(
     }),
   });
   if (!response.ok)
-    throw new Error(
+    throw new ProviderLinkError(
       "Not Organic could not verify this connection. Start again from Settings.",
+      "token",
+      await upstreamFailureOf(response),
     );
   const body = (await response.json()) as { access_token?: string };
   if (typeof body.access_token !== "string" || !body.access_token)
@@ -43,7 +58,11 @@ export async function redeemProviderLink(
     fetchImpl,
   )(`${issuer}/v1/account`, { signal: AbortSignal.timeout(15_000) });
   if (!accountResponse.ok)
-    throw new Error("Not Organic could not verify account ownership.");
+    throw new ProviderLinkError(
+      "Not Organic could not verify account ownership.",
+      "account",
+      await upstreamFailureOf(accountResponse),
+    );
   const account = (await accountResponse.json()) as {
     account?: { did?: string; handle?: string | null };
   };
@@ -60,8 +79,9 @@ export async function redeemProviderLink(
     !Number.isSafeInteger(claims.session_version) ||
     claims.session_version! < 0
   ) {
-    throw new Error(
+    throw new ProviderLinkError(
       "The verified account does not match this Twyne connection.",
+      "claims",
     );
   }
   const handle = account.account.handle;

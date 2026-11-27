@@ -24,9 +24,15 @@ export interface ApplicationErrorData {
   status?: number;
   provider?: string;
   operation?: string;
+  /** Which step failed, e.g. "search" or "sign-in:token"; shown in diagnostics. */
+  stage?: string;
+  /** The upstream HTTP status and machine code, never its message body. */
+  upstreamStatus?: number;
+  upstreamCode?: string;
   recovery?:
     | "retry"
     | "sign_in"
+    | "add_credit"
     | "open_settings"
     | "use_form"
     | "reload"

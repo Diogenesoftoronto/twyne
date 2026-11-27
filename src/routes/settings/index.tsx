@@ -3468,7 +3468,7 @@ export default component$(() => {
             />
 
             {/* ── Apparatus ── */}
-            <section class="folio p-5">
+            <section id="research" class="folio p-5">
               <h2
                 class="text-base font-semibold mb-4"
                 style={{ fontFamily: "var(--font-display)" }}

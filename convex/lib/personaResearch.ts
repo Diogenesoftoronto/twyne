@@ -1,3 +1,4 @@
+import { unpackAnswers } from "./judgementContract";
 import { internal } from "../_generated/api";
 import type { ActionCtx } from "../_generated/server";
 import type { ExtractionResult } from "../../src/utils/extraction";
@@ -53,7 +54,9 @@ export async function hostedPersonaResearch(
             judge: async (
               request: Parameters<NonNullable<PersonaResearch["judge"]>>[0],
             ) =>
-              ctx.runAction(internal.systemOne.askAs, { ownerId, ...request }),
+              ctx
+              .runAction(internal.systemOne.askAs, { ownerId, ...request })
+              .then(unpackAnswers),
           }
         : {}),
     };

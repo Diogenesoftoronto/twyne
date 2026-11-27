@@ -1,4 +1,5 @@
 "use node";
+import { unpackAnswers } from "./lib/judgementContract";
 import { withResponseLanguage } from "../src/i18n/model-language";
 
 /**
@@ -601,7 +602,7 @@ async function runAdaptiveHostedLlm(
       });
       return {
         ok: result.ok,
-        answers: result.answers,
+        answers: unpackAnswers(result).answers,
         error: result.error,
       };
     } catch {

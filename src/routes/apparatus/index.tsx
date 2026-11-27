@@ -4,6 +4,7 @@ import {
   useStore,
   useStylesScoped$,
   useVisibleTask$,
+  useSignal,
   $,
 } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
@@ -36,6 +37,12 @@ import {
   type ResearchIdleReason,
   type ResearchProgressItem,
 } from "../../utils/background-research";
+import {
+  researchDiagnosticsReport,
+  researchFailureDetails,
+  researchRecoveryLabel,
+  type ResearchFailure,
+} from "../../utils/research-failure";
 import { targetKindLabel } from "../../utils/research-targets";
 import type { McpResourceInfo } from "../../utils/mcp-client";
 import {
@@ -75,6 +82,8 @@ interface ApparatusStore {
     /** Who is doing the searching. */
     route?: { kind: string; label: string };
     error?: string;
+    failure?: ResearchFailure;
+    signedIn?: boolean;
     progress: ResearchProgressItem[];
     activity: ResearchActivityEntry[];
   };
@@ -105,6 +114,103 @@ const STYLE_OPTIONS: ReadonlyArray<{ value: CitationStyle; label: string }> = [
   { value: "apa", label: "APA" },
   { value: "chicago", label: "Chicago" },
 ];
+
+/** Where each recovery leads; retry and copy are handled in the card. */
+const RECOVERY_HREF: Partial<Record<ResearchFailure["recovery"], string>> = {
+  sign_in: "/signin/?returnTo=%2Fapparatus%2F",
+  add_credit: "https://id.notorganic.info/?view=usage",
+  open_settings: "/settings/#research",
+};
+
+/**
+ * A research failure as the writer meets it: what happened, the one action
+ * that fixes it, and the details a developer or support needs.
+ */
+const ResearchFailureCard = component$(
+  (props: { failure: ResearchFailure; report: string }) => {
+    const copied = useSignal(false);
+    const f = props.failure;
+    const label = researchRecoveryLabel(f.recovery);
+    const href = RECOVERY_HREF[f.recovery];
+    const copy = $(async () => {
+      try {
+        await navigator.clipboard.writeText(props.report);
+        copied.value = true;
+        setTimeout(() => (copied.value = false), 2000);
+      } catch {
+        /* clipboard blocked; the text is visible in the details */
+      }
+    });
+    return (
+      <div
+        class="mt-3 border-l-2 border-[var(--color-vermilion)] pl-3"
+        role="alert"
+        data-research-failure={f.code ?? f.stage}
+      >
+        <p class="text-sm text-[var(--color-ink)]">{f.message}</p>
+        <div
+          class="mt-2 flex flex-wrap items-center gap-3"
+          style={{ fontFamily: "var(--font-typewriter)" }}
+        >
+          {label &&
+            (href ? (
+              <a
+                href={href}
+                class="text-[0.65rem] tracking-[0.12em] uppercase border border-[var(--color-vermilion)] text-[var(--color-vermilion)] px-2 py-0.5"
+                {...(href.startsWith("http")
+                  ? { target: "_blank", rel: "noopener" }
+                  : {})}
+              >
+                {label}
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick$={() =>
+                  f.recovery === "contact_support"
+                    ? copy()
+                    : retryBackgroundResearch()
+                }
+                class="text-[0.65rem] tracking-[0.12em] uppercase border border-[var(--color-vermilion)] text-[var(--color-vermilion)] px-2 py-0.5"
+              >
+                {label}
+              </button>
+            ))}
+          {f.recovery !== "retry" && f.retryable && (
+            <button
+              type="button"
+              onClick$={() => retryBackgroundResearch()}
+              class="text-[0.65rem] tracking-[0.12em] uppercase text-[var(--color-ink-muted)]"
+            >
+              Try again now
+            </button>
+          )}
+        </div>
+        <details class="mt-2">
+          <summary
+            class="cursor-pointer text-[0.65rem] tracking-[0.12em] uppercase text-[var(--color-ink-muted)]"
+            style={{ fontFamily: "var(--font-typewriter)" }}
+          >
+            What happened
+          </summary>
+          <pre
+            class="mt-1 whitespace-pre-wrap text-[0.65rem] text-[var(--color-ink-muted)]"
+            style={{ fontFamily: "var(--font-typewriter)" }}
+          >
+            {researchFailureDetails(f).join("\n")}
+          </pre>
+          <button
+            type="button"
+            onClick$={copy}
+            class="mt-1 text-[0.65rem] underline text-[var(--color-ink-muted)]"
+          >
+            {copied.value ? "Copied" : "Copy diagnostics"}
+          </button>
+        </details>
+      </div>
+    );
+  },
+);
 
 export default component$(() => {
   const store = useStore<ApparatusStore>({
@@ -218,6 +324,8 @@ export default component$(() => {
         provider: s.provider,
         route: s.route,
         error: s.error,
+        failure: s.failure,
+        signedIn: s.signedIn,
         progress: s.progress,
         activity: s.activity,
       };
@@ -566,9 +674,9 @@ export default component$(() => {
                 {store.research.status === "saving" &&
                   "Saving a discovered source…"}
                 {store.research.status === "error" &&
-                  (store.research.error
-                    ? store.research.error
-                    : "Apparatus hit an error while researching.")}
+                  (store.research.failure?.title ??
+                    store.research.error ??
+                    "Apparatus hit an error while researching.")}
                 {store.research.status === "idle" &&
                   (backgroundEntries.length > 0
                     ? `${backgroundEntries.length} source${backgroundEntries.length === 1 ? "" : "s"} found so far. ${RESEARCH_IDLE_COPY[store.research.idleReason ?? "waiting"]}`
@@ -619,25 +727,37 @@ export default component$(() => {
               </p>
             </div>
           </div>
-          {store.research.error && (
-            <div
-              class="mt-2 flex items-center gap-2"
-              style={{ fontFamily: "var(--font-typewriter)" }}
-            >
-              <p class="text-[0.7rem] text-[var(--color-vermilion)] flex-1 min-w-0">
-                {store.research.error}
-              </p>
-              {(store.research.status === "error" ||
-                store.research.progress.some((p) => p.status === "error")) && (
-                <button
-                  onClick$={() => retryBackgroundResearch()}
-                  class="text-[0.6rem] tracking-[0.12em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-crimson)] flex-shrink-0 border border-[var(--color-vermilion)] px-1.5 py-0.5"
-                  title="Re-run the research pass."
-                >
-                  ↻ retry
-                </button>
-              )}
-            </div>
+          {store.research.failure ? (
+            <ResearchFailureCard
+              failure={store.research.failure}
+              report={researchDiagnosticsReport({
+                status: store.research.status,
+                route: store.research.route?.label,
+                signedIn: !!store.research.signedIn,
+                failure: store.research.failure,
+              })}
+            />
+          ) : (
+            store.research.error && (
+              <div
+                class="mt-2 flex items-center gap-2"
+                style={{ fontFamily: "var(--font-typewriter)" }}
+              >
+                <p class="text-[0.7rem] text-[var(--color-vermilion)] flex-1 min-w-0">
+                  {store.research.error}
+                </p>
+                {(store.research.status === "error" ||
+                  store.research.progress.some((p) => p.status === "error")) && (
+                  <button
+                    onClick$={() => retryBackgroundResearch()}
+                    class="text-[0.6rem] tracking-[0.12em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-crimson)] flex-shrink-0 border border-[var(--color-vermilion)] px-1.5 py-0.5"
+                    title="Re-run the research pass."
+                  >
+                    ↻ retry
+                  </button>
+                )}
+              </div>
+            )
           )}
           {(store.research.progress.length > 0 ||
             store.research.activity.length > 0) && (

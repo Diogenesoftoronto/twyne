@@ -11,7 +11,9 @@ import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthEndpoint } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import { z } from "zod";
-import { redeemProviderLink } from "./providerLink";
+import { ProviderLinkError, redeemProviderLink } from "./providerLink";
+import { reportError } from "./errors";
+import { describeUpstreamFailure } from "./upstreamFailure";
 
 export const NOTORGANIC_PROVIDER_ID = "notorganic";
 export const NOTORGANIC_SIGN_IN_PATH = "/auth/notorganic/";
@@ -150,12 +152,7 @@ export function notOrganicSignIn(options: {
               origin: new URL(ctx.body.origin).origin,
             });
           } catch (error) {
-            throw new APIError("UNAUTHORIZED", {
-              message:
-                error instanceof Error
-                  ? error.message
-                  : "Not Organic could not verify this sign-in.",
-            });
+            throw signInRefusal(error, new URL(ctx.body.origin).origin);
           }
           const adapter = ctx.context.internalAdapter;
           const name =
@@ -215,4 +212,51 @@ export function notOrganicSignIn(options: {
       ),
     },
   } satisfies BetterAuthPlugin;
+}
+
+/**
+ * Why a sign-in was refused, in words the writer can act on, plus a
+ * reference id that matches the `[twyne:notorganic.signIn]` log line.
+ * The response body carries `code`, `stage`, `upstreamStatus`,
+ * `upstreamCode` and `referenceId` so the callback page can show them.
+ */
+export function signInRefusal(error: unknown, origin: string): APIError {
+  const referenceId = crypto.randomUUID();
+  const link = error instanceof ProviderLinkError ? error : undefined;
+  const stage = link ? `sign-in:${link.stage}` : "sign-in";
+  reportError({
+    feature: "notorganic.signIn",
+    error,
+    context: {
+      referenceId,
+      stage,
+      clientOrigin: origin,
+      ...(link?.failure
+        ? {
+            upstreamStatus: link.failure.status,
+            ...(link.failure.code ? { upstreamCode: link.failure.code } : {}),
+          }
+        : {}),
+    },
+  });
+  const described = link?.failure
+    ? describeUpstreamFailure("Not Organic", link.failure)
+    : undefined;
+  const message = described
+    ? `${described.title}. ${described.message}`
+    : error instanceof Error
+      ? error.message
+      : "Not Organic could not verify this sign-in.";
+  return new APIError("UNAUTHORIZED", {
+    message,
+    code: described?.code ?? "authentication_failed",
+    stage,
+    referenceId,
+    ...(link?.failure
+      ? {
+          upstreamStatus: link.failure.status,
+          ...(link.failure.code ? { upstreamCode: link.failure.code } : {}),
+        }
+      : {}),
+  });
 }

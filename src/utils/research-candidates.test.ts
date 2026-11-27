@@ -20,6 +20,15 @@ describe("claimCandidates", () => {
     expect(found[0].anchor).toContain("40%");
   });
 
+  test("keeps a decimal figure inside its sentence", () => {
+    const [claim] = claimCandidates(
+      "Historians estimate that between 4.5 and 8 million people died in that war.",
+    );
+    expect(claim.anchor).toBe(
+      "Historians estimate that between 4.5 and 8 million people died in that war.",
+    );
+  });
+
   test("leaves personal experience alone", () => {
     expect(
       claimCandidates(

@@ -18,6 +18,7 @@
  * is. The contract is `docs/app-harness.md`.
  */
 
+import { unpackAnswers } from "./lib/judgementContract";
 import { ConvexError, v, type ObjectType } from "convex/values";
 import { internalAction, type ActionCtx } from "./_generated/server";
 import {
@@ -198,10 +199,12 @@ export const researchTargets = internalAction({
       if (!candidates.length)
         return { strategy, provider: "hosted", mode, targets: [], candidates };
       // System One runs in the default runtime; this module runs in Node.
-      const result = await ctx.runAction(internal.systemOne.askAs, {
-        ownerId,
-        ...candidateRequest(candidates, mode),
-      });
+      const result = unpackAnswers(
+        await ctx.runAction(internal.systemOne.askAs, {
+          ownerId,
+          ...candidateRequest(candidates, mode),
+        }),
+      );
       if (!result.ok) {
         throw applicationError(
           result.error === "unconfigured" ||

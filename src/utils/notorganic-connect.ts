@@ -160,9 +160,7 @@ export async function completeNotOrganicSignIn(
     method: "POST",
     body: { ...args, origin: attempt.origin },
   });
-  if (result?.error) {
-    throw new Error("Not Organic could not verify this sign-in.");
-  }
+  if (result?.error) throw new SignInRefusedError(result.error);
   // The crossDomain client stores the new session cookie; refresh the atom.
   const refreshed = await client.getSession({
     query: { disableCookieCache: true },
@@ -198,4 +196,31 @@ function record(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : null;
+}
+
+/**
+ * A refused sign-in with what the server could say about it. The message is
+ * already writer-facing; `referenceId` matches the Convex log line
+ * `[twyne:notorganic.signIn]`, and `upstreamCode` is Not Organic's reason.
+ */
+export class SignInRefusedError extends Error {
+  readonly referenceId?: string;
+  readonly stage?: string;
+  readonly upstreamStatus?: number;
+  readonly upstreamCode?: string;
+  constructor(raw: unknown) {
+    const r = (raw && typeof raw === "object" ? raw : {}) as Record<
+      string,
+      unknown
+    >;
+    const text = (k: string) =>
+      typeof r[k] === "string" && r[k] ? (r[k] as string) : undefined;
+    super(text("message") ?? "Not Organic could not verify this sign-in.");
+    this.name = "SignInRefusedError";
+    this.referenceId = text("referenceId");
+    this.stage = text("stage");
+    this.upstreamCode = text("upstreamCode");
+    this.upstreamStatus =
+      typeof r.upstreamStatus === "number" ? r.upstreamStatus : undefined;
+  }
 }

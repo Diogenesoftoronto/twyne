@@ -19,6 +19,7 @@ import type { ConvexClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
 import {
   judgementQuestions,
+  unpackAnswers,
   validJudgementResponse,
   type JudgementQuestion,
 } from "../../convex/lib/judgementContract";
@@ -187,8 +188,8 @@ export async function askJudgement(
       : request.model
         ? { model: request.model }
         : {}),
-  })) as JudgementResult;
-  return { ...result, latencyMs: Math.round(performance.now() - started) };
+  })) as JudgementResult & { answersJson?: string };
+  return { ...unpackAnswers(result), latencyMs: Math.round(performance.now() - started) };
 }
 
 /** A one-question round trip for the Settings "Test" button. */
