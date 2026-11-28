@@ -49,6 +49,7 @@ import {
   FOLIO_CONTENT_SAVED,
   type FolioContentSavedDetail,
   saveFoliosToIdb,
+  createFolioWithContent,
   saveActiveFolioIdToIdb,
   saveFolioContentToIdb,
   loadMetaFromIdb,
@@ -1198,6 +1199,54 @@ export default component$(() => {
     );
   });
 
+  const copyPassagesToFolio = $(
+    async (sourceId: string, name: string, passages: string[]) => {
+      if (
+        store.activeFolioId !== sourceId ||
+        store.sharedRole === "commenter" ||
+        !name.trim() ||
+        passages.length < 2
+      )
+        throw new Error("Reopen the passages to copy them.");
+      const now = Date.now();
+      const folio: Folio = {
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        type: "draft",
+        createdAt: now,
+        updatedAt: now,
+      };
+      // A working copy carries the wording, without the source folio's comment
+      // marks, review state or DOM attributes.
+      const html = passages
+        .map((text) => {
+          const paragraph = document.createElement("p");
+          paragraph.textContent = text;
+          return paragraph.outerHTML;
+        })
+        .join("");
+      await createFolioWithContent(folio, html);
+      store.folios = [...store.folios, folio];
+      markDirty(["folios", "folioContent"], folio.id);
+      void captureProductEvent("folio_created", {
+        source: "editor",
+        folio_type: folio.type,
+      });
+      if (store.activeFolioId !== sourceId) return false;
+      try {
+        await activateFolio(folio);
+        return true;
+      } catch (error) {
+        reportApplicationDiagnostic(
+          "twyne:editor:open-copied-passages",
+          error,
+          { operation: "open-folio" },
+        );
+        return false;
+      }
+    },
+  );
+
   /** One name for the folio and its dossier's working title. */
   const renameFolio = $(async (id: string, name: string) => {
     store.folios = await renameFolioEverywhere(id, name);
@@ -1948,6 +1997,7 @@ export default component$(() => {
                 store.sharedLixId) ? (
                 <TwyneEditor
                   editorSignal={manuscriptEditor}
+                  onCopyPassages$={copyPassagesToFolio}
                   key={`editor-${store.activeFolioId ?? "none"}-${store.sharedLixId ?? "solo"}-${store.folioKey}`}
                   initialContent={store.editorSeed}
                   activeFolioId={store.activeFolioId ?? undefined}

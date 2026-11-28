@@ -1,7 +1,7 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 /** Fictional notes on a long manuscript: two on one early passage, one late. */
-async function seed(page: Page) {
+async function seed(page: Page, rewrite: Record<number, string> = {}) {
   await page.route(/\/api\/auth\//, (route) =>
     route.fulfill({ contentType: "application/json", body: "null" }),
   );
@@ -12,7 +12,7 @@ async function seed(page: Page) {
     }),
   );
   await page.goto("/__connections-seed");
-  await page.evaluate(async () => {
+  await page.evaluate(async (rewrite) => {
     const idbPath = "/src/utils/idb.ts";
     const commentsPath = "/src/utils/user-comments.ts";
     const idb = await import(/* @vite-ignore */ idbPath);
@@ -32,6 +32,11 @@ async function seed(page: Page) {
       '<p>By the fourth day <span class="twyne-comment-mark" data-comment-id="c1" data-comment-author="You">the road forgot the sea entirely</span> and turned inland.</p>';
     paras[18] =
       '<p>Near the end <span class="twyne-comment-mark" data-comment-id="c3" data-comment-author="Editor">the sea came back as a rumour</span> among the drivers.</p>';
+    for (const [index, text] of Object.entries(rewrite)) {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = text;
+      paras[Number(index)] = paragraph.outerHTML;
+    }
     await idb.saveFolioContentToIdb(id, paras.join(""));
     const note = (
       cid: string,
@@ -76,7 +81,7 @@ async function seed(page: Page) {
       "twyne:editor:view:v1",
       JSON.stringify({ zenMode: false, compositorOpen: false }),
     );
-  });
+  }, rewrite);
   await page.goto("/editor/");
   await expect(page.locator(".ProseMirror").first()).toContainText(
     "the sea came back as a rumour",
@@ -103,6 +108,9 @@ interface EchoFixture {
   shared: string[];
   /** The relation Jev chose; omitted for a word match it never read. */
   reading?: string;
+  otherFolio?: { id: string; name: string; text: string };
+  /** What the decision model would do with the pair. */
+  advice?: string;
   /** Store nothing at all, as an echo recorded without a reason. */
   bare?: boolean;
 }
@@ -124,12 +132,13 @@ async function showEchoes(page: Page, echoes: EchoFixture[]) {
       id: e.id,
       kind: "echo",
       anchors: e.anchors,
-      title: "Further on in this piece",
-      body: e.anchors[e.anchors.length - 1],
+      title: e.otherFolio?.name ?? "Further on in this piece",
+      body: e.otherFolio?.text ?? e.anchors[e.anchors.length - 1],
       byline: `Shares ${e.shared.join(", ")}`,
       createdAt: Date.now(),
       relevance: 0.8,
-      folioId: "connections-fixture",
+      folioId: e.otherFolio?.id ?? "connections-fixture",
+      folioName: e.otherFolio?.name,
       ...(e.bare
         ? {}
         : {
@@ -137,6 +146,7 @@ async function showEchoes(page: Page, echoes: EchoFixture[]) {
               e.shared,
               flow.echoReading(e.reading, e.shared),
               e.anchors[0],
+              e.advice,
             ),
           }),
     }));
@@ -254,16 +264,15 @@ test("the narrow margin dock opens its connected passages by click and a resting
   await seed(page);
   const original = await manuscriptText(page);
   await page.setViewportSize({ width: 390, height: 844 });
+  await showEchoes(page, [SEMANTIC]);
   const dock = page.getByRole("complementary", {
     name: "From the margin",
     exact: true,
   });
   await dock.getByRole("button", { name: /from the room.*Open/ }).click();
-  // The local repeated-passage analysis can replace the initial margin note
-  // with its echo. Wait for that result before testing the single-card dock.
   const card = dock.locator('[data-flow-card^="echo:"]');
   await expect(card).toBeVisible({ timeout: 20_000 });
-  const gather = card.getByRole("button", { name: /together$/ });
+  const gather = card.getByRole("button", { name: "Compare passages" });
   await expect(gather).toBeInViewport();
   await gather.click();
   const sheet = page.getByRole("dialog");
@@ -278,7 +287,7 @@ test("the narrow margin dock opens its connected passages by click and a resting
   // Touch and keyboard use the click control. A mouse resting over that
   // same dock still opens the inspection after the dwell period.
   await page.mouse.move(2, 2);
-  await card.hover();
+  await gather.hover();
   await expect(sheet).toBeVisible({ timeout: 4_000 });
   await sheet.getByRole("button", { name: /^Close/ }).click();
   await expect(sheet).toHaveCount(0);
@@ -403,21 +412,37 @@ test("a connection keeps its recorded reason from the card into the sheet, by cl
   // The card says why, and whether that is a reading or only shared words.
   const semantic = page.locator(`[data-flow-card="${SEMANTIC.id}"]`);
   const lexical = page.locator(`[data-flow-card="${LEXICAL.id}"]`);
-  await expect(semantic.locator(".flow-relation__why").first()).toHaveText(
-    `Unpaid promise Twyne's reading${SEMANTIC_REASON}`,
+  await expect(semantic).toContainText(
+    "Does the later passage pay off the setup?",
   );
-  await expect(lexical.locator(".flow-relation__why").first()).toHaveText(
-    `Shared words Word match${LEXICAL_REASON}`,
+  await expect(semantic.locator(".flow-card__kicker")).toContainText(
+    "Unpaid promise",
   );
+  await expect(lexical).toContainText("Is the repeated wording intentional?");
+  await expect(lexical.locator(".flow-card__kicker")).toContainText(
+    "Shared words",
+  );
+  // Nothing was advised for these, so the card offers only the comparison.
+  await expect(
+    semantic.getByRole("button", { name: /^(Merge|Bring)/ }),
+  ).toHaveCount(0);
+  await expect(semantic).not.toContainText(SEMANTIC_REASON);
+  await expect(lexical).not.toContainText(LEXICAL_REASON);
 
   // Opening the sheet carries the same words, for both connections on the
   // shared passage, and names the passages each one joins.
   const compare = semantic.getByRole("button", { name: "Compare passages" });
   await compare.click();
   const sheet = page.getByRole("dialog");
+  // A setup and its payoff work because they are apart: no merge is offered.
+  await expect(sheet.getByRole("button", { name: /^Merge into/ })).toHaveCount(
+    0,
+  );
   const why = sheet.getByRole("region", {
     name: "Why these passages are linked",
   });
+  await expect(why).toBeHidden();
+  await sheet.getByText("Connection details", { exact: true }).click();
   await expect(why).toBeVisible();
   const reading = why.locator('[data-provenance="reading"]');
   const words = why.locator('[data-provenance="shared-words"]');
@@ -446,6 +471,7 @@ test("a connection keeps its recorded reason from the card into the sheet, by cl
 
   // The keyboard reaches the same reason.
   await compare.press("Enter");
+  await sheet.getByText("Connection details", { exact: true }).click();
   await expect(why.locator('[data-provenance="reading"]')).toContainText(
     SEMANTIC_REASON,
   );
@@ -456,7 +482,9 @@ test("a connection keeps its recorded reason from the card into the sheet, by cl
     .click();
   await expect(sheet).toHaveCount(0);
   await expect
-    .poll(() => page.evaluate(() => window.getSelection()?.toString()))
+    .poll(() =>
+      page.evaluate(() => window.getSelection()?.getRangeAt(0).toString()),
+    )
     .toBe(RUMOUR);
 
   // Reading the reason asked nothing of a model, and changed nothing.
@@ -474,10 +502,10 @@ test("a connection with no recorded reason says so instead of inventing one", as
   ]);
   const requests = watchRequests(page);
   const card = page.locator('[data-flow-card="echo:fixture-bare"]');
-  await expect(card.locator(".flow-relation__why").first()).toHaveText(
-    "Connection No reason recordedTwyne found these passages together but did not record why.",
-  );
+  await expect(card).toContainText("No reason recorded");
+  await expect(card).toContainText("Worth reading together?");
   await card.getByRole("button", { name: "Compare passages" }).click();
+  await page.getByText("Connection details", { exact: true }).click();
   const reason = page
     .getByRole("dialog")
     .locator('.passage-gather__reason[data-provenance="unrecorded"]');
@@ -499,11 +527,13 @@ test("a connection whose passage changed is flagged, and its reason kept", async
     { ...SEMANTIC, id: "echo:fixture-stale", anchors: [TURN, "Gone words."] },
   ]);
   const card = page.locator('[data-flow-card="echo:fixture-stale"]');
-  await expect(card.locator(".flow-relation__why").first()).toContainText(
-    SEMANTIC_REASON,
-  );
-  // Only the passage still in the text is gathered; the reason stays.
+  await expect(card).toContainText("Does the later passage pay off the setup?");
   await card.getByRole("button", { name: "Compare passages" }).click();
+  await expect(page.getByRole("dialog")).toContainText("A passage has changed");
+  await expect(
+    page.getByRole("button", { name: /Copy to new folio/ }),
+  ).toHaveCount(0);
+  await page.getByText("Connection details", { exact: true }).click();
   const reason = page
     .getByRole("dialog")
     .locator('.passage-gather__reason[data-provenance="reading"]');
@@ -515,6 +545,366 @@ test("a connection whose passage changed is flagged, and its reason kept", async
     "The other passage has changed since this connection was found.",
   );
   expect(await manuscriptText(page)).toBe(original);
+});
+
+test("a writer can bring the paragraphs together and undo the move", async ({
+  page,
+}) => {
+  await seed(page);
+  const before = await manuscriptText(page);
+  await showEchoes(page, [SEMANTIC]);
+  await page.getByRole("button", { name: "Compare passages" }).click();
+  await page
+    .getByRole("button", { name: "Move paragraph 19 after paragraph 4" })
+    .click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const blocks = page.locator(".ProseMirror").first().locator(":scope > p");
+  await expect(blocks.nth(4)).toHaveText(RUMOUR);
+  await expect(blocks.nth(4).locator('[data-comment-id="c3"]')).toHaveCount(1);
+  await page.keyboard.press("Control+z");
+  await expect.poll(() => manuscriptText(page)).toBe(before);
+});
+
+test("a manuscript edit while comparing invalidates a move and a new folio copy", async ({
+  page,
+}) => {
+  await seed(page);
+  await showEchoes(page, [SEMANTIC]);
+  await page.getByRole("button", { name: "Compare passages" }).click();
+  const dialog = page.getByRole("dialog");
+  const blocks = page.locator(".ProseMirror").first().locator(":scope > p");
+  await blocks.nth(18).evaluate((p) => p.append(" The drivers fell silent."));
+  await dialog
+    .getByRole("button", { name: "Move paragraph 19 after paragraph 4" })
+    .click();
+  await expect(dialog.getByRole("status")).toContainText(
+    "The draft has changed",
+  );
+  await expect(blocks.nth(18)).toContainText("The drivers fell silent.");
+  await dialog.getByRole("button", { name: /Copy to new folio/ }).click();
+  await dialog.getByRole("button", { name: "Create and open folio" }).click();
+  await expect(dialog.getByRole("status")).toContainText(
+    "A passage has changed",
+  );
+  await expect(
+    dialog.getByRole("button", { name: /Copy to new folio/ }),
+  ).toHaveCount(0);
+});
+
+test("copying a group opens a named folio with just its wording in reading order", async ({
+  page,
+}) => {
+  await seed(page);
+  await showEchoes(page, [SEMANTIC, LEXICAL]);
+  await page
+    .locator(`[data-flow-card="${SEMANTIC.id}"]`)
+    .getByRole("button", { name: "Compare passages" })
+    .click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.locator("mark")).toHaveText([TURN, PARA_5, RUMOUR]);
+  await dialog.getByRole("button", { name: /Copy to new folio/ }).click();
+  await dialog.getByLabel("New folio name").fill("The sea returns");
+  await dialog.getByRole("button", { name: "Create and open folio" }).click();
+  await expect(dialog).toHaveCount(0);
+  const blocks = page.locator(".ProseMirror").first().locator(":scope > p");
+  await expect(blocks).toHaveText([TURN, PARA_5, RUMOUR]);
+  await page.reload();
+  await expect(blocks).toHaveText([TURN, PARA_5, RUMOUR]);
+  const saved = await page.evaluate(async () => {
+    const path = "/src/utils/idb.ts";
+    const idb = await import(/* @vite-ignore */ path);
+    return {
+      names: (await idb.loadFoliosFromIdb()).map(
+        (f: { name: string }) => f.name,
+      ),
+      original: await idb.loadFolioContentFromIdb("connections-fixture"),
+      copy: await idb.loadFolioContentFromIdb(
+        await idb.loadActiveFolioIdFromIdb(),
+      ),
+    };
+  });
+  expect(saved.names).toEqual(["Salt Roads", "The sea returns"]);
+  expect(saved.original).toContain('data-comment-id="c3"');
+  expect(saved.copy).not.toContain("data-comment-id");
+});
+
+test("the transition request carries just the displayed passages into Task desk", async ({
+  page,
+}) => {
+  await seed(page);
+  await showEchoes(page, [SEMANTIC]);
+  await page.getByRole("button", { name: "Compare passages" }).click();
+  const requests = watchRequests(page);
+  await page.getByRole("button", { name: "Transition ideas" }).click();
+  await expect(page.getByRole("dialog")).toContainText(
+    "Pick up a word or image",
+  );
+  expect(requests).toEqual([]);
+  await page
+    .getByRole("button", { name: "Draft options in Task desk…" })
+    .click();
+  const desk = page.getByRole("dialog", { name: "Writing instruments" });
+  await expect(desk.getByLabel("Reference passage")).toHaveValue(
+    `Passage 1\n${TURN}\n\nPassage 2\n${RUMOUR}`,
+  );
+  await expect(desk.getByLabel("What should this task do?")).toHaveValue(
+    /callback.*contrast.*example to claim/,
+  );
+});
+
+test("a writer can copy wording from two folios without importing markup", async ({
+  page,
+}) => {
+  await seed(page);
+  const otherFolio = {
+    id: "archived",
+    name: "Sea notes",
+    text: "The old ledger says <keep the salt & the timber>. It lists the week the salt ships returned to port.",
+  };
+  await page.evaluate(async (f) => {
+    const path = "/src/utils/idb.ts";
+    const idb = await import(/* @vite-ignore */ path);
+    const p = document.createElement("p");
+    p.textContent = f.text;
+    await idb.createFolioWithContent(
+      { id: f.id, name: f.name, type: "notes", createdAt: 1, updatedAt: 1 },
+      p.outerHTML,
+    );
+  }, otherFolio);
+  await showEchoes(page, [{ ...SEMANTIC, anchors: [TURN], otherFolio }]);
+  await page.getByRole("button", { name: "Compare passages" }).click();
+  await page.getByRole("button", { name: /Copy to new folio/ }).click();
+  await page.getByRole("button", { name: "Create and open folio" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(
+    page.locator(".ProseMirror").first().locator(":scope > p"),
+  ).toHaveText([TURN, otherFolio.text]);
+});
+
+test("a changed excerpt in another folio cannot be copied", async ({
+  page,
+}) => {
+  await seed(page);
+  const otherFolio = {
+    id: "archived",
+    name: "Sea notes",
+    text: "The old ledger named each crossing and the day the salt ships first returned to port.",
+  };
+  await showEchoes(page, [{ ...SEMANTIC, anchors: [TURN], otherFolio }]);
+  await page.getByRole("button", { name: "Compare passages" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText(otherFolio.text);
+  await expect(
+    dialog.getByRole("button", { name: /^Move paragraph/ }),
+  ).toHaveCount(0);
+  await dialog.getByRole("button", { name: /Copy to new folio/ }).click();
+  await dialog.getByRole("button", { name: "Create and open folio" }).click();
+  await expect(dialog.getByRole("status")).toContainText(
+    "The passage in Sea notes has changed.",
+  );
+});
+
+/** Paragraph 12, rewritten: it repeats paragraph 5 and adds one thing. */
+const WELL = "The well at Tamsa was dry that year.";
+const PARA_12 = `Paragraph 12: the salt caravans left before dawn, and the road bent with the coast for a week of walking. ${WELL}`;
+const REPEAT: EchoFixture = {
+  id: "echo:fixture-repeat",
+  anchors: [PARA_5, PARA_12],
+  shared: ["salt", "caravans"],
+  reading: "Repetition",
+  advice: "fold-here",
+};
+
+/** Carry the card's passage to a point of a manuscript paragraph. */
+async function carryTo(
+  page: Page,
+  card: Locator,
+  paragraph: Locator,
+  share: number,
+) {
+  const from = (await card.locator(".flow-relation__slip").boundingBox())!;
+  const to = (await paragraph.boundingBox())!;
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height * share, {
+    steps: 12,
+  });
+}
+
+test("dragging the card's passage onto a paragraph folds the repeat in, marks what came over, and can be put back", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await seed(page, { 11: PARA_12 });
+  const before = await manuscriptText(page);
+  await showEchoes(page, [REPEAT]);
+  const blocks = page.locator(".ProseMirror").first().locator(":scope > p");
+  await expect(blocks).toHaveCount(22);
+
+  // The card names the relation and leads with the advised move.
+  const card = page.locator(`[data-flow-card="${REPEAT.id}"]`);
+  await expect(card.locator(".flow-card__kicker")).toContainText("Repetition");
+  await expect(card).toContainText(
+    "Drag it onto your paragraph to merge them.",
+  );
+  // Over the middle of a paragraph the page shows it will be taken in.
+  await carryTo(page, card, blocks.nth(4), 0.5);
+  await expect(page.locator(".flow-drop")).toHaveAttribute(
+    "data-label",
+    "Merge here",
+  );
+  await page.mouse.up();
+  await expect(page.locator(".flow-drop, .flow-drag-ghost")).toHaveCount(0);
+
+  // Paragraph 12 is gone; what only it said now ends paragraph 5, marked.
+  await expect(blocks).toHaveCount(21);
+  await expect(blocks.nth(4)).toHaveText(`${PARA_5} ${WELL}`);
+  await expect(blocks.nth(4).locator(".merge-review__carried")).toHaveText(
+    ` ${WELL}`,
+  );
+  await expect(page.locator(".ProseMirror").first()).not.toContainText(
+    "Paragraph 12:",
+  );
+  // The writer is returned to the paragraph that changed.
+  expect(
+    await page.evaluate(() => {
+      const node = window.getSelection()?.anchorNode;
+      const el = node instanceof Element ? node : node?.parentElement;
+      return el?.closest("p")?.textContent?.startsWith("Paragraph 5:");
+    }),
+  ).toBe(true);
+
+  // Beside it, the card now holds both sides of the change.
+  const merged = page.locator(`[data-flow-card="${REPEAT.id}"]`);
+  await expect(merged.locator(".flow-card__kicker")).toHaveText("Merged");
+  await expect(merged).toContainText("Paragraph 12 folded in");
+  await expect(merged.locator("ins")).toHaveText(WELL);
+  await expect(merged.locator("del")).toHaveText(
+    "Paragraph 12: the salt caravans left before dawn, and the road bent with the coast for a week of walking.",
+  );
+
+  // A sentence left out can still be carried over, and is marked too.
+  await merged.getByRole("button", { name: "Carry it over" }).click();
+  await expect(merged.locator("del")).toHaveCount(0);
+  await expect(blocks.nth(4)).toHaveText(
+    `${PARA_5} ${WELL} Paragraph 12: the salt caravans left before dawn, and the road bent with the coast for a week of walking.`,
+  );
+  await expect(
+    blocks.nth(4).locator(".merge-review__carried").last(),
+  ).toContainText("Paragraph 12:");
+
+  // Putting it back restores the draft and the connection.
+  await merged.getByRole("button", { name: "Put it back" }).click();
+  await expect.poll(() => manuscriptText(page)).toBe(before);
+  await expect(page.locator(".merge-review__carried")).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("dragging the card's passage into a gap sets the paragraph down there, and it can be put back", async ({
+  page,
+}) => {
+  await seed(page, { 11: PARA_12 });
+  const before = await manuscriptText(page);
+  await showEchoes(page, [REPEAT]);
+  const blocks = page.locator(".ProseMirror").first().locator(":scope > p");
+  const card = page.locator(`[data-flow-card="${REPEAT.id}"]`);
+
+  // Near a paragraph's lower edge the landing place is the gap below it.
+  await carryTo(page, card, blocks.nth(4), 0.9);
+  await expect(page.locator('.flow-drop[data-kind="gap"]')).toHaveAttribute(
+    "data-label",
+    "Move here",
+  );
+  // Escape puts it back in the card and changes nothing.
+  await page.keyboard.press("Escape");
+  await page.mouse.up();
+  await expect(page.locator(".flow-drop, .flow-drag-ghost")).toHaveCount(0);
+  expect(await manuscriptText(page)).toBe(before);
+
+  await carryTo(page, card, blocks.nth(4), 0.9);
+  await page.mouse.up();
+  await expect(blocks).toHaveCount(22);
+  await expect(blocks.nth(5)).toHaveText(PARA_12);
+  await expect(blocks.nth(5).locator(".merge-review__carried")).toHaveText(
+    PARA_12,
+  );
+  const moved = page.locator(`[data-flow-card="${REPEAT.id}"]`);
+  await expect(moved.locator(".flow-card__kicker")).toHaveText("Moved");
+  await expect(moved).toContainText("Paragraph 12 moved here");
+  await moved.getByRole("button", { name: "Put it back" }).click();
+  await expect.poll(() => manuscriptText(page)).toBe(before);
+});
+
+test("in the comparison, dragging one paragraph onto the other merges into it", async ({
+  page,
+}) => {
+  await seed(page, { 11: PARA_12 });
+  await showEchoes(page, [REPEAT]);
+  const blocks = page.locator(".ProseMirror").first().locator(":scope > p");
+  await page.getByRole("button", { name: "Compare passages" }).click();
+  const dialog = page.getByRole("dialog");
+  // Other connections on the same passage may be gathered beside the pair;
+  // only the pair's own two paragraphs can be picked up.
+  const here = dialog.locator(`[data-gather-passage="${REPEAT.id}:0"]`);
+  const other = dialog.locator(`[data-gather-passage="${REPEAT.id}:1"]`);
+  await expect(dialog.locator(".passage-gather__repeat")).toHaveCount(2);
+  const from = (await other.locator("[data-carry]").boundingBox())!;
+  const to = (await here.boundingBox())!;
+  await page.mouse.move(from.x + 40, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, {
+    steps: 10,
+  });
+  await expect(here).toHaveClass(/is-drop-target/);
+  await page.mouse.up();
+  await expect(dialog).toHaveCount(0);
+  // Paragraph 5 was landed on, so it stays and takes in what 12 added.
+  await expect(blocks).toHaveCount(21);
+  await expect(blocks.nth(4)).toHaveText(`${PARA_5} ${WELL}`);
+});
+
+test("the comparison underlines what repeats, says why, and merges either way", async ({
+  page,
+}) => {
+  await seed(page, { 11: PARA_12 });
+  await showEchoes(page, [REPEAT]);
+  const blocks = page.locator(".ProseMirror").first().locator(":scope > p");
+  await page.getByRole("button", { name: "Compare passages" }).click();
+  const dialog = page.getByRole("dialog");
+
+  // Signed out, shared words stand in for a reading, and the sheet says so.
+  await expect(dialog.locator(".passage-gather__advice")).toContainText(
+    "Paragraph 5 makes the point more fully. One sentence in paragraph 12 repeats it; the other one would be carried over.",
+  );
+  await expect(dialog.locator(".passage-gather__legend")).toHaveText(
+    "Highlighted sentences share most of their words. Drag paragraph 5 or paragraph 12 onto the other to merge them.",
+  );
+  await expect(dialog.locator(".passage-gather__repeat")).toHaveCount(2);
+  await expect(dialog.locator(".passage-gather__repeat").nth(1)).toHaveText(
+    "Paragraph 12: the salt caravans left before dawn, and the road bent with the coast for a week of walking.",
+  );
+
+  // The advised keeper leads; the other way round is still offered.
+  const merges = dialog.getByRole("button", { name: /^Merge into/ });
+  await expect(merges).toHaveText([
+    "Merge into paragraph 5",
+    "Merge into paragraph 12",
+  ]);
+  await merges.nth(1).click();
+  await expect(dialog).toHaveCount(0);
+
+  // Keeping paragraph 12: nothing of paragraph 5 is new, so it only goes.
+  await expect(blocks).toHaveCount(21);
+  await expect(blocks.nth(10)).toHaveText(PARA_12);
+  await expect(page.locator(".ProseMirror").first()).not.toContainText(
+    "Paragraph 5:",
+  );
+  const merged = page.locator(`[data-flow-card="${REPEAT.id}"]`);
+  await expect(merged).toContainText("Paragraph 5 folded in");
+  await merged.getByRole("button", { name: "Keep it" }).click();
+  await expect(merged).toHaveCount(0);
+  await expect(blocks).toHaveCount(21);
 });
 
 test.describe("touch", () => {
@@ -535,10 +925,11 @@ test.describe("touch", () => {
     });
     await dock.getByRole("button", { name: /from the room.*Open/ }).tap();
     const card = dock.locator(`[data-flow-card="${SEMANTIC.id}"]`);
-    await expect(card.locator(".flow-relation__why").first()).toContainText(
-      SEMANTIC_REASON,
+    await expect(card).toContainText(
+      "Does the later passage pay off the setup?",
     );
     await card.getByRole("button", { name: "Compare passages" }).tap();
+    await page.getByText("Connection details", { exact: true }).tap();
     const why = page
       .getByRole("dialog")
       .getByRole("region", { name: "Why these passages are linked" });

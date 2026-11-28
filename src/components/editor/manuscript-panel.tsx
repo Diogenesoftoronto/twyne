@@ -8,11 +8,14 @@ import type { LayoutSettings } from "../../types";
 import { resolveColumns, resolveColumnGap } from "../../types";
 import { hasOrnateBorder } from "../../utils/page-ornaments";
 import { isFileDrag } from "../../utils/file-drag";
-import { hasAuthenticatedConvexIdentity, useAuth } from "../../utils/auth-context";
+import {
+  hasAuthenticatedConvexIdentity,
+  useAuth,
+} from "../../utils/auth-context";
 import { DestinationTag } from "../ui/destination-tag";
 import { mountDeskLamp } from "./desk-lamp";
 import { mountRunningFoot } from "./running-foot";
-import type { EditorStore } from "./editor-state";
+import type { EditorStore, TwyneEditorProps } from "./editor-state";
 import { MarginRails } from "../in-flow/margin-rail";
 import { FlowSurface } from "../in-flow/flow-surface";
 import { PassageGather } from "../in-flow/passage-gather";
@@ -36,6 +39,8 @@ type PageChromeGeometry = Pick<
 >;
 
 interface ManuscriptPanelProps {
+  folioName?: string;
+  onCopyPassages$?: TwyneEditorProps["onCopyPassages$"];
   startupFailed?: boolean;
   store: EditorStore;
   pageWidthRem: number;
@@ -246,7 +251,12 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
 
           <MarginRails zen={store.zenMode} readOnly={props.readOnly} />
           <FlowSurface zen={store.zenMode} readOnly={props.readOnly} />
-          <PassageGather />
+          <PassageGather
+            folioId={store.activeFolioId}
+            folioName={props.folioName}
+            readOnly={props.readOnly}
+            onCopyPassages$={props.onCopyPassages$}
+          />
           <DocumentSpine zen={store.zenMode} readOnly={props.readOnly} />
 
           {store.notes.length > 0 && (

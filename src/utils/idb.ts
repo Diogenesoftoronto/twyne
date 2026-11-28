@@ -508,6 +508,29 @@ export async function saveFoliosToIdb(folios: Folio[]): Promise<void> {
   }
 }
 
+/** Commit a working folio and its initial manuscript together. */
+export async function createFolioWithContent(
+  folio: Folio,
+  html: string,
+): Promise<void> {
+  const content: FolioContentSnapshot = {
+    folioId: folio.id,
+    html,
+    format: "typst",
+    typstSource: htmlToTypst(html),
+    updatedAt: folio.updatedAt,
+  };
+  await tx(["folios", "folio-content"], "readwrite", (t) => {
+    t.objectStore("folios").add(folio);
+    t.objectStore("folio-content").add(content);
+  });
+  window.dispatchEvent(
+    new CustomEvent<FolioContentSavedDetail>(FOLIO_CONTENT_SAVED, {
+      detail: { ...content, origin: "local" },
+    }),
+  );
+}
+
 export async function deleteFolioFromIdb(id: string): Promise<void> {
   if (!isBrowser()) return;
   try {

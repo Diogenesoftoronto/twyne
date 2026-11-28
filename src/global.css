@@ -9188,35 +9188,28 @@ a {
   flex-direction: column;
   gap: 0.45rem;
   padding: 0.65rem 0.75rem 0.6rem;
+  /* The house slip, as on the desk and the benches: plain paper, a
+     hairline, and one rule down the left that says whose it is. */
   background: var(--color-paper);
   border: 1px solid var(--color-paper-3);
-  border-top: 3px solid var(--flow-accent, var(--color-sage));
-  border-radius: 1px;
+  border-left: 3px solid var(--flow-accent, var(--color-ink-light));
+  border-radius: 2px;
   color: var(--color-ink);
   font: 0.84rem/1.5 var(--font-serif);
   box-shadow:
     0 1px 0 var(--color-paper-3),
-    0 10px 22px -18px rgb(0 0 0 / 0.45);
+    0 8px 24px -16px rgb(0 0 0 / 0.35);
   transition:
     top 220ms cubic-bezier(0.2, 0.7, 0.2, 1),
     transform 160ms ease,
     box-shadow 160ms ease;
   animation: flow-slip-in 280ms ease-out;
 }
-.flow-column--archive .flow-card {
-  border-top-width: 1px;
-  border-left: 3px solid var(--flow-accent, var(--color-cobalt));
-  background: color-mix(
-    in srgb,
-    var(--color-paper) 88%,
-    var(--color-cobalt) 4%
-  );
-}
 .flow-card.is-hovered {
   transform: translateY(-1px);
   box-shadow:
     0 1px 0 var(--color-paper-3),
-    0 14px 28px -16px rgb(0 0 0 / 0.5);
+    0 12px 26px -16px rgb(0 0 0 / 0.42);
   z-index: 3;
 }
 @keyframes flow-slip-in {
@@ -9241,10 +9234,10 @@ a {
   gap: 0.5rem;
 }
 .flow-card__kicker {
-  font: 0.62rem/1.2 var(--font-typewriter);
-  letter-spacing: 0.08em;
+  font: 0.6rem/1.35 var(--font-typewriter);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--flow-accent, var(--color-ink-muted));
+  color: var(--color-ink-light);
 }
 .flow-card__close {
   border: 0;
@@ -9281,7 +9274,7 @@ a {
 }
 .flow-card__gather:hover,
 .flow-card__gather:focus-visible {
-  border-color: var(--flow-accent, var(--color-cobalt));
+  border-color: var(--flow-accent, var(--color-ink-light));
   color: var(--color-ink);
 }
 .flow-card__gather::after {
@@ -9291,7 +9284,7 @@ a {
   bottom: 0;
   height: 2px;
   width: 0;
-  background: var(--flow-accent, var(--color-cobalt));
+  background: var(--flow-accent, var(--color-ink-light));
 }
 .flow-card__gather.is-arming::after {
   width: 100%;
@@ -9314,7 +9307,7 @@ a {
   max-width: min(30rem, 86%);
   min-height: 1.9rem;
   padding: 0.2rem 0.7rem 0.2rem 0.5rem;
-  border: 1px solid var(--flow-accent, var(--color-cobalt));
+  border: 1px solid var(--flow-accent, var(--color-ink-light));
   border-radius: 999px;
   background: var(--color-paper);
   color: var(--color-ink);
@@ -9328,17 +9321,17 @@ a {
 .flow-edge:focus-visible {
   background: color-mix(
     in srgb,
-    var(--flow-accent, var(--color-cobalt)) 12%,
+    var(--flow-accent, var(--color-ink-light)) 12%,
     var(--color-paper)
   );
   outline: none;
 }
 .flow-edge:focus-visible {
-  box-shadow: 0 0 0 2px var(--color-cobalt);
+  box-shadow: 0 0 0 2px var(--color-vermilion);
 }
 .flow-edge svg {
   flex-shrink: 0;
-  color: var(--flow-accent, var(--color-cobalt));
+  color: var(--flow-accent, var(--color-ink-light));
 }
 .flow-edge__label {
   flex-shrink: 0;
@@ -9423,16 +9416,8 @@ a {
   align-self: flex-start;
 }
 .flow-card__open:focus-visible {
-  outline: 2px solid var(--color-cobalt);
+  outline: 2px solid var(--color-vermilion);
   outline-offset: 2px;
-}
-/* An echo reads as a carbon copy of the writer's own page. */
-.flow-card__carbon {
-  font-family: var(--font-typewriter);
-  font-size: 0.72rem;
-  line-height: 1.55;
-  color: color-mix(in srgb, var(--color-cobalt) 70%, var(--color-ink));
-  opacity: 0.9;
 }
 .flow-card__reply {
   margin: 0;
@@ -9484,11 +9469,25 @@ a {
   border: 0;
   padding: 0;
   background: none;
-  color: var(--color-cobalt);
-  font: 0.7rem var(--font-typewriter);
+  color: var(--color-ink);
+  font: 0.68rem/1.4 var(--font-typewriter);
+  letter-spacing: 0.02em;
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration-color: color-mix(in srgb, var(--color-ink) 35%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
   cursor: pointer;
+  transition:
+    color 0.15s ease,
+    text-decoration-color 0.15s ease;
+}
+.flow-link:hover:not(:disabled) {
+  color: var(--color-vermilion);
+  text-decoration-color: currentColor;
+}
+.flow-link:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 2px;
 }
 .flow-link:disabled {
   opacity: 0.5;
@@ -9688,7 +9687,7 @@ a {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-cobalt);
+  color: var(--color-ink);
 }
 .flow-dock__more {
   margin: 0.3rem 0 0;
@@ -10174,13 +10173,6 @@ a {
 }
 
 /* A way in: the one thing Jev offers when the writer is stuck. */
-.flow-card--way-in {
-  background: color-mix(
-    in srgb,
-    var(--color-paper) 94%,
-    var(--color-periwinkle) 6%
-  );
-}
 .flow-card--way-in .flow-card__title {
   font-style: italic;
 }
@@ -10195,60 +10187,186 @@ a {
   color: var(--color-ink-light);
   font: 0.6rem/1.3 var(--font-typewriter);
 }
-/* Why two passages were put side by side: a named reading, its plain
-   explanation, and the passage being written, so both ends are visible. */
 .flow-relation {
   display: grid;
-  gap: 0.35rem;
+  justify-items: start;
+  gap: 0.4rem;
 }
-.flow-relation__why {
+.flow-relation__excerpt {
   margin: 0;
-  color: var(--color-ink);
-  font: 0.78rem/1.45 var(--font-serif);
+  min-width: 0;
+  font: italic 0.8rem/1.45 var(--font-serif);
+  color: var(--color-ink-light);
   overflow-wrap: anywhere;
-}
-.flow-relation__heading {
-  display: block;
-  margin-bottom: 0.15rem;
-  font-weight: 600;
-}
-/* Where the reason came from: a reading, or only shared words. */
-.flow-relation__source {
-  margin-left: 0.2em;
-  font: 400 0.6rem/1.3 var(--font-typewriter);
-  letter-spacing: 0.04em;
-  color: var(--color-ink-muted);
-}
-.flow-relation__label {
-  color: var(--flow-accent, var(--color-ink));
-  font: 0.6rem/1.3 var(--font-typewriter);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.flow-relation__here {
-  display: grid;
-  gap: 0.1rem;
-  padding: 0 0 0 0.5rem;
-  border: 0;
-  border-left: 2px solid var(--color-paper-3);
-  background: none;
-  color: var(--color-ink-muted);
-  font: italic 0.78rem/1.45 var(--font-serif);
-  text-align: left;
-  cursor: pointer;
-}
-.flow-relation__here:hover {
-  color: var(--color-ink);
-}
-.flow-relation__here-label {
-  font: normal 0.55rem/1.3 var(--font-typewriter);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 .flow-relation__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem 0.8rem;
+}
+/* The other passage, as a slip the writer can pick up and carry into the
+   text: onto a paragraph to merge, between two to set it down there. */
+.flow-relation__slip {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.4rem 0.5rem 0.4rem 0.35rem;
+  border: 1px dashed var(--color-paper-3);
+  border-radius: 2px;
+  background: var(--color-paper-soft);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.flow-relation__slip:hover,
+.flow-relation__slip:focus-visible {
+  border-color: var(--color-ink-light);
+  box-shadow: 0 6px 14px -12px rgb(0 0 0 / 0.5);
+}
+.flow-relation__slip:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 2px;
+}
+.flow-relation__slip.is-busy {
+  opacity: 0.6;
+  cursor: progress;
+}
+/* Six dots: the same grip the manuscript's own blocks are moved by. */
+.flow-relation__grip {
+  flex: none;
+  width: 6px;
+  height: 14px;
+  margin-top: 0.2rem;
+  background-image: radial-gradient(
+    circle,
+    var(--color-ink-muted) 1px,
+    transparent 1.3px
+  );
+  background-size: 3px 5px;
+}
+.flow-relation__slip:hover .flow-relation__grip {
+  background-image: radial-gradient(
+    circle,
+    var(--color-vermilion) 1px,
+    transparent 1.3px
+  );
+}
+.flow-relation__gesture {
+  margin: 0;
+  color: var(--color-ink-light);
+  font: 0.72rem/1.4 var(--font-sans);
+}
+/* In hand: the slip follows the pointer, tilted like a card being moved. */
+.flow-drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  gap: 0.45rem;
+  padding: 0.4rem 0.5rem 0.4rem 0.35rem;
+  border: 1px solid var(--color-ink-light);
+  border-radius: 2px;
+  background: var(--color-paper-soft);
+  color: var(--color-ink);
+  font: italic 0.8rem/1.45 var(--font-serif);
+  box-shadow: 0 14px 28px -14px rgb(0 0 0 / 0.55);
+  rotate: -1.2deg;
+  opacity: 0.95;
+  pointer-events: none;
+}
+/* Where it will land, in the manuscript's own instruction red: a rule in
+   the gap between two paragraphs, or a wash over the one that takes it. */
+.flow-drop {
+  position: fixed;
+  z-index: 59;
+  pointer-events: none;
+}
+.flow-drop[data-kind="gap"] {
+  margin-top: -1px;
+  border-top: 2px solid var(--color-vermilion);
+}
+.flow-drop[data-kind="merge"] {
+  margin: -4px -8px;
+  padding: 4px 8px;
+  box-sizing: content-box;
+  border: 1px solid var(--color-vermilion);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--color-vermilion) 7%, transparent);
+}
+.flow-drop::after {
+  content: attr(data-label);
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  padding: 0.1rem 0.4rem;
+  background: var(--color-vermilion);
+  color: var(--color-paper-soft);
+  font: 0.6rem/1.5 var(--font-typewriter);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+html[data-flow-dragging],
+html[data-flow-dragging] * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+/* A merge not yet kept: what was carried over and what was left out, beside
+   the paragraph it changed. */
+.flow-change {
+  display: grid;
+  justify-items: start;
+  gap: 0.45rem;
+}
+.flow-change__part {
+  display: grid;
+  gap: 0.2rem;
+}
+.flow-change__label {
+  margin: 0;
+  color: var(--color-ink-light);
+  font: 0.6rem/1.3 var(--font-typewriter);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.flow-change__list {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: 0.8rem/1.45 var(--font-serif);
+  overflow-wrap: anywhere;
+}
+/* The desk's diff colours: struck in red, set in green on mint. */
+.flow-change__list del {
+  color: var(--color-ink-light);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--color-accent-red) 70%,
+    transparent
+  );
+}
+.flow-change__list ins,
+.ProseMirror .merge-review__carried {
+  border-radius: 2px;
+  background: var(--color-highlight-mint);
+  box-shadow: inset 0 -1.5px 0 var(--color-accent-green);
+  text-decoration: none;
+}
+.flow-card--echo .flow-card__close {
+  min-height: 1.5rem;
+  min-width: 1.5rem;
+  opacity: 1;
 }
 /* A proposed rewrite reads as one passage: cut words struck through in the
    editor's colour, new words inked on a tint. A near-total rewrite shows the

@@ -12,8 +12,8 @@
  * A connected passage beyond the screen gets a marker at the edge of the
  * text instead, and the connection lingers a moment after the pointer
  * leaves, so the marker can be reached and followed. Hold on a card, or use
- * its Gather control, and every connected passage is gathered into one
- * read-only sheet (`passage-gather.tsx`).
+ * its Gather control, to read connected passages together. Echo cards open
+ * the comparison and editing actions from their Compare passages control.
  * Nothing here decides what appears; `flow-conductor.ts` does.
  *
  * A comment or a persona note is a conversation. Open it — from its card or
@@ -39,6 +39,7 @@ import {
   flowController,
   flowSnapshot,
   type FlowSnapshot,
+  type PassageDrop,
 } from "../editor/extensions/flow-conductor";
 import {
   KIND_LABELS,
@@ -72,12 +73,14 @@ import { Icon } from "../ui/icon";
 import { markdownLiteral, renderMarkdownExcerpt } from "../../utils/markdown";
 import {
   connectionReason,
+  connectionQuestion,
   openPassageGather,
   PROVENANCE_LABEL,
   revealPassage,
   type GatherConnection,
   type GatherPassage,
 } from "../../utils/passage-gather";
+import { foldOffer, isMergeAdvice } from "../../utils/passage-merge";
 import { PersonaMasthead } from "../personas/persona-portrait";
 
 const ROOM_WIDTH = ROOM_CARD_WIDTH;
@@ -138,6 +141,8 @@ const hold: {
   /** A card that has gathered once arms again only after the pointer leaves. */
   spent: string | null;
 } = { spent: null };
+/** The card whose passage is being carried, so its release is not a click. */
+const drag: { id: string | null } = { id: null };
 
 interface SurfaceState {
   mode: FlowMode;
@@ -172,8 +177,6 @@ interface SurfaceState {
   /** Dock mode: explicit open/closed; null follows the conductor's mode. */
   dockOpen: boolean | null;
   drafts: Record<string, string>;
-  /** Echo readings the writer accepted. */
-  agreed: Record<string, boolean>;
   busy: Record<string, boolean>;
   notices: Record<string, string>;
   /** The conductor turned focus on (the page is in zen by its hand). */
@@ -187,15 +190,13 @@ interface SurfaceState {
 }
 
 const kindAccent = (kind: FlowItemKind) =>
-  kind === "echo" || kind === "shelf"
-    ? "var(--color-cobalt)"
+  kind === "echo" || kind === "shelf" || kind === "way-in"
+    ? "var(--color-ink-light)"
     : kind === "charter" || kind === "amendment"
       ? "var(--color-vermilion)"
       : kind === "work"
         ? "var(--color-mustard)"
-        : kind === "way-in"
-          ? "var(--color-periwinkle)"
-          : "var(--color-sage)";
+        : "var(--color-sage)";
 
 const accent = (item: FlowItem) => item.color || kindAccent(item.kind);
 
@@ -266,7 +267,6 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       dockRight: 16,
       dockOpen: null,
       drafts: {},
-      agreed: {},
       busy: {},
       notices: {},
       autoFocus: false,
@@ -535,7 +535,13 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
         state.links = Object.fromEntries(
           state.placed.map((p) => {
             const group = connected(p);
-            const passages = new Set(group.flatMap((c) => c.item.anchors));
+            const passages = new Set(
+              group.flatMap((c) =>
+                c.item.kind === "echo" && c.item.anchors.length === 1
+                  ? [...c.item.anchors, c.item.body]
+                  : c.item.anchors,
+              ),
+            );
             return [
               p.item.id,
               passages.size > 1 || group.length > 1 ? passages.size : 0,
@@ -828,58 +834,91 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       const focus = state.placed.find((p) => p.item.id === id);
       if (!controller || !focus) return;
       const anchors = new Set(focus.item.anchors);
+      const editing = focus.item.kind === "echo";
+      const candidates = new Map(
+        state.placed.map(({ item }) => [item.id, item]),
+      );
+      // The narrow dock may show only one card. Include the other recorded
+      // echoes of these exact passages even when their cards are waiting.
+      if (editing) {
+        for (const item of controller.items())
+          if (item.kind === "echo" && !candidates.has(item.id))
+            candidates.set(item.id, item);
+      }
+      candidates.delete(id);
       const related = [
-        focus,
-        ...state.placed.filter(
-          (p) =>
-            p !== focus &&
-            (focus.item.links?.includes(p.item.id) ||
-              p.item.links?.includes(focus.item.id) ||
-              p.item.anchors.some((a) => anchors.has(a))),
+        focus.item,
+        ...[...candidates.values()].filter(
+          (item) =>
+            focus.item.links?.includes(item.id) ||
+            item.links?.includes(id) ||
+            item.anchors.some((a) => anchors.has(a)),
         ),
       ];
-      const found = related.map((p) => ({
-        item: p.item,
-        ranges: controller.anchorRanges(p.item),
-      }));
-      const passages: GatherPassage[] = found.flatMap(({ item, ranges }) =>
-        ranges.map((range, i) => ({
-          id: `${item.id}:${i}`,
-          label: `${KIND_LABELS[item.kind]}${
-            item.kind === "persona-note" && item.byline
-              ? ` · ${item.byline}`
-              : item.kind === "comment" && item.title
-                ? ` · ${item.title}`
-                : ""
-          }`,
-          color: accent(item),
-          range,
-          // Notes and replies are Markdown; any other body is manuscript
-          // or source text, shown exactly as written. An echo's body is its
-          // other passage, already gathered when it is in this manuscript.
-          notes: [
-            isConversation(item)
-              ? item.body
-              : item.kind === "echo" && item.anchors.length > 1
-                ? ""
-                : markdownLiteral(item.body),
-          ].filter(Boolean),
-          go: () => {
-            controller.engage(item.id);
-            revealPassage(range);
-          },
-        })),
-      );
+      const found = related.map((item) => {
+        // Keep the recorded anchor index even when its neighbour has gone.
+        const passages: GatherPassage[] = item.anchors.flatMap((anchor, i) => {
+          const resolveRange = () =>
+            controller.anchorRanges({ ...item, anchors: [anchor] })[0] ?? null;
+          const range = resolveRange();
+          if (!range) return [];
+          const note = isConversation(item)
+            ? item.body
+            : item.kind === "echo" && (editing || item.anchors.length > 1)
+              ? ""
+              : markdownLiteral(item.body);
+          const ordinal =
+            editing && item.kind === "echo"
+              ? controller.paragraphNumber(anchor)
+              : undefined;
+          return [
+            {
+              id: `${item.id}:${i}`,
+              label: ordinal
+                ? `Paragraph ${ordinal}`
+                : `${KIND_LABELS[item.kind]}${
+                    item.kind === "persona-note" && item.byline
+                      ? ` · ${item.byline}`
+                      : item.kind === "comment" && item.title
+                        ? ` · ${item.title}`
+                        : ""
+                  }`,
+              color: accent(item),
+              range,
+              // Echoes have exact block identities. Other notes keep their
+              // original range so a partial text match cannot retarget them.
+              ...(item.kind === "echo" ? { resolveRange } : {}),
+              notes: note ? [note] : [],
+              go:
+                item.kind === "echo"
+                  ? undefined
+                  : () => {
+                      controller.engage(item.id);
+                      revealPassage(range);
+                    },
+            },
+          ];
+        });
+        return { item, passages };
+      });
+      const passages = found.flatMap((group) => group.passages);
+      if (!passages.length) {
+        state.notices = {
+          ...state.notices,
+          [id]: "These passages have changed.",
+        };
+        return;
+      }
       // Each echo's reason travels as it was recorded; opening asks nothing.
       const connections: GatherConnection[] = found.flatMap(
-        ({ item, ranges }) => {
+        ({ item, passages }) => {
           const reason = connectionReason(item);
           if (!reason) return [];
           return [
             {
               ...reason,
               id: item.id,
-              passageIds: ranges.map((_, i) => `${item.id}:${i}`),
+              passageIds: passages.map((p) => p.id),
               expected: item.anchors.length,
               ...(item.anchors.length < 2
                 ? { elsewhere: item.folioName || item.title }
@@ -888,11 +927,71 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           ];
         },
       );
+      const otherFolios = found.flatMap(({ item }) =>
+        item.kind === "echo" &&
+        item.anchors.length === 1 &&
+        item.folioId &&
+        item.body
+          ? [
+              {
+                folioId: item.folioId,
+                name: item.folioName || item.title,
+                text: item.body,
+              },
+            ]
+          : [],
+      );
+      const allAnchors = [
+        ...new Set(found.flatMap(({ item }) => item.anchors)),
+      ];
+      // A fold is between the two paragraphs of the echo that was opened.
+      const offer = foldOffer(focus.item.data?.relation);
+      const pair =
+        editing &&
+        offer !== "never" &&
+        !otherFolios.length &&
+        controller.canMergePassages(focus.item.anchors)
+          ? focus.item
+          : null;
+      const named = (anchor: string, fallback: string) => {
+        const number = controller.paragraphNumber(anchor);
+        return number ? `paragraph ${number}` : fallback;
+      };
       openPassageGather({
         title:
           focus.item.kind === "comment"
             ? `Margin note · ${focus.item.title}`
-            : focus.item.title || KIND_LABELS[focus.item.kind],
+            : editing
+              ? connectionQuestion(connectionReason(focus.item)!)
+              : focus.item.title || KIND_LABELS[focus.item.kind],
+        editing: editing
+          ? {
+              complete: found.every(
+                ({ item, passages }) => item.anchors.length === passages.length,
+              ),
+              otherFolios,
+              move: otherFolios.length
+                ? null
+                : controller.planPassageMove(allAnchors),
+              merge: pair
+                ? {
+                    advice: isMergeAdvice(pair.data?.advice)
+                      ? pair.data.advice
+                      : null,
+                    needsRepeat: offer === "if-repeats",
+                    passages: { here: `${pair.id}:0`, other: `${pair.id}:1` },
+                    names: {
+                      here: named(pair.anchors[0], "this paragraph"),
+                      other: named(pair.anchors[1], "the other paragraph"),
+                    },
+                    texts: { here: pair.anchors[0], other: pair.anchors[1] },
+                    evidence: () => controller.passageEvidence(pair.anchors),
+                    apply: (keep, evidence) =>
+                      controller.mergePassages(pair, keep, evidence),
+                  }
+                : null,
+            }
+          : undefined,
         connections,
         passages,
         opener,
@@ -924,13 +1023,16 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       clearTimeout(hold.gather);
       if (props.zen) return;
       if (!state.links[id] || hold.spent === id) return;
+      if (state.items.find((item) => item.id === id)?.data?.change) return;
       state.armingId = id;
       hold.gather = setTimeout(() => {
         if (!props.zen && state.armingId === id && state.hoverId === id) {
           hold.spent = id;
           void gather(
             id,
-            card.querySelector<HTMLElement>(".flow-card__gather"),
+            card.querySelector<HTMLElement>(
+              ".flow-card__gather, .flow-relation__compare",
+            ),
           );
         }
       }, GATHER_HOLD_MS);
@@ -963,6 +1065,120 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
         }),
       );
     });
+
+    /**
+     * Pick the card's passage up and carry it into the text. Let go over
+     * the middle of a paragraph and it is folded in; over the gap between
+     * two and it is set down there. A press that never travels is a click.
+     */
+    const pickUp = $(
+      (item: FlowItem, event: PointerEvent, slip: HTMLElement) => {
+        const controller = flowController();
+        if (!controller || event.button > 0 || state.busy[item.id]) return;
+        const start = { x: event.clientX, y: event.clientY };
+        const point = { ...start };
+        const scroller = document
+          .querySelector("#twyne-editor-mount .ProseMirror")
+          ?.closest(".page-canvas")?.parentElement;
+        let ghost: HTMLElement | null = null;
+        let mark: HTMLElement | null = null;
+        let frame = 0;
+        const show = (drop: PassageDrop | null) => {
+          if (!mark) return;
+          mark.hidden = !drop;
+          if (!drop) return;
+          mark.dataset.kind = drop.kind === "merge" ? "merge" : "gap";
+          mark.dataset.label = drop.label;
+          Object.assign(mark.style, {
+            left: `${drop.rect.left}px`,
+            top: `${drop.rect.top}px`,
+            width: `${drop.rect.width}px`,
+            height: `${drop.rect.height}px`,
+          });
+        };
+        // One loop while the passage is in hand: the page scrolls when it is
+        // held near an edge, and the landing place follows what is under it.
+        const follow = () => {
+          if (!ghost) return;
+          const box = scroller?.getBoundingClientRect();
+          if (scroller && box) {
+            const reach = 56;
+            const by =
+              point.y < box.top + reach
+                ? -14
+                : point.y > box.bottom - reach
+                  ? 14
+                  : 0;
+            if (by) scroller.scrollBy(0, by);
+          }
+          show(controller.passageDropAt(item, point.x, point.y));
+          frame = requestAnimationFrame(follow);
+        };
+        const move = (e: PointerEvent) => {
+          point.x = e.clientX;
+          point.y = e.clientY;
+          if (!ghost) {
+            if (Math.hypot(point.x - start.x, point.y - start.y) < 6) return;
+            ghost = slip.cloneNode(true) as HTMLElement;
+            ghost.className = "flow-drag-ghost";
+            ghost.style.width = `${slip.offsetWidth}px`;
+            mark = document.createElement("div");
+            mark.className = "flow-drop";
+            mark.hidden = true;
+            document.body.append(mark, ghost);
+            document.documentElement.dataset.flowDragging = "";
+            drag.id = item.id;
+            frame = requestAnimationFrame(follow);
+          }
+          e.preventDefault();
+          ghost.style.transform = `translate(${point.x + 14}px, ${point.y + 12}px)`;
+        };
+        const end = async (e: Event) => {
+          window.removeEventListener("pointermove", move, true);
+          window.removeEventListener("pointerup", end, true);
+          window.removeEventListener("pointercancel", end, true);
+          window.removeEventListener("keydown", cancel, true);
+          cancelAnimationFrame(frame);
+          const carried = !!ghost;
+          ghost?.remove();
+          mark?.remove();
+          ghost = null;
+          delete document.documentElement.dataset.flowDragging;
+          if (!carried) return;
+          // The click that ends a carry is not a click on the card.
+          setTimeout(() => (drag.id = null), 0);
+          const drop =
+            e.type === "pointerup"
+              ? controller.passageDropAt(item, point.x, point.y)
+              : null;
+          if (!drop) return;
+          let evidence = null;
+          if (drop.kind === "merge") {
+            state.busy = { ...state.busy, [item.id]: true };
+            evidence = await controller.passageEvidence([
+              drop.text,
+              drop.source,
+            ]);
+            state.busy = { ...state.busy, [item.id]: false };
+          }
+          if (!controller.dropPassage(item, drop, evidence))
+            state.notices = {
+              ...state.notices,
+              [item.id]: "The text changed under it. Try again.",
+            };
+        };
+        const cancel = (e: KeyboardEvent) => {
+          if (e.key !== "Escape") return;
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          void end(e);
+        };
+        window.addEventListener("pointermove", move, true);
+        window.addEventListener("pointerup", end, true);
+        window.addEventListener("pointercancel", end, true);
+        window.addEventListener("keydown", cancel, true);
+      },
+    );
 
     const dismiss = $((id: string) => {
       flowController()?.dismiss(id);
@@ -1002,7 +1218,28 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       const { item } = placed;
       const color = accent(item);
       const reply = item.data?.reply;
-      const reason = connectionReason(item);
+      // A fold the writer has not yet kept shows what changed, not why
+      // the passages were connected.
+      const change = item.data?.change
+        ? {
+            kind: item.data.change,
+            carried: JSON.parse(item.data.carried ?? "[]") as string[],
+            dropped: JSON.parse(item.data.dropped ?? "[]") as string[],
+          }
+        : null;
+      const reason = change ? null : connectionReason(item);
+      // What the decision model would do with the pair, said as the
+      // gesture that does it.
+      const advice =
+        reason && item.anchors.length === 2 && isMergeAdvice(item.data?.advice)
+          ? item.data.advice
+          : null;
+      const gesture =
+        advice === "fold-here"
+          ? "Drag it onto your paragraph to merge them."
+          : advice === "together"
+            ? "Drag it beside your paragraph."
+            : "";
       // A way in may point at an earlier passage worth picking up.
       const thread =
         item.kind === "way-in"
@@ -1032,6 +1269,14 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             // Resting on the card, not passing over it, gathers: each
             // movement starts the wait again.
             if (event.pointerType !== "mouse") return;
+            if (
+              reason &&
+              !(event.target as Element).closest(".flow-relation__compare")
+            ) {
+              clearTimeout(hold.gather);
+              state.armingId = null;
+              return;
+            }
             void arm(item.id, el);
           }}
           onPointerDown$={() => {
@@ -1055,13 +1300,21 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
               />
             ) : (
               <span class="flow-card__kicker">
-                {KIND_LABELS[item.kind]}
-                {item.kind === "echo" && item.folioName
-                  ? ` · ${item.folioName}`
-                  : ""}
+                {change
+                  ? change.kind === "merged"
+                    ? "Merged"
+                    : change.kind === "copied"
+                      ? "Copied in"
+                      : "Moved"
+                  : reason
+                    ? reason.provenance === "unrecorded"
+                      ? PROVENANCE_LABEL.unrecorded
+                      : reason.relation
+                    : KIND_LABELS[item.kind]}
+                {reason && item.title ? ` · ${item.title}` : ""}
               </span>
             )}
-            {(state.links[item.id] ?? 0) > 0 && (
+            {!reason && !change && (state.links[item.id] ?? 0) > 0 && (
               <button
                 type="button"
                 data-gather-opener={`flow:${item.id}`}
@@ -1081,8 +1334,12 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
               type="button"
               class="flow-card__close"
               onClick$={() => dismiss(item.id)}
-              aria-label="Set this aside"
-              title="Set aside — it won't come back"
+              aria-label={change ? "Keep the change" : "Set this aside"}
+              title={
+                change
+                  ? "Keep the change and close this"
+                  : "Set aside — it won't come back"
+              }
             >
               <Icon name="close-circle" size={14} />
             </button>
@@ -1094,21 +1351,129 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             </span>
           )}
 
-          {reason && (
-            <div class="flow-relation">
-              <p class="flow-relation__why" data-provenance={reason.provenance}>
-                <strong class="flow-relation__heading">
-                  {reason.relation}{" "}
-                  <span class="flow-relation__source">
-                    {PROVENANCE_LABEL[reason.provenance]}
+          {change ? (
+            <div class="flow-change">
+              <strong class="flow-card__title">{item.title}</strong>
+              {change.carried.length > 0 && (
+                <div class="flow-change__part">
+                  <span class="flow-change__label">
+                    Carried over, marked in the text
                   </span>
-                </strong>
-                {reason.explanation}
-              </p>
+                  <ul class="flow-change__list">
+                    {change.carried.map((sentence, i) => (
+                      <li key={i}>
+                        <ins>{clip(sentence, 160)}</ins>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {change.dropped.length > 0 && (
+                <div class="flow-change__part">
+                  <span class="flow-change__label">Left out as repeats</span>
+                  <ul class="flow-change__list">
+                    {change.dropped.map((sentence, i) => (
+                      <li key={i}>
+                        <del>{clip(sentence, 160)}</del>{" "}
+                        <button
+                          type="button"
+                          class="flow-link"
+                          onClick$={() => {
+                            if (!flowController()?.carryDropped(item.id, i))
+                              state.notices = {
+                                ...state.notices,
+                                [item.id]: "This paragraph has changed since.",
+                              };
+                          }}
+                        >
+                          Carry it over
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {change.kind === "merged" &&
+                !change.carried.length &&
+                !change.dropped.length && (
+                  <p class="flow-change__label">Nothing was carried over.</p>
+                )}
+              {change.kind !== "merged" && (
+                <p class="flow-change__label">Marked in the text</p>
+              )}
+              <div class="flow-relation__actions">
+                <button
+                  type="button"
+                  class="flow-link"
+                  onClick$={() => flowController()?.keepChange(item.id)}
+                >
+                  Keep it
+                </button>
+                <button
+                  type="button"
+                  class="flow-link"
+                  onClick$={() => {
+                    if (!flowController()?.revertChange(item.id))
+                      state.notices = {
+                        ...state.notices,
+                        [item.id]:
+                          "The text has changed since. Undo steps back through it.",
+                      };
+                  }}
+                >
+                  Put it back
+                </button>
+              </div>
+              {state.notices[item.id] && (
+                <p role="status">{state.notices[item.id]}</p>
+              )}
             </div>
-          )}
-
-          {item.kind === "work" && item.work ? (
+          ) : reason ? (
+            <div class="flow-relation" data-provenance={reason.provenance}>
+              <strong class="flow-card__title">
+                {connectionQuestion(reason)}
+              </strong>
+              {item.body && (
+                <button
+                  type="button"
+                  class={[
+                    "flow-relation__slip",
+                    { "is-busy": state.busy[item.id] },
+                  ]}
+                  title="Drag it into the text: onto a paragraph to merge, between two to set it down there. Click to go to it."
+                  onPointerDown$={(event, el) => pickUp(item, event, el)}
+                  onClick$={() => {
+                    if (drag.id === item.id || item.anchors.length < 2) return;
+                    flowController()?.focusAnchor(item, 1);
+                  }}
+                >
+                  <span class="flow-relation__grip" aria-hidden="true" />
+                  <span class="flow-relation__excerpt">
+                    “{clip(item.body, 76)}”
+                  </span>
+                </button>
+              )}
+              {(state.busy[item.id] || gesture) && (
+                <p class="flow-relation__gesture">
+                  {state.busy[item.id] ? "Reading both…" : gesture}
+                </p>
+              )}
+              <button
+                type="button"
+                class="flow-link flow-relation__compare"
+                data-gather-opener={`flow:${item.id}:compare`}
+                onClick$={(_, el) => {
+                  flowController()?.engage(item.id);
+                  return gather(item.id, el);
+                }}
+              >
+                Compare passages
+              </button>
+              {state.notices[item.id] && (
+                <p role="status">{state.notices[item.id]}</p>
+              )}
+            </div>
+          ) : item.kind === "work" && item.work ? (
             <a
               class={`flow-work flow-work--${item.work.medium}`}
               href={item.work.url ?? undefined}
@@ -1172,32 +1537,12 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             <button
               type="button"
               class="flow-card__body"
-              onClick$={() =>
-                flowController()?.focusAnchor(
-                  item,
-                  // The carbon is the other passage, so go there.
-                  item.kind === "echo" && item.anchors.length > 1
-                    ? 1
-                    : undefined,
-                )
-              }
-              title={
-                item.kind === "echo" && item.anchors.length > 1
-                  ? "Go to the other passage"
-                  : "Go to the passage"
-              }
+              onClick$={() => flowController()?.focusAnchor(item)}
+              title="Go to the passage"
             >
               <strong class="flow-card__title">{item.title}</strong>
               {item.body && (
-                <span
-                  class={
-                    item.kind === "echo"
-                      ? "flow-card__carbon"
-                      : "flow-card__text"
-                  }
-                >
-                  {clip(item.body, item.kind === "echo" ? 360 : 280)}
-                </span>
+                <span class="flow-card__text">{clip(item.body, 280)}</span>
               )}
             </button>
           )}
@@ -1222,59 +1567,6 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             >
               Open conversation
             </button>
-          )}
-
-          {item.kind === "echo" && (
-            <div class="flow-relation">
-              {item.data?.passage && item.anchors.length > 1 && (
-                <button
-                  type="button"
-                  class="flow-relation__here"
-                  onClick$={() => flowController()?.focusAnchor(item, 0)}
-                  title="Go to the passage you are writing"
-                >
-                  <span class="flow-relation__here-label">This passage</span>
-                  {clip(item.data.passage, 160)}
-                </button>
-              )}
-              <div class="flow-relation__actions">
-                {item.anchors.length > 1 && (
-                  <button
-                    type="button"
-                    class="flow-link"
-                    data-gather-opener={`flow:${item.id}:compare`}
-                    onClick$={(_, el) => gather(item.id, el)}
-                  >
-                    Compare passages
-                  </button>
-                )}
-                {state.agreed[item.id] ? (
-                  <span class="flow-way-in__hint" role="status">
-                    Kept as your reading.
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    class="flow-link"
-                    onClick$={() => {
-                      flowController()?.engage(item.id);
-                      state.agreed = { ...state.agreed, [item.id]: true };
-                    }}
-                    title="This is how the passages connect"
-                  >
-                    That's the connection
-                  </button>
-                )}
-                <button
-                  type="button"
-                  class="flow-link"
-                  onClick$={() => dismiss(item.id)}
-                  title="Set aside. This reading won't come back."
-                >
-                  Not how I read it
-                </button>
-              </div>
-            </div>
           )}
 
           {item.kind === "way-in" && (
@@ -1338,7 +1630,8 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             </div>
           )}
 
-          {(item.byline && item.kind !== "persona-note") || item.url ? (
+          {(item.byline && !reason && item.kind !== "persona-note") ||
+          item.url ? (
             <footer class="flow-card__foot">
               {item.byline && item.kind !== "persona-note" && (
                 <span>{item.byline}</span>

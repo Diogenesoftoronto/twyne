@@ -38,6 +38,7 @@ import { InstrumentIntentField } from "./instrument-intent-field";
 export interface TaskDeskProps {
   folioId: string;
   selectedText?: string;
+  initialInstruction?: string;
 }
 /** Mount inside the existing AuthProvider and ConvexProvider. */
 export const TaskDesk = component$((props: TaskDeskProps) => {
@@ -46,7 +47,8 @@ export const TaskDesk = component$((props: TaskDeskProps) => {
   const client = useConvexClient();
   const text = useSignal(props.selectedText ?? "");
   const instruction = useSignal(
-    "Review this passage for clarity and identify the most useful next revision.",
+    props.initialInstruction ??
+      "Review this passage for clarity and identify the most useful next revision.",
   );
   const kind = useSignal<InstrumentTaskKind>("writing-review");
   const sourceId = useSignal("");

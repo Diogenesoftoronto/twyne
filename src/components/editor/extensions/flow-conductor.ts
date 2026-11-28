@@ -19,11 +19,32 @@
  * Producers are not changed: this listens to the events they already fire.
  */
 import type { Editor } from "@tiptap/core";
-import type { Node as PmNode } from "@tiptap/pm/model";
-import type { Transaction } from "@tiptap/pm/state";
+import { Fragment, type Node as PmNode } from "@tiptap/pm/model";
+import { TextSelection, type Transaction } from "@tiptap/pm/state";
+import { closeHistory } from "@tiptap/pm/history";
 import type { ConvexClient } from "convex/browser";
 import type { PersonaReply, ProjectBrief } from "../../../types";
 import { askExtraction } from "../../../utils/extraction-client";
+import {
+  backOffExtraction,
+  extractionBackedOff,
+} from "../../../utils/extraction-budget";
+import {
+  adviceFor,
+  evidenceRequest,
+  localEvidence,
+  mergeQuestion,
+  planMerge,
+  readEvidence,
+  readMergeAdvice,
+  type MergeEvidence,
+} from "../../../utils/passage-merge";
+import {
+  addMergeReview,
+  clearMergeReview,
+  mergeReviewKey,
+  mergeReviewPlugin,
+} from "./merge-review";
 import {
   FlowRhythmEstimator,
   RHYTHM_BREAK_EVENT,
@@ -127,6 +148,11 @@ const PROFILE_KEY = "flow-profile";
 const TICK_MS = 1_000;
 const OVERRIDE_MS = 10 * 60_000;
 const GATHER_EVERY_MS = 20_000;
+/**
+ * Paragraphs this close are one stretch of the piece. Sharing a subject
+ * there is ordinary continuity: nothing for the writer to do about it.
+ */
+const SAME_STRETCH = 3;
 const DRIFT_EVERY_WORDS = 300;
 const REACH_DWELL_MS = 600;
 // Folio teardown and its replacement can both save a slip in the same turn.
@@ -143,6 +169,20 @@ export interface FlowSnapshot {
   autoFocus: boolean;
 }
 
+/** Where a passage picked up from a card would land on the page. */
+export interface PassageDrop {
+  /** Fold it into this paragraph, or set it down before or after it. */
+  kind: "merge" | "before" | "after";
+  /** The paragraph it lands on or beside: where it is, and what it says. */
+  pos: number;
+  text: string;
+  /** What the passage being carried says. */
+  source: string;
+  /** What to mark on screen, in viewport coordinates. */
+  rect: { left: number; top: number; width: number; height: number };
+  label: string;
+}
+
 export interface FlowController {
   dismiss(id: string): void;
   engage(id: string): void;
@@ -152,6 +192,46 @@ export interface FlowController {
   anchorRects(item: FlowItem): DOMRect[][];
   /** The live DOM range of each anchor that is still in the text. */
   anchorRanges(item: FlowItem): Range[];
+  paragraphNumber(anchor: string): number | undefined;
+  /** An undoable move, bound to the exact draft the writer compared. */
+  planPassageMove(
+    anchors: string[],
+  ): { label: string; apply: () => boolean } | null;
+  /** Whether the two paragraphs of an echo can be folded into one. */
+  canMergePassages(anchors: string[]): boolean;
+  /**
+   * The sentences each paragraph of an echo repeats from the other: read by
+   * the extraction model when it can be reached, by shared words otherwise.
+   */
+  passageEvidence(anchors: string[]): Promise<MergeEvidence | null>;
+  /**
+   * Fold one paragraph of an echo into the other as one undoable change,
+   * and leave the writer on the result with what was carried marked.
+   * `keep` is the index of the anchor that stays.
+   */
+  mergePassages(
+    item: FlowItem,
+    keep: 0 | 1,
+    evidence: MergeEvidence | null,
+  ): boolean;
+  /**
+   * Where the passage a card holds would land if it were let go at this
+   * point of the page: folded into the paragraph under it, or set down in
+   * the gap above or below.
+   */
+  passageDropAt(item: FlowItem, x: number, y: number): PassageDrop | null;
+  /** Put the card's passage down where `passageDropAt` said it would go. */
+  dropPassage(
+    item: FlowItem,
+    drop: PassageDrop,
+    evidence: MergeEvidence | null,
+  ): boolean;
+  /** Carry over one sentence a fold left out. */
+  carryDropped(id: string, index: number): boolean;
+  /** Undo a fold, if the text has not changed since. */
+  revertChange(id: string): boolean;
+  /** Accept a fold: its marks dry and its card goes. */
+  keepChange(id: string): void;
   /** Go to an item's passage; `at` picks one anchor (an echo's other end). */
   focusAnchor(item: FlowItem, at?: number): void;
   /** File an amendment into the dossier; resolves to an error message or null. */
@@ -257,6 +337,7 @@ export function echoData(
   shared: readonly string[],
   reading: { label: string; explanation: string } | null | undefined,
   passage: string,
+  advice?: string | null,
 ): Record<string, string> {
   return {
     relation: reading?.label ?? "Shared words",
@@ -265,8 +346,13 @@ export function echoData(
       `These passages share ${shared.slice(0, 3).join(", ")}. Twyne matched the words; nobody has read them for meaning yet.`,
     provenance: reading ? "reading" : "shared-words",
     passage: passage.slice(0, 400),
+    // What the decision model would do with the pair, when it was asked.
+    ...(advice ? { advice } : {}),
   };
 }
+
+/** Marks that tie a note or a proposal to the words they sit on. */
+const ANCHORING_MARKS = ["commentMark", "personaNote", "suggestion"];
 
 export function startFlowConductor(
   editor: Editor,
@@ -318,6 +404,11 @@ export function startFlowConductor(
   const driftLows: Partial<Record<DossierField, number>> = {};
   const items = new Map<string, FlowItem>();
   const dismissed = new Set<string>();
+  /** A fold the writer has not yet kept: what to undo, and back to what. */
+  const changes = new Map<
+    string,
+    { before: PmNode; after: PmNode; steps: number; original: FlowItem }
+  >();
   const shown = new Set<string>();
   const asked = new Set<string>();
   let house: HouseState | null = null;
@@ -382,10 +473,87 @@ export function startFlowConductor(
     return { pos: $head.before(), node: $head.parent };
   };
 
+  // Echoes refer to complete textblocks. Ambiguous or edited text cannot
+  // identify a paragraph for a move. Cache this index across margin layouts.
+  let indexedDoc: PmNode | undefined;
+  const blocks = new Map<
+    string,
+    {
+      pos: number;
+      node: PmNode;
+      ordinal: number;
+      paragraph?: number;
+      movable: boolean;
+    } | null
+  >();
+  const exactBlock = (text: string) => {
+    const doc = editor.state.doc;
+    if (indexedDoc !== doc) {
+      indexedDoc = doc;
+      blocks.clear();
+      let ordinal = 0;
+      let paragraph = 0;
+      doc.descendants((node, pos, parent) => {
+        if (!node.isTextblock) return true;
+        const key = node.textContent.trim();
+        if (!key) return false;
+        ordinal++;
+        const isParagraph = node.type.name === "paragraph";
+        if (isParagraph) paragraph++;
+        blocks.set(
+          key,
+          blocks.has(key)
+            ? null
+            : {
+                pos,
+                node,
+                ordinal,
+                paragraph: isParagraph ? paragraph : undefined,
+                movable: parent === doc && isParagraph,
+              },
+        );
+        return false;
+      });
+    }
+    return blocks.get(text.trim());
+  };
+
+  // Re-evaluate positions after a move, undo or collaborative edit. A card
+  // that suggested putting neighbours together should disappear once they are.
+  const localEchoTitle = (a: string, b: string, relation?: string) => {
+    const first = exactBlock(a),
+      other = exactBlock(b);
+    if (!first || !other) return null;
+    const start = Math.min(first.ordinal, other.ordinal);
+    const end = Math.max(first.ordinal, other.ordinal);
+    if (
+      end - start <= SAME_STRETCH &&
+      (!relation || relation === "Shared words" || relation === "Same subject")
+    )
+      return null;
+    if (first.paragraph && other.paragraph) {
+      return `Paragraphs ${Math.min(first.paragraph, other.paragraph)} and ${Math.max(first.paragraph, other.paragraph)}`;
+    }
+    return other.pos < first.pos
+      ? "Earlier in this piece"
+      : "Further on in this piece";
+  };
+
+  const currentItems = () =>
+    [...items.values()].flatMap((item) => {
+      if (item.kind !== "echo" || item.anchors.length !== 2) return [item];
+      const title = localEchoTitle(
+        item.anchors[0],
+        item.anchors[1],
+        item.data?.relation,
+      );
+      return title ? [title === item.title ? item : { ...item, title }] : [];
+    });
+
   const publish = () => {
     if (!active()) return;
     const decision = enabled
-      ? decideSurface([...items.values()], {
+      ? decideSurface(currentItems(), {
           mode,
           cursorText: cursorBlock()?.node.textContent ?? "",
           dismissed,
@@ -403,6 +571,14 @@ export function startFlowConductor(
     decision.held += fragile.length;
     for (const item of fragile)
       decision.reasons[item.id] = "held: costly while settling";
+    // A fold the writer has just made stays beside its paragraph until it
+    // is kept or put back, whatever the page is otherwise holding.
+    for (const id of changes.keys()) {
+      const item = items.get(id);
+      if (!item || decision.visible.some((shown) => shown.id === id)) continue;
+      decision.visible.unshift(item);
+      decision.reasons[id] = "kept: a change to review";
+    }
     for (const item of decision.visible) {
       if (!lastVisibleIds.has(item.id))
         interruptions.shown(item.kind, Date.now());
@@ -846,6 +1022,14 @@ export function startFlowConductor(
           instructions: `${EVIDENCE} If \`echo${i}\` bears on \`passage\`, which reading best names how they relate? Choose "Shared vocabulary only" when nothing more than words connects them.`,
           criteria: [...ECHO_RELATIONS.map((r) => r.label), SHARED_ONLY],
         };
+        // What to do with the pair is asked alongside how they relate: the
+        // same state in the same request, used only if the relation allows.
+        if (match.passage.source === folioId)
+          questions[`merge${i}`] = mergeQuestion(
+            "passage",
+            `echo${i}`,
+            EVIDENCE,
+          );
       });
 
       // Works the paragraph names: which are real, and what kind.
@@ -903,7 +1087,7 @@ export function startFlowConductor(
       });
 
       const wayInId = `way-in:${key.slice(0, 40)}`;
-      const existingEcho = [...items.values()]
+      const existingEcho = currentItems()
         .filter(
           (item) =>
             item.kind === "echo" &&
@@ -940,7 +1124,7 @@ export function startFlowConductor(
         return a === undefined ? (fallback ?? null) : a >= floor ? a : null;
       };
 
-      const docText = editor.state.doc.textContent;
+      const currentBlock = exactBlock(text);
       let unconfirmedHere = 0;
       echoes.forEach((match, i) => {
         const judged = answers?.[`echo${i}`]?.noul !== undefined;
@@ -951,22 +1135,16 @@ export function startFlowConductor(
         );
         if (relevance === null) return;
         const here = match.passage.source === folioId;
-        // Without Jev to read them, repeated words inside one draft are
-        // mostly the draft's own vocabulary: let one through, not a column.
-        if (here && !judged && unconfirmedHere++ >= 1) return;
-        const earlier =
-          here && docText.indexOf(match.passage.text) < docText.indexOf(text);
         const reading = echoReading(
           answers?.[`relation${i}`]?.choice,
           match.shared,
         );
-        // Jev read them as nothing more than shared words: not a connection.
-        if (judged && reading === null) return;
+        if (reading === null || !currentBlock) return;
         const where = here
-          ? earlier
-            ? "Earlier in this piece"
-            : "Further on in this piece"
+          ? localEchoTitle(text, match.passage.text, reading?.label)
           : match.passage.sourceName || "Another folio";
+        if (!where) return;
+        if (here && !judged && unconfirmedHere++ >= 1) return;
         upsert({
           id: `echo:${match.passage.id}`,
           kind: "echo",
@@ -974,7 +1152,20 @@ export function startFlowConductor(
           title: where,
           body: match.passage.text,
           byline: `Shares ${match.shared.join(", ")}`,
-          data: echoData(match.shared, reading, text),
+          data: echoData(
+            match.shared,
+            reading,
+            text,
+            here && questions[`merge${i}`]?.criteria
+              ? adviceFor(
+                  reading?.label,
+                  readMergeAdvice(
+                    answers?.[`merge${i}`]?.choice,
+                    questions[`merge${i}`].criteria!,
+                  ),
+                )
+              : null,
+          ),
           createdAt: Date.now(),
           relevance,
           folioId: match.passage.source,
@@ -996,7 +1187,7 @@ export function startFlowConductor(
         !dismissed.has(wayInId) &&
         (stuck !== undefined ? stuck >= 0.6 : localStuck)
       ) {
-        const echo = [...items.values()]
+        const echo = currentItems()
           .filter(
             (item) =>
               item.kind === "echo" &&
@@ -1473,11 +1664,180 @@ export function startFlowConductor(
     return found;
   };
 
+  /* ── Folding one paragraph into another ─────────────────────── */
+
+  /** Text only, so an offset into the paragraph's text is a place in it. */
+  const plainText = (node: PmNode) => {
+    let plain = true;
+    node.forEach((child) => {
+      if (!child.isText) plain = false;
+    });
+    return plain;
+  };
+
+  /** Both paragraphs of an echo, when one can be folded into the other. */
+  const mergeable = (anchors: string[]) => {
+    if (!active() || !editor.isEditable || anchors.length !== 2) return null;
+    const here = exactBlock(anchors[0]),
+      other = exactBlock(anchors[1]);
+    if (
+      !here?.movable ||
+      !other?.movable ||
+      here.pos === other.pos ||
+      !plainText(here.node) ||
+      !plainText(other.node)
+    )
+      return null;
+    return { here, other };
+  };
+
+  /**
+   * The passage an echo's card holds: the other paragraph of this
+   * manuscript, or wording from another folio that can only be copied in.
+   */
+  const carriedBy = (item: FlowItem) => {
+    if (item.kind !== "echo" || item.data?.change) return null;
+    if (item.anchors.length === 2) {
+      const block = exactBlock(item.anchors[1]);
+      return block?.movable && plainText(block.node)
+        ? { block, text: item.anchors[1].trim(), from: undefined }
+        : null;
+    }
+    const text = item.body.trim();
+    return text
+      ? { block: undefined, text, from: item.folioName || item.title }
+      : null;
+  };
+
+  /** Leave the card beside what changed until the writer keeps it. */
+  const review = (
+    item: FlowItem,
+    before: PmNode,
+    next: Pick<FlowItem, "title"> & { data: Record<string, string> },
+  ) => {
+    changes.set(item.id, {
+      before,
+      after: editor.state.doc,
+      steps: 1,
+      // A plain copy: the margin hands over a view of its own state.
+      original: {
+        ...item,
+        anchors: [...item.anchors],
+        ...(item.data ? { data: { ...item.data } } : {}),
+      },
+    });
+    items.set(item.id, {
+      ...item,
+      anchors: [editor.state.selection.$head.parent.textContent.trim()],
+      title: next.title,
+      body: "",
+      byline: undefined,
+      data: { ...item.data, ...next.data },
+    });
+    dismissed.delete(item.id);
+    profile = recordItem(profile, "echo", "engaged", Date.now());
+    profileDirty = true;
+    publish();
+  };
+
+  type Block = NonNullable<ReturnType<typeof exactBlock>>;
+
+  /**
+   * Fold a passage into `keeper` as one undoable change: the sentences the
+   * keeper does not already say are carried to its end, and the passage's
+   * own paragraph, when it has one here, goes.
+   */
+  const fold = (
+    item: FlowItem,
+    keeper: Pick<Block, "pos" | "node">,
+    source: { block?: Block; text: string; from?: string },
+    repeated: readonly { from: number; to: number }[],
+  ) => {
+    const folded = source.block;
+    const raw = folded?.node.textContent ?? source.text;
+    const text = raw.trim();
+    const lead = raw.length - raw.trimStart().length;
+    const { schema, doc: before } = editor.state;
+    const anchoring = ANCHORING_MARKS.flatMap((name) =>
+      schema.marks[name] ? [schema.marks[name]] : [],
+    );
+    // A sentence a note or a proposal sits on travels with it.
+    const plan = planMerge(text, repeated, (sentence) =>
+      folded
+        ? anchoring.some((mark) =>
+            folded.node.rangeHasMark(
+              lead + sentence.from,
+              lead + sentence.to,
+              mark,
+            ),
+          )
+        : false,
+    );
+    let carried = Fragment.empty;
+    plan.carried.forEach((sentence, i) => {
+      if (i > 0 || !/\s$/.test(keeper.node.textContent))
+        carried = carried.append(Fragment.from(schema.text(" ")));
+      carried = carried.append(
+        folded
+          ? folded.node.slice(lead + sentence.from, lead + sentence.to).content
+          : Fragment.from(schema.text(text.slice(sentence.from, sentence.to))),
+      );
+    });
+    reviewing();
+    const end = keeper.pos + keeper.node.nodeSize - 1;
+    const tr = closeHistory(editor.state.tr);
+    if (carried.size) tr.insert(end, carried);
+    if (folded)
+      tr.delete(
+        tr.mapping.map(folded.pos),
+        tr.mapping.map(folded.pos + folded.node.nodeSize),
+      );
+    // Where the keeper's own words end, in the folded document.
+    const from =
+      folded && folded.pos < keeper.pos ? end - folded.node.nodeSize : end;
+    tr.setSelection(TextSelection.create(tr.doc, from));
+    // Added to any marks an earlier fold still has up for review.
+    if (carried.size) addMergeReview(tr, [{ from, to: from + carried.size }]);
+    editor.view.dispatch(tr.scrollIntoView());
+    editor.view.focus();
+    const said = (spans: { from: number; to: number }[]) =>
+      JSON.stringify(spans.map((span) => text.slice(span.from, span.to)));
+    logFlow("item", `Folded a paragraph: ${item.title}`, {
+      carried: plan.carried.length,
+      dropped: plan.dropped.length,
+    });
+    review(item, before, {
+      title: folded?.paragraph
+        ? `Paragraph ${folded.paragraph} folded in`
+        : source.from
+          ? `Folded in from ${source.from}`
+          : "Folded in",
+      data: {
+        change: "merged",
+        carried: said(plan.carried),
+        dropped: said(plan.dropped),
+      },
+    });
+    return true;
+  };
+
+  /** The marks live in a plugin added the first time a fold needs them. */
+  const reviewing = () => {
+    if (mergeReviewKey.getState(editor.state) === undefined)
+      editor.registerPlugin(mergeReviewPlugin());
+  };
+
+  const settleChange = (id: string) => {
+    if (!changes.delete(id)) return;
+    if (!changes.size && !editor.isDestroyed) clearMergeReview(editor.view);
+  };
+
   controller = ownedController = {
     dismiss(id) {
       if (!active()) return;
       const item = items.get(id);
       dismissed.add(id);
+      settleChange(id);
       if (item) {
         profile = recordItem(profile, item.kind, "dismissed", Date.now());
         profileDirty = true;
@@ -1496,11 +1856,246 @@ export function startFlowConductor(
       if (!active()) return;
       if (dismissed.delete(id)) publish();
     },
+    paragraphNumber(anchor) {
+      return active() ? exactBlock(anchor)?.paragraph : undefined;
+    },
+    planPassageMove(anchors) {
+      if (!active() || !editor.isEditable || anchors.length !== 2) return null;
+      const a = exactBlock(anchors[0]),
+        b = exactBlock(anchors[1]);
+      if (!a?.movable || !b?.movable) return null;
+      const [first, second] = a.pos < b.pos ? [a, b] : [b, a];
+      const after = first.pos + first.node.nodeSize;
+      if (after >= second.pos) return null;
+      const before = editor.state.doc;
+      return {
+        label: `Move paragraph ${second.paragraph} after paragraph ${first.paragraph}`,
+        apply() {
+          if (!active() || !editor.isEditable || editor.state.doc !== before)
+            return false;
+          const tr = closeHistory(editor.state.tr)
+            .delete(second.pos, second.pos + second.node.nodeSize)
+            .insert(after, second.node);
+          tr.setSelection(TextSelection.create(tr.doc, after + 1));
+          editor.view.dispatch(tr.scrollIntoView());
+          publish();
+          return true;
+        },
+      };
+    },
+    canMergePassages(anchors) {
+      return !!mergeable(anchors);
+    },
+    async passageEvidence(anchors) {
+      if (!active() || anchors.length !== 2) return null;
+      const [here, other] = anchors.map((anchor) => anchor.trim());
+      const request = evidenceRequest(here, other);
+      let read: MergeEvidence | null = null;
+      try {
+        const [{ loadAiSettingsFromIdb }, local] = await Promise.all([
+          import("../../../utils/idb"),
+          import("../../../utils/local-extraction"),
+        ]);
+        const settings = await loadAiSettingsFromIdb();
+        const model = settings ? local.localExtractionModel(settings) : null;
+        const client = options.getClient();
+        const result = model
+          ? await local.askLocalExtraction(request, model)
+          : client && !extractionBackedOff()
+            ? await askExtraction(client, request)
+            : null;
+        if (result && !result.ok && !model) backOffExtraction();
+        if (result?.ok) read = readEvidence(here, other, result.answers);
+      } catch (error) {
+        logFlow("error", "Reading two paragraphs for a fold failed", {
+          error: String(error),
+        });
+      }
+      if (!active()) return null;
+      const evidence = read ?? localEvidence(here, other);
+      logFlow("context", `Fold evidence from ${evidence.source}`, {
+        here: evidence.here.length,
+        other: evidence.other.length,
+      });
+      return evidence;
+    },
+    mergePassages(item, keep, evidence) {
+      const pair = item.kind === "echo" ? mergeable(item.anchors) : null;
+      if (!pair) return false;
+      const [keeper, folded] =
+        keep === 0 ? [pair.here, pair.other] : [pair.other, pair.here];
+      return fold(
+        item,
+        keeper,
+        { block: folded, text: folded.node.textContent.trim() },
+        (keep === 0 ? evidence?.other : evidence?.here) ?? [],
+      );
+    },
+    passageDropAt(item, x, y) {
+      if (!active() || !editor.isEditable) return null;
+      const source = carriedBy(item);
+      const hit = source && editor.view.posAtCoords({ left: x, top: y });
+      if (!source || !hit) return null;
+      const { doc, schema } = editor.state;
+      const $pos = doc.resolve(hit.pos);
+      const index = Math.min($pos.index(0), doc.childCount - 1);
+      const node = doc.maybeChild(index);
+      if (!node) return null;
+      const pos = $pos.posAtIndex(index, 0);
+      const dom = editor.view.nodeDOM(pos);
+      if (!(dom instanceof HTMLElement)) return null;
+      const box = dom.getBoundingClientRect();
+      if (x < box.left - 48 || x > box.right + 48) return null;
+      const itself = source.block?.pos === pos;
+      const share = (y - box.top) / Math.max(1, box.height);
+      const text = node.textContent.trim();
+      // The middle of a paragraph takes the passage in; its edges are gaps.
+      const takes =
+        !itself &&
+        node.type.name === "paragraph" &&
+        plainText(node) &&
+        !!text &&
+        share > 0.28 &&
+        share < 0.72;
+      const kind = takes ? "merge" : share < 0.5 ? "before" : "after";
+      if (kind !== "merge") {
+        const at = kind === "before" ? index : index + 1;
+        const from = source.block ? doc.resolve(source.block.pos).index(0) : -1;
+        // Setting it down where it already is changes nothing.
+        if (from >= 0 && (at === from || at === from + 1)) return null;
+        if (!doc.canReplaceWith(at, at, schema.nodes.paragraph)) return null;
+      }
+      const edge = kind === "before" ? box.top : box.bottom;
+      return {
+        kind,
+        pos,
+        text,
+        source: source.text,
+        rect:
+          kind === "merge"
+            ? {
+                left: box.left,
+                top: box.top,
+                width: box.width,
+                height: box.height,
+              }
+            : { left: box.left, top: edge, width: box.width, height: 0 },
+        label:
+          kind === "merge"
+            ? "Merge here"
+            : source.block
+              ? "Move here"
+              : "Copy here",
+      };
+    },
+    dropPassage(item, drop, evidence) {
+      if (!active() || !editor.isEditable) return false;
+      const source = carriedBy(item);
+      const { doc, schema } = editor.state;
+      const node = doc.nodeAt(drop.pos);
+      // The page may have moved on while the evidence was being read.
+      if (!source || !node || node.textContent.trim() !== drop.text)
+        return false;
+      if (drop.kind === "merge")
+        return fold(
+          item,
+          { pos: drop.pos, node },
+          source,
+          evidence?.other ?? [],
+        );
+      const moved =
+        source.block?.node ??
+        schema.nodes.paragraph.create(null, schema.text(source.text));
+      reviewing();
+      const tr = closeHistory(editor.state.tr);
+      if (source.block)
+        tr.delete(source.block.pos, source.block.pos + moved.nodeSize);
+      const at = tr.mapping.map(
+        drop.kind === "before" ? drop.pos : drop.pos + node.nodeSize,
+      );
+      tr.insert(at, moved);
+      tr.setSelection(TextSelection.create(tr.doc, at + 1));
+      addMergeReview(tr, [{ from: at + 1, to: at + moved.nodeSize - 1 }]);
+      editor.view.dispatch(tr.scrollIntoView());
+      editor.view.focus();
+      logFlow("item", `Set a paragraph down: ${item.title}`, {
+        copied: !source.block,
+      });
+      review(item, doc, {
+        title: source.block?.paragraph
+          ? `Paragraph ${source.block.paragraph} moved here`
+          : source.from
+            ? `Copied from ${source.from}`
+            : "Moved here",
+        data: { change: source.block ? "moved" : "copied" },
+      });
+      return true;
+    },
+    carryDropped(id, index) {
+      const item = items.get(id);
+      const change = changes.get(id);
+      const block = item && exactBlock(item.anchors[0]);
+      if (!active() || !editor.isEditable || !item || !change || !block)
+        return false;
+      const dropped = JSON.parse(item.data?.dropped ?? "[]") as string[];
+      const sentence = dropped[index];
+      if (!sentence) return false;
+      const end = block.pos + block.node.nodeSize - 1;
+      const tr = closeHistory(editor.state.tr).insertText(` ${sentence}`, end);
+      addMergeReview(tr, [{ from: end, to: end + sentence.length + 1 }]);
+      editor.view.dispatch(tr);
+      change.after = editor.state.doc;
+      change.steps++;
+      items.set(id, {
+        ...item,
+        anchors: [
+          editor.state.doc.nodeAt(block.pos)?.textContent.trim() ??
+            item.anchors[0],
+        ],
+        data: {
+          ...item.data,
+          carried: JSON.stringify([
+            ...(JSON.parse(item.data?.carried ?? "[]") as string[]),
+            sentence,
+          ]),
+          dropped: JSON.stringify(dropped.filter((_, i) => i !== index)),
+        },
+      });
+      publish();
+      return true;
+    },
+    revertChange(id) {
+      const change = changes.get(id);
+      if (!active() || !change || !editor.isEditable) return false;
+      // Undo is only the fold while nothing else has been written since.
+      if (editor.state.doc !== change.after) return false;
+      for (let step = 0; step < change.steps; step++) editor.commands.undo();
+      // The connection comes back with its paragraphs; `currentItems`
+      // drops it again if the draft did not return to where it was.
+      items.set(id, change.original);
+      settleChange(id);
+      publish();
+      return true;
+    },
+    keepChange(id) {
+      if (!active()) return;
+      settleChange(id);
+      items.delete(id);
+      dismissed.add(id);
+      publish();
+    },
     anchorRanges(item) {
       if (!active()) return [];
       const ranges: Range[] = [];
       for (const anchor of item.anchors) {
-        const range = locate(anchor);
+        const block = item.kind === "echo" ? exactBlock(anchor) : undefined;
+        const range =
+          item.kind !== "echo"
+            ? locate(anchor)
+            : block && {
+                from: block.pos + 1,
+                to: block.pos + block.node.nodeSize - 1,
+              };
         if (!range) continue;
         try {
           const start = editor.view.domAtPos(range.from);
@@ -1616,7 +2211,7 @@ export function startFlowConductor(
     release,
     items() {
       if (!active()) return [];
-      return [...items.values()].filter((item) => !dismissed.has(item.id));
+      return currentItems().filter((item) => !dismissed.has(item.id));
     },
     cursorTop() {
       if (!active()) return null;
@@ -1723,6 +2318,12 @@ export function startFlowConductor(
       if (autoFocus) setFocus(false, "the folio closed");
       setFlowAttribute(null);
     }
+    changes.clear();
+    if (
+      !editor.isDestroyed &&
+      mergeReviewKey.getState(editor.state) !== undefined
+    )
+      editor.unregisterPlugin(mergeReviewKey);
     editor.off("transaction", onTransaction);
     editor.off("destroy", stop);
     window.removeEventListener("twyne:zen-mode", onZen);

@@ -355,6 +355,7 @@ export const TwyneEditor = component$(
     brief,
     sharedLixId,
     readOnly = false,
+    onCopyPassages$,
     onEditorialContext$,
     onManuscriptFocus$,
   }: TwyneEditorProps) => {
@@ -4386,6 +4387,8 @@ export const TwyneEditor = component$(
             )}
           </div>
           <ManuscriptPanel
+            onCopyPassages$={onCopyPassages$}
+            folioName={activeFolio?.name}
             startupFailed={startupFailed.value}
             store={store}
             readOnly={readOnly}

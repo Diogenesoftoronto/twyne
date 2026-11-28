@@ -153,11 +153,53 @@ selects rather than writes. When the judgement says shared vocabulary only, the
 card is not shown. Without a judgement the card says it was matched on shared
 words and has not been read for meaning.
 
-The card shows both ends: the matched passage and the one being written, each
-going to its own place in the manuscript (`focusAnchor(item, index)`). The
-reading is offered as an editorial interpretation, never as a defect.
-"That's the connection" records engagement in the flow profile; "Not how I read
-it" dismisses the card, which does not come back in the mounted session.
+Paragraphs within three of each other that simply share words or a subject
+stay quiet: that is one stretch of the piece, and sharing a subject there is
+ordinary continuity. A specific reading such as tension or repetition can
+still appear there. Each
+card offers an editorial question, a short excerpt and Compare passages.
+The comparison keeps the full reasons under Connection details and lets
+the writer jump to each live passage.
+
+For two separated top-level paragraphs the writer can move the later one
+after the earlier one in a single undoable edit. A group can also be copied
+as plain wording into a named folio. Transition ideas offers local writing
+prompts and an explicit handoff to Task desk with an editable request.
+Opening the comparison and reading the prompts require no model call.
+
+### Merging two paragraphs
+
+Three readings, each from the tool suited to it (`src/utils/passage-merge.ts`):
+
+- **Which.** The gather request that asks Jev how two paragraphs relate also
+  asks, as one Choice over the same state, what to do with them: keep this
+  one, keep the other, set them side by side, or leave them. `adviceFor`
+  discards advice the relation cannot carry (a promise and its payoff are
+  never folded). The card says that one move as the gesture that does it.
+- **Evidence.** When the writer takes the move or opens the comparison,
+  Clairic is asked for the sentences each paragraph repeats from the other.
+  Its answers are spans of the two paragraphs, snapped to whole sentences.
+  A configured on-device extraction model is used first; signed out, or when
+  the service is backing off, sentences that share most of their distinctive
+  words stand in, and the sheet says which it is showing.
+- **The fold.** Code keeps one paragraph whole and appends the other's
+  sentences that are not repeats, with their marks; a sentence a comment,
+  persona note or suggestion is anchored to always travels. No text is
+  generated. It is one undoable transaction.
+
+The moves are made by dragging. The card's passage is a slip
+(`passageDropAt`, `dropPassage`): let go over the middle of a paragraph and
+it is folded in; over the gap between two and it is set down there, or copied
+in when it lives in another folio. The landing place is drawn in the
+manuscript's instruction red before the writer lets go, the page scrolls when
+the slip is held near its edge, and Escape puts it back. In the comparison
+sheet one paragraph's heading can be dragged onto the other. The sheet keeps
+its buttons, which are the keyboard and touch path to the same changes.
+
+The writer lands on the merged paragraph with the carried sentences marked
+(`merge-review.ts`, decorations only). The echo's card becomes the other half
+of the diff: what was carried, what was left out, Carry it over per sentence,
+Put it back, Keep it. The card stays up until one of those is chosen.
 
 `FlowSnapshot.heldKinds` is the pneumatic post's tally: held items by kind, beside
 the total `held`. It includes only policy-held items, including a waiting way in;

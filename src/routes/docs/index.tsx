@@ -596,22 +596,35 @@ export default component$(() => {
                 writing drifts from the dossier, the room may propose an
                 amendment. It never rewrites the brief behind your back.
               </p>
-              <h3 class="manual-h3">Why two passages are side by side</h3>
+              <h3 class="manual-h3">Working with connected passages</h3>
               <p class="manual-p">
-                Halfway through Salt Roads, Morgan writes about the salt
-                merchant's ledger, and a card appears: Earlier in this piece.
-                Unpaid promise. The opening said the ledger would explain the
-                road, and nothing has explained it yet. The card names the
-                relationship (an unpaid promise, a tension, an echo, a
-                repetition, or the same subject) and says in a sentence why it
-                matters. It shows both passages; select either to go to it.
+                Morgan introduces a ledger on page one and returns to it near
+                the end. The margin asks, “Does the later passage pay off the
+                setup?” Choose Compare passages to read them together.
+                Connection details shows what prompted the question. A word
+                match records shared vocabulary.
               </p>
               <p class="manual-p">
-                A relationship is a reading, not a fault. Some promises are
-                meant to stay open. Choose That's the connection if the reading
-                is right, or Not how I read it to set the card aside for good. A
-                card matched only on shared words says so, rather than
-                pretending to know more.
+                You can move a separated paragraph beside the first, undo the
+                move, or copy the passages into a new folio to work on the idea.
+                Transition ideas offers three ways to bridge the passages. Open
+                Task desk there to request draft wording from your model. Set a
+                card aside when the passages already work where they are.
+              </p>
+              <p class="manual-p">
+                The passage on a card is a slip you can pick up. Drag it into
+                the manuscript and let go between two paragraphs to set it down
+                there, or onto a paragraph to merge the two. In a merge Twyne
+                keeps the paragraph you dropped onto whole, carries over the
+                sentences only the other had, and leaves out the ones that
+                repeat. Nothing is rewritten; every sentence is still Morgan's.
+                The page returns to the paragraph that changed with what arrived
+                marked, and the card beside it lists what came over and what was
+                left out. Carry it over brings a sentence back, Put it back
+                undoes the change, and Keep it clears the marks. Compare
+                passages shows the evidence first: sentences that repeat are
+                highlighted in both paragraphs, and you can drag one paragraph
+                onto the other there, or use the buttons from the keyboard.
               </p>
               <div class="manual-callout">
                 <p>

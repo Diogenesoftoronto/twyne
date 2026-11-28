@@ -110,59 +110,63 @@ export const InstrumentDock = component$<InstrumentDockProps>((props) => {
     @media(prefers-reduced-motion:reduce) { .instrument-dock { scroll-behavior:auto; } }
   `);
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track, cleanup }) => {
-    const folioId = track(() => props.folioId);
-    const disabled = track(() => props.disabled);
-    const element = dialog.value;
-    let opener: HTMLElement | null = null;
-    const restoreFocus = () => {
-      state.open = false;
-      const target =
-        element?.returnValue !== "manuscript" &&
-        opener?.isConnected &&
-        opener !== document.body &&
-        !element?.contains(opener) &&
-        opener.getClientRects().length
-          ? opener
-          : document.querySelector<HTMLElement>(
-              '.ProseMirror[contenteditable="true"]',
-            );
-      target?.focus({ preventScroll: true });
-      opener = null;
-    };
-    const open = (event: Event) => {
-      const request = (event as CustomEvent<InstrumentDockRequest>).detail;
-      if (
-        disabled ||
-        !folioId ||
-        !request ||
-        !["tasks", "local", "scene"].includes(request.kind)
-      )
-        return;
-      state.kind = request.kind;
-      state.text = request.text ?? props.selectedText ?? "";
-      state.passage = request.passage;
-      entities.value = null;
-      capabilities.error = "";
-      if (!element?.open) {
-        opener =
-          document.activeElement instanceof HTMLElement
-            ? document.activeElement
-            : null;
-        if (element) element.returnValue = "";
-      }
-      state.open = true;
-      element?.showModal();
-    };
-    window.addEventListener(INSTRUMENT_DOCK_EVENT, open);
-    element?.addEventListener("close", restoreFocus);
-    cleanup(() => {
-      window.removeEventListener(INSTRUMENT_DOCK_EVENT, open);
-      element?.removeEventListener("close", restoreFocus);
-      element?.close();
-      state.open = false;
-    });
-  });
+  useVisibleTask$(
+    ({ track, cleanup }) => {
+      const folioId = track(() => props.folioId);
+      const disabled = track(() => props.disabled);
+      const element = dialog.value;
+      let opener: HTMLElement | null = null;
+      const restoreFocus = () => {
+        state.open = false;
+        const target =
+          element?.returnValue !== "manuscript" &&
+          opener?.isConnected &&
+          opener !== document.body &&
+          !element?.contains(opener) &&
+          opener.getClientRects().length
+            ? opener
+            : document.querySelector<HTMLElement>(
+                '.ProseMirror[contenteditable="true"]',
+              );
+        target?.focus({ preventScroll: true });
+        opener = null;
+      };
+      const open = (event: Event) => {
+        const request = (event as CustomEvent<InstrumentDockRequest>).detail;
+        if (
+          disabled ||
+          !folioId ||
+          !request ||
+          !["tasks", "local", "scene"].includes(request.kind)
+        )
+          return;
+        state.kind = request.kind;
+        state.text = request.text ?? props.selectedText ?? "";
+        state.passage = request.passage;
+        state.instruction = request.instruction;
+        entities.value = null;
+        capabilities.error = "";
+        if (!element?.open) {
+          opener =
+            document.activeElement instanceof HTMLElement
+              ? document.activeElement
+              : null;
+          if (element) element.returnValue = "";
+        }
+        state.open = true;
+        element?.showModal();
+      };
+      window.addEventListener(INSTRUMENT_DOCK_EVENT, open);
+      element?.addEventListener("close", restoreFocus);
+      cleanup(() => {
+        window.removeEventListener(INSTRUMENT_DOCK_EVENT, open);
+        element?.removeEventListener("close", restoreFocus);
+        element?.close();
+        state.open = false;
+      });
+    },
+    { strategy: "document-ready" },
+  );
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track, cleanup }) => {
     const open = track(() => state.open);
@@ -453,6 +457,7 @@ export const InstrumentDock = component$<InstrumentDockProps>((props) => {
                     key={props.folioId}
                     folioId={props.folioId}
                     selectedText={state.text}
+                    initialInstruction={state.instruction}
                   />
                 </>
               )}

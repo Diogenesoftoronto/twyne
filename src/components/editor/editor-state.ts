@@ -193,6 +193,9 @@ export type EditorPanelState = Omit<
 >;
 
 export interface TwyneEditorProps {
+  onCopyPassages$?: PropFunction<
+    (sourceId: string, name: string, passages: string[]) => Promise<boolean>
+  >;
   editorSignal?: Signal<NoSerialize<Editor> | undefined>;
   initialContent?: string;
   /** The folio this draft belongs to. Used to scope user comments. */

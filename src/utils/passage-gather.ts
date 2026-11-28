@@ -1,10 +1,13 @@
 /**
- * Gathering connected passages into one read-only view.
+ * Gathering connected passages into one comparison.
  *
  * A margin card, an edge marker or a thread can ask to see every passage it
  * is connected to side by side. Each passage is a live DOM range in the
- * manuscript; the view reads its paragraph for context and never writes.
+ * manuscript. An echo may also carry archived excerpts and an explicit move
+ * bound to the manuscript revision the writer is comparing.
  */
+
+import type { MergeAdvice, MergeEvidence } from "./passage-merge";
 
 export const PASSAGE_GATHER_EVENT = "twyne:passage-gather";
 
@@ -75,6 +78,52 @@ export function connectionReason(item: {
   };
 }
 
+/** A question the writer can decide by reading the excerpts together. */
+export function connectionQuestion(reason: PassageConnection): string {
+  if (reason.provenance === "shared-words")
+    return "Is the repeated wording intentional?";
+  if (reason.provenance !== "reading") return "Worth reading together?";
+  switch (reason.relation) {
+    case "Unpaid promise":
+      return "Does the later passage pay off the setup?";
+    case "Tension":
+      return "Does the contrast come through?";
+    case "Echo":
+      return "Is the callback clear?";
+    case "Repetition":
+      return "Could one passage carry the point?";
+    case "Same subject":
+      return "Would these read better together?";
+    default:
+      return "Worth reading together?";
+  }
+}
+
+/**
+ * What the sheet needs to offer a fold: what was advised, which gathered
+ * passage is which, and how to read the evidence and make the change.
+ */
+export interface PassageMerge {
+  advice: MergeAdvice | null;
+  /** Offer the fold only once the evidence finds a repeated sentence. */
+  needsRepeat: boolean;
+  /** `GatherPassage` ids: the paragraph being written, and the other. */
+  passages: { here: string; other: string };
+  /** How each is named to the writer: "paragraph 4". */
+  names: { here: string; other: string };
+  texts: { here: string; other: string };
+  /** The sentences each repeats from the other; asked once, on opening. */
+  evidence: () => Promise<MergeEvidence | null>;
+  /** Fold, keeping `here` (0) or `other` (1). False if the draft moved on. */
+  apply: (keep: 0 | 1, evidence: MergeEvidence | null) => boolean;
+}
+
+export interface FolioExcerpt {
+  folioId: string;
+  name: string;
+  text: string;
+}
+
 /** A connection between passages in one gathering, and which ones it joins. */
 export interface GatherConnection extends PassageConnection {
   /** Stable within one gathering. */
@@ -94,6 +143,14 @@ export interface GatherRequest {
   /** Why the gathered passages are linked, as recorded; never generated. */
   connections?: GatherConnection[];
   passages: GatherPassage[];
+  /** Available only when the writer opens an echo from the margin. */
+  editing?: {
+    complete: boolean;
+    otherFolios: FolioExcerpt[];
+    move: { label: string; apply: () => boolean } | null;
+    /** Folding one of the echo's two paragraphs into the other. */
+    merge?: PassageMerge | null;
+  };
   /** The element that asked, to take focus back on close. */
   opener?: HTMLElement | null;
   /** Start from the passages' places in the page, if motion is allowed. */

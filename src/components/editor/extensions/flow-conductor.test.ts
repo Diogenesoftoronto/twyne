@@ -217,6 +217,7 @@ function start(
   folioId: string,
   clientAvailable = true,
   brief: ProjectBrief | null = null,
+  following: string[] = [],
 ) {
   const schema = new Schema({
     nodes: {
@@ -234,6 +235,9 @@ function start(
         " sends me back to the long salt roads where traders weighed their loads and followed the coast before dawn.",
       ),
     ]),
+    ...following.map((text) =>
+      schema.node("paragraph", null, schema.text(text)),
+    ),
   ]);
   const listeners = new Map<
     string,
@@ -647,6 +651,49 @@ test("local fallback requires strong churn and no client; a budget-skipped clien
       .some((item) => item.kind === "way-in"),
   ).toBe(false);
 });
+
+// Paragraphs between the two passages: within a few, they are one stretch
+// of the piece and sharing a subject is ordinary continuity.
+for (const [relation, between, expected] of [
+  ["Same subject", 0, false],
+  [undefined, 0, false],
+  ["Repetition", 0, true],
+  ["Same subject", 2, false],
+  ["Repetition", 2, true],
+  ["Same subject", 3, true],
+] as const) {
+  test(`a ${relation ?? "word match"} with ${between} paragraphs between: surface = ${expected}`, async () => {
+    resetRequests();
+    clock();
+    judgement = Promise.resolve({
+      ok: true,
+      answers: {
+        echo0: { type: "noul", noul: 0.9 },
+        ...(relation
+          ? { relation0: { type: "choice", choice: relation } }
+          : {}),
+      },
+    });
+    const other =
+      "The Odyssey sends the traders along the salt roads at dawn. They weighed their loads and followed the coast.";
+    const current = start("folio", !!relation, null, [
+      ...[
+        "Inland, the bell rang.",
+        "A dog barked once at the gate.",
+        "Nobody had lit the lamps yet.",
+      ].slice(0, between),
+      other,
+    ]);
+    await flush();
+    current.tick();
+    await flush();
+    expect(
+      flowController()!
+        .items()
+        .some((item) => item.kind === "echo"),
+    ).toBe(expected);
+  });
+}
 
 test("one way in links the best echo, and its dismissal survives revisiting the passage", async () => {
   resetRequests();
