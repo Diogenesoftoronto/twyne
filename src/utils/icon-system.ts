@@ -32,6 +32,8 @@ import RowVertical from "reicon/icons/RowVertical";
 import Checklist from "reicon/icons/Checklist";
 import Edit from "reicon/icons/Edit";
 import Eye from "reicon/icons/Eye";
+import Play from "reicon/icons/Play";
+import Pause from "reicon/icons/Pause";
 import FolderFiles from "reicon/icons/FolderFiles";
 import Save from "reicon/icons/Save";
 import Check from "reicon/icons/Check";
@@ -141,6 +143,8 @@ const TWYNE_ICONS = {
   search: Search,
   edit: Edit,
   eye: Eye,
+  play: Play,
+  pause: Pause,
   folder: FolderFiles,
   save: Save,
   check: Check,

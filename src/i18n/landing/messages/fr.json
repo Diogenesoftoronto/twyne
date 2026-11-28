@@ -84,6 +84,8 @@
     "back": "Retour",
     "next": "Suivant",
     "restart": "Recommencer",
+    "demoPlay": "Montrez-moi",
+    "demoPause": "Pause",
     "nextJourney": "Ensuite : {name}",
     "viewLabel": "Afficher l’écran en version",
     "desktop": "Ordinateur",

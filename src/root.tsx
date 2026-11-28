@@ -24,10 +24,12 @@ import {
   applyMotion,
   readMotionPreference,
 } from "./utils/motion";
+import { CURSOR_BOOTSTRAP_SCRIPT } from "./utils/cursors";
 
 import "./global.css";
 // After global.css: the living press refines it (docs/design/living-press.md).
 import "./styles/press.css";
+import "./styles/cursors.css";
 
 const SERVICE_WORKER_REGISTER_SCRIPT = `
 if ("serviceWorker" in navigator) {
@@ -85,7 +87,12 @@ export default component$<{
     <>
       <head>
         <meta charset="utf-8" />
-        {!isDev && <script data-chunk-recovery dangerouslySetInnerHTML={CHUNK_RECOVERY_SCRIPT} />}
+        {!isDev && (
+          <script
+            data-chunk-recovery
+            dangerouslySetInnerHTML={CHUNK_RECOVERY_SCRIPT}
+          />
+        )}
         {/*
           Stamps the writer's palette onto <html> before the first paint.
           It has to be an inline script rather than a component: Qwik
@@ -103,6 +110,12 @@ export default component$<{
         <script
           data-motion-bootstrap
           dangerouslySetInnerHTML={MOTION_BOOTSTRAP_SCRIPT}
+        />
+        {/* The same for the pointer: someone who chose their own cursor
+            never sees the house one take its place. */}
+        <script
+          data-cursor-bootstrap
+          dangerouslySetInnerHTML={CURSOR_BOOTSTRAP_SCRIPT}
         />
         {!isDev && (
           <link

@@ -26,6 +26,7 @@ import ImgGriffinMark from "~/media/assets/griffin-mark.svg?jsx";
 import ImgApprovalStamp from "~/media/approval-stamp.svg?jsx";
 import type { LandingCtaLocation } from "../../utils/product-analytics";
 import { tidyTitle, TITLE_MAX_LENGTH } from "../../utils/brief-opening";
+import { followPointer } from "../../utils/pointer-follow";
 
 interface LandingPageProps {
   /**
@@ -185,6 +186,12 @@ const LandingContent = component$<LandingPageProps>(
       if (title.value) void onStartBrief$("hero", undefined, title.value);
     });
 
+    // Slips lean toward the pointer and the hero's lamp follows it.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ cleanup }) => {
+      if (root.value) cleanup(followPointer(root.value));
+    });
+
     // Scroll reveal for the photo essay.
     //
     // The hidden start state is scoped to [data-reveal-ready], and only this
@@ -273,7 +280,12 @@ const LandingContent = component$<LandingPageProps>(
           </header>
 
           {/* ── Hero: the problem, set on the desk itself ── */}
-          <section class="landing-hero landing-hero--garden paper-foxed">
+          <section
+            class="landing-hero landing-hero--garden paper-foxed"
+            data-lamp
+          >
+            {/* A pool of lamplight under the pointer, over the desk. */}
+            <div class="landing-hero__lamp" aria-hidden="true" />
             <img
               class="landing-hero__photo"
               src="/assets/landing/options-2026-09/option-03-1536.avif"
@@ -431,7 +443,7 @@ const LandingContent = component$<LandingPageProps>(
             </div>
             <ul class="landing-slips" data-reveal>
               {[1, 2, 3, 4].map((n) => (
-                <li key={n} class="landing-slip" style={`--n: ${n}`}>
+                <li key={n} class="landing-slip" data-tilt style={`--n: ${n}`}>
                   <p class="landing-slip__label">
                     {t(`problem.slip${n}Label`)}
                   </p>

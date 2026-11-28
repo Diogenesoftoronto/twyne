@@ -84,6 +84,8 @@
     "back": "पीछे",
     "next": "आगे",
     "restart": "फिर से शुरू करें",
+    "demoPlay": "दिखाइए",
+    "demoPause": "रोकें",
     "nextJourney": "अगला: {name}",
     "viewLabel": "स्क्रीन इस रूप में दिखाएँ",
     "desktop": "डेस्कटॉप",

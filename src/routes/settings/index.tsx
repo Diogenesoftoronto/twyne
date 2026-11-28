@@ -107,6 +107,13 @@ import {
   type MotionPreference,
 } from "../../utils/motion";
 import {
+  applyCursors,
+  CURSOR_PREFERENCES,
+  readCursorPreference,
+  writeCursorPreference,
+  type CursorPreference,
+} from "../../utils/cursors";
+import {
   findModelsDevProvider,
   loadModelsDevCatalog,
   modelsDevModelsForFeature,
@@ -198,6 +205,7 @@ interface SettingsStore {
   themeCustomOpen: boolean;
   themeToast: string | null;
   motion: MotionPreference;
+  cursors: CursorPreference;
 }
 
 const FEATURE_LABELS: Record<AiFeature, string> = {
@@ -483,6 +491,7 @@ export default component$(() => {
     themeCustomOpen: false,
     themeToast: null,
     motion: "system",
+    cursors: "house",
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -508,6 +517,7 @@ export default component$(() => {
       store.theme = readThemePreference();
       store.themeCustomOpen = Boolean(store.theme.custom);
       store.motion = readMotionPreference();
+      store.cursors = readCursorPreference();
       store.loaded = true;
     };
     window.addEventListener(PREFERENCES_APPLIED, refresh);
@@ -761,6 +771,15 @@ export default component$(() => {
   });
 
   /** Motion is a device preference: applied at once, kept in localStorage. */
+  /** Cursors are a device preference too: applied at once. */
+  const persistCursors = $((preference: CursorPreference) => {
+    store.cursors = preference;
+    applyCursors(preference);
+    writeCursorPreference(preference);
+    store.themeToast = "Cursors saved";
+    setTimeout(() => (store.themeToast = null), 1800);
+  });
+
   const persistMotion = $((preference: MotionPreference) => {
     store.motion = preference;
     applyMotion(preference);
@@ -1414,6 +1433,59 @@ export default component$(() => {
                         role="radio"
                         aria-checked={active}
                         onClick$={() => persistMotion(option.id)}
+                        class="text-left p-3 border transition-colors"
+                        style={{
+                          borderRadius: "2px",
+                          borderColor: active
+                            ? "var(--color-vermilion)"
+                            : "var(--color-paper-3)",
+                          background: active
+                            ? "color-mix(in srgb, var(--color-vermilion) 6%, transparent)"
+                            : "transparent",
+                        }}
+                      >
+                        <span
+                          class="block text-sm text-[var(--color-ink)]"
+                          style={{ fontFamily: "var(--font-display)" }}
+                        >
+                          {option.label}
+                        </span>
+                        <span class="block text-[0.65rem] text-[var(--color-ink-muted)] mt-1">
+                          {option.description}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+
+              <fieldset class="mt-6 border-t border-[var(--color-paper-3)] pt-4">
+                <legend
+                  class="text-sm text-[var(--color-ink)] pr-2"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Cursors
+                </legend>
+                <p class="text-xs text-[var(--color-ink-light)] mt-1 max-w-2xl">
+                  Twyne draws its own pointer over things you can pick up and
+                  where you write. A drawn pointer cannot follow the size or
+                  colour you set in your operating system, so you can keep your
+                  own. Kept on this device.
+                </p>
+                <div
+                  class="mt-3 grid gap-2 sm:grid-cols-4"
+                  role="radiogroup"
+                  aria-label="Cursors"
+                >
+                  {CURSOR_PREFERENCES.map((option) => {
+                    const active = store.cursors === option.id;
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        onClick$={() => persistCursors(option.id)}
                         class="text-left p-3 border transition-colors"
                         style={{
                           borderRadius: "2px",

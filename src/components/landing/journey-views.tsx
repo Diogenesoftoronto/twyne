@@ -129,6 +129,7 @@ export const FieldnoteArrival = component$<JourneyViewProps>(
           </fieldset>
           <div class="jv-actions">
             <button
+              data-demo="next"
               type="button"
               class="jv-btn jv-btn--primary"
               onClick$={onAdvance$}
@@ -156,6 +157,7 @@ export const FieldnoteDesk = component$<JourneyViewProps>(({ onAdvance$ }) => {
           <div class="jv-row-between">
             <p class="jv-title">Fieldnote Journal</p>
             <button
+              data-demo="next"
               type="button"
               class="jv-btn jv-btn--primary"
               onClick$={onAdvance$}
@@ -210,6 +212,7 @@ export const FieldnoteDesk = component$<JourneyViewProps>(({ onAdvance$ }) => {
               <Chip tone="ok">{t("view.f2.active")}</Chip>
             ) : (
               <button
+                data-demo
                 type="button"
                 class="jv-btn"
                 onClick$={() => (active.value = true)}
@@ -255,7 +258,7 @@ export const FieldnoteReleaseCheck = component$<JourneyViewProps>(
           <>
             <p class="jv-finding__body">{body}</p>
             <div class="jv-actions jv-actions--tight">
-              <button type="button" class="jv-btn" onClick$={onFix}>
+              <button data-demo type="button" class="jv-btn" onClick$={onFix}>
                 {fix}
               </button>
               <button type="button" class="jv-link" onClick$={onKeep}>
@@ -323,6 +326,7 @@ export const FieldnoteReleaseCheck = component$<JourneyViewProps>(
             </div>
             <p class="jv-fine">{t("view.f3.pinned")}</p>
             <button
+              data-demo="next"
               type="button"
               class="jv-btn jv-btn--primary"
               disabled={left > 0}
@@ -446,6 +450,7 @@ export const FieldnoteRelease = component$<JourneyViewProps>(() => {
               </span>
             ) : (
               <button
+                data-demo
                 type="button"
                 class="jv-btn jv-btn--primary"
                 disabled={state.value !== "ready"}
@@ -546,6 +551,7 @@ export const MarshStyleBook = component$<JourneyViewProps>(() => {
                 {rule.state.value === "proposed" ? (
                   <div class="jv-actions jv-actions--tight">
                     <button
+                      data-demo
                       type="button"
                       class="jv-btn"
                       disabled={active.value}
@@ -617,6 +623,7 @@ export const MarshStyleBook = component$<JourneyViewProps>(() => {
             </span>
           ) : (
             <button
+              data-demo
               type="button"
               class="jv-btn jv-btn--primary"
               onClick$={() => (active.value = true)}
@@ -669,6 +676,7 @@ export const MarshReview = component$<JourneyViewProps>(() => {
             {state.value === "requested" ? (
               <div class="jv-actions jv-actions--stack">
                 <button
+                  data-demo
                   type="button"
                   class="jv-btn jv-btn--primary"
                   onClick$={() => (state.value = "approved")}
@@ -758,6 +766,7 @@ export const MarshPublications = component$<JourneyViewProps>(() => {
                 <Chip tone="ok">{t("view.live")}</Chip>
               ) : (
                 <button
+                  data-demo
                   type="button"
                   class="jv-btn jv-btn--primary"
                   onClick$={() => (live.value = true)}
@@ -912,6 +921,7 @@ export const MarshDomain = component$<JourneyViewProps>(() => {
             </span>
           ) : (
             <button
+              data-demo
               type="button"
               class="jv-btn jv-btn--primary"
               disabled={state.value === "checking"}
@@ -1027,6 +1037,7 @@ export const OrchardReadiness = component$<JourneyViewProps>(
                       </span>
                       {!row.ok && row.onFix && (
                         <button
+                          data-demo
                           type="button"
                           class="jv-btn jv-btn--inline"
                           disabled={frozen.value}
@@ -1049,7 +1060,12 @@ export const OrchardReadiness = component$<JourneyViewProps>(
                   <Icon name="check-circle" size={14} />
                   {t("view.i1.frozen")}
                 </span>
-                <button type="button" class="jv-btn" onClick$={onAdvance$}>
+                <button
+                  data-demo="next"
+                  type="button"
+                  class="jv-btn"
+                  onClick$={onAdvance$}
+                >
                   {t("walk.next")}
                   <Icon name="arrow-right" />
                 </button>
@@ -1149,6 +1165,7 @@ export const OrchardReaders = component$<JourneyViewProps>(() => {
             </span>
           ) : (
             <button
+              data-demo
               type="button"
               class="jv-btn jv-btn--primary"
               disabled={!invite.value && !panel.value}
@@ -1252,6 +1269,7 @@ export const OrchardReaderNotes = component$<JourneyViewProps>(() => {
                 {decision.value === "open" ? (
                   <div class="jv-actions jv-actions--tight">
                     <button
+                      data-demo
                       type="button"
                       class="jv-btn"
                       onClick$={() => (decision.value = "revised")}
@@ -1330,6 +1348,7 @@ export const OrchardKdp = component$<JourneyViewProps>(() => {
               ))}
             </ul>
             <button
+              data-demo
               type="button"
               class="jv-btn"
               aria-expanded={walk.value}

@@ -84,6 +84,8 @@
     "back": "戻る",
     "next": "次へ",
     "restart": "最初から",
+    "demoPlay": "実演を見る",
+    "demoPause": "一時停止",
     "nextJourney": "次：{name}",
     "viewLabel": "画面の表示",
     "desktop": "デスクトップ",

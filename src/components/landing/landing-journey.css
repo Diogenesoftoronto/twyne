@@ -552,8 +552,102 @@
 }
 
 .jw-stage {
+  position: relative;
   display: grid;
   margin-top: 1.75rem;
+}
+.jw-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+.jw-tools .jw-device {
+  margin-bottom: 0;
+}
+/* Show me: plays the demonstration pointer through this walkthrough. */
+.jw-demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.25rem;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .jw-demo:hover {
+    border-color: var(--color-vermilion);
+    color: var(--color-vermilion);
+  }
+}
+.jw-demo[aria-pressed="true"] {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+.jw-demo:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 2px;
+}
+/* The pointer itself: an ink arrow whose tip is its place, and a vermilion
+   ring that opens from the tip when it presses. */
+.jw-pointer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 6;
+  width: 24px;
+  height: 24px;
+  margin: -3px 0 0 -5px;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.35));
+  will-change: transform;
+}
+.jw-pointer svg {
+  display: block;
+  transform-origin: 5px 3px;
+  transition: transform 0.12s ease;
+}
+.jw-pointer path {
+  fill: var(--color-ink);
+  stroke: var(--color-paper-soft);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.jw-pointer::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 3px;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 2px solid var(--color-vermilion);
+  border-radius: 50%;
+  opacity: 0;
+}
+.jw-pointer[data-pressing] svg {
+  transform: scale(0.86);
+}
+.jw-pointer[data-pressing]::after {
+  animation: jw-press 0.45s ease-out;
+}
+@keyframes jw-press {
+  from {
+    opacity: 0.9;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.25);
+  }
 }
 .jw-panel {
   grid-area: 1 / 1;

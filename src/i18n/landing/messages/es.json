@@ -84,6 +84,8 @@
     "back": "Atrás",
     "next": "Siguiente",
     "restart": "Empezar de nuevo",
+    "demoPlay": "Muéstramelo",
+    "demoPause": "Pausar",
     "nextJourney": "Siguiente: {name}",
     "viewLabel": "Ver la pantalla como",
     "desktop": "Escritorio",

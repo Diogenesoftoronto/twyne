@@ -100,7 +100,7 @@
   font-size: 0.66rem;
   letter-spacing: -0.12em;
   line-height: 1;
-  cursor: grab;
+  cursor: var(--cursor-pick, grab);
   user-select: none;
   opacity: 0.4;
   transition:
@@ -126,7 +126,7 @@
     0 1px 0 color-mix(in srgb, var(--emboss) 70%, transparent);
 }
 .twyne-section-drag-handle:active {
-  cursor: grabbing;
+  cursor: var(--cursor-hold, grabbing);
 }
 /* Zen hides the slugs with the rest of the page furniture. */
 .twyne-editor.zen-mode .twyne-section-drag-handle {

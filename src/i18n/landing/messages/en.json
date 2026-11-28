@@ -84,6 +84,8 @@
     "back": "Back",
     "next": "Next",
     "restart": "Start again",
+    "demoPlay": "Show me",
+    "demoPause": "Pause",
     "nextJourney": "Next: {name}",
     "viewLabel": "Show the screen as",
     "desktop": "Desktop",

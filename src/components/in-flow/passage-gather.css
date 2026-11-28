@@ -415,7 +415,7 @@
 /* While a merge is on offer, a paragraph's heading is its handle: pick it
    up and let it go on the other paragraph, which keeps its place. */
 .passage-gather__label[data-carry] {
-  cursor: grab;
+  cursor: var(--cursor-pick, grab);
   touch-action: none;
   user-select: none;
 }

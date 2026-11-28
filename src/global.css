@@ -10218,7 +10218,7 @@ a {
   color: inherit;
   font: inherit;
   text-align: left;
-  cursor: grab;
+  cursor: var(--cursor-pick, grab);
   touch-action: none;
   user-select: none;
   transition:
@@ -10316,7 +10316,7 @@ a {
 }
 html[data-flow-dragging],
 html[data-flow-dragging] * {
-  cursor: grabbing !important;
+  cursor: var(--cursor-hold, grabbing) !important;
   user-select: none !important;
 }
 /* A merge not yet kept: what was carried over and what was left out, beside
@@ -11507,7 +11507,7 @@ body:has(
   color: var(--color-ink-muted);
   font-size: 0.7rem;
   letter-spacing: -0.15em;
-  cursor: grab;
+  cursor: var(--cursor-pick, grab);
   opacity: 0;
   transition: opacity 120ms ease;
 }

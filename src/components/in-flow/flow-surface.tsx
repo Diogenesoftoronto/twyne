@@ -81,6 +81,8 @@ import {
   type GatherPassage,
 } from "../../utils/passage-gather";
 import { foldOffer, isMergeAdvice } from "../../utils/passage-merge";
+import { followPointer, swingFor } from "../../utils/pointer-follow";
+import { allowsMotion } from "../../utils/motion";
 import { PersonaMasthead } from "../personas/persona-portrait";
 
 const ROOM_WIDTH = ROOM_CARD_WIDTH;
@@ -751,6 +753,8 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       };
 
       const observer = new ResizeObserver(layout);
+      // Slips in the margin lean toward the pointer.
+      const unfollow = root.value ? followPointer(root.value) : () => {};
       const unregister = registerMarginSurface({
         active: () =>
           state.enabled &&
@@ -805,6 +809,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       observer.observe(scroller);
       onSnapshot(new CustomEvent(FLOW_EVENT, { detail: flowSnapshot() }));
       cleanup(() => {
+        unfollow();
         unregister();
         for (const resolve of waiters) resolve(null);
         cancelAnimationFrame(frame);
@@ -1083,6 +1088,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
         let ghost: HTMLElement | null = null;
         let mark: HTMLElement | null = null;
         let frame = 0;
+        let movedAt = 0;
         const show = (drop: PassageDrop | null) => {
           if (!mark) return;
           mark.hidden = !drop;
@@ -1112,6 +1118,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             if (by) scroller.scrollBy(0, by);
           }
           show(controller.passageDropAt(item, point.x, point.y));
+          if (performance.now() - movedAt > 70) ghost.style.rotate = "-1.2deg";
           frame = requestAnimationFrame(follow);
         };
         const move = (e: PointerEvent) => {
@@ -1132,6 +1139,10 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           }
           e.preventDefault();
           ghost.style.transform = `translate(${point.x + 14}px, ${point.y + 12}px)`;
+          // It trails the hand as it travels and hangs level when held.
+          movedAt = performance.now();
+          if (allowsMotion("feedback"))
+            ghost.style.rotate = `${(-1.2 + swingFor(e.movementX)).toFixed(1)}deg`;
         };
         const end = async (e: Event) => {
           window.removeEventListener("pointermove", move, true);
@@ -1441,6 +1452,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
                     { "is-busy": state.busy[item.id] },
                   ]}
                   title="Drag it into the text: onto a paragraph to merge, between two to set it down there. Click to go to it."
+                  data-tilt
                   onPointerDown$={(event, el) => pickUp(item, event, el)}
                   onClick$={() => {
                     if (drag.id === item.id || item.anchors.length < 2) return;

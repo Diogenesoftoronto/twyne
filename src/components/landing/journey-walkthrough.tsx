@@ -24,6 +24,7 @@ import {
   OrchardReadiness,
   type JourneyViewProps,
 } from "./journey-views";
+import { allowsMotion } from "../../utils/motion";
 import "./landing-journey.css";
 
 export interface Journey {
@@ -86,6 +87,10 @@ export const JourneyWalkthrough = component$(() => {
   const steps = useSignal<number[]>(JOURNEYS.map(() => 0));
   const device = useSignal<Device>("desktop");
   const announcement = useSignal("");
+  const stage = useSignal<HTMLElement>();
+  // A demonstration pointer walks the current journey: it glides to the
+  // control each screen is about, presses it, and moves on to the next step.
+  const playing = useSignal(false);
 
   const announce = $((journey: number, step: number) => {
     const j = JOURNEYS[journey];
@@ -133,6 +138,162 @@ export const JourneyWalkthrough = component$(() => {
     cleanup(() => window.removeEventListener("hashchange", fromHash));
   });
 
+  // The demonstration starts by itself the first time the walkthrough is
+  // properly on screen, where ambient motion is welcome, and stops for good
+  // once it scrolls away. The Show me button plays it again.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    const el = stage.value;
+    if (!el || !("IntersectionObserver" in window)) return;
+    let started = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+            if (!started && allowsMotion("ambient")) playing.value = true;
+            started = true;
+          } else if (!entry.isIntersecting) playing.value = false;
+        }
+      },
+      { threshold: [0, 0.6] },
+    );
+    observer.observe(el);
+    cleanup(() => observer.disconnect());
+  });
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track, cleanup }) => {
+    const on = track(() => playing.value);
+    const root = stage.value;
+    const pointer = root?.querySelector<HTMLElement>(".jw-pointer");
+    if (!root || !pointer) return;
+    if (!on) {
+      pointer.hidden = true;
+      return;
+    }
+    if (!allowsMotion("feedback")) {
+      playing.value = false;
+      return;
+    }
+    let alive = true;
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => setTimeout(resolve, ms));
+    // Where the pointer is, within the stage. It enters from the middle.
+    const at = { x: root.clientWidth / 2, y: root.clientHeight / 2 };
+    const put = () => {
+      pointer.style.transform = `translate(${at.x}px, ${at.y}px)`;
+    };
+    const glide = async (target: Element) => {
+      const frame = root.getBoundingClientRect();
+      const box = target.getBoundingClientRect();
+      const to = {
+        x: box.left + box.width / 2 - frame.left,
+        y: box.top + box.height / 2 - frame.top,
+      };
+      const far = Math.hypot(to.x - at.x, to.y - at.y);
+      const motion = pointer.animate(
+        [
+          { transform: `translate(${at.x}px, ${at.y}px)` },
+          { transform: `translate(${to.x}px, ${to.y}px)` },
+        ],
+        {
+          duration: Math.max(380, Math.min(1100, far * 2.2)),
+          easing: "cubic-bezier(0.45, 0, 0.2, 1)",
+        },
+      );
+      await motion.finished.catch(() => undefined);
+      at.x = to.x;
+      at.y = to.y;
+      put();
+    };
+    const press = async (target: HTMLElement) => {
+      pointer.dataset.pressing = "";
+      await wait(240);
+      delete pointer.dataset.pressing;
+      if (alive) target.click();
+    };
+    const usable = (control: HTMLElement) =>
+      control.getClientRects().length > 0 &&
+      !(control as HTMLButtonElement).disabled;
+    // Bring a control into its own screen's view without moving the page.
+    const reveal = async (view: HTMLElement, target: HTMLElement) => {
+      const frame = view.getBoundingClientRect();
+      const box = target.getBoundingClientRect();
+      if (box.top >= frame.top + 8 && box.bottom <= frame.bottom - 8) return;
+      view.scrollTo({
+        top:
+          view.scrollTop +
+          (box.top - frame.top) -
+          (frame.height - box.height) / 2,
+        behavior: "smooth",
+      });
+      await wait(450);
+    };
+    const run = async () => {
+      put();
+      pointer.hidden = false;
+      await wait(600);
+      while (alive) {
+        const panel = root.querySelector<HTMLElement>(".jw-panel.is-active");
+        if (!panel) break;
+        const views = Array.from(
+          panel.querySelectorAll<HTMLElement>(".jw-view"),
+        );
+        const step = () =>
+          views.findIndex((view) => view.classList.contains("is-active"));
+        const index = step();
+        const view = views[index];
+        if (!view) break;
+        // What the screen is about first, then whatever moves it on.
+        const marked = Array.from(
+          view.querySelectorAll<HTMLElement>("[data-demo]"),
+        ).filter(usable);
+        const targets = [
+          ...marked.filter((c) => c.dataset.demo !== "next").slice(0, 1),
+          ...marked.filter((c) => c.dataset.demo === "next").slice(0, 1),
+        ];
+        for (const target of targets) {
+          await reveal(view, target);
+          if (!alive) return;
+          await glide(target);
+          if (!alive) return;
+          await press(target);
+          await wait(1200);
+          if (!alive) return;
+          if (step() !== index) break;
+        }
+        if (step() !== index) continue;
+        // The last screen of a journey is where the demonstration ends.
+        if (index >= views.length - 1) break;
+        const next = panel.querySelector<HTMLElement>(".jw-button--primary");
+        if (!next) break;
+        await glide(next);
+        if (!alive) return;
+        await press(next);
+        await wait(900);
+      }
+      if (alive) playing.value = false;
+    };
+    void run();
+    // The visitor takes over the moment they touch anything themselves.
+    const takeOver = (event: Event) => {
+      if (!event.isTrusted) return;
+      if ((event.target as Element | null)?.closest?.(".jw-demo")) return;
+      playing.value = false;
+    };
+    const walkthrough = root.closest<HTMLElement>(".jw") ?? root;
+    walkthrough.addEventListener("pointerdown", takeOver, true);
+    walkthrough.addEventListener("keydown", takeOver, true);
+    cleanup(() => {
+      alive = false;
+      for (const motion of pointer.getAnimations()) motion.cancel();
+      pointer.hidden = true;
+      delete pointer.dataset.pressing;
+      walkthrough.removeEventListener("pointerdown", takeOver, true);
+      walkthrough.removeEventListener("keydown", takeOver, true);
+    });
+  });
+
   return (
     <div class="jw" data-device={device.value}>
       <div class="jw-controls">
@@ -177,19 +338,39 @@ export const JourneyWalkthrough = component$(() => {
             );
           })}
         </div>
-        <div class="jw-device" role="group" aria-label={t("walk.viewLabel")}>
-          {(["desktop", "mobile"] as const).map((option) => (
-            <button
-              key={option}
-              type="button"
-              class="jw-device__option"
-              aria-pressed={device.value === option}
-              onClick$={() => (device.value = option)}
-            >
-              <Icon name={option === "desktop" ? "monitor" : "mobile"} />
-              {t(`walk.${option}`)}
-            </button>
-          ))}
+        <div class="jw-tools">
+          <button
+            type="button"
+            class="jw-demo"
+            aria-pressed={playing.value}
+            onClick$={() => {
+              // Asked for at the end of a journey, it plays from the start.
+              const journey = journeyIndex.value;
+              if (
+                !playing.value &&
+                steps.value[journey] >= JOURNEYS[journey].views.length - 1
+              )
+                void goToStep(journey, 0);
+              playing.value = !playing.value;
+            }}
+          >
+            <Icon name={playing.value ? "pause" : "play"} />
+            {playing.value ? t("walk.demoPause") : t("walk.demoPlay")}
+          </button>
+          <div class="jw-device" role="group" aria-label={t("walk.viewLabel")}>
+            {(["desktop", "mobile"] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                class="jw-device__option"
+                aria-pressed={device.value === option}
+                onClick$={() => (device.value = option)}
+              >
+                <Icon name={option === "desktop" ? "monitor" : "mobile"} />
+                {t(`walk.${option}`)}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -198,7 +379,14 @@ export const JourneyWalkthrough = component$(() => {
         <span>{t("walk.note")}</span>
       </p>
 
-      <div class="jw-stage">
+      <div class="jw-stage" ref={stage}>
+        {/* The demonstration pointer. It is only a picture of a cursor: the
+            controls it presses are the same ones the visitor can press. */}
+        <span class="jw-pointer" aria-hidden="true" hidden>
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path d="M5 3l14 7.6-6.1 1.5 3.5 6.5-2.6 1.4-3.5-6.6L6 18.2z" />
+          </svg>
+        </span>
         {JOURNEYS.map((journey, ji) => {
           const active = ji === journeyIndex.value;
           const current = steps.value[ji];
