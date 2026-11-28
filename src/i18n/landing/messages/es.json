@@ -10,10 +10,17 @@
   "hero": {
     "h0": "Terminado en marzo. Todavía sin publicar.",
     "d0": "La buena escritura se estanca entre el borrador y el lugar donde debería publicarse, o sale sonando como otra persona.",
+    "titleKicker": "Título provisional",
+    "titleQuestion": "¿Cómo se llama la pieza? Basta con un título provisional.",
+    "titlePlaceholder": "La colmena de la azotea",
+    "titleSet": "Fijar el título",
     "askQuestion": "Cuéntame la pieza en una frase, como se la describirías a un amigo durante la comida.",
+    "askQuestionTitled": "Cuéntame «{title}» en una frase, como se la describirías a un amigo durante la comida.",
     "askPlaceholder": "Una guía para criar abejas en una azotea de la ciudad, para quienes viven de alquiler.",
     "askSend": "Enviar",
     "askNote": "Twyne continúa a partir de tu respuesta y te pregunta lo que aún le falta al brief.",
+    "titleOnly": "Empezar solo con el título",
+    "titleChange": "Cambiar el título",
     "ctaWalk": "Ver los recorridos"
   },
   "problem": {

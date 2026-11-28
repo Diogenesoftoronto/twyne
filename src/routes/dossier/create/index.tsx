@@ -110,14 +110,23 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    // An answer from the landing page means the conversation has already
-    // begun: continue it there, whatever surface the writer usually uses.
+    // A title or an answer from the landing page means the conversation has
+    // already begun: continue it there, whatever surface the writer usually
+    // uses.
     let opening: string | null = null;
+    let title: string | null = null;
     try {
       const storage = sessionStore();
-      opening = storage ? takeBriefOpening(storage) : null;
+      const start = storage ? takeBriefOpening(storage) : null;
+      title = start?.title ?? null;
+      // The interviewer hears the title in the writer's first turn, so it
+      // files the working title itself and does not ask for it again.
+      opening = start
+        ? [title && `“${title}”`, start.text].filter(Boolean).join("\n\n")
+        : null;
     } catch {
       opening = null;
+      title = null;
     }
     const requestedFolioId = new URLSearchParams(window.location.search).get(
       "folio",
@@ -151,6 +160,9 @@ export default component$(() => {
       store.formAnswers = null;
       savedBrief = null;
     }
+    // The form surface starts from the same title, if the writer switches.
+    if (title && !savedBrief)
+      store.formAnswers = { ...store.formAnswers, workingTitle: title };
     store.draftBase = String(savedBrief?.updatedAt ?? 0);
     if (savedBrief) {
       store.formAnswers = savedBrief.answers;

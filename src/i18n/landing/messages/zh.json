@@ -10,10 +10,17 @@
   "hero": {
     "h0": "三月就写完了，至今还没发表。",
     "d0": "好文章常常卡在草稿和它该发表的地方之间，或者发出去时读起来已经像别人写的。",
+    "titleKicker": "暂定标题",
+    "titleQuestion": "这篇作品叫什么？暂定的标题也可以。",
+    "titlePlaceholder": "屋顶上的蜂箱",
+    "titleSet": "定下标题",
     "askQuestion": "用一句话告诉我这篇作品，就像午饭时向朋友介绍它那样。",
+    "askQuestionTitled": "用一句话告诉我《{title}》，就像午饭时向朋友介绍它那样。",
     "askPlaceholder": "一本写给租房者的指南：如何在城市屋顶上养蜂。",
     "askSend": "发送",
     "askNote": "Twyne 会接着你的回答，继续询问简报还缺少的内容。",
+    "titleOnly": "只用标题开始",
+    "titleChange": "修改标题",
     "ctaWalk": "查看演示"
   },
   "problem": {

@@ -10,10 +10,17 @@
   "hero": {
     "h0": "Fini en mars. Toujours pas publié.",
     "d0": "Un bon texte reste bloqué entre le brouillon et l’endroit où il devrait paraître, ou sort avec la voix de quelqu’un d’autre.",
+    "titleKicker": "Titre provisoire",
+    "titleQuestion": "Comment s’appelle votre texte ? Un titre provisoire suffit.",
+    "titlePlaceholder": "La ruche sur le toit",
+    "titleSet": "Fixer le titre",
     "askQuestion": "Racontez-moi votre texte en une phrase, comme vous le décririez à un ami au déjeuner.",
+    "askQuestionTitled": "Racontez-moi « {title} » en une phrase, comme vous le décririez à un ami au déjeuner.",
     "askPlaceholder": "Un guide pour élever des abeilles sur un toit en ville, pour les locataires.",
     "askSend": "Envoyer",
     "askNote": "Twyne reprend à partir de votre réponse et vous demande ce qui manque encore au dossier.",
+    "titleOnly": "Commencer avec le titre seul",
+    "titleChange": "Changer le titre",
     "ctaWalk": "Voir les démonstrations"
   },
   "problem": {

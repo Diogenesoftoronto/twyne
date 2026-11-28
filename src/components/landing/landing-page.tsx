@@ -25,14 +25,16 @@ import { useAuth } from "../../utils/auth-context";
 import ImgGriffinMark from "~/media/assets/griffin-mark.svg?jsx";
 import ImgApprovalStamp from "~/media/approval-stamp.svg?jsx";
 import type { LandingCtaLocation } from "../../utils/product-analytics";
+import { tidyTitle, TITLE_MAX_LENGTH } from "../../utils/brief-opening";
 
 interface LandingPageProps {
   /**
-   * Opens the brief. `opening` is the visitor's answer to the interview's
-   * first question, asked in the hero; the interview continues from it.
+   * Opens the brief. `title` is what the visitor called their piece and
+   * `opening` their answer to the interview's first question, both given in
+   * the hero; the interview continues from them.
    */
   onStartBrief$: PropFunction<
-    (location: LandingCtaLocation, opening?: string) => void
+    (location: LandingCtaLocation, opening?: string, title?: string) => void
   >;
   onSkipToEditor$?: PropFunction<(location: LandingCtaLocation) => void>;
 }
@@ -149,10 +151,38 @@ const LandingContent = component$<LandingPageProps>(
     const auth = useAuth();
     const signedIn = !!auth.value.user;
     const root = useSignal<HTMLElement>();
+    // The hero starts the visitor's own piece: a title, set on the page as
+    // they type it, then the interview's first question about that title.
+    const title = useSignal("");
+    const titled = useSignal(false);
     const opening = useSignal("");
+    const retitling = useSignal(false);
+    const setTitle = $(() => {
+      title.value = tidyTitle(title.value);
+      if (title.value) titled.value = true;
+    });
+    // Once the question is on the page it takes the caret, so the next thing
+    // typed answers it; going back to the title selects it for retyping.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ track }) => {
+      const asked = track(() => titled.value);
+      const el = root.value;
+      if (!el) return;
+      if (asked) {
+        el.querySelector<HTMLElement>(".landing-opener .composer-input")?.focus(
+          { preventScroll: true },
+        );
+      } else if (retitling.value) {
+        retitling.value = false;
+        el.querySelector<HTMLInputElement>("#landing-working-title")?.select();
+      }
+    });
     const sendOpening = $(() => {
       const text = opening.value.trim();
-      if (text) void onStartBrief$("hero", text);
+      if (text) void onStartBrief$("hero", text, title.value || undefined);
+    });
+    const startWithTitle = $(() => {
+      if (title.value) void onStartBrief$("hero", undefined, title.value);
     });
 
     // Scroll reveal for the photo essay.
@@ -263,28 +293,117 @@ const LandingContent = component$<LandingPageProps>(
               <p class="landing-deck mx-auto mt-6 max-w-2xl text-base sm:text-lg">
                 {t("hero.d0")}
               </p>
-              {/* The interview's first question, asked here. The answer
-                  goes with the visitor into the brief, which replies to it. */}
-              <div class="landing-rise-3 landing-opener">
-                <p class="landing-opener__question">
-                  <ImgGriffinMark
-                    class="landing-opener__mark"
-                    aria-hidden="true"
-                  />
-                  <span>{t("hero.askQuestion")}</span>
-                </p>
-                <ChatComposer
-                  value={opening.value}
-                  onValueChange$={$((value: string) => {
-                    opening.value = value;
-                  })}
-                  onSend$={sendOpening}
-                  allowVoice={false}
-                  label={t("hero.askQuestion")}
-                  placeholder={t("hero.askPlaceholder")}
-                  sendLabel={t("hero.askSend")}
-                />
-                <p class="landing-opener__note">{t("hero.askNote")}</p>
+              {/* The brief begins here, with the visitor's own piece. Its
+                  title is set on a page as they type it; then the interview's
+                  first question is asked about that title. Both go with the
+                  visitor into the brief, which replies to them. */}
+              <div
+                class={[
+                  "landing-rise-3 landing-opener",
+                  { "is-titled": titled.value },
+                ]}
+              >
+                <div
+                  class={[
+                    "landing-titlepage",
+                    { "is-blank": !title.value.trim() },
+                  ]}
+                  aria-hidden="true"
+                >
+                  <span class="landing-titlepage__kicker">
+                    {t("hero.titleKicker")}
+                  </span>
+                  <p class="landing-titlepage__title">
+                    {title.value.trim() || "\u00a0"}
+                  </p>
+                  <span class="landing-titlepage__ornament">✦</span>
+                </div>
+                {titled.value ? (
+                  <div class="landing-opener__ask">
+                    <p class="landing-opener__question">
+                      <ImgGriffinMark
+                        class="landing-opener__mark"
+                        aria-hidden="true"
+                      />
+                      <span>
+                        {t("hero.askQuestionTitled", { title: title.value })}
+                      </span>
+                    </p>
+                    <ChatComposer
+                      value={opening.value}
+                      onValueChange$={$((value: string) => {
+                        opening.value = value;
+                      })}
+                      onSend$={sendOpening}
+                      allowVoice={false}
+                      label={t("hero.askQuestionTitled", {
+                        title: title.value,
+                      })}
+                      placeholder={t("hero.askPlaceholder")}
+                      sendLabel={t("hero.askSend")}
+                    />
+                    <p class="landing-opener__note">{t("hero.askNote")}</p>
+                    <p class="landing-opener__ways">
+                      <button
+                        type="button"
+                        class="landing-opener__way"
+                        onClick$={startWithTitle}
+                      >
+                        {t("hero.titleOnly")} <span aria-hidden="true">→</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="landing-opener__way"
+                        onClick$={() => {
+                          retitling.value = true;
+                          titled.value = false;
+                        }}
+                      >
+                        {t("hero.titleChange")}
+                      </button>
+                    </p>
+                  </div>
+                ) : (
+                  <form
+                    class="landing-titleform"
+                    preventdefault:submit
+                    onSubmit$={setTitle}
+                  >
+                    <label
+                      class="landing-opener__question"
+                      for="landing-working-title"
+                    >
+                      <ImgGriffinMark
+                        class="landing-opener__mark"
+                        aria-hidden="true"
+                      />
+                      <span>{t("hero.titleQuestion")}</span>
+                    </label>
+                    <div class="landing-titleform__row">
+                      <input
+                        id="landing-working-title"
+                        class="landing-titleform__input"
+                        type="text"
+                        value={title.value}
+                        maxLength={TITLE_MAX_LENGTH}
+                        placeholder={t("hero.titlePlaceholder")}
+                        autocomplete="off"
+                        autoCapitalize="words"
+                        enterKeyHint="next"
+                        onInput$={(_, input) => {
+                          title.value = input.value;
+                        }}
+                      />
+                      <button
+                        type="submit"
+                        class="btn-press landing-titleform__set"
+                        disabled={!title.value.trim()}
+                      >
+                        {t("hero.titleSet")}
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
               <a href="#walkthroughs" class="landing-hero__alt">
                 {t("hero.ctaWalk")} <span aria-hidden="true">→</span>

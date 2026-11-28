@@ -34,22 +34,24 @@ export default component$(() => {
   // page — and every link on it — unreachable for anyone who had ever written
   // anything. The desk is one click away in the header instead.
 
-  const startBrief = $((location: LandingCtaLocation, opening?: string) => {
-    const signedIn = Boolean(auth.value.user);
-    const storage = sessionStore();
-    if (storage && opening !== undefined) {
-      try {
-        saveBriefOpening(storage, opening);
-      } catch {
-        /* storage refused: the interview simply asks again */
+  const startBrief = $(
+    (location: LandingCtaLocation, opening?: string, title?: string) => {
+      const signedIn = Boolean(auth.value.user);
+      const storage = sessionStore();
+      if (storage && (opening !== undefined || title !== undefined)) {
+        try {
+          saveBriefOpening(storage, { text: opening, title });
+        } catch {
+          /* storage refused: the interview simply asks again */
+        }
       }
-    }
-    void captureProductEvent("landing_cta_clicked", {
-      location,
-      destination: signedIn ? "dossier" : "onboarding",
-    });
-    void nav(signedIn ? "/dossier/create/" : "/onboarding/");
-  });
+      void captureProductEvent("landing_cta_clicked", {
+        location,
+        destination: signedIn ? "dossier" : "onboarding",
+      });
+      void nav(signedIn ? "/dossier/create/" : "/onboarding/");
+    },
+  );
 
   const skipToEditor = $(async (location: LandingCtaLocation) => {
     // Going straight to the desk without an interview: make sure there's a

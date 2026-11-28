@@ -10,10 +10,17 @@
   "hero": {
     "h0": "Finished in March. Still not published.",
     "d0": "Good writing stalls between the draft and the place it should be published, or goes out sounding like somebody else.",
+    "titleKicker": "Working title",
+    "titleQuestion": "What is the piece called? A working title will do.",
+    "titlePlaceholder": "The Rooftop Hive",
+    "titleSet": "Set the title",
     "askQuestion": "Tell me the piece in one sentence, the way you’d describe it to a friend at lunch.",
+    "askQuestionTitled": "Tell me “{title}” in one sentence, the way you’d describe it to a friend at lunch.",
     "askPlaceholder": "A guide to keeping bees on a city rooftop, for people who rent.",
     "askSend": "Send",
     "askNote": "Twyne carries on from your answer and asks what it still needs for the brief.",
+    "titleOnly": "Start with just the title",
+    "titleChange": "Change the title",
     "ctaWalk": "See the walkthroughs"
   },
   "problem": {
