@@ -90,6 +90,19 @@ describe("brief form recovery", () => {
     claimBriefDraftHandoff(s, handoff, "alice");
     expect(loadBriefFormDraft(s, scope, "alice", "")).toEqual(draft);
   });
+  test("moving the caret keeps the same draft revision", () => {
+    const s = storage();
+    saveBriefFormDraft(s, scope, null, "", draft);
+    const handoff = prepareBriefDraftHandoff(s);
+    const selection = { start: 2, end: 6, direction: "backward" } as const;
+    saveBriefFormDraft(s, scope, null, "", { ...draft, selection });
+    saveBriefFormDraft(s, scope, null, "", draft);
+    expect(prepareBriefDraftHandoff(s)).toEqual(handoff);
+    expect(loadBriefFormDraft(s, scope, null, "")?.selection).toEqual(selection);
+    saveBriefFormDraft(s, scope, null, "", { ...draft, selection: null });
+    expect(loadBriefFormDraft(s, scope, null, "")?.selection).toBeNull();
+    expect(prepareBriefDraftHandoff(s)).toEqual(handoff);
+  });
   test("an old callback cannot claim edits made after sign-in began", () => {
     const s = storage();
     saveBriefFormDraft(s, scope, null, "", draft);

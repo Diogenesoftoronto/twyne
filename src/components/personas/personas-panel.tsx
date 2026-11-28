@@ -6,6 +6,7 @@ import { timeAgo as formatTimeAgo } from "../../utils/time-ago";
 import { PREFERENCES_APPLIED } from "../../utils/preference-outbox";
 import {
   CardBust,
+  CardNotice,
   CheckIcon,
   CloseIcon,
   DownIcon,
@@ -168,6 +169,10 @@ interface PersonasStore {
   conveneError: AppError | null;
   /** Replies keyed by noteId. */
   repliesByNote: Record<string, PersonaReply[]>;
+  replyFailures: Record<
+    string,
+    { replyId: string; message: string; authorHint?: string }
+  >;
   /**
    * Notes still being written, keyed by persona id, and the reply still being
    * written, keyed by note id. Both hold the stream snapshot so far — text,
@@ -375,6 +380,7 @@ export const PersonasPanel = component$(
       pinnedPersonas: new Set(),
       conveneError: null,
       repliesByNote: {},
+      replyFailures: {},
       streamingNotes: {},
       freshNoteIds: [],
       streamingReplies: {},
@@ -1230,12 +1236,15 @@ export const PersonasPanel = component$(
       store.replyDraft = "";
     });
 
-    const emitReplyThread = $((noteId: string) => {
+    const emitReplyThread = $((noteId: string, filedWriterText?: string) => {
       window.dispatchEvent(
         new CustomEvent("twyne:persona-reply-thread", {
           detail: {
             noteId,
             replies: store.repliesByNote[noteId] ?? [],
+            replyFailure: store.replyFailures[noteId] ?? null,
+            replying: store.streamingReplies[noteId] !== undefined,
+            filedWriterText,
             evidence: (() => {
               const note = store.feedback.find((f) => f.noteId === noteId);
               return note ? noteEvidence(note) : undefined;
@@ -1246,21 +1255,31 @@ export const PersonasPanel = component$(
     });
 
     const submitReply = $(
-      async (noteId: string, askPersona: boolean, authorHint?: string) => {
-        const text = store.replyDraft.trim();
+      async (
+        noteId: string,
+        askPersona: boolean,
+        options?: {
+          authorHint?: string;
+          retryReplyId?: string;
+          inlineText?: string;
+        },
+      ) => {
+        if (store.isReplying) return;
+        const { authorHint, retryReplyId, inlineText } = options ?? {};
+        const failure = store.replyFailures[noteId];
+        const thread = store.repliesByNote[noteId] ?? [];
+        const savedReply = retryReplyId
+          ? thread.find(
+              (reply) =>
+                reply.id === retryReplyId && reply.authorKind === "user",
+            )
+          : undefined;
+        if (retryReplyId && (!savedReply || failure?.replyId !== retryReplyId))
+          return;
+        const text =
+          savedReply?.text ?? (inlineText ?? store.replyDraft).trim();
         if (!text) return;
-        if (store.groupByPersona) {
-          const note = store.feedback.find((f) => f.noteId === noteId);
-          const latestForPersona = note
-            ? store.feedback
-                .filter((f) => f.personaId === note.personaId)
-                .sort((a, b) => b.timestamp - a.timestamp)[0]
-            : null;
-          if (note && latestForPersona?.noteId !== noteId) {
-            store.groupByPersona = false;
-          }
-        }
-        const userReply: PersonaReply = {
+        const userReply: PersonaReply = savedReply ?? {
           id: `preply-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           folioId: activeFolioId,
           noteId,
@@ -1269,15 +1288,66 @@ export const PersonasPanel = component$(
           text,
           timestamp: Date.now(),
         };
-        const updated = [...(store.repliesByNote[noteId] ?? []), userReply];
-        store.repliesByNote = { ...store.repliesByNote, [noteId]: updated };
-        void emitReplyThread(noteId);
-        await addPersonaReplyLocally(userReply, activeFolioId);
-        store.replyDraft = "";
-        store.replyNoteId = null;
-        store.replyingTo = null;
 
-        if (askPersona) {
+        const personaName = savedReply ? failure?.authorHint : authorHint;
+        let filed = !!savedReply;
+        const failReply = (error: AppError) => {
+          const message = error.message;
+          const replyId = filed ? userReply.id : undefined;
+          if (replyId) {
+            store.replyFailures[noteId] = {
+              replyId,
+              message,
+              authorHint: personaName,
+            };
+          } else {
+            store.conveneError = error;
+          }
+          window.dispatchEvent(
+            new CustomEvent("twyne:persona-reply-error", {
+              detail: { noteId, message, replyId },
+            }),
+          );
+        };
+        store.isReplying = true;
+        try {
+          const draftText = askPersona ? await readCurrentDraftText() : "";
+          if (store.groupByPersona) {
+            const note = store.feedback.find((f) => f.noteId === noteId);
+            const latestForPersona = note
+              ? store.feedback
+                  .filter((f) => f.personaId === note.personaId)
+                  .sort((a, b) => b.timestamp - a.timestamp)[0]
+              : null;
+            if (note && latestForPersona?.noteId !== noteId) {
+              store.groupByPersona = false;
+            }
+          }
+          if (!savedReply) {
+            await addPersonaReplyLocally(userReply, activeFolioId);
+            filed = true;
+            store.repliesByNote = {
+              ...store.repliesByNote,
+              [noteId]: [...thread, userReply],
+            };
+            if (
+              inlineText === undefined &&
+              store.replyNoteId === noteId &&
+              store.replyDraft.trim() === text
+            ) {
+              store.replyDraft = "";
+              store.replyNoteId = null;
+              store.replyingTo = null;
+            }
+          }
+          delete store.replyFailures[noteId];
+          if (!askPersona) {
+            await emitReplyThread(noteId);
+            return;
+          }
+          store.streamingReplies[noteId] = textSnapshot("", "running");
+          await emitReplyThread(noteId, savedReply ? undefined : inlineText);
+
           const note = store.feedback.find((f) => f.noteId === noteId);
           // The note may not be in this session's feedback list (e.g. it was
           // restored from a saved draft before the room re-convened). Fall
@@ -1285,156 +1355,66 @@ export const PersonasPanel = component$(
           // replying still works instead of silently doing nothing.
           const persona =
             (note && store.personas.find((p) => p.id === note.personaId)) ||
-            (authorHint
-              ? store.personas.find((p) => p.name === authorHint)
+            (personaName
+              ? store.personas.find((p) => p.name === personaName)
               : undefined);
           if (!persona) {
             const error = createAppError("NOT_FOUND", {
               source: "application",
               metadata: { feature: "personas", operation: "persona-reply" },
             });
-            store.conveneError = error;
-            window.dispatchEvent(
-              new CustomEvent("twyne:persona-reply-error", {
-                detail: { noteId, message: error.message },
-              }),
-            );
+            failReply(error);
             return;
           }
-          store.isReplying = true;
-          store.streamingReplies = {
-            ...store.streamingReplies,
-            [noteId]: textSnapshot("", "running"),
-          };
           window.dispatchEvent(
             new CustomEvent("twyne:persona-replying", {
               detail: { noteId, replying: true },
             }),
           );
-          try {
-            const draftText = await readCurrentDraftText();
-            const priorMessages = [
-              ...updated
-                .filter((r) => r.authorKind === "persona")
-                .map((r) => ({ author: "persona" as const, text: r.text })),
-              ...updated
-                .filter((r) => r.authorKind === "user")
-                .map((r) => ({ author: "user" as const, text: r.text })),
-            ];
+          const priorMessages = thread
+            .slice(
+              0,
+              savedReply
+                ? thread.findIndex((reply) => reply.id === savedReply.id)
+                : thread.length,
+            )
+            .map((reply) => ({ author: reply.authorKind, text: reply.text }));
 
-            let responseText: string | null = null;
+          let responseText: string | null = null;
 
-            // ── Try client-side AI first (BYOK) ─────────────────────────
-            const settings2 = normalizeAiSettings(
-              await loadAiSettingsFromIdb(),
-            );
-            store.aiSettings = settings2;
-            const hasByok = hasConfiguredAiProvider(settings2);
-            if (hasByok && settings2) {
-              try {
-                const reviewer = clientSig.value
-                  ? createEditorialNoteReviewer(
-                      (request) =>
-                        askJudgement(clientSig.value, {
-                          ...request,
-                          state: Object.fromEntries(
-                            Object.entries(request.state).map(
-                              ([key, value]) => [
-                                key,
-                                typeof value === "string"
-                                  ? value
-                                  : JSON.stringify(value),
-                              ],
-                            ),
-                          ),
-                        }),
-                      {
-                        draft: draftText,
-                        brief: brief ?? null,
-                        persona,
-                        profile: store.writerProfile,
-                        operation: "elaborate",
-                        userMessage: userReply.text,
-                      },
-                    )
-                  : undefined;
-                const res = await runClientAgent(
-                  "persona-reply",
-                  {
-                    persona: toAgentPersona(persona),
-                    brief: brief ?? null,
-                    draftText,
-                    writerProfile: store.writerProfile,
-                    anchor: note?.anchor,
-                    priorMessages,
-                    userMessage: userReply.text,
-                    instruction: "elaborate",
-                  },
-                  settings2,
-                  // The reply lands in two places at once — the panel's thread
-                  // and the inline card in the manuscript — so the partial goes
-                  // out on the same event bus the finished one uses.
-                  (snapshot) => {
-                    store.streamingReplies = {
-                      ...store.streamingReplies,
-                      [noteId]: snapshot,
-                    };
-                    window.dispatchEvent(
-                      new CustomEvent("twyne:persona-reply-stream", {
-                        detail: {
-                          noteId,
-                          text: snapshot.text,
-                          author: persona.name,
-                        },
+          // ── Try client-side AI first (BYOK) ─────────────────────────
+          const settings2 = normalizeAiSettings(await loadAiSettingsFromIdb());
+          store.aiSettings = settings2;
+          const hasByok = hasConfiguredAiProvider(settings2);
+          if (hasByok && settings2) {
+            try {
+              const reviewer = clientSig.value
+                ? createEditorialNoteReviewer(
+                    (request) =>
+                      askJudgement(clientSig.value, {
+                        ...request,
+                        state: Object.fromEntries(
+                          Object.entries(request.state).map(([key, value]) => [
+                            key,
+                            typeof value === "string"
+                              ? value
+                              : JSON.stringify(value),
+                          ]),
+                        ),
                       }),
-                    );
-                  },
-                  reviewer
-                    ? {
-                        review: reviewer,
-                      }
-                    : undefined,
-                  clientSig.value,
-                );
-                if (res && res.text.trim() && res.provider !== "local") {
-                  responseText = res.text;
-                  store.lastProvider = `client-${res.provider}`;
-                } else {
-                  const error = providerUnavailableError("persona-reply");
-                  store.conveneError = error;
-                  window.dispatchEvent(
-                    new CustomEvent("twyne:persona-reply-error", {
-                      detail: { noteId, message: error.message },
-                    }),
-                  );
-                  return;
-                }
-              } catch (err) {
-                const error = normalizePersonaError(
-                  "twyne:personas:reply-client",
-                  err,
-                  "provider",
-                  "persona-reply",
-                );
-                store.conveneError = error;
-                window.dispatchEvent(
-                  new CustomEvent("twyne:persona-reply-error", {
-                    detail: { noteId, message: error.message },
-                  }),
-                );
-                return;
-              }
-            }
-
-            const c =
-              auth.value.provider === "convex" && auth.value.user
-                ? clientSig.value
-                : null;
-            const replyPosthogIdentity = await getPostHogIdentityContext();
-            if (!responseText && !hasByok && c) {
-              try {
-                const result = (await c.action(api.agents.runPersona, {
-                  responseLocale: currentModelLocale(),
+                    {
+                      draft: draftText,
+                      brief: brief ?? null,
+                      persona,
+                      profile: store.writerProfile,
+                      operation: "elaborate",
+                      userMessage: userReply.text,
+                    },
+                  )
+                : undefined;
+              const res = await runClientAgent(
+                "persona-reply",
+                {
                   persona: toAgentPersona(persona),
                   brief: brief ?? null,
                   draftText,
@@ -1443,84 +1423,143 @@ export const PersonasPanel = component$(
                   priorMessages,
                   userMessage: userReply.text,
                   instruction: "elaborate",
-                  observability: {
-                    anonymousId: replyPosthogIdentity.anonymousId,
-                    sessionId: replyPosthogIdentity.sessionId,
-                    folioId: activeFolioId,
-                    editorialActionId: "persona-reply",
-                  },
-                })) as {
-                  text: string;
-                  type: PersonaFeedback["type"];
-                  provider: string;
-                };
-                if (
-                  !result.text.trim() ||
-                  !result.provider ||
-                  result.provider === "local"
-                ) {
-                  const error = providerUnavailableError("persona-reply");
-                  store.conveneError = error;
+                },
+                settings2,
+                // The reply lands in two places at once — the panel's thread
+                // and the inline card in the manuscript — so the partial goes
+                // out on the same event bus the finished one uses.
+                (snapshot) => {
+                  store.streamingReplies = {
+                    ...store.streamingReplies,
+                    [noteId]: snapshot,
+                  };
                   window.dispatchEvent(
-                    new CustomEvent("twyne:persona-reply-error", {
-                      detail: { noteId, message: error.message },
+                    new CustomEvent("twyne:persona-reply-stream", {
+                      detail: {
+                        noteId,
+                        text: snapshot.text,
+                        author: persona.name,
+                      },
                     }),
                   );
-                  return;
-                }
-                responseText = result.text;
-                store.lastProvider = result.provider;
-              } catch (err) {
-                const error = normalizePersonaError(
-                  "twyne:personas:reply-server",
-                  err,
-                  "convex",
-                  "persona-reply",
-                );
-                store.conveneError = error;
-                window.dispatchEvent(
-                  new CustomEvent("twyne:persona-reply-error", {
-                    detail: { noteId, message: error.message },
-                  }),
-                );
+                },
+                reviewer
+                  ? {
+                      review: reviewer,
+                    }
+                  : undefined,
+                clientSig.value,
+              );
+              if (res && res.text.trim() && res.provider !== "local") {
+                responseText = res.text;
+                store.lastProvider = `client-${res.provider}`;
+              } else {
+                const error = providerUnavailableError("persona-reply");
+                failReply(error);
                 return;
               }
-            }
-            if (!responseText) {
-              const error = hasByok
-                ? providerUnavailableError("persona-reply")
-                : providerConfigurationError("persona-reply");
-              store.conveneError = error;
-              window.dispatchEvent(
-                new CustomEvent("twyne:persona-reply-error", {
-                  detail: { noteId, message: error.message },
-                }),
+            } catch (err) {
+              const error = normalizePersonaError(
+                "twyne:personas:reply-client",
+                err,
+                "provider",
+                "persona-reply",
               );
+              failReply(error);
               return;
             }
+          }
 
-            const personaReply: PersonaReply = {
-              id: `preply-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-              folioId: activeFolioId,
-              noteId,
-              author: persona.name,
-              authorKind: "persona",
-              personaId: persona.id,
-              text: responseText,
-              timestamp: Date.now(),
-            };
-            const nextReplies = [
-              ...(store.repliesByNote[noteId] ?? []),
-              personaReply,
-            ];
-            store.repliesByNote = {
-              ...store.repliesByNote,
-              [noteId]: nextReplies,
-            };
-            void emitReplyThread(noteId);
-            await addPersonaReplyLocally(personaReply, activeFolioId);
-          } finally {
-            store.isReplying = false;
+          const c =
+            auth.value.provider === "convex" && auth.value.user
+              ? clientSig.value
+              : null;
+          const replyPosthogIdentity = await getPostHogIdentityContext();
+          if (!responseText && !hasByok && c) {
+            try {
+              const result = (await c.action(api.agents.runPersona, {
+                responseLocale: currentModelLocale(),
+                persona: toAgentPersona(persona),
+                brief: brief ?? null,
+                draftText,
+                writerProfile: store.writerProfile,
+                anchor: note?.anchor,
+                priorMessages,
+                userMessage: userReply.text,
+                instruction: "elaborate",
+                observability: {
+                  anonymousId: replyPosthogIdentity.anonymousId,
+                  sessionId: replyPosthogIdentity.sessionId,
+                  folioId: activeFolioId,
+                  editorialActionId: "persona-reply",
+                },
+              })) as {
+                text: string;
+                type: PersonaFeedback["type"];
+                provider: string;
+              };
+              if (
+                !result.text.trim() ||
+                !result.provider ||
+                result.provider === "local"
+              ) {
+                const error = providerUnavailableError("persona-reply");
+                failReply(error);
+                return;
+              }
+              responseText = result.text;
+              store.lastProvider = result.provider;
+            } catch (err) {
+              const error = normalizePersonaError(
+                "twyne:personas:reply-server",
+                err,
+                "convex",
+                "persona-reply",
+              );
+              failReply(error);
+              return;
+            }
+          }
+          if (!responseText) {
+            const error = hasByok
+              ? providerUnavailableError("persona-reply")
+              : providerConfigurationError("persona-reply");
+            failReply(error);
+            return;
+          }
+
+          const personaReply: PersonaReply = {
+            id: `preply-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            folioId: activeFolioId,
+            noteId,
+            author: persona.name,
+            authorKind: "persona",
+            personaId: persona.id,
+            text: responseText,
+            timestamp: Date.now(),
+          };
+          const nextReplies = [
+            ...(store.repliesByNote[noteId] ?? []),
+            personaReply,
+          ];
+          await addPersonaReplyLocally(personaReply, activeFolioId);
+          store.repliesByNote = {
+            ...store.repliesByNote,
+            [noteId]: nextReplies,
+          };
+          void emitReplyThread(noteId);
+        } catch (error) {
+          failReply(
+            normalizePersonaError(
+              "twyne:personas:reply",
+              error,
+              "application",
+              "persona-reply",
+            ),
+          );
+        } finally {
+          store.isReplying = false;
+          if (store.streamingReplies[noteId] !== undefined) {
             // Clear the in-flight text before announcing the end of the reply:
             // the filed version is already in the thread, and leaving the
             // partial up would briefly show the answer twice.
@@ -1554,10 +1593,19 @@ export const PersonasPanel = component$(
           author?: string;
         };
         if (!detail?.noteId || !detail.text?.trim()) return;
-        store.replyDraft = detail.text;
-        void submitReply(detail.noteId, true, detail.author);
+        void submitReply(detail.noteId, true, {
+          authorHint: detail.author,
+          inlineText: detail.text,
+        });
       };
       window.addEventListener("twyne:persona-reply", onReply);
+      const onRetryReply = (e: Event) => {
+        const detail = (e as CustomEvent<{ noteId?: string; replyId?: string }>)
+          .detail;
+        if (!detail?.noteId || !detail.replyId) return;
+        void submitReply(detail.noteId, true, { retryReplyId: detail.replyId });
+      };
+      window.addEventListener("twyne:persona-reply-retry", onRetryReply);
       const onRequestThread = (e: Event) => {
         const detail = (e as CustomEvent).detail as { noteId?: string };
         if (!detail?.noteId) return;
@@ -1614,6 +1662,7 @@ export const PersonasPanel = component$(
       cleanup(() => {
         window.removeEventListener("twyne:content", onContent);
         window.removeEventListener("twyne:persona-reply", onReply);
+        window.removeEventListener("twyne:persona-reply-retry", onRetryReply);
         window.removeEventListener(
           "twyne:request-persona-thread",
           onRequestThread,
@@ -1848,6 +1897,7 @@ export const PersonasPanel = component$(
       store.expandedFeedback = new Set();
       store.openNoteKey = null;
       store.repliesByNote = {};
+      store.replyFailures = {};
       store.replyNoteId = null;
       store.replyingTo = null;
       window.dispatchEvent(new CustomEvent("twyne:clear-persona-notes"));
@@ -2430,9 +2480,13 @@ export const PersonasPanel = component$(
 
               /* The thread under a note, shared by the card and the sheet. */
               const renderThread = (feedback: PersonaFeedback) => {
-                const replies = feedback.noteId
-                  ? (store.repliesByNote[feedback.noteId] ?? [])
+                const noteId = feedback.noteId;
+                const replies = noteId
+                  ? (store.repliesByNote[noteId] ?? [])
                   : [];
+                const replyFailure = noteId
+                  ? store.replyFailures[noteId]
+                  : undefined;
                 const personaColor = feedback.personaColor;
                 if (replies.length === 0) return null;
                 const streaming =
@@ -2514,6 +2568,19 @@ export const PersonasPanel = component$(
                           <span class="sr-only">{`${feedback.personaName} is replying`}</span>
                         </div>
                       ))}
+                    {noteId && replyFailure && !store.isReplying && (
+                      <CardNotice
+                        tone="error"
+                        message={replyFailure.message}
+                        actionLabel="Retry reply"
+                        showActionLabel
+                        onAction$={() =>
+                          submitReply(noteId, true, {
+                            retryReplyId: replyFailure.replyId,
+                          })
+                        }
+                      />
+                    )}
                   </div>
                 );
               };

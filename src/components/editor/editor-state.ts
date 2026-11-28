@@ -40,6 +40,7 @@ export interface NotePopover {
   replying: boolean;
   streamingReply: string;
   error: string | null;
+  retryReplyId?: string;
   /** Flow item whose margin slot this card has unfolded into, if any. */
   margin?: string | null;
   /** Width of that slot; the card's own width otherwise. */

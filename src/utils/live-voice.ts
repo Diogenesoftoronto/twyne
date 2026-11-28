@@ -440,6 +440,13 @@ export async function startLiveVoice(
         return;
       }
       if (event.type === "error" || event.type === "twyne.live.error") {
+        // After startup, Live can reject an individual command and continue.
+        // A relay failure, terminal event, or socket close ends the session.
+        if (event.type === "error" && state.startedAt && alive()) {
+          state.notice = "Live couldn’t complete the last request.";
+          emit();
+          return;
+        }
         finish(
           typeof event.message === "string"
             ? event.message
@@ -541,6 +548,7 @@ export async function startLiveVoice(
           return;
         }
         state.working = true;
+        state.notice = "";
         emit();
         const workspace = voiceWorkspace();
         const context = JSON.stringify({
@@ -577,14 +585,9 @@ export async function startLiveVoice(
             history.push(`${action.kind}: ${result}`);
             feedback(result, id);
           })
-          .catch((error) => {
-            if (alive())
-              feedback(
-                error instanceof Error
-                  ? error.message.slice(0, 400)
-                  : "The requested action failed.",
-                id,
-              );
+          .catch(() => {
+            if (!alive()) return;
+            feedback("That action couldn’t finish. You can ask again.", id);
           })
           .finally(() => {
             if (alive()) {

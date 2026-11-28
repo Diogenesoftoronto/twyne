@@ -38,6 +38,7 @@ interface PersonaNotePanelProps {
   onReply$: PropFunction<
     (noteId: string, text: string, author: string) => void
   >;
+  onRetryReply$?: PropFunction<(noteId: string, replyId: string) => void>;
   onStrike$: PropFunction<(noteId: string) => void>;
   onDismissError$?: PropFunction<(noteId: string) => void>;
 }
@@ -61,6 +62,7 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
   const onPin$ = props.onPin$;
   const onClose$ = props.onClose$;
   const onReply$ = props.onReply$;
+  const onRetryReply$ = props.onRetryReply$;
   const onStrike$ = props.onStrike$;
   const onDismissError$ = props.onDismissError$;
   const speechId = `note-popover-${note?.id ?? ""}`;
@@ -208,12 +210,18 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
               <EditorialActivity label={`${note.author} is replying`} />
             </div>
           )}
-          {note.error && (
+          {note.error && !note.replying && (
             <CardNotice
               tone="error"
               message={note.error}
-              actionLabel={note.draft.trim() ? "Send again" : undefined}
-              onAction$={() => onReply$(note.id, note.draft, note.author)}
+              actionLabel={
+                note.retryReplyId && onRetryReply$ ? "Retry reply" : undefined
+              }
+              showActionLabel
+              onAction$={() => {
+                if (note.retryReplyId)
+                  onRetryReply$?.(note.id, note.retryReplyId);
+              }}
               onDismiss$={
                 onDismissError$ ? () => onDismissError$(note.id) : undefined
               }

@@ -163,14 +163,14 @@ export const interpret = action({
       "fast",
       "voice-live-action",
       notOrganicIssuer(),
+      fetch,
+      { maxCostMicrousd: LIVE_ACTION_BUDGET_MICROS },
     );
     const provider = createOpenAI({
-      ...route,
-      headers: {
-        ...route.headers,
-        "idempotency-key": crypto.randomUUID(),
-        "x-notorganic-max-cost-microusd": String(LIVE_ACTION_BUDGET_MICROS),
-      },
+      baseURL: route.baseURL,
+      apiKey: route.apiKey,
+      headers: route.headers,
+      fetch: route.fetch,
     });
     const result = await generateText({
       model: provider.chat(route.model),

@@ -373,16 +373,17 @@ test("switching accounts cannot restore the prior account's unfinished brief", a
 
 test("a delayed strength result preserves the focused input and caret", async ({
   page,
+  baseURL,
 }) => {
   await openBrief(page);
-  await page.waitForTimeout(1200);
+  const endpoint = new URL("/__brief-judgement", baseURL!).href;
   let releaseResponse!: () => void;
   const responseGate = new Promise<void>((resolve) => {
     releaseResponse = resolve;
   });
   let requested = false;
   await page.route(
-    "https://brief-judgement.invalid/v1/systemone",
+    `${endpoint}/v1/systemone`,
     async (route) => {
       requested = true;
       const { questions } = route.request().postDataJSON();
@@ -432,16 +433,7 @@ test("a delayed strength result preserves the focused input and caret", async ({
       });
     },
   );
-  const field = page.locator('[aria-labelledby="atr-question"]');
-  await field.fill("A specific title about the harbour");
-  await field.evaluate((element: HTMLInputElement) => {
-    element.focus();
-    element.setSelectionRange(4, 4);
-    (
-      window as typeof window & { regressionInput?: HTMLInputElement }
-    ).regressionInput = element;
-  });
-  await page.evaluate(async () => {
+  await page.evaluate(async (endpointUrl) => {
     const path = "/src/utils/idb.ts";
     const { loadAiSettingsFromIdb, saveAiSettingsToIdb } = await import(path);
     const settings = await loadAiSettingsFromIdb();
@@ -450,11 +442,20 @@ test("a delayed strength result preserves the focused input and caret", async ({
         ...settings,
         judgement: {
           source: "endpoint",
-          endpointUrl: "https://brief-judgement.invalid",
+          endpointUrl,
         },
       },
       false,
     );
+  }, endpoint);
+  const field = page.locator('[aria-labelledby="atr-question"]');
+  await field.fill("A specific title about the harbour");
+  await field.evaluate((element: HTMLInputElement) => {
+    element.focus();
+    element.setSelectionRange(4, 4);
+    (
+      window as typeof window & { regressionInput?: HTMLInputElement }
+    ).regressionInput = element;
   });
   await expect.poll(() => requested).toBe(true);
   await expect(page.locator(".answer-strength--full")).toHaveAttribute(
@@ -514,4 +515,68 @@ test("all brief answer fields retain focus and selection on a narrow screen", as
       String(index + 2),
     );
   }
+});
+
+test("editing and refreshing a dossier keeps a middle-of-text selection", async ({
+  page,
+}) => {
+  await openBrief(page);
+  // Skip to the multiline goal without introducing unrelated form values.
+  await page.getByRole("button", { name: "IV", exact: true }).click();
+  const goal = page.locator('textarea[aria-labelledby="atr-question"]');
+  await goal.fill("Keep <sources> & explain the evidence");
+  await goal.evaluate((field: HTMLTextAreaElement) => {
+    field.setSelectionRange(5, 14, "backward");
+    Reflect.set(window, "dossierGoalBeforeRefresh", field);
+  });
+  await page.evaluate(async () => {
+    const authPath = "/src/utils/auth-client.ts";
+    const atprotoPath = "/src/utils/atproto.ts";
+    const [{ authClient }, { ATPROTO_SESSION_CHANGED }] = await Promise.all([
+      import(/* @vite-ignore */ authPath),
+      import(/* @vite-ignore */ atprotoPath),
+    ]);
+    const session = authClient.useSession;
+    const previous = session.get();
+    session.set({ ...previous, isPending: true });
+    window.dispatchEvent(new Event(ATPROTO_SESSION_CHANGED));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+    session.set(previous);
+  });
+  await expect(goal).toBeFocused();
+  expect(
+    await goal.evaluate((field: HTMLTextAreaElement) => [
+      Reflect.get(window, "dossierGoalBeforeRefresh") === field,
+      field.selectionStart,
+      field.selectionEnd,
+    ]),
+  ).toEqual([true, 5, 14]);
+  await page.reload();
+  await expect(goal).toHaveValue("Keep <sources> & explain the evidence");
+  await expect(goal).toBeFocused();
+  await expect
+    .poll(() =>
+      goal.evaluate((field: HTMLTextAreaElement) => [
+        field.selectionStart,
+        field.selectionEnd,
+        field.selectionDirection,
+      ]),
+    )
+    .toEqual([5, 14, "backward"]);
+  await page.keyboard.press("Backspace");
+  await expect(goal).toHaveValue("Keep  & explain the evidence");
+  await expect
+    .poll(() =>
+      goal.evaluate((field: HTMLTextAreaElement) => field.selectionStart),
+    )
+    .toBe(5);
+  await page.keyboard.type("citations");
+  await expect(goal).toHaveValue("Keep citations & explain the evidence");
+  await expect
+    .poll(() =>
+      goal.evaluate((field: HTMLTextAreaElement) => field.selectionStart),
+    )
+    .toBe(14);
 });

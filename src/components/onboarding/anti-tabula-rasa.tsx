@@ -70,6 +70,7 @@ import {
   FLUSH_BRIEF_DRAFT,
   loadBriefFormDraft,
   saveBriefFormDraft,
+  type BriefFormSelection,
 } from "../../utils/brief-form-draft";
 
 type InterviewMode = "first-run" | "refine";
@@ -379,7 +380,10 @@ export const AntiTabulaRasa = component$(
     const liveAnswers = useComputed$(() => ({ ...store.answers }));
     const strength = useBriefStrength(liveAnswers, initialConstraintTriage);
 
-    const textareaRef = useSignal<HTMLTextAreaElement>();
+    const fieldRef = useSignal<HTMLInputElement | HTMLTextAreaElement>();
+    const restoredSelection = useSignal<
+      (BriefFormSelection & { step: number }) | undefined
+    >();
     const draftReady = useSignal(!draftScope);
     const draftOwner = useSignal<string | null>(null);
     const draftIdentityScope = useSignal("");
@@ -415,15 +419,17 @@ export const AntiTabulaRasa = component$(
         const owner = track(() => auth.value.user?.id ?? null);
         track(() => draftScope);
         if (!draftScope) return;
-        if (loading) {
+        const sameDraft =
+          draftIdentityInitialized.value &&
+          draftOwner.value === owner &&
+          draftIdentityScope.value === draftScope;
+        // A background session check for the same draft should leave the
+        // mounted field and its departure handlers in place.
+        if (loading && !sameDraft) {
           draftReady.value = false;
           return;
         }
-        if (
-          !draftIdentityInitialized.value ||
-          draftOwner.value !== owner ||
-          draftIdentityScope.value !== draftScope
-        ) {
+        if (!sameDraft) {
           draftReady.value = false;
           draftOwner.value = owner;
           draftIdentityScope.value = draftScope;
@@ -445,17 +451,18 @@ export const AntiTabulaRasa = component$(
             saved?.existingMaterial ?? (initial ? initialMaterial : "") ?? "";
           store.importedFilename = saved?.importedFilename ?? "";
           store.step = saved?.step ?? 0;
+          restoredSelection.value = saved?.selection
+            ? { ...saved.selection, step: saved.step }
+            : undefined;
           store.probesRequested = store.probes.length > 0;
           store.probesAnswersKey = probeDraftKey(store.answers);
           store.submitting = false;
           draftIdentityInitialized.value = true;
-          draftReady.value = true;
-        } else {
-          draftReady.value = true;
         }
+        draftReady.value = true;
         // Native departure listeners must write synchronously; QRL invocation
         // can yield while the browser is already replacing this document.
-        const flush = () => {
+        const saveRecovery = (selection?: BriefFormSelection | null) => {
           if (!draftReady.value) return;
           try {
             saveBriefFormDraft(sessionStorage, draftScope, owner, draftBase, {
@@ -465,17 +472,43 @@ export const AntiTabulaRasa = component$(
               existingMaterial: store.existingMaterial,
               importedFilename: store.importedFilename,
               step: store.step,
+              selection,
             });
           } catch {
             draftStorageError.value =
               "This browser could not keep a recovery copy. Keep this form open until the dossier is filed.";
           }
         };
-        window.addEventListener("pagehide", flush);
+        const flush = () => saveRecovery();
+        const onPageHide = () => {
+          const field = fieldRef.value;
+          if (
+            field &&
+            document.activeElement === field &&
+            field.dataset.dossierStep === String(store.step) &&
+            field.selectionStart !== null &&
+            field.selectionEnd !== null &&
+            field.selectionDirection !== null
+          ) {
+            const key = STEPS[store.step]?.field;
+            if (key) store.answers[key] = field.value;
+            else if (STEPS[store.step]?.kind === "import") {
+              store.existingMaterial = field.value;
+            }
+            saveRecovery({
+              start: field.selectionStart,
+              end: field.selectionEnd,
+              direction: field.selectionDirection,
+            });
+          } else {
+            saveRecovery(null);
+          }
+        };
+        window.addEventListener("pagehide", onPageHide);
         window.addEventListener(FLUSH_BRIEF_DRAFT, flush);
         cleanup(() => {
           flush();
-          window.removeEventListener("pagehide", flush);
+          window.removeEventListener("pagehide", onPageHide);
           window.removeEventListener(FLUSH_BRIEF_DRAFT, flush);
         });
       },
@@ -488,13 +521,37 @@ export const AntiTabulaRasa = component$(
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(
       ({ track }) => {
-        const textarea = track(textareaRef);
+        const input = track(fieldRef);
         const index = track(() => store.step);
+        const selection = track(restoredSelection);
         const field = STEPS[index]?.field;
         const value = field
           ? track(() => store.answers[field])
           : track(() => store.existingMaterial);
-        if (textarea && textarea.value !== value) textarea.value = value;
+        if (!input || input.dataset.dossierStep !== String(index)) return;
+        if (input instanceof HTMLTextAreaElement && input.value !== value)
+          input.value = value;
+        if (!selection) return;
+        restoredSelection.value = undefined;
+        if (
+          selection.step !== index ||
+          !Number.isInteger(selection.start) ||
+          !Number.isInteger(selection.end) ||
+          selection.start < 0 ||
+          selection.end < selection.start ||
+          selection.end > input.value.length ||
+          !["forward", "backward", "none"].includes(selection.direction) ||
+          (document.activeElement !== input &&
+            document.activeElement !== document.body)
+        ) {
+          return;
+        }
+        input.focus({ preventScroll: true });
+        input.setSelectionRange(
+          selection.start,
+          selection.end,
+          selection.direction,
+        );
       },
       { strategy: "document-ready" },
     );
@@ -1062,6 +1119,8 @@ export const AntiTabulaRasa = component$(
                   {step.kind === "input" && step.field === "format" && (
                     <WritingFormatInput
                       key="format"
+                      inputRef={fieldRef}
+                      step={store.step}
                       value={store.answers.format}
                       labelledBy="atr-question"
                       describedBy="atr-hint"
@@ -1079,6 +1138,8 @@ export const AntiTabulaRasa = component$(
                     step.field &&
                     step.field !== "format" && (
                       <input
+                        ref={fieldRef}
+                        data-dossier-step={store.step}
                         key={step.field}
                         value={store.answers[step.field!]}
                         aria-labelledby="atr-question"
@@ -1120,7 +1181,8 @@ export const AntiTabulaRasa = component$(
                             )}
                       </div>
                       <textarea
-                        ref={textareaRef}
+                        ref={fieldRef}
+                        data-dossier-step={store.step}
                         key={step.field}
                         value={store.answers[step.field!]}
                         aria-labelledby="atr-question"
@@ -1169,7 +1231,8 @@ export const AntiTabulaRasa = component$(
                   {step.kind === "import" && (
                     <div>
                       <textarea
-                        ref={textareaRef}
+                        ref={fieldRef}
+                        data-dossier-step={store.step}
                         value={store.existingMaterial}
                         aria-labelledby="atr-question"
                         aria-describedby="atr-hint"

@@ -312,3 +312,46 @@ test("repeated delegations run once and results after end cannot act or speak", 
   ).toBe(false);
   expect(live.liveVoiceState().pending).toBeNull();
 });
+
+test("an unavailable interpreter returns commentary and keeps Live open", async () => {
+  let calls = 0;
+  await connect(async () => {
+    if (++calls === 1) return credentials;
+    if (calls === 2) throw new Error("Private upstream details");
+    return { kind: "answer", text: "We can continue.", original: "", target: "" };
+  });
+  const delegate = (id: string) => socket.event({
+    type: "session.delegation.created",
+    delegation: { id, target: "client" },
+  });
+  delegate("failed");
+  await Bun.sleep(0);
+  expect(socket.readyState).toBe(Socket.OPEN);
+  expect(live.liveVoiceState().working).toBe(false);
+  expect(socket.sent.at(-1)).toMatchObject({
+    type: "session.commentary.append",
+    delegation_id: "failed",
+    content: "That action couldn’t finish. You can ask again.",
+  });
+  delegate("next");
+  await Bun.sleep(0);
+  expect(socket.sent.at(-1)).toMatchObject({
+    delegation_id: "next",
+    content: "We can continue.",
+  });
+});
+
+test("an error event during an active call can be followed by more speech", async () => {
+  await connect();
+  socket.event({ type: "session.started" });
+  socket.event({
+    type: "error",
+    error: { code: "invalid_live_event", client_event_id: "command" },
+  });
+  expect(socket.readyState).toBe(Socket.OPEN);
+  expect(live.liveVoiceState().notice).toBe("Live couldn’t complete the last request.");
+  socket.event({ type: "session.output_transcript.delta", delta: "Still here." });
+  expect(live.liveVoiceState().assistantTranscript).toBe("Still here.");
+  socket.event({ type: "twyne.live.error", message: "The relay disconnected." });
+  expect(live.liveVoiceState().status).toBe("error");
+});

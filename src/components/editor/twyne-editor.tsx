@@ -2515,12 +2515,30 @@ export const TwyneEditor = component$(
             noteId?: string;
             replies?: PersonaReply[];
             evidence?: NoteEvidence;
+            replyFailure?: { replyId: string; message: string } | null;
+            replying?: boolean;
+            filedWriterText?: string;
           };
-          if (!detail?.noteId || !store.notePopover) return;
-          if (detail.noteId !== store.notePopover.id) return;
+          if (!detail?.noteId) return;
+          const draftKey = noteItemId(detail.noteId);
+          const clearDraft =
+            detail.filedWriterText !== undefined &&
+            threadDrafts[draftKey]?.trim() === detail.filedWriterText.trim();
+          if (clearDraft) threadDrafts[draftKey] = "";
+          if (detail.noteId !== store.notePopover?.id) return;
           store.notePopover = {
             ...store.notePopover,
             thread: detail.replies ?? [],
+            ...(clearDraft ? { draft: "" } : {}),
+            ...(detail.replyFailure !== undefined
+              ? {
+                  error: detail.replyFailure?.message ?? null,
+                  retryReplyId: detail.replyFailure?.replyId,
+                }
+              : {}),
+            ...(detail.replying !== undefined
+              ? { replying: detail.replying }
+              : {}),
             ...(detail.evidence ? { evidence: detail.evidence } : {}),
           };
         };
@@ -2554,12 +2572,14 @@ export const TwyneEditor = component$(
           const detail = (e as CustomEvent).detail as {
             noteId?: string;
             message?: string;
+            replyId?: string;
           };
           if (!detail?.noteId || !store.notePopover) return;
           if (detail.noteId !== store.notePopover.id) return;
           store.notePopover = {
             ...store.notePopover,
             error: detail.message ?? null,
+            retryReplyId: detail.replyId,
           };
         };
         // A card in the margin asked for its conversation.
@@ -4550,16 +4570,19 @@ export const TwyneEditor = component$(
             store.notePopover = null;
           }}
           onReply$={(noteId, text, author) => {
+            if (store.notePopover?.replying || !text.trim()) return;
             window.dispatchEvent(
               new CustomEvent("twyne:persona-reply", {
                 detail: { noteId, text, author },
               }),
             );
-            threadDrafts[noteItemId(noteId)] = "";
-            const note = store.notePopover;
-            if (note?.id === noteId) {
-              store.notePopover = { ...note, draft: "", error: null };
-            }
+          }}
+          onRetryReply$={(noteId, replyId) => {
+            window.dispatchEvent(
+              new CustomEvent("twyne:persona-reply-retry", {
+                detail: { noteId, replyId },
+              }),
+            );
           }}
           onStrike$={(noteId) => {
             dismissNote(noteId);
@@ -4570,7 +4593,11 @@ export const TwyneEditor = component$(
           onDismissError$={(noteId) => {
             const note = store.notePopover;
             if (note?.id === noteId) {
-              store.notePopover = { ...note, error: null };
+              store.notePopover = {
+                ...note,
+                error: null,
+                retryReplyId: undefined,
+              };
             }
           }}
         />

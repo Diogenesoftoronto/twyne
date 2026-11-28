@@ -225,6 +225,7 @@ export const CardNotice = component$<{
   detail?: string;
   actionLabel?: string;
   actionHref?: string;
+  showActionLabel?: boolean;
   onAction$?: PropFunction<() => void>;
   onDismiss$?: PropFunction<() => void>;
 }>((props) => (
@@ -250,12 +251,17 @@ export const CardNotice = component$<{
     {props.actionLabel && !props.actionHref && props.onAction$ && (
       <button
         type="button"
-        class="persona-note__notice-retry focus-ring"
+        class={[
+          "focus-ring",
+          props.showActionLabel
+            ? "persona-note__notice-action px-1 py-0.5"
+            : "persona-note__notice-retry",
+        ]}
         aria-label={props.actionLabel}
         title={props.actionLabel}
         onClick$={props.onAction$}
       >
-        <RetryIcon />
+        {props.showActionLabel ? props.actionLabel : <RetryIcon />}
       </button>
     )}
     {props.onDismiss$ && (

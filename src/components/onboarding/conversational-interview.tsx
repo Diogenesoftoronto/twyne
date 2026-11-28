@@ -506,8 +506,8 @@ export const ConversationalInterview = component$(
       if (!text) return;
       // Typing past a probe is a legitimate answer to the question; retire it.
       store.activeProbe = null;
+      store.draft = "";
       await runTurn(text);
-      if (!store.error) store.draft = "";
     });
 
     /**

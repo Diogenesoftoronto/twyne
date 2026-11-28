@@ -1,4 +1,4 @@
-import { component$, type PropFunction } from "@qwik.dev/core";
+import { component$, type PropFunction, type Signal } from "@qwik.dev/core";
 import { WRITING_FORMAT_SUGGESTIONS } from "../../utils/writing-formats";
 
 interface WritingFormatInputProps {
@@ -7,6 +7,8 @@ interface WritingFormatInputProps {
   onCommit$: PropFunction<() => void>;
   labelledBy: string;
   describedBy: string;
+  inputRef?: Signal<HTMLInputElement | HTMLTextAreaElement | undefined>;
+  step?: number;
 }
 
 /**
@@ -19,6 +21,8 @@ export const WritingFormatInput = component$<WritingFormatInputProps>(
     <div>
       <div class="writing-format-control">
         <input
+          ref={props.inputRef}
+          data-dossier-step={props.step}
           value={props.value}
           {...({ list: "twyne-writing-formats" } as Record<string, string>)}
           aria-labelledby={props.labelledBy}

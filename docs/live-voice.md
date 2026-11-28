@@ -12,6 +12,8 @@ Pro members and accounts with unspent Twyne welcome credit can start Live. The p
 
 Each voice session reserves up to $0.50. The gateway enforces duration from its configured rate and settles trusted final usage. Each delegated language request has a separate $0.05 maximum and uses the wallet-backed `fast` route. The UI discloses these separate limits; they are spending ceilings, not advertised model rates. Closing the microphone releases local capture immediately while the connection waits for `session.closed`. An unconfirmed final receipt is shown as such.
 
+If a delegated action fails, Live reports the failure and continues the conversation while the voice connection remains active. The writer can ask again.
+
 ## Configuration and rollout
 
 Both the Twyne server and Convex must use the same `NOTORGANIC_ISSUER` (default `https://api.notorganic.info`). Production must set `SITE_URL` to the public Twyne origin for the WebSocket origin check. Existing Not Organic assertion credentials remain server-side. The gateway must have GPT Live enabled, its rate configured, and the Twyne product authorized for `realtime:connect`, `wallet:read`, and `infer:fast`. Research uses Twyne’s existing research configuration.

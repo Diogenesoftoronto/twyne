@@ -9,6 +9,12 @@ const ACTIVE_DRAFT = "twyne:brief-form:active";
 const MAX_AGE = 24 * 60 * 60 * 1000;
 export const FLUSH_BRIEF_DRAFT = "twyne:flush-brief-form";
 
+export interface BriefFormSelection {
+  start: number;
+  end: number;
+  direction: "forward" | "backward" | "none";
+}
+
 export interface BriefFormDraft {
   answers: ProjectInterviewAnswers;
   attachments: DossierAttachment[];
@@ -16,6 +22,7 @@ export interface BriefFormDraft {
   existingMaterial: string;
   importedFilename: string;
   step: number;
+  selection?: BriefFormSelection | null;
 }
 interface SavedDraft {
   version: 1;
@@ -98,12 +105,21 @@ export function saveBriefFormDraft(
 ): void {
   const key = briefDraftKey(scope, owner);
   const previous = read(storage, key);
+  const { selection, ...content } = draft;
+  const { selection: previousSelection, ...previousContent } =
+    previous?.draft ?? {};
   // Departure can flush twice. Only meaningful edits change the handoff revision.
   if (
     previous?.owner === owner &&
     previous.base === base &&
-    JSON.stringify(previous.draft) === JSON.stringify(draft)
+    JSON.stringify(previousContent) === JSON.stringify(content)
   ) {
+    if (
+      selection !== undefined &&
+      JSON.stringify(selection) !== JSON.stringify(previousSelection)
+    ) {
+      storage.setItem(key, JSON.stringify({ ...previous, draft }));
+    }
     storage.setItem(ACTIVE_DRAFT, key);
     return;
   }

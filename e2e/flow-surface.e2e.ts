@@ -1,5 +1,161 @@
 import { expect, test } from "@playwright/test";
 
+test("a failed editor reply can be retried without filing the writer message again", async ({
+  page,
+  baseURL,
+}) => {
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  const origin = new URL(baseURL!).origin;
+  await page.route("**/*", (route) =>
+    new URL(route.request().url()).origin === origin
+      ? route.continue()
+      : route.abort(),
+  );
+  const sent: string[] = [];
+  let providerAvailable = false;
+  const answer = "Give the second idea its own sentence.";
+  await page.route("**/__reply-fixture/chat/completions", async (route) => {
+    const request = route.request().postDataJSON();
+    sent.push(JSON.stringify(request));
+    if (!providerAvailable) {
+      await route.fulfill({
+        status: 402,
+        json: {
+          error: {
+            message: "Provider credit exhausted",
+            code: "insufficient_credits",
+          },
+        },
+      });
+      return;
+    }
+    if (!request.stream) {
+      await route.fulfill({
+        json: {
+          id: "reply-fixture",
+          object: "chat.completion",
+          model: "reply-fixture",
+          choices: [
+            {
+              index: 0,
+              message: { role: "assistant", content: answer },
+              finish_reason: "stop",
+            },
+          ],
+        },
+      });
+      return;
+    }
+    const chunk = {
+      id: "reply-fixture",
+      object: "chat.completion.chunk",
+      model: "reply-fixture",
+      created: 1,
+      choices: [
+        {
+          index: 0,
+          delta: {
+            role: "assistant",
+            content: answer,
+          },
+          finish_reason: "stop",
+        },
+      ],
+    };
+    await route.fulfill({
+      contentType: "text/event-stream",
+      body: `data: ${JSON.stringify(chunk)}\n\ndata: [DONE]\n\n`,
+    });
+  });
+  await page.route("**/__reply-seed", (route) =>
+    route.fulfill({ contentType: "text/html", body: "<!doctype html>" }),
+  );
+  await page.goto("/__reply-seed");
+  await page.evaluate(async () => {
+    const idbPath = "/src/utils/idb.ts";
+    const idb = await import(/* @vite-ignore */ idbPath);
+    const now = Date.now();
+    const id = "f-reply-retry";
+    await idb.saveFoliosToIdb([
+      { id, name: "Salt Roads", type: "draft", createdAt: now, updatedAt: now },
+    ]);
+    await idb.saveActiveFolioIdToIdb(id);
+    await idb.saveFolioContentToIdb(
+      id,
+      '<p>The traders <span data-persona-note-id="retry-note" data-persona-note-author="Le Lecteur" data-persona-note-note="Break up these ideas.">weighed their loads by the handful</span> and argued about the weather.</p>',
+    );
+    await idb.saveAiSettingsToIdb({
+      advancedMode: true,
+      providers: [
+        {
+          id: "reply-fixture",
+          name: "Reply fixture",
+          type: "openai-compatible",
+          baseUrl: location.origin + "/__reply-fixture",
+          apiKey: "fixture",
+          defaultModel: "reply-fixture",
+        },
+      ],
+      defaultProviderId: "reply-fixture",
+      perFeature: {},
+      showProviderTags: true,
+    });
+  });
+
+  await page.goto("/editor/");
+  await expect(page.locator(".ProseMirror").first()).toContainText(
+    "weighed their loads by the handful",
+  );
+  await page.evaluate(async () => {
+    const browserUrl = performance
+      .getEntriesByType("resource")
+      .find(({ name }) => name.includes("/convex_browser.js"))?.name;
+    if (!browserUrl) return;
+    const { ConvexClient } = await import(/* @vite-ignore */ browserUrl);
+    // The BYOK agent asks Convex about optional research capabilities
+    // before generating. Keep both capability checks and reviews synthetic.
+    ConvexClient.prototype.query = async () => null;
+    ConvexClient.prototype.action = async () => ({ ok: false });
+  });
+  await page
+    .getByRole("button", { name: "Toggle Zen mode", exact: true })
+    .click();
+  const closeBoard = page.getByRole("button", {
+    name: "Close the Editorial Board",
+  });
+  if (await closeBoard.isVisible()) await closeBoard.click();
+  const note = page
+    .locator('.twyne-mark-anchor[data-anchor-kind="note"]')
+    .first();
+  await note.click();
+  const dialog = page.getByRole("dialog", { name: "Note from Le Lecteur" });
+  const draft = dialog.getByRole("textbox", { name: "Reply to Le Lecteur" });
+  const message = "Which idea needs more room?";
+  await draft.fill(message);
+  await draft.press("Enter");
+  const retry = dialog.getByRole("button", {
+    name: "Retry reply",
+    exact: true,
+  });
+  await expect(retry).toBeVisible();
+  await expect(draft).toHaveValue("");
+  await expect(dialog.getByText(message, { exact: true })).toHaveCount(1);
+  await dialog.getByRole("button", { name: "Close note" }).click();
+  await note.click();
+  await expect(retry).toBeVisible();
+  await draft.fill("A separate thought I am still writing");
+  const requestsBeforeRetry = sent.length;
+  providerAvailable = true;
+  await retry.press("Enter");
+  await expect(dialog.getByText(answer)).toBeVisible();
+  await expect(dialog.getByText(message, { exact: true })).toHaveCount(1);
+  await expect(draft).toHaveValue("A separate thought I am still writing");
+  await expect(retry).toHaveCount(0);
+  expect(requestsBeforeRetry).toBeGreaterThan(0);
+  expect(sent.length).toBeGreaterThan(requestsBeforeRetry);
+  expect(sent.every((request) => request.split(message).length === 2)).toBe(true);
+});
+
 test("margin conversations preserve replies, own one surface and adapt to mobile", async ({
   page,
 }) => {
